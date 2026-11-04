@@ -1,0 +1,137 @@
+{
+  "counts": {
+    "areas": 1,
+    "regions": 3,
+    "branches": 16,
+    "service_areas": 392,
+    "packages": 2,
+    "designator_types": 5,
+    "designators": 724,
+    "designator_package_prices": 1030
+  },
+  "price_total": "1054982170.00",
+  "zero_prices": 7,
+  "prices_by_package": {
+    "2": 306,
+    "3": 724
+  },
+  "designators_by_type": {
+    "1": 306,
+    "2": 418
+  },
+  "non_null_category_ids": [],
+  "source_audit_user_ids": [
+    2
+  ],
+  "schema": {
+    "tables": 46,
+    "foreign_keys": 86,
+    "primary_keys": {
+      "users": "id_user",
+      "roles": "id_role",
+      "areas": "id_area",
+      "regions": "id_region",
+      "branches": "id_branch",
+      "service_areas": "id_service_area",
+      "user_assignments": "id_user_assignment",
+      "work_units": "id_work_unit",
+      "measurement_units": "id_measurement_unit",
+      "packages": "id_package",
+      "designator_types": "id_designator_type",
+      "designators": "id_designator",
+      "designator_package_prices": "id_designator_package_price",
+      "khs_price_lists": "id_khs_price_list",
+      "khs_prices": "id_khs_price",
+      "projects": "id_project",
+      "numbering_rules": "id_numbering_rule",
+      "number_sequences": "id_number_sequence",
+      "project_plans": "id_pp",
+      "project_plan_team": "id_pp_team",
+      "project_plan_schedule": "id_pp_schedule",
+      "project_plan_costs": "id_pp_cost",
+      "boq_lines": "id_boq",
+      "boq_components": "id_boq_component",
+      "contracts": "id_contract",
+      "contract_components": "id_contract_component",
+      "payment_terms": "id_payment_term",
+      "term_actuals": "id_term_actual",
+      "approval_runs": "id_approval_run",
+      "approval_steps": "id_approval_step",
+      "approval_decisions": "id_approval_decision",
+      "document_files": "id_document_file",
+      "boq_import_templates": "id_boq_import_template",
+      "boq_import_batches": "id_boq_import",
+      "boq_import_rows": "id_boq_import_row",
+      "contract_documents": "id_contract_document",
+      "term_scans": "id_term_scan",
+      "apm_settlements": "id_apm_settlement",
+      "ba_completions": "id_ba_pp",
+      "volume_releases": "id_volume_release",
+      "continuation_allocations": "id_continuation_allocation",
+      "command_receipts": "id_command_receipt",
+      "volume_balances": "id_volume_balance",
+      "volume_movements": "id_volume_movement",
+      "master_import_batches": "id_master_import",
+      "master_import_rows": "id_master_import_row"
+    }
+  },
+  "sources": {
+    "areas": {
+      "original_filename": "areas.sql",
+      "sha256": "65638f8dd2ca1c4ac9f94f1b1f52b327d3c19c0db950496dd723afa5bfc85606"
+    },
+    "regions": {
+      "original_filename": "regions (1).sql",
+      "sha256": "dbb8accf29549e7b0b376f787c78e132b87a5e7d81c58710c1d5fb68fa509710"
+    },
+    "branches": {
+      "original_filename": "branches.sql",
+      "sha256": "d5c1dc0127d2d6fec84a55ac92e19d296074f394204645a0dcf4208e27f2887e"
+    },
+    "service_areas": {
+      "original_filename": "service_areas (2).sql",
+      "sha256": "95d72ecf165071042d99672896e0909666e1fc0efcefa64165fd221c63e944ea"
+    },
+    "packages": {
+      "original_filename": "packages.sql",
+      "sha256": "1554c8a452b25bd03260ed0bf58dc4a2fa61ea6245a1fbbb8e79d248f018743d"
+    },
+    "designator_types": {
+      "original_filename": "designator_types.sql",
+      "sha256": "1c0bc23637c62ee9525d61b7d5bac85ba6665388fd3360715bc84c63d51fbb13"
+    },
+    "designators": {
+      "original_filename": "designators.sql",
+      "sha256": "901e8659bc8542bccd95315d235d595c6c20f90bacb8ff50bc046dca74172594"
+    },
+    "designator_package_prices": {
+      "original_filename": "designator_package_prices.sql",
+      "sha256": "237109b6d211e1c9b51f4b520b4892012eb0406d2b52a2107556e7781c0ecfc7"
+    }
+  },
+  "branch_mapping": {
+    "PEKALONGAN": "R424",
+    "SEMARANG": "R428",
+    "SURAKARTA": "R426",
+    "YOGYAKARTA": "R409",
+    "MAGELANG": "R425",
+    "PURWOKERTO": "R423",
+    "MADIUN": "R529",
+    "MALANG": "R531",
+    "SIDOARJO": "R535",
+    "JEMBER": "R536",
+    "DENPASAR": "R502",
+    "LAMONGAN": "R504",
+    "SURABAYA": "R501",
+    "MATARAM": "R546",
+    "KUPANG": "R547",
+    "FLORES": "R505"
+  },
+  "duplicate_request_entry": {
+    "name": "DENPASAR",
+    "kode_branch": "R502",
+    "request_occurrences": 2,
+    "seed_rows": 1
+  },
+  "deployed": false
+}

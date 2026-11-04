@@ -1,0 +1,92 @@
+{
+    "checked_at": "2026-11-04T12:41:41+07:00",
+    "database": "its",
+    "migrations": 55,
+    "tables": {
+        "areas": {
+            "count": 1,
+            "matches_backup": true,
+            "sha256": "a98fb0d886f20e17defcaa4e5ce9806e22763b45efd429a5043de782d1626718"
+        },
+        "regions": {
+            "count": 3,
+            "matches_backup": true,
+            "sha256": "2fcda76038c581114d5163f1d60b6d3afe4e59de214d689ae7c638cc607d326c"
+        },
+        "branches": {
+            "count": 16,
+            "matches_backup": true,
+            "sha256": "fc8b4ffd01c24f8ac6f0c89b54c3d0bcab604dd3a9353c0ebb7535f5c669855b"
+        },
+        "service_areas": {
+            "count": 392,
+            "matches_backup": true,
+            "sha256": "e16de396bce7f932cf34ce5be0ef534ad27c8026b7ba4fb73518a22868d1e852"
+        },
+        "packages": {
+            "count": 2,
+            "matches_backup": true,
+            "sha256": "e70088e770252e6fd353a91cd3ddc8c5efe8dba211dac454ffc4a585de2a505b"
+        },
+        "designator_types": {
+            "count": 5,
+            "matches_backup": true,
+            "sha256": "9c9abda81b3822ee0b111f086742fd17d9cdf4c20f10e502477c14cff809385d"
+        },
+        "designators": {
+            "count": 724,
+            "matches_backup": true,
+            "sha256": "ad573474f3bb065ed382d3f6e91d923d49e019ceccf0c8fe41312d0f089b001e"
+        },
+        "designator_package_prices": {
+            "count": 1030,
+            "matches_backup": true,
+            "sha256": "3ecdb9d22b3218711fb752135d7c8e695bb43302f8fd7ec8420d0e62547d0409"
+        },
+        "users": {
+            "count": 1,
+            "matches_backup": true,
+            "sha256": "3c8762193d0c4639c9b64404491b3dddd58d8c35608e53f06c7cdecb47000d55"
+        },
+        "roles": {
+            "count": 5,
+            "matches_backup": true,
+            "sha256": "147fa87c2dd215715fa844f9ae7acd4bea12dc5a8affb670aa428559815324c1"
+        },
+        "user_assignments": {
+            "count": 16,
+            "matches_backup": true,
+            "sha256": "7c449a40a05113634094fe1a73b596599dcc2649aa024c10bdb663adb732b1c5"
+        },
+        "prototype_workspaces": {
+            "count": 1,
+            "matches_backup": true,
+            "sha256": "e31e46e45d07c7080001e5d314468d76c899a13b5aff279737ace4590072473c"
+        },
+        "prototype_audits": {
+            "count": 0,
+            "matches_backup": true,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        }
+    },
+    "users_columns": [
+        "id_user",
+        "name",
+        "email",
+        "email_verified_at",
+        "password",
+        "remember_token",
+        "created_at",
+        "updated_at",
+        "active",
+        "username",
+        "nik",
+        "id_regions",
+        "id_branch",
+        "id_service_areas",
+        "role"
+    ],
+    "users_geography_foreign_keys": 3,
+    "sqlite_sha256": "e2c39eba72710da656307627909f32267b6738c861509a3a70c78bddf8bb10bc",
+    "backup_sha256": "d4b1aef06fcf85da4abaaedecb22049007e216a04ae790f85c5153cc34079308"
+}

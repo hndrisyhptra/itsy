@@ -1,0 +1,20 @@
+{
+  "engine": "10.4.28-MariaDB",
+  "business_tables": 46,
+  "source_rows": 2173,
+  "explicit_checks": 52,
+  "user_preservation": true,
+  "rollback_reapply": true,
+  "unique_and_fk_rejections": true,
+  "timestamp_roundtrip": true,
+  "production_database_accessed": false,
+  "date": "2026-11-03",
+  "test_scope": "Private temporary MariaDB instance; never the user database",
+  "php_tests": {
+    "passed": 58,
+    "assertions": 611
+  },
+  "frontend_tests": 39,
+  "offline_source_tests": 6,
+  "demo_sqlite_sha256": "e2c39eba72710da656307627909f32267b6738c861509a3a70c78bddf8bb10bc"
+}

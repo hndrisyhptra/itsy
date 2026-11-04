@@ -1,0 +1,337 @@
+{
+  "schema": 1,
+  "generation": "demo-cb48fc6f-a826-423e-9dc2-76078423d043",
+  "role": "Admin Konstruksi",
+  "scenario": "B",
+  "projects": [
+    {
+      "id": "pp-1",
+      "no": "PP/026/AREA3",
+      "name": "Modernisasi Jaringan Akses Surabaya Timur",
+      "unit": "Konstruksi Area 3",
+      "branch": "Surabaya",
+      "projectCode": "PRJ-2026-1",
+      "budget": 240000000,
+      "date": "2026-11-02",
+      "status": "Sah",
+      "rootId": "pp-1",
+      "allocations": {},
+      "intro": "Pembangunan dan penguatan jaringan akses fiber optik untuk peningkatan kapasitas layanan pelanggan.",
+      "team": [
+        {
+          "name": "Aditya Pratama",
+          "job": "Admin Konstruksi"
+        },
+        {
+          "name": "Rizky Nugraha",
+          "job": "PM Konstruksi"
+        }
+      ],
+      "schedule": [
+        {
+          "name": "Persiapan",
+          "days": 3,
+          "start": "2026-11-02",
+          "end": "2026-12-01"
+        },
+        {
+          "name": "Material Delivery",
+          "days": 5,
+          "start": "2026-11-02",
+          "end": "2026-12-01"
+        },
+        {
+          "name": "Instalasi",
+          "days": 15,
+          "start": "2026-11-02",
+          "end": "2026-12-01"
+        },
+        {
+          "name": "Commissioning Test",
+          "days": 4,
+          "start": "2026-11-02",
+          "end": "2026-12-01"
+        },
+        {
+          "name": "Uji Terima",
+          "days": 3,
+          "start": "2026-11-02",
+          "end": "2026-12-01"
+        }
+      ],
+      "costs": {
+        "mandor": 130000000,
+        "material": 6000000,
+        "bop": 4500000,
+        "permit": 2000000
+      },
+      "risk": "Mitigasi keterlambatan izin dengan koordinasi pemangku wilayah sebelum mobilisasi.",
+      "communication": "Laporan harian melalui koordinasi proyek dan dokumentasi progres pekerjaan.",
+      "quality": "Inspeksi material, pengujian OTDR dan uji terima sesuai spesifikasi.",
+      "boqStatus": "Final",
+      "boq": [
+        {
+          "id": "pp-1-row-0",
+          "khsId": "khs-0",
+          "qty": 1200,
+          "excelM": 18500,
+          "excelS": 12500,
+          "m": 18500,
+          "s": 12500,
+          "version": 1,
+          "reviewed": true,
+          "note": ""
+        },
+        {
+          "id": "pp-1-row-1",
+          "khsId": "khs-1",
+          "qty": 800,
+          "excelM": 14750,
+          "excelS": 16500,
+          "m": 14250,
+          "s": 16500,
+          "version": 1,
+          "reviewed": true,
+          "note": "Harga resmi Master KHS digunakan pada skenario demo."
+        },
+        {
+          "id": "pp-1-row-2",
+          "khsId": "khs-2",
+          "qty": 12,
+          "excelM": 1850000,
+          "excelS": 450000,
+          "m": 1850000,
+          "s": 450000,
+          "version": 1,
+          "reviewed": true,
+          "note": ""
+        },
+        {
+          "id": "pp-1-row-3",
+          "khsId": "khs-3",
+          "qty": 4,
+          "excelM": 8750000,
+          "excelS": 1250000,
+          "m": 8750000,
+          "s": 1250000,
+          "version": 1,
+          "reviewed": true,
+          "note": ""
+        },
+        {
+          "id": "pp-1-row-4",
+          "khsId": "khs-4",
+          "qty": 8,
+          "excelM": null,
+          "excelS": 185000,
+          "m": null,
+          "s": 185000,
+          "version": 1,
+          "reviewed": true,
+          "note": ""
+        },
+        {
+          "id": "pp-1-row-5",
+          "khsId": "khs-5",
+          "qty": 6,
+          "excelM": null,
+          "excelS": 650000,
+          "m": null,
+          "s": 650000,
+          "version": 1,
+          "reviewed": true,
+          "note": ""
+        }
+      ],
+      "created": "2026-11-02"
+    }
+  ],
+  "khs": [
+    {
+      "id": "khs-0",
+      "code": "DEMO-FO-24",
+      "name": "Kabel fiber optik aerial 24 core",
+      "unit": "m",
+      "package": "Paket 10 · Demo",
+      "m": 18500,
+      "s": 12500,
+      "version": 1,
+      "active": true,
+      "history": [
+        {
+          "at": "2026-11-01T22:08:12.049Z",
+          "actor": "Admin Konstruksi",
+          "m": 18500,
+          "s": 12500
+        }
+      ]
+    },
+    {
+      "id": "khs-1",
+      "code": "DEMO-FO-12",
+      "name": "Kabel fiber optik duct 12 core",
+      "unit": "m",
+      "package": "Paket 10 · Demo",
+      "m": 14250,
+      "s": 16500,
+      "version": 1,
+      "active": true,
+      "history": [
+        {
+          "at": "2026-11-01T22:08:12.049Z",
+          "actor": "Admin Konstruksi",
+          "m": 14250,
+          "s": 16500
+        }
+      ]
+    },
+    {
+      "id": "khs-2",
+      "code": "DEMO-TIANG",
+      "name": "Tiang besi 7 meter",
+      "unit": "batang",
+      "package": "Paket 10 · Demo",
+      "m": 1850000,
+      "s": 450000,
+      "version": 1,
+      "active": true,
+      "history": [
+        {
+          "at": "2026-11-01T22:08:12.049Z",
+          "actor": "Admin Konstruksi",
+          "m": 1850000,
+          "s": 450000
+        }
+      ]
+    },
+    {
+      "id": "khs-3",
+      "code": "DEMO-ODC",
+      "name": "ODC outdoor 144 core",
+      "unit": "unit",
+      "package": "Paket 10 · Demo",
+      "m": 8750000,
+      "s": 1250000,
+      "version": 1,
+      "active": true,
+      "history": [
+        {
+          "at": "2026-11-01T22:08:12.049Z",
+          "actor": "Admin Konstruksi",
+          "m": 8750000,
+          "s": 1250000
+        }
+      ]
+    },
+    {
+      "id": "khs-4",
+      "code": "DEMO-SPLICE",
+      "name": "Penyambungan fiber optik",
+      "unit": "titik",
+      "package": "Paket 10 · Demo",
+      "m": null,
+      "s": 185000,
+      "version": 1,
+      "active": true,
+      "history": [
+        {
+          "at": "2026-11-01T22:08:12.049Z",
+          "actor": "Admin Konstruksi",
+          "m": null,
+          "s": 185000
+        }
+      ]
+    },
+    {
+      "id": "khs-5",
+      "code": "DEMO-OTDR",
+      "name": "Pengujian OTDR & commissioning",
+      "unit": "link",
+      "package": "Paket 10 · Demo",
+      "m": null,
+      "s": 650000,
+      "version": 1,
+      "active": true,
+      "history": [
+        {
+          "at": "2026-11-01T22:08:12.049Z",
+          "actor": "Admin Konstruksi",
+          "m": null,
+          "s": 650000
+        }
+      ]
+    }
+  ],
+  "deals": [],
+  "spks": [],
+  "terms": [],
+  "bapps": [],
+  "events": [
+    {
+      "id": "evt-4d15ea68-b1e2-40fd-a99e-0dd3e2b66195",
+      "title": "BOQ difinalisasi",
+      "detail": "PP/026/AREA3 · Rp 134.780.000",
+      "route": "/boq/pp-1",
+      "actor": "Admin Konstruksi",
+      "at": "2026-11-01T22:08:12.049Z"
+    },
+    {
+      "id": "evt-e2602bb4-c064-4dd9-8c19-20d33aa2f5ab",
+      "title": "Selisih BOQ direview",
+      "detail": "PP/026/AREA3 · DEMO-FO-12",
+      "route": "/boq/pp-1",
+      "actor": "Admin Konstruksi",
+      "at": "2026-11-01T22:08:12.049Z"
+    },
+    {
+      "id": "evt-33a1fccc-ea59-4958-b5a9-d576ff4dda81",
+      "title": "Simulasi BOQ dimuat",
+      "detail": "PP/026/AREA3",
+      "route": "/boq/pp-1",
+      "actor": "Admin Konstruksi",
+      "at": "2026-11-01T22:08:12.049Z"
+    }
+  ],
+  "users": [
+    {
+      "id": "user-0",
+      "name": "Aditya Pratama",
+      "email": "demo1@area3.example",
+      "role": "Admin Konstruksi",
+      "active": true
+    },
+    {
+      "id": "user-1",
+      "name": "Rizky Nugraha",
+      "email": "demo2@area3.example",
+      "role": "PM Konstruksi",
+      "active": true
+    },
+    {
+      "id": "user-2",
+      "name": "Dian Puspita",
+      "email": "demo3@area3.example",
+      "role": "Manager Konstruksi",
+      "active": true
+    },
+    {
+      "id": "user-3",
+      "name": "Nadia Rahma",
+      "email": "demo4@area3.example",
+      "role": "Finance",
+      "active": true
+    },
+    {
+      "id": "user-4",
+      "name": "Administrator",
+      "email": "demo5@area3.example",
+      "role": "Superadmin",
+      "active": true
+    }
+  ],
+  "profile": {
+    "name": "Aditya Pratama",
+    "email": "aditya@area3.example"
+  },
+  "lastSaved": "2026-11-01T22:08:12.049Z"
+}

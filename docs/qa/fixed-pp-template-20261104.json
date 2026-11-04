@@ -1,0 +1,29 @@
+{
+  "date": "2026-11-04",
+  "source": "template-PP-header-pendahuluan-tim-jadwalproyek.docx",
+  "source_sha256": "91d47bf8d083c27ec3db7030f065f1fb3d0fe2e2a6d577d12a176e61285b5baf",
+  "reference_render_pages": 1,
+  "checks": {
+    "Latar Belakang": true,
+    "Tujuan": true,
+    "Lingkup Pekerjaan": true,
+    "team": true,
+    "stages": true,
+    "curve_image_exact_copy": true
+  },
+  "backup": {
+    "name": "its-before-fixed-pp-template-20261104-162423.sql",
+    "bytes": 629582,
+    "sha256": "735439f7d6a3c93d7330e040c2394a020305b50d19b9769abfbba8ff70df9354"
+  },
+  "scope": "Header–Jadwal HTML/print preview with retained BOQ/budget/risk appendices; reference curve is explicitly labelled 2020 example, not current project progress. No DOCX export created.",
+  "browser_visual_qa": "Not repeated; no credentials used and no local-file policy workaround attempted.",
+  "verification": {
+    "php_tests": 88,
+    "php_assertions": 1168,
+    "frontend_tests": 57,
+    "build": "passed",
+    "pint": "passed",
+    "database": "isolated SQLite :memory:"
+  }
+}

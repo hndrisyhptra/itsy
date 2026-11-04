@@ -1,0 +1,1599 @@
+{
+  "schema": 1,
+  "generation": "demo-60de34c1-78e7-4ea2-9ee6-d7b021f0d6fc",
+  "role": "Admin Konstruksi",
+  "scenario": "overview",
+  "projects": [
+    {
+      "id": "pp-1",
+      "no": "PP/026/AREA3",
+      "name": "Modernisasi Jaringan Akses Surabaya Timur",
+      "unit": "Konstruksi Area 3",
+      "branch": "Surabaya",
+      "projectCode": "PRJ-2026-1",
+      "budget": 240000000,
+      "date": "2026-11-02",
+      "status": "Sah",
+      "rootId": "pp-1",
+      "allocations": {},
+      "intro": "Pembangunan dan penguatan jaringan akses fiber optik untuk peningkatan kapasitas layanan pelanggan.",
+      "team": [
+        {
+          "name": "Aditya Pratama",
+          "job": "Admin Konstruksi"
+        },
+        {
+          "name": "Rizky Nugraha",
+          "job": "PM Konstruksi"
+        }
+      ],
+      "schedule": [
+        {
+          "name": "Persiapan",
+          "days": 3,
+          "start": "2026-11-02",
+          "end": "2026-12-01"
+        },
+        {
+          "name": "Material Delivery",
+          "days": 5,
+          "start": "2026-11-02",
+          "end": "2026-12-01"
+        },
+        {
+          "name": "Instalasi",
+          "days": 15,
+          "start": "2026-11-02",
+          "end": "2026-12-01"
+        },
+        {
+          "name": "Commissioning Test",
+          "days": 4,
+          "start": "2026-11-02",
+          "end": "2026-12-01"
+        },
+        {
+          "name": "Uji Terima",
+          "days": 3,
+          "start": "2026-11-02",
+          "end": "2026-12-01"
+        }
+      ],
+      "costs": {
+        "mandor": 130000000,
+        "material": 6000000,
+        "bop": 4500000,
+        "permit": 2000000
+      },
+      "risk": "Mitigasi keterlambatan izin dengan koordinasi pemangku wilayah sebelum mobilisasi.",
+      "communication": "Laporan harian melalui koordinasi proyek dan dokumentasi progres pekerjaan.",
+      "quality": "Inspeksi material, pengujian OTDR dan uji terima sesuai spesifikasi.",
+      "boqStatus": "Final",
+      "boq": [
+        {
+          "id": "pp-1-row-0",
+          "khsId": "khs-0",
+          "qty": 1200,
+          "excelM": 18500,
+          "excelS": 12500,
+          "m": 18500,
+          "s": 12500,
+          "version": 1,
+          "reviewed": true,
+          "note": ""
+        },
+        {
+          "id": "pp-1-row-1",
+          "khsId": "khs-1",
+          "qty": 800,
+          "excelM": 14750,
+          "excelS": 16500,
+          "m": 14250,
+          "s": 16500,
+          "version": 1,
+          "reviewed": true,
+          "note": "Harga resmi Master KHS digunakan pada skenario demo."
+        },
+        {
+          "id": "pp-1-row-2",
+          "khsId": "khs-2",
+          "qty": 12,
+          "excelM": 1850000,
+          "excelS": 450000,
+          "m": 1850000,
+          "s": 450000,
+          "version": 1,
+          "reviewed": true,
+          "note": ""
+        },
+        {
+          "id": "pp-1-row-3",
+          "khsId": "khs-3",
+          "qty": 4,
+          "excelM": 8750000,
+          "excelS": 1250000,
+          "m": 8750000,
+          "s": 1250000,
+          "version": 1,
+          "reviewed": true,
+          "note": ""
+        },
+        {
+          "id": "pp-1-row-4",
+          "khsId": "khs-4",
+          "qty": 8,
+          "excelM": null,
+          "excelS": 185000,
+          "m": null,
+          "s": 185000,
+          "version": 1,
+          "reviewed": true,
+          "note": ""
+        },
+        {
+          "id": "pp-1-row-5",
+          "khsId": "khs-5",
+          "qty": 6,
+          "excelM": null,
+          "excelS": 650000,
+          "m": null,
+          "s": 650000,
+          "version": 1,
+          "reviewed": true,
+          "note": ""
+        }
+      ],
+      "created": "2026-11-02"
+    },
+    {
+      "id": "pp-2",
+      "no": "PP/018/AREA3",
+      "name": "Pembangunan FTTH Kawasan Sidoarjo",
+      "unit": "Konstruksi Area 3",
+      "branch": "Sidoarjo",
+      "projectCode": "PRJ-2026-2",
+      "budget": 240000000,
+      "date": "2026-11-02",
+      "status": "Sah",
+      "rootId": "pp-2",
+      "allocations": {},
+      "intro": "Pembangunan dan penguatan jaringan akses fiber optik untuk peningkatan kapasitas layanan pelanggan.",
+      "team": [
+        {
+          "name": "Aditya Pratama",
+          "job": "Admin Konstruksi"
+        },
+        {
+          "name": "Rizky Nugraha",
+          "job": "PM Konstruksi"
+        }
+      ],
+      "schedule": [
+        {
+          "name": "Persiapan",
+          "days": 3,
+          "start": "2026-11-02",
+          "end": "2026-12-01"
+        },
+        {
+          "name": "Material Delivery",
+          "days": 5,
+          "start": "2026-11-02",
+          "end": "2026-12-01"
+        },
+        {
+          "name": "Instalasi",
+          "days": 15,
+          "start": "2026-11-02",
+          "end": "2026-12-01"
+        },
+        {
+          "name": "Commissioning Test",
+          "days": 4,
+          "start": "2026-11-02",
+          "end": "2026-12-01"
+        },
+        {
+          "name": "Uji Terima",
+          "days": 3,
+          "start": "2026-11-02",
+          "end": "2026-12-01"
+        }
+      ],
+      "costs": {
+        "mandor": 130000000,
+        "material": 6000000,
+        "bop": 4500000,
+        "permit": 2000000
+      },
+      "risk": "Mitigasi keterlambatan izin dengan koordinasi pemangku wilayah sebelum mobilisasi.",
+      "communication": "Laporan harian melalui koordinasi proyek dan dokumentasi progres pekerjaan.",
+      "quality": "Inspeksi material, pengujian OTDR dan uji terima sesuai spesifikasi.",
+      "boqStatus": "Final",
+      "boq": [
+        {
+          "id": "pp-2-row-0",
+          "khsId": "khs-0",
+          "qty": 1200,
+          "excelM": 18500,
+          "excelS": 12500,
+          "m": 18500,
+          "s": 12500,
+          "version": 1,
+          "reviewed": true,
+          "note": ""
+        },
+        {
+          "id": "pp-2-row-1",
+          "khsId": "khs-1",
+          "qty": 800,
+          "excelM": 14750,
+          "excelS": 16500,
+          "m": 14250,
+          "s": 16500,
+          "version": 1,
+          "reviewed": true,
+          "note": "Harga resmi Master KHS digunakan pada skenario demo."
+        },
+        {
+          "id": "pp-2-row-2",
+          "khsId": "khs-2",
+          "qty": 12,
+          "excelM": 1850000,
+          "excelS": 450000,
+          "m": 1850000,
+          "s": 450000,
+          "version": 1,
+          "reviewed": true,
+          "note": ""
+        },
+        {
+          "id": "pp-2-row-3",
+          "khsId": "khs-3",
+          "qty": 4,
+          "excelM": 8750000,
+          "excelS": 1250000,
+          "m": 8750000,
+          "s": 1250000,
+          "version": 1,
+          "reviewed": true,
+          "note": ""
+        },
+        {
+          "id": "pp-2-row-4",
+          "khsId": "khs-4",
+          "qty": 8,
+          "excelM": null,
+          "excelS": 185000,
+          "m": null,
+          "s": 185000,
+          "version": 1,
+          "reviewed": true,
+          "note": ""
+        },
+        {
+          "id": "pp-2-row-5",
+          "khsId": "khs-5",
+          "qty": 6,
+          "excelM": null,
+          "excelS": 650000,
+          "m": null,
+          "s": 650000,
+          "version": 1,
+          "reviewed": true,
+          "note": ""
+        }
+      ],
+      "created": "2026-11-02"
+    },
+    {
+      "id": "pp-688bedd1-a020-48a6-b717-97d19b9d0185",
+      "no": "PP/031/AREA3",
+      "name": "Pembangunan FTTH Kawasan Sidoarjo — Lanjutan",
+      "unit": "Konstruksi Area 3",
+      "branch": "Sidoarjo",
+      "projectCode": "PRJ-2026-2",
+      "budget": 33695000,
+      "date": "2026-11-02",
+      "status": "Draft",
+      "rootId": "pp-2",
+      "allocations": {
+        "pp-2-row-0": {
+          "m": 300,
+          "s": 300
+        },
+        "pp-2-row-1": {
+          "m": 200,
+          "s": 200
+        },
+        "pp-2-row-2": {
+          "m": 3,
+          "s": 3
+        },
+        "pp-2-row-3": {
+          "m": 1,
+          "s": 1
+        },
+        "pp-2-row-4": {
+          "m": 0,
+          "s": 2
+        },
+        "pp-2-row-5": {
+          "m": 0,
+          "s": 1.5
+        }
+      },
+      "intro": "Penyelesaian sisa pekerjaan dari BA PP/018.",
+      "team": [],
+      "schedule": [
+        {
+          "name": "Persiapan",
+          "days": 3,
+          "start": "2026-11-02",
+          "end": "2026-12-01"
+        },
+        {
+          "name": "Material Delivery",
+          "days": 5,
+          "start": "2026-11-02",
+          "end": "2026-12-01"
+        },
+        {
+          "name": "Instalasi",
+          "days": 15,
+          "start": "2026-11-02",
+          "end": "2026-12-01"
+        },
+        {
+          "name": "Commissioning Test",
+          "days": 4,
+          "start": "2026-11-02",
+          "end": "2026-12-01"
+        },
+        {
+          "name": "Uji Terima",
+          "days": 3,
+          "start": "2026-11-02",
+          "end": "2026-12-01"
+        }
+      ],
+      "costs": {
+        "mandor": 0,
+        "material": 0,
+        "bop": 0,
+        "permit": 0
+      },
+      "risk": "",
+      "communication": "",
+      "quality": "",
+      "boqStatus": "Final",
+      "boq": [],
+      "created": "2026-11-02",
+      "parentId": "pp-2",
+      "sourceBapp": "bapp-10b9b59a-4e4c-45bd-aa2d-db7fe4081ae8"
+    },
+    {
+      "id": "pp-4",
+      "no": "PP/029/AREA3",
+      "name": "Penguatan Backbone Fiber Malang Selatan",
+      "unit": "Konstruksi Area 3",
+      "branch": "Malang",
+      "projectCode": "PRJ-2026-4",
+      "budget": 240000000,
+      "date": "2026-11-02",
+      "status": "Sah",
+      "rootId": "pp-4",
+      "allocations": {},
+      "intro": "Pembangunan dan penguatan jaringan akses fiber optik untuk peningkatan kapasitas layanan pelanggan.",
+      "team": [
+        {
+          "name": "Aditya Pratama",
+          "job": "Admin Konstruksi"
+        },
+        {
+          "name": "Rizky Nugraha",
+          "job": "PM Konstruksi"
+        }
+      ],
+      "schedule": [
+        {
+          "name": "Persiapan",
+          "days": 3,
+          "start": "2026-11-02",
+          "end": "2026-12-01"
+        },
+        {
+          "name": "Material Delivery",
+          "days": 5,
+          "start": "2026-11-02",
+          "end": "2026-12-01"
+        },
+        {
+          "name": "Instalasi",
+          "days": 15,
+          "start": "2026-11-02",
+          "end": "2026-12-01"
+        },
+        {
+          "name": "Commissioning Test",
+          "days": 4,
+          "start": "2026-11-02",
+          "end": "2026-12-01"
+        },
+        {
+          "name": "Uji Terima",
+          "days": 3,
+          "start": "2026-11-02",
+          "end": "2026-12-01"
+        }
+      ],
+      "costs": {
+        "mandor": 130000000,
+        "material": 6000000,
+        "bop": 4500000,
+        "permit": 2000000
+      },
+      "risk": "Mitigasi keterlambatan izin dengan koordinasi pemangku wilayah sebelum mobilisasi.",
+      "communication": "Laporan harian melalui koordinasi proyek dan dokumentasi progres pekerjaan.",
+      "quality": "Inspeksi material, pengujian OTDR dan uji terima sesuai spesifikasi.",
+      "boqStatus": "Final",
+      "boq": [
+        {
+          "id": "pp-4-row-0",
+          "khsId": "khs-0",
+          "qty": 1200,
+          "excelM": 18500,
+          "excelS": 12500,
+          "m": 18500,
+          "s": 12500,
+          "version": 1,
+          "reviewed": true,
+          "note": ""
+        },
+        {
+          "id": "pp-4-row-1",
+          "khsId": "khs-1",
+          "qty": 800,
+          "excelM": 14750,
+          "excelS": 16500,
+          "m": 14250,
+          "s": 16500,
+          "version": 1,
+          "reviewed": true,
+          "note": "Harga resmi Master KHS digunakan pada skenario demo."
+        },
+        {
+          "id": "pp-4-row-2",
+          "khsId": "khs-2",
+          "qty": 12,
+          "excelM": 1850000,
+          "excelS": 450000,
+          "m": 1850000,
+          "s": 450000,
+          "version": 1,
+          "reviewed": true,
+          "note": ""
+        },
+        {
+          "id": "pp-4-row-3",
+          "khsId": "khs-3",
+          "qty": 4,
+          "excelM": 8750000,
+          "excelS": 1250000,
+          "m": 8750000,
+          "s": 1250000,
+          "version": 1,
+          "reviewed": true,
+          "note": ""
+        },
+        {
+          "id": "pp-4-row-4",
+          "khsId": "khs-4",
+          "qty": 8,
+          "excelM": null,
+          "excelS": 185000,
+          "m": null,
+          "s": 185000,
+          "version": 1,
+          "reviewed": true,
+          "note": ""
+        },
+        {
+          "id": "pp-4-row-5",
+          "khsId": "khs-5",
+          "qty": 6,
+          "excelM": null,
+          "excelS": 650000,
+          "m": null,
+          "s": 650000,
+          "version": 1,
+          "reviewed": true,
+          "note": ""
+        }
+      ],
+      "created": "2026-11-02"
+    },
+    {
+      "id": "pp-5",
+      "no": "PP/030/AREA3",
+      "name": "Relokasi Jaringan Akses Denpasar",
+      "unit": "Konstruksi Area 3",
+      "branch": "Denpasar",
+      "projectCode": "PRJ-2026-5",
+      "budget": 240000000,
+      "date": "2026-11-02",
+      "status": "Draft",
+      "rootId": "pp-5",
+      "allocations": {},
+      "intro": "Pembangunan dan penguatan jaringan akses fiber optik untuk peningkatan kapasitas layanan pelanggan.",
+      "team": [
+        {
+          "name": "Aditya Pratama",
+          "job": "Admin Konstruksi"
+        },
+        {
+          "name": "Rizky Nugraha",
+          "job": "PM Konstruksi"
+        }
+      ],
+      "schedule": [
+        {
+          "name": "Persiapan",
+          "days": 3,
+          "start": "2026-11-02",
+          "end": "2026-12-01"
+        },
+        {
+          "name": "Material Delivery",
+          "days": 5,
+          "start": "2026-11-02",
+          "end": "2026-12-01"
+        },
+        {
+          "name": "Instalasi",
+          "days": 15,
+          "start": "2026-11-02",
+          "end": "2026-12-01"
+        },
+        {
+          "name": "Commissioning Test",
+          "days": 4,
+          "start": "2026-11-02",
+          "end": "2026-12-01"
+        },
+        {
+          "name": "Uji Terima",
+          "days": 3,
+          "start": "2026-11-02",
+          "end": "2026-12-01"
+        }
+      ],
+      "costs": {
+        "mandor": 130000000,
+        "material": 6000000,
+        "bop": 4500000,
+        "permit": 2000000
+      },
+      "risk": "Mitigasi keterlambatan izin dengan koordinasi pemangku wilayah sebelum mobilisasi.",
+      "communication": "Laporan harian melalui koordinasi proyek dan dokumentasi progres pekerjaan.",
+      "quality": "Inspeksi material, pengujian OTDR dan uji terima sesuai spesifikasi.",
+      "boqStatus": "Review",
+      "boq": [
+        {
+          "id": "pp-5-row-0",
+          "khsId": "khs-0",
+          "qty": 1200,
+          "excelM": 18500,
+          "excelS": 12500,
+          "m": 18500,
+          "s": 12500,
+          "version": 1,
+          "reviewed": true,
+          "note": ""
+        },
+        {
+          "id": "pp-5-row-1",
+          "khsId": "khs-1",
+          "qty": 800,
+          "excelM": 14750,
+          "excelS": 16500,
+          "m": 14250,
+          "s": 16500,
+          "version": 1,
+          "reviewed": false,
+          "note": ""
+        },
+        {
+          "id": "pp-5-row-2",
+          "khsId": "khs-2",
+          "qty": 12,
+          "excelM": 1850000,
+          "excelS": 450000,
+          "m": 1850000,
+          "s": 450000,
+          "version": 1,
+          "reviewed": true,
+          "note": ""
+        },
+        {
+          "id": "pp-5-row-3",
+          "khsId": "khs-3",
+          "qty": 4,
+          "excelM": 8750000,
+          "excelS": 1250000,
+          "m": 8750000,
+          "s": 1250000,
+          "version": 1,
+          "reviewed": true,
+          "note": ""
+        },
+        {
+          "id": "pp-5-row-4",
+          "khsId": "khs-4",
+          "qty": 8,
+          "excelM": null,
+          "excelS": 185000,
+          "m": null,
+          "s": 185000,
+          "version": 1,
+          "reviewed": true,
+          "note": ""
+        },
+        {
+          "id": "pp-5-row-5",
+          "khsId": "khs-5",
+          "qty": 6,
+          "excelM": null,
+          "excelS": 650000,
+          "m": null,
+          "s": 650000,
+          "version": 1,
+          "reviewed": true,
+          "note": ""
+        }
+      ],
+      "created": "2026-11-02"
+    }
+  ],
+  "khs": [
+    {
+      "id": "khs-0",
+      "code": "DEMO-FO-24",
+      "name": "Kabel fiber optik aerial 24 core",
+      "unit": "m",
+      "package": "Paket 10 · Demo",
+      "m": 18500,
+      "s": 12500,
+      "version": 1,
+      "active": true,
+      "history": [
+        {
+          "at": "2026-11-01T22:08:12.008Z",
+          "actor": "Admin Konstruksi",
+          "m": 18500,
+          "s": 12500
+        }
+      ]
+    },
+    {
+      "id": "khs-1",
+      "code": "DEMO-FO-12",
+      "name": "Kabel fiber optik duct 12 core",
+      "unit": "m",
+      "package": "Paket 10 · Demo",
+      "m": 14250,
+      "s": 16500,
+      "version": 1,
+      "active": true,
+      "history": [
+        {
+          "at": "2026-11-01T22:08:12.008Z",
+          "actor": "Admin Konstruksi",
+          "m": 14250,
+          "s": 16500
+        }
+      ]
+    },
+    {
+      "id": "khs-2",
+      "code": "DEMO-TIANG",
+      "name": "Tiang besi 7 meter",
+      "unit": "batang",
+      "package": "Paket 10 · Demo",
+      "m": 1850000,
+      "s": 450000,
+      "version": 1,
+      "active": true,
+      "history": [
+        {
+          "at": "2026-11-01T22:08:12.008Z",
+          "actor": "Admin Konstruksi",
+          "m": 1850000,
+          "s": 450000
+        }
+      ]
+    },
+    {
+      "id": "khs-3",
+      "code": "DEMO-ODC",
+      "name": "ODC outdoor 144 core",
+      "unit": "unit",
+      "package": "Paket 10 · Demo",
+      "m": 8750000,
+      "s": 1250000,
+      "version": 1,
+      "active": true,
+      "history": [
+        {
+          "at": "2026-11-01T22:08:12.008Z",
+          "actor": "Admin Konstruksi",
+          "m": 8750000,
+          "s": 1250000
+        }
+      ]
+    },
+    {
+      "id": "khs-4",
+      "code": "DEMO-SPLICE",
+      "name": "Penyambungan fiber optik",
+      "unit": "titik",
+      "package": "Paket 10 · Demo",
+      "m": null,
+      "s": 185000,
+      "version": 1,
+      "active": true,
+      "history": [
+        {
+          "at": "2026-11-01T22:08:12.008Z",
+          "actor": "Admin Konstruksi",
+          "m": null,
+          "s": 185000
+        }
+      ]
+    },
+    {
+      "id": "khs-5",
+      "code": "DEMO-OTDR",
+      "name": "Pengujian OTDR & commissioning",
+      "unit": "link",
+      "package": "Paket 10 · Demo",
+      "m": null,
+      "s": 650000,
+      "version": 1,
+      "active": true,
+      "history": [
+        {
+          "at": "2026-11-01T22:08:12.008Z",
+          "actor": "Admin Konstruksi",
+          "m": null,
+          "s": 650000
+        }
+      ]
+    }
+  ],
+  "deals": [
+    {
+      "id": "bakh-f872593e-4dc1-4b78-98d7-6834a864abfe",
+      "projectId": "pp-1",
+      "no": "BAKH/PP/026/AREA3",
+      "mandor": "Budi Santoso",
+      "status": "Sah",
+      "rows": [
+        {
+          "rowId": "pp-1-row-0",
+          "m": true,
+          "s": true,
+          "qm": 1200,
+          "qs": 1200,
+          "pm": 15725,
+          "ps": 10625,
+          "sphM": 14800,
+          "sphS": 10000,
+          "offerM": 16650,
+          "offerS": 11250,
+          "capM": 18500,
+          "capS": 12500
+        },
+        {
+          "rowId": "pp-1-row-1",
+          "m": true,
+          "s": true,
+          "qm": 800,
+          "qs": 800,
+          "pm": 12112.5,
+          "ps": 14025,
+          "sphM": 11400,
+          "sphS": 13200,
+          "offerM": 12825,
+          "offerS": 14850,
+          "capM": 14250,
+          "capS": 16500
+        },
+        {
+          "rowId": "pp-1-row-2",
+          "m": true,
+          "s": true,
+          "qm": 12,
+          "qs": 12,
+          "pm": 1572500,
+          "ps": 382500,
+          "sphM": 1480000,
+          "sphS": 360000,
+          "offerM": 1665000,
+          "offerS": 405000,
+          "capM": 1850000,
+          "capS": 450000
+        },
+        {
+          "rowId": "pp-1-row-3",
+          "m": true,
+          "s": true,
+          "qm": 4,
+          "qs": 4,
+          "pm": 7437500,
+          "ps": 1062500,
+          "sphM": 7000000,
+          "sphS": 1000000,
+          "offerM": 7875000,
+          "offerS": 1125000,
+          "capM": 8750000,
+          "capS": 1250000
+        },
+        {
+          "rowId": "pp-1-row-4",
+          "m": false,
+          "s": true,
+          "qm": 0,
+          "qs": 8,
+          "pm": 0,
+          "ps": 157250,
+          "sphM": 0,
+          "sphS": 148000,
+          "offerM": 0,
+          "offerS": 166500,
+          "capM": null,
+          "capS": 185000
+        },
+        {
+          "rowId": "pp-1-row-5",
+          "m": false,
+          "s": true,
+          "qm": 0,
+          "qs": 6,
+          "pm": 0,
+          "ps": 552500,
+          "sphM": 0,
+          "sphS": 520000,
+          "offerM": 0,
+          "offerS": 585000,
+          "capM": null,
+          "capS": 650000
+        }
+      ],
+      "place": "Surabaya",
+      "location": "Surabaya",
+      "witel": "Surabaya",
+      "date": "2026-11-02",
+      "start": "2026-11-02",
+      "end": "2026-11-21",
+      "signer": "Pejabat TA · Demo",
+      "fo": "Tim FO 01 · Demo",
+      "jointer": "Tim Jointer 01 · Demo",
+      "evidence": "Bukti skenario demo — bukan tanda tangan nyata"
+    },
+    {
+      "id": "bakh-e169a912-7ebb-40ca-be4b-9ee960f5105b",
+      "projectId": "pp-2",
+      "no": "BAKH/PP/018/AREA3",
+      "mandor": "Budi Santoso",
+      "status": "Sah",
+      "rows": [
+        {
+          "rowId": "pp-2-row-0",
+          "m": true,
+          "s": true,
+          "qm": 1200,
+          "qs": 1200,
+          "pm": 15725,
+          "ps": 10625,
+          "sphM": 14800,
+          "sphS": 10000,
+          "offerM": 16650,
+          "offerS": 11250,
+          "capM": 18500,
+          "capS": 12500
+        },
+        {
+          "rowId": "pp-2-row-1",
+          "m": true,
+          "s": true,
+          "qm": 800,
+          "qs": 800,
+          "pm": 12112.5,
+          "ps": 14025,
+          "sphM": 11400,
+          "sphS": 13200,
+          "offerM": 12825,
+          "offerS": 14850,
+          "capM": 14250,
+          "capS": 16500
+        },
+        {
+          "rowId": "pp-2-row-2",
+          "m": true,
+          "s": true,
+          "qm": 12,
+          "qs": 12,
+          "pm": 1572500,
+          "ps": 382500,
+          "sphM": 1480000,
+          "sphS": 360000,
+          "offerM": 1665000,
+          "offerS": 405000,
+          "capM": 1850000,
+          "capS": 450000
+        },
+        {
+          "rowId": "pp-2-row-3",
+          "m": true,
+          "s": true,
+          "qm": 4,
+          "qs": 4,
+          "pm": 7437500,
+          "ps": 1062500,
+          "sphM": 7000000,
+          "sphS": 1000000,
+          "offerM": 7875000,
+          "offerS": 1125000,
+          "capM": 8750000,
+          "capS": 1250000
+        },
+        {
+          "rowId": "pp-2-row-4",
+          "m": false,
+          "s": true,
+          "qm": 0,
+          "qs": 8,
+          "pm": 0,
+          "ps": 157250,
+          "sphM": 0,
+          "sphS": 148000,
+          "offerM": 0,
+          "offerS": 166500,
+          "capM": null,
+          "capS": 185000
+        },
+        {
+          "rowId": "pp-2-row-5",
+          "m": false,
+          "s": true,
+          "qm": 0,
+          "qs": 6,
+          "pm": 0,
+          "ps": 552500,
+          "sphM": 0,
+          "sphS": 520000,
+          "offerM": 0,
+          "offerS": 585000,
+          "capM": null,
+          "capS": 650000
+        }
+      ],
+      "place": "Surabaya",
+      "location": "Sidoarjo",
+      "witel": "Sidoarjo",
+      "date": "2026-11-02",
+      "start": "2026-11-02",
+      "end": "2026-11-21",
+      "signer": "Pejabat TA · Demo",
+      "fo": "Tim FO 01 · Demo",
+      "jointer": "Tim Jointer 01 · Demo",
+      "evidence": "Bukti skenario demo — bukan tanda tangan nyata"
+    }
+  ],
+  "spks": [
+    {
+      "id": "spk-75134b01-4956-416e-bfac-c3a02ce630dc",
+      "dealId": "bakh-f872593e-4dc1-4b78-98d7-6834a864abfe",
+      "no": "SPK/PP/026/AREA3",
+      "status": "Sah",
+      "date": "2026-11-02",
+      "start": "2026-11-02",
+      "end": "2026-11-21",
+      "place": "Surabaya",
+      "address": "Alamat mandor · data demonstrasi",
+      "supervisor": "Arif Wijaya",
+      "phone": "080000000000",
+      "signer": "Pejabat TA · Demo",
+      "position": "Manager Konstruksi",
+      "evidence": "Bukti skenario demo — bukan tanda tangan nyata"
+    },
+    {
+      "id": "spk-59c50ba7-ca2c-4d5e-92c6-2567298ef53a",
+      "dealId": "bakh-e169a912-7ebb-40ca-be4b-9ee960f5105b",
+      "no": "SPK/PP/018/AREA3",
+      "status": "Sah",
+      "date": "2026-11-02",
+      "start": "2026-11-02",
+      "end": "2026-11-21",
+      "place": "Surabaya",
+      "address": "Alamat mandor · data demonstrasi",
+      "supervisor": "Arif Wijaya",
+      "phone": "080000000000",
+      "signer": "Pejabat TA · Demo",
+      "position": "Manager Konstruksi",
+      "evidence": "Bukti skenario demo — bukan tanda tangan nyata"
+    }
+  ],
+  "terms": [
+    {
+      "id": "termin-92bb5dba-5c92-429a-a7d0-61a7c17c78eb",
+      "spkId": "spk-75134b01-4956-416e-bfac-c3a02ce630dc",
+      "number": 1,
+      "type": "Parsial",
+      "status": "Disetujui",
+      "actuals": {
+        "pp-1-row-0": {
+          "m": 480,
+          "s": 480
+        },
+        "pp-1-row-1": {
+          "m": 320,
+          "s": 320
+        },
+        "pp-1-row-2": {
+          "m": 4.800000000000001,
+          "s": 4.800000000000001
+        },
+        "pp-1-row-3": {
+          "m": 1.6,
+          "s": 1.6
+        },
+        "pp-1-row-4": {
+          "m": 0,
+          "s": 3.2
+        },
+        "pp-1-row-5": {
+          "m": 0,
+          "s": 2.4000000000000004
+        }
+      },
+      "approvals": [
+        {
+          "role": "PM Konstruksi",
+          "decision": "Setujui",
+          "note": "Diperiksa pada skenario demo.",
+          "at": "2026-11-01T22:08:12.045Z"
+        },
+        {
+          "role": "Manager Konstruksi",
+          "decision": "Setujui",
+          "note": "Diperiksa pada skenario demo.",
+          "at": "2026-11-01T22:08:12.045Z"
+        },
+        {
+          "role": "Finance",
+          "decision": "Setujui",
+          "note": "Diperiksa pada skenario demo.",
+          "at": "2026-11-01T22:08:12.045Z"
+        }
+      ],
+      "history": [
+        {
+          "role": "PM Konstruksi",
+          "decision": "Setujui",
+          "note": "Diperiksa pada skenario demo.",
+          "at": "2026-11-01T22:08:12.045Z"
+        },
+        {
+          "role": "Manager Konstruksi",
+          "decision": "Setujui",
+          "note": "Diperiksa pada skenario demo.",
+          "at": "2026-11-01T22:08:12.045Z"
+        },
+        {
+          "role": "Finance",
+          "decision": "Setujui",
+          "note": "Diperiksa pada skenario demo.",
+          "at": "2026-11-01T22:08:12.045Z"
+        }
+      ],
+      "apm": "APM/2026/001",
+      "apmStatus": "Valid",
+      "paid": 10000000,
+      "paymentHistory": [
+        {
+          "amount": 10000000,
+          "ref": "TRF/DEMO/001",
+          "at": "2026-11-01T22:08:12.045Z"
+        }
+      ],
+      "submitted": "2026-11-01T22:08:12.045Z"
+    },
+    {
+      "id": "termin-f6990cf0-46a6-479e-9d40-546224d5cd52",
+      "spkId": "spk-75134b01-4956-416e-bfac-c3a02ce630dc",
+      "number": 2,
+      "type": "Parsial",
+      "status": "Diajukan",
+      "actuals": {
+        "pp-1-row-0": {
+          "m": 240,
+          "s": 240
+        },
+        "pp-1-row-1": {
+          "m": 160,
+          "s": 160
+        },
+        "pp-1-row-2": {
+          "m": 2.4000000000000004,
+          "s": 2.4000000000000004
+        },
+        "pp-1-row-3": {
+          "m": 0.8,
+          "s": 0.8
+        },
+        "pp-1-row-4": {
+          "m": 0,
+          "s": 1.6
+        },
+        "pp-1-row-5": {
+          "m": 0,
+          "s": 1.2000000000000002
+        }
+      },
+      "approvals": [],
+      "history": [],
+      "apm": "",
+      "apmStatus": "Belum Terbit",
+      "paid": 0,
+      "paymentHistory": [],
+      "submitted": "2026-11-01T22:08:12.045Z"
+    },
+    {
+      "id": "termin-07e8298f-77a4-45b9-9334-78e8b29701c8",
+      "spkId": "spk-59c50ba7-ca2c-4d5e-92c6-2567298ef53a",
+      "number": 1,
+      "type": "Final",
+      "status": "Disetujui",
+      "actuals": {
+        "pp-2-row-0": {
+          "m": 900,
+          "s": 900
+        },
+        "pp-2-row-1": {
+          "m": 600,
+          "s": 600
+        },
+        "pp-2-row-2": {
+          "m": 9,
+          "s": 9
+        },
+        "pp-2-row-3": {
+          "m": 3,
+          "s": 3
+        },
+        "pp-2-row-4": {
+          "m": 0,
+          "s": 6
+        },
+        "pp-2-row-5": {
+          "m": 0,
+          "s": 4.5
+        }
+      },
+      "approvals": [
+        {
+          "role": "PM Konstruksi",
+          "decision": "Setujui",
+          "note": "Diperiksa pada skenario demo.",
+          "at": "2026-11-01T22:08:12.046Z"
+        },
+        {
+          "role": "Manager Konstruksi",
+          "decision": "Setujui",
+          "note": "Diperiksa pada skenario demo.",
+          "at": "2026-11-01T22:08:12.046Z"
+        },
+        {
+          "role": "Finance",
+          "decision": "Setujui",
+          "note": "Diperiksa pada skenario demo.",
+          "at": "2026-11-01T22:08:12.046Z"
+        }
+      ],
+      "history": [
+        {
+          "role": "PM Konstruksi",
+          "decision": "Setujui",
+          "note": "Diperiksa pada skenario demo.",
+          "at": "2026-11-01T22:08:12.046Z"
+        },
+        {
+          "role": "Manager Konstruksi",
+          "decision": "Setujui",
+          "note": "Diperiksa pada skenario demo.",
+          "at": "2026-11-01T22:08:12.046Z"
+        },
+        {
+          "role": "Finance",
+          "decision": "Setujui",
+          "note": "Diperiksa pada skenario demo.",
+          "at": "2026-11-01T22:08:12.046Z"
+        }
+      ],
+      "apm": "APM/2026/003",
+      "apmStatus": "Valid",
+      "paid": 0,
+      "paymentHistory": [],
+      "submitted": "2026-11-01T22:08:12.046Z"
+    }
+  ],
+  "bapps": [
+    {
+      "id": "bapp-10b9b59a-4e4c-45bd-aa2d-db7fe4081ae8",
+      "termId": "termin-07e8298f-77a4-45b9-9334-78e8b29701c8",
+      "no": "BAPP/018/2026",
+      "status": "Sah",
+      "evidence": "Arsip demo dokumen bertanda tangan",
+      "released": {
+        "pp-2-row-0": {
+          "m": 300,
+          "s": 300
+        },
+        "pp-2-row-1": {
+          "m": 200,
+          "s": 200
+        },
+        "pp-2-row-2": {
+          "m": 3,
+          "s": 3
+        },
+        "pp-2-row-3": {
+          "m": 1,
+          "s": 1
+        },
+        "pp-2-row-4": {
+          "m": 0,
+          "s": 2
+        },
+        "pp-2-row-5": {
+          "m": 0,
+          "s": 1.5
+        }
+      },
+      "releaseHistory": [
+        {
+          "quantities": {
+            "pp-2-row-0": {
+              "m": 300,
+              "s": 300
+            },
+            "pp-2-row-1": {
+              "m": 200,
+              "s": 200
+            },
+            "pp-2-row-2": {
+              "m": 3,
+              "s": 3
+            },
+            "pp-2-row-3": {
+              "m": 1,
+              "s": 1
+            },
+            "pp-2-row-4": {
+              "m": 0,
+              "s": 2
+            },
+            "pp-2-row-5": {
+              "m": 0,
+              "s": 1.5
+            }
+          },
+          "at": "2026-11-01T22:08:12.047Z",
+          "actor": "Admin Konstruksi"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "evt-6e939a59-222b-4f65-89a8-c7cca6d0cdd3",
+      "title": "Simulasi BOQ dimuat",
+      "detail": "PP/030/AREA3",
+      "route": "/boq/pp-5",
+      "actor": "Admin Konstruksi",
+      "at": "2026-11-01T22:08:12.048Z"
+    },
+    {
+      "id": "evt-0a264266-99b1-4f87-b860-4a3fe565eb13",
+      "title": "BOQ difinalisasi",
+      "detail": "PP/029/AREA3 · Rp 134.780.000",
+      "route": "/boq/pp-4",
+      "actor": "Admin Konstruksi",
+      "at": "2026-11-01T22:08:12.048Z"
+    },
+    {
+      "id": "evt-c06e1e6c-bc44-4ec1-89cc-b35ae3bbee2b",
+      "title": "Selisih BOQ direview",
+      "detail": "PP/029/AREA3 · DEMO-FO-12",
+      "route": "/boq/pp-4",
+      "actor": "Admin Konstruksi",
+      "at": "2026-11-01T22:08:12.048Z"
+    },
+    {
+      "id": "evt-84955ba1-1eee-4c26-ac4a-02f0fe2f7814",
+      "title": "Simulasi BOQ dimuat",
+      "detail": "PP/029/AREA3",
+      "route": "/boq/pp-4",
+      "actor": "Admin Konstruksi",
+      "at": "2026-11-01T22:08:12.048Z"
+    },
+    {
+      "id": "evt-6c7067f3-4a74-49de-a9f3-6ab191e32010",
+      "title": "PP lanjutan dibuat · volume reserved",
+      "detail": "PP/031/AREA3 ← PP/018/AREA3",
+      "route": "/project-plan/pp-688bedd1-a020-48a6-b717-97d19b9d0185",
+      "actor": "Admin Konstruksi",
+      "at": "2026-11-01T22:08:12.048Z"
+    },
+    {
+      "id": "evt-e2b0a660-61cf-4d67-8f1f-fca0d93f112d",
+      "title": "Volume dilepas oleh Admin",
+      "detail": "BAPP/018/2026",
+      "route": "/ba-pp/bapp-10b9b59a-4e4c-45bd-aa2d-db7fe4081ae8",
+      "actor": "Admin Konstruksi",
+      "at": "2026-11-01T22:08:12.047Z"
+    },
+    {
+      "id": "evt-289ce668-47bf-4975-9ab7-a4a316a9573b",
+      "title": "BA PP difinalisasi",
+      "detail": "BAPP/018/2026",
+      "route": "/ba-pp/bapp-10b9b59a-4e4c-45bd-aa2d-db7fe4081ae8",
+      "actor": "Admin Konstruksi",
+      "at": "2026-11-01T22:08:12.046Z"
+    },
+    {
+      "id": "evt-50f92111-8685-4ece-8653-f0141bfe9409",
+      "title": "APM dicatat",
+      "detail": "APM/2026/003",
+      "route": "/termin/termin-07e8298f-77a4-45b9-9334-78e8b29701c8",
+      "actor": "Finance",
+      "at": "2026-11-01T22:08:12.046Z"
+    },
+    {
+      "id": "evt-3053feae-fcb5-4f85-b62d-c2994e11df26",
+      "title": "Approval Finance selesai",
+      "detail": "SPK/PP/018/AREA3 · Termin 1 · Diperiksa pada skenario demo.",
+      "route": "/termin/termin-07e8298f-77a4-45b9-9334-78e8b29701c8",
+      "actor": "Finance",
+      "at": "2026-11-01T22:08:12.046Z"
+    },
+    {
+      "id": "evt-1015fb5a-b300-401e-86a4-5293aee1f825",
+      "title": "Approval Manager Konstruksi selesai",
+      "detail": "SPK/PP/018/AREA3 · Termin 1 · Diperiksa pada skenario demo.",
+      "route": "/termin/termin-07e8298f-77a4-45b9-9334-78e8b29701c8",
+      "actor": "Manager Konstruksi",
+      "at": "2026-11-01T22:08:12.046Z"
+    },
+    {
+      "id": "evt-913bde32-e588-47ef-bd57-45125ab31556",
+      "title": "Approval PM Konstruksi selesai",
+      "detail": "SPK/PP/018/AREA3 · Termin 1 · Diperiksa pada skenario demo.",
+      "route": "/termin/termin-07e8298f-77a4-45b9-9334-78e8b29701c8",
+      "actor": "PM Konstruksi",
+      "at": "2026-11-01T22:08:12.046Z"
+    },
+    {
+      "id": "evt-321d015c-05e4-425f-b2ee-5d91a3799fe0",
+      "title": "Termin diajukan ke PM Konstruksi",
+      "detail": "SPK/PP/018/AREA3 · Termin 1 · Rp 85.922.250",
+      "route": "/termin/termin-07e8298f-77a4-45b9-9334-78e8b29701c8",
+      "actor": "Admin Konstruksi",
+      "at": "2026-11-01T22:08:12.046Z"
+    },
+    {
+      "id": "evt-aadb7c72-2d1d-411c-af64-01b161ea354e",
+      "title": "Draft termin dibuat",
+      "detail": "SPK/PP/018/AREA3 · Termin 1",
+      "route": "/termin/termin-07e8298f-77a4-45b9-9334-78e8b29701c8",
+      "actor": "Admin Konstruksi",
+      "at": "2026-11-01T22:08:12.046Z"
+    },
+    {
+      "id": "evt-cd95d1ff-a1bd-4b3e-aae1-b16a741d3d92",
+      "title": "SPK disahkan · volume committed",
+      "detail": "SPK/PP/018/AREA3",
+      "route": "/spk/spk-59c50ba7-ca2c-4d5e-92c6-2567298ef53a",
+      "actor": "Admin Konstruksi",
+      "at": "2026-11-01T22:08:12.046Z"
+    },
+    {
+      "id": "evt-7f3a6744-7e71-4dbd-8435-4fe346549acc",
+      "title": "BA KH disahkan",
+      "detail": "BAKH/PP/018/AREA3",
+      "route": "/ba-kh/bakh-e169a912-7ebb-40ca-be4b-9ee960f5105b",
+      "actor": "Admin Konstruksi",
+      "at": "2026-11-01T22:08:12.045Z"
+    },
+    {
+      "id": "evt-9db2085b-adf3-4f70-b7bf-969f20089afd",
+      "title": "BOQ difinalisasi",
+      "detail": "PP/018/AREA3 · Rp 134.780.000",
+      "route": "/boq/pp-2",
+      "actor": "Admin Konstruksi",
+      "at": "2026-11-01T22:08:12.045Z"
+    },
+    {
+      "id": "evt-67a7bfe6-5eaf-4860-9c17-cdfeca073435",
+      "title": "Selisih BOQ direview",
+      "detail": "PP/018/AREA3 · DEMO-FO-12",
+      "route": "/boq/pp-2",
+      "actor": "Admin Konstruksi",
+      "at": "2026-11-01T22:08:12.045Z"
+    },
+    {
+      "id": "evt-76169121-9b59-4335-9799-4ae3d1d76503",
+      "title": "Simulasi BOQ dimuat",
+      "detail": "PP/018/AREA3",
+      "route": "/boq/pp-2",
+      "actor": "Admin Konstruksi",
+      "at": "2026-11-01T22:08:12.045Z"
+    },
+    {
+      "id": "evt-9c1e2518-42f7-442b-b2f6-c679fe66d91c",
+      "title": "Termin diajukan ke PM Konstruksi",
+      "detail": "SPK/PP/026/AREA3 · Termin 2 · Rp 22.912.600",
+      "route": "/termin/termin-f6990cf0-46a6-479e-9d40-546224d5cd52",
+      "actor": "Admin Konstruksi",
+      "at": "2026-11-01T22:08:12.045Z"
+    },
+    {
+      "id": "evt-5867ebcf-7d01-4c54-a36a-a82b5139f2d0",
+      "title": "Draft termin dibuat",
+      "detail": "SPK/PP/026/AREA3 · Termin 2",
+      "route": "/termin/termin-f6990cf0-46a6-479e-9d40-546224d5cd52",
+      "actor": "Admin Konstruksi",
+      "at": "2026-11-01T22:08:12.045Z"
+    },
+    {
+      "id": "evt-cf60455d-62b7-4852-a13f-7561ce3a26ba",
+      "title": "Pembayaran dicatat",
+      "detail": "TRF/DEMO/001 · Rp 10.000.000",
+      "route": "/termin/termin-92bb5dba-5c92-429a-a7d0-61a7c17c78eb",
+      "actor": "Finance",
+      "at": "2026-11-01T22:08:12.045Z"
+    },
+    {
+      "id": "evt-70d17709-4c4e-4c0c-8246-978573b89a31",
+      "title": "APM dicatat",
+      "detail": "APM/2026/001",
+      "route": "/termin/termin-92bb5dba-5c92-429a-a7d0-61a7c17c78eb",
+      "actor": "Finance",
+      "at": "2026-11-01T22:08:12.045Z"
+    },
+    {
+      "id": "evt-94744c70-2d27-45f0-9e67-6be7266b2249",
+      "title": "Approval Finance selesai",
+      "detail": "SPK/PP/026/AREA3 · Termin 1 · Diperiksa pada skenario demo.",
+      "route": "/termin/termin-92bb5dba-5c92-429a-a7d0-61a7c17c78eb",
+      "actor": "Finance",
+      "at": "2026-11-01T22:08:12.045Z"
+    },
+    {
+      "id": "evt-653d4760-c4e1-4dc2-8c94-0c7ea65c2d78",
+      "title": "Approval Manager Konstruksi selesai",
+      "detail": "SPK/PP/026/AREA3 · Termin 1 · Diperiksa pada skenario demo.",
+      "route": "/termin/termin-92bb5dba-5c92-429a-a7d0-61a7c17c78eb",
+      "actor": "Manager Konstruksi",
+      "at": "2026-11-01T22:08:12.045Z"
+    },
+    {
+      "id": "evt-5adb2812-cf78-44fa-8dd0-1e045252d909",
+      "title": "Approval PM Konstruksi selesai",
+      "detail": "SPK/PP/026/AREA3 · Termin 1 · Diperiksa pada skenario demo.",
+      "route": "/termin/termin-92bb5dba-5c92-429a-a7d0-61a7c17c78eb",
+      "actor": "PM Konstruksi",
+      "at": "2026-11-01T22:08:12.045Z"
+    },
+    {
+      "id": "evt-caeb72e2-9b6f-4705-8656-97cb9aeb90a6",
+      "title": "Termin diajukan ke PM Konstruksi",
+      "detail": "SPK/PP/026/AREA3 · Termin 1 · Rp 45.825.200",
+      "route": "/termin/termin-92bb5dba-5c92-429a-a7d0-61a7c17c78eb",
+      "actor": "Admin Konstruksi",
+      "at": "2026-11-01T22:08:12.045Z"
+    },
+    {
+      "id": "evt-eaca8d94-d5dd-4b87-85dc-cb5239971a28",
+      "title": "Draft termin dibuat",
+      "detail": "SPK/PP/026/AREA3 · Termin 1",
+      "route": "/termin/termin-92bb5dba-5c92-429a-a7d0-61a7c17c78eb",
+      "actor": "Admin Konstruksi",
+      "at": "2026-11-01T22:08:12.045Z"
+    },
+    {
+      "id": "evt-6bedf503-11a1-4597-836d-eb2bf1561e09",
+      "title": "SPK disahkan · volume committed",
+      "detail": "SPK/PP/026/AREA3",
+      "route": "/spk/spk-75134b01-4956-416e-bfac-c3a02ce630dc",
+      "actor": "Admin Konstruksi",
+      "at": "2026-11-01T22:08:12.045Z"
+    },
+    {
+      "id": "evt-e618ef91-2547-4d7d-a682-e48b64dadde6",
+      "title": "BA KH disahkan",
+      "detail": "BAKH/PP/026/AREA3",
+      "route": "/ba-kh/bakh-f872593e-4dc1-4b78-98d7-6834a864abfe",
+      "actor": "Admin Konstruksi",
+      "at": "2026-11-01T22:08:12.044Z"
+    },
+    {
+      "id": "evt-10b995a8-d71a-4d0d-a32b-c065040b6507",
+      "title": "BOQ difinalisasi",
+      "detail": "PP/026/AREA3 · Rp 134.780.000",
+      "route": "/boq/pp-1",
+      "actor": "Admin Konstruksi",
+      "at": "2026-11-01T22:08:12.043Z"
+    },
+    {
+      "id": "evt-30375e94-d51e-4b60-82e7-a2eadfa72d08",
+      "title": "Selisih BOQ direview",
+      "detail": "PP/026/AREA3 · DEMO-FO-12",
+      "route": "/boq/pp-1",
+      "actor": "Admin Konstruksi",
+      "at": "2026-11-01T22:08:12.039Z"
+    },
+    {
+      "id": "evt-ff867aa7-7789-4547-ae57-6547af89294d",
+      "title": "Simulasi BOQ dimuat",
+      "detail": "PP/026/AREA3",
+      "route": "/boq/pp-1",
+      "actor": "Admin Konstruksi",
+      "at": "2026-11-01T22:08:12.039Z"
+    }
+  ],
+  "users": [
+    {
+      "id": "user-0",
+      "name": "Aditya Pratama",
+      "email": "demo1@area3.example",
+      "role": "Admin Konstruksi",
+      "active": true
+    },
+    {
+      "id": "user-1",
+      "name": "Rizky Nugraha",
+      "email": "demo2@area3.example",
+      "role": "PM Konstruksi",
+      "active": true
+    },
+    {
+      "id": "user-2",
+      "name": "Dian Puspita",
+      "email": "demo3@area3.example",
+      "role": "Manager Konstruksi",
+      "active": true
+    },
+    {
+      "id": "user-3",
+      "name": "Nadia Rahma",
+      "email": "demo4@area3.example",
+      "role": "Finance",
+      "active": true
+    },
+    {
+      "id": "user-4",
+      "name": "Administrator",
+      "email": "demo5@area3.example",
+      "role": "Superadmin",
+      "active": true
+    }
+  ],
+  "profile": {
+    "name": "Aditya Pratama",
+    "email": "aditya@area3.example"
+  },
+  "lastSaved": "2026-11-01T22:08:12.006Z"
+}

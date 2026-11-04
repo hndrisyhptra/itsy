@@ -1,0 +1,62 @@
+{
+  "checked_at": "2026-11-04T02:35:31+00:00",
+  "live": {
+    "database": "its",
+    "users": 0,
+    "roles": 0,
+    "workspaces": 0,
+    "migrations": 53,
+    "audit_actor_column": true,
+    "master_rows": {
+      "areas": 1,
+      "regions": 3,
+      "branches": 16,
+      "service_areas": 392,
+      "packages": 2,
+      "designator_types": 5,
+      "designators": 724,
+      "designator_package_prices": 1030
+    }
+  },
+  "qa": {
+    "disposable": true,
+    "database_directory": "/private/tmp/area3-auth-qa-nd8a6mto",
+    "users": 5,
+    "revision": 3,
+    "audits": [
+      {
+        "command": "saveProject",
+        "actor_role": "Admin Konstruksi",
+        "actor_user_id": 1,
+        "revision": 1
+      },
+      {
+        "command": "decideProject",
+        "actor_role": "PM Konstruksi",
+        "actor_user_id": 2,
+        "revision": 2
+      },
+      {
+        "command": "decideProject",
+        "actor_role": "Manager Konstruksi",
+        "actor_user_id": 3,
+        "revision": 3
+      }
+    ],
+    "project_number": "0001/LG.000/TA-03R424/11-2026",
+    "project_status": "Sah",
+    "approvers": [
+      "PM Konstruksi QA",
+      "Manager Konstruksi QA"
+    ]
+  },
+  "sqlite_sha256": "e2c39eba72710da656307627909f32267b6738c861509a3a70c78bddf8bb10bc",
+  "backup_sha256": "112cdbb0594addce4a156e1d0b850f3bb1f79791e24f2e3582411cb0d2915a39",
+  "cleanup": {
+    "artisan_8013": "stopped",
+    "disposable_qa_8014": "still_running",
+    "private_qa_database": "still_running",
+    "reason": "User rejected the final process-stop command; no alternate termination attempted",
+    "main_xampp": "untouched"
+  }
+}

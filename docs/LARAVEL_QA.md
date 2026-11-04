@@ -1,0 +1,218 @@
+# Laravel rebuild QA — 2 November 2026
+
+Target: `/Applications/XAMPP/xamppfiles/htdocs/its/area3-prototype`.
+
+**Current status (4 November): real BOQ import for the supplied OSP FO layout, draft without mandatory approvers, username login, validated account placement, five selected PP/payment approvers and post-scan Finance approval are implemented. The final entries supersede earlier pending-import/account counts/two-stage descriptions; dated entries remain historical evidence.**
+
+## Automated verification
+
+- PHP XAMPP 8.2.4/Laravel 12.70.2: **43 tests passed, 314 assertions**.
+- Frontend: **31 tests passed**.
+- TypeScript + Vite 7 production build passed; assets served through Laravel.
+- Laravel Pint formatted the added PHP services, routes and tests.
+
+Coverage: six checkpoints, root ledger balance, required BOQ review, component price ceilings, reservations, sequential role approvals, return/resubmit history, actual immutability, term limit/early Final, APM gate without requiring payment, payment ceiling, BA PP evidence/release, continuation capacity/root budget, KHS snapshot immutability, volume precision.
+
+Laravel feature coverage: 18 page/deep-link routes, owner/session isolation, persistence, CSRF rejection, revision conflicts, request replay, malformed commands/atomic rollback, backup scope, all nine CSV reports and filter validation.
+
+## Browser verification
+
+Verified from the final requested folder, using PHP XAMPP and the production Vite build:
+
+- All 11 sidebar menus render and navigate with correct titles and URLs.
+- Scenario A: review the DEMO-FO-12 mismatch with a note, confirm BOQ finalization, reload: Final status and official KHS values persist.
+- Scenario D: create Termin 1; enter Material 100 and Jasa 80 for DEMO-FO-24; current bill Rp2.422.500. Submit; approve as PM, Manager, then Finance. Approved actuals lock. Before APM the next term is blocked. Record APM, reload, switch back to Admin: Termin 2 can be created while payment remains Rp0.
+- Scenario E: attest BA PP using a visibly synthetic evidence reference; release Material 100/Jasa 70; allocate Material 60/Jasa 30 to a manually numbered continuation. Reload retains PP budget Rp1.485.000, Parent/Root/source links and root ledger Material 40 available + 60 reserved + 200 committed + 900 accepted = 1200. Jasa 40 + 30 + 230 + 900 = 1200.
+- Native browser CSV download succeeded to Downloads. Parsed the generated CSV: two PP rows, continuation budget and BOQ Owner both 1485000. This is a real Laravel attachment, independent of client Blob support.
+- Apache XAMPP `/its/area3-prototype/public/dashboard` renders assets and prefixed links. Role command saves through Apache and survives reload. A manually entered PP with Rp25.000.000 budget saves and survives reload from its deep link.
+- Scoped write permissions for the local Apache account were required and applied only to this new application's runtime/database locations; no global Apache/PHP settings were edited.
+- Viewports 1440, 768 and 375: document scroll width equals viewport width. Mobile drawer opens/navigates. Tablet dark mode remains legible; temporary viewport and theme changes were restored.
+- Latest Apache browser pass has no warning/error console entries. Demo data was reset to the overview checkpoint for handoff.
+
+Current screenshots are in `docs/qa/`: `dashboard-preview.png`, `dashboard-desktop.png`, `dashboard-mobile.png`, `project-plan-tablet-dark.png`. Files in `reference-qa/` are from the earlier frontend-only version, kept only as visual references.
+
+The Laravel feature suite was also rerun from the final target: 43 tests / 314 assertions passed. All five copied skill guides pass their metadata validator.
+
+The complete B/C negotiation forms, all nine HTML document previews, every export/filter combination and interruption/conflict recovery were not exhaustively repeated in browser during this conversion; business invariants and server conflict/validation handling are covered by automated tests. No production authentication or load testing is claimed.
+
+## Boundaries
+
+Role switcher, synthetic fixtures, simulated Excel import and HTML previews remain explicit. No bank/APM integrations, document signing, production login or production database were connected. Apache configuration is unchanged. Preview works through Apache localhost and the optional Artisan localhost server.
+
+## Sidebar build and test isolation follow-up — 2 November 2026
+
+- The user's sidebar subtitle change was already saved in `App.tsx` as `WORKSPACE`. The manifest still referenced a JavaScript bundle containing `CONSTRUCTION WORKSPACE`, and there was no Vite hot file. Rebuilding updated the active bundle to `main-CBEb0FTq.js`; its sidebar subtitle is `WORKSPACE` and the previous subtitle is absent.
+- Frontend: **31 tests passed**. TypeScript and the Vite production build passed. Latest PHP verification after adding the isolation regression: **44 tests passed, 320 assertions**. Pint passed for both changed PHP test files.
+- `phpunit.xml` now bypasses the runtime configuration cache and forces the testing database settings. The shared test bootstrap refuses persistent databases before `RefreshDatabase` runs. A subprocess regression verifies that a separate SQLite sentinel database remains intact, both with and without cached configuration.
+- Incident: the initial PHP verification in this follow-up used an existing runtime cache with `app.env=local` and the project's demo SQLite path. That run reset the demo database and produced seven CSRF failures. The original workspace rows and audit records have not yet been recovered. A post-incident snapshot was saved at `/private/tmp/area3-sidebar-recovery-20261102.sqlite`; the older staging database contains no workspaces or audits. Recovery is awaiting an HTML copy of the user's still-open page. No recovery is claimed.
+- The rebuilt logo has been checked in the generated asset. Browser verification is pending; access to Chrome was not approved. The workflow and integration limits above still apply. Dompis Prov was not accessed or changed.
+
+## Workflow v2 verification — 3 November 2026
+
+This entry covers the requested flow change in `docs/WORKFLOW_V2.md`. The original conversion and v1 counts above are historical.
+
+### Automated evidence
+
+- PHP XAMPP: **51 tests passed, 465 assertions**. Includes the original version-1 domain regression suite, application/session/CSRF checks, database isolation regression, and seven v2 feature tests.
+- Frontend: **38 tests passed**, including BOQ/numbering/assignee rules, two approvals, scan/APM settlement, Final/release/continuation, and a print preview test that gates printing and renders two named, empty wet-signature areas.
+- TypeScript and Vite production build passed. Pint passed for changed PHP services, controllers, provider, routes and tests.
+- Verified the demo database SHA-256 before and after the final PHP/frontend test interval: unchanged (`41686989993f5d856604708bc079db5ebd3558b0c21ef3e244e678fe34ab5e08`). Tests used in-memory SQLite. Browser QA then used its own session/workspace and made explicitly synthetic transactions.
+- Upload tests verify server content MIME inspection, size rejection, Finance/Admin separation, owner isolation, stale-revision cleanup, idempotent upload retry, private download, correction file history, locked quantities, APM gating and no duplicate settlement. Fake HTML renamed `.pdf` is rejected.
+- APM tests verify full settlement of Rp2.422.500 after two approvals and a Finance-verified scan. Final physical acceptance, valid BA PP release and continuation suballocation remain separate and retain the root ledger/budget invariant.
+- A structural check found **38 MySQL concept tables**, with FK targets/column names/types consistent. No SQL was executed against MySQL; runtime syntax/engine validation, migration, production RBAC and import are not claimed.
+
+### Browser evidence
+
+Verified through Apache XAMPP `/its/area3-prototype/public` in the Codex in-app browser's separate QA session:
+
+1. Nine sidebar links render; BOQ/BA KH have no independent sidebar entries, and the old Termin entry is labeled Pembayaran. New PP opens on BOQ; advancing without an item shows the required-input message.
+2. Entered DEMO-FO-24 volume 10.125. Header shows ID Project first, Branch dropdown, Unit Kerja Konstruksi/Operation, generated-number preview, and separate PM/Manager dropdowns. Anggaran & Margin displays automatic BOQ Owner **Rp313.875**.
+3. Submitted synthetic project `QA-FLOW-V2-20261103` with Operation and budget Rp500.000. Laravel assigned **PP/BR01/2026/0001**, retained BOQ Owner Rp313.875, and displayed Diajukan 0/2. Its chosen PM saw it in Inbox Approval. PM Rizky Nugraha and Manager Dian Puspita approved in order; reload retained Sah 2/2 and both named decisions.
+4. The overview's pending payment was approved by its two assigned users. It became read-only and enabled the wet-signature/scan stage. The next-term action remained blocked while APM was missing.
+5. Uploaded actual private PDF `QA-SCAN-SINTETIS-TANPA-TTD.pdf`, clearly labeled synthetic and containing no signature. Finance verified it with a matching QA-only note, then recorded **APM/QA/20261103/002**. Reload retained scan Valid, **Rp22.912.600 paid**, and **Rp0 outstanding**. This was a synthetic bookkeeping transaction, not a bank transfer or real document attestation.
+6. Found and fixed an upload-specific loading notification issue: upload now publishes a new React store snapshot so the saving overlay renders. Role/user selectors are disabled during pending writes, and the file input resets after confirmed upload. The complete upload/settlement flow was observed; it was not repeated after this small loading fix.
+7. Responsive checks at **375, 768 and 1440px** returned document scroll width equal to viewport width. Mobile drawer contains the nine menus; the BOQ form remains legible at 768px in dark mode. Theme and viewport overrides are restored after QA.
+
+Screenshots: `docs/qa/workflow-v2-boq-first.jpg`, `workflow-v2-pp-approved.jpg`, `workflow-v2-payment-paid.jpg`, `workflow-v2-mobile.jpg`, `workflow-v2-tablet-dark.jpg`. Final build `main-DtXVcgDf.js` was reloaded in the QA tab: BOQ is the first PP step, all nine menu labels are present, and the fresh-load warning/error log was empty. Full B/C negotiations, every report/filter combination, all browser file-error paths and actual OS print output were not repeated; automated suites cover the relevant business gates. The new named signature print markup has automated coverage.
+
+Backup before this change: `storage/app/private/backups/area3-before-workflow-v2-20261103.sqlite`. Saved data existing at the start of this change is retained. The 2 November recovery incident remains unresolved and is not represented as recovered by this work.
+
+Real scan file storage is implemented. Official Branch/designator/package/KHS import, authentication/RBAC, signature authenticity, external APM/banking, DOCX/PDF server generation, payment reversal and operational MySQL persistence remain outside the current prototype.
+
+## BOQ upload and PP number refinement — 3 November 2026
+
+- New private pre-edit backup: `storage/app/private/backups/area3-before-boq-numbering-20261103-084717.sqlite`. The demo DB SHA-256 stayed `e2c39eba72710da656307627909f32267b6738c861509a3a70c78bddf8bb10bc` across automated tests and this browser check. No demo reset/migration occurred.
+- **52 PHP tests passed, 474 assertions; 39 frontend tests passed.** TypeScript/Vite build passed (`main-D0t4gE3D.js`); Pint passed on the two edited PHP files. A new paired regression freezes server/client time at October 31 UTC / November 1 Jakarta and verifies `0001/LG.000/TA-03R424/11-2026`, retained issued number on revision, continuous January counter, custom formats and five-digit overflow.
+- MySQL DDL static inspection: **42 CREATE TABLEs, 1 ALTER TABLE, 80 FK references**; referenced columns/types, creation order and constraint name uniqueness checked. Not executed on MySQL; no deployment or SQL-engine validation is claimed. Added BOQ template versions, original file metadata linkage, batches, raw/matched/reviewed rows, line provenance, Service Areas, configurable sequence padding and issued-number snapshots.
+- Browser via XAMPP/in-app QA session: nine-menu layout retained; Project Plan Baru begins with the Excel file selector. Header remains blocked with empty BOQ. Explicitly separate synthetic example fills six items / Rp134.780.000 and Anggaran & Margin shows that BOQ Owner automatically. Selecting demo Surabaya previews `0002/LG.000/TA-03BR01/11-2026`, continuing the QA session's existing counter. No new PP was submitted/saved and no official master values were invented.
+- Responsive check: page width equals viewport at 375 and 768 px; upload labels and notices remain readable. Viewport override restored. Browser console has no warning/error entries. Dark mode was not repeated for this narrow form change.
+- Screenshots: `docs/qa/boq-upload-numbering-20261103.jpg` (full page), `docs/qa/boq-upload-preview-20261103.jpg` (default viewport). File chooser is **simulation**, as in the earlier prototype: only a local filename reference, no server BOQ upload/storage/parsing. Official template sheet/header/column mapping and Branch/Service Area data remain pending. The SQL models the intended real importer separately. Private payment scan upload remains real and unchanged.
+
+## Supplied SQL master alignment — 3 November 2026
+
+- Scope is the MySQL concept/schema and master seed. No Laravel/React business code, SQLite state, Dompis Prov application/database or source SQL files in Downloads were changed. Source dumps were parsed as documents, never executed. The application still uses synthetic runtime masters.
+- Source counts: areas 1, regions 3, branches 16, service_areas 392, packages 2, designator_types 5, designators 724, designator_package_prices 1,030; **2,173 rows total**. All INSERT literals/columns/IDs/dates are compared against byte-identical reference copies. Source SHA-256 values and original filenames are in `database/mysql/master-source-manifest.json`.
+- Added all 16 requested kode_branch values; original code abbreviations remain. DENPASAR/R502 was repeated identically in the request; only its existing source row id_branch=14 is seeded. No Service Area names or Material/Jasa designator rows were merged. All seven 0.00 prices remain. Package-price row counts are 306 for package 2 and 724 for package 3; the sum of all source unit-price rows is exactly 1,054,982,170.00, a source-fidelity check rather than project BOQ value.
+- Every concept table has one distinct named id_* primary key: **46 tables**. Composite business keys remain UNIQUE. Static checks verify **86 FKs**, target existence/unique keys/types and creation order. Added named keys on junction rows and retained one balance per BOQ component. Seed contains literal INSERTs plus explicit session charset/strict SQL mode/timezone and transaction boundaries; no DROP, USE, credentials, FK disabling or fabricated operational transactions.
+- Five new offline fidelity tests passed: source hashes and all seed literals, counts/prices/master references, added Branch codes/one DENPASAR, all named IDs/FKs, and safe parsing of quoted commas/semicolons/escapes with rejection of expression values. Commands: `python3 tools/mysql_concept.py` and `python3 -m unittest discover -s tools -p test_mysql_concept.py -v`. These tools do not connect to or execute SQL on a database.
+- Required regression checks passed: **52 PHP tests / 474 assertions**, **39 frontend tests**, TypeScript/Vite build (`main-D0t4gE3D.js`). No PHP source changed, so no new Pint formatting work. No UI change, so browser flows were not repeated in this SQL-only turn.
+- Demo DB SHA-256 remained `e2c39eba72710da656307627909f32267b6738c861509a3a70c78bddf8bb10bc` before/after testing. Tests retained the fail-closed in-memory database bootstrap.
+- Limits: DDL/seed not deployed or engine-tested on MySQL. Source audit user 2 has no supplied identity table; numeric audit references are retained without mapping to operational UUID users. Every source category value is NULL, and designator_categories was not supplied, so no category rows/FK were invented. KHS reference/effective-version/Branch scope, BOQ template and PM/Manager roster still need mapping. Runtime import of official masters and Excel parsing remain pending.
+
+## Executable migrations for database its — 3 November 2026
+
+- Added 48 ordered Laravel migrations: align existing Laravel users.id to users.id_user without changing IDs/passwords, create 45 remaining business tables, attach BOQ upload provenance, and import the exact 2,173-row prepared JSON snapshot. users.id_user/operational actor FKs are unsigned BIGINT to match Laravel's existing identity; no area3_users is created. Standard password/remember_token/auth fields are preserved. DatabaseSeeder no longer invents a Test User account.
+- New migration target guard accepts mysql/mariadb database its, or testing SQLite :memory: only. Runtime .env/cache and the demo SQLite were not switched or migrated. Existing source numeric audit references and NULL categories remain unmapped as previously documented. The application remains an aggregate-workspace demo; normalized master repositories, official BOQ parsing and production authentication were not implemented by this schema task.
+- **58 PHP tests passed / 611 assertions**: original 52 regression tests plus six isolated migration tests covering all primary keys/86 FKs, every source snapshot row, idempotency, preservation of existing user IDs/raw password hashes, fail-before-insert on existing masters, full rollback/reapply and rejection of the wrong database before connection. Test bootstrap remains fail-closed for cached/persistent connections.
+- **39 frontend tests**, **6 offline source/snapshot fidelity tests**, TypeScript/Vite build (`main-D0t4gE3D.js`), and Pint passed. No UI styling/business code changes; browser flows not repeated. SHA-256 of the demo DB remains `e2c39eba72710da656307627909f32267b6738c861509a3a70c78bddf8bb10bc`.
+- Compatibility verified by executing the actual Laravel migrations on an isolated **MariaDB 10.4.28 XAMPP** process with its own temporary datadir/private socket and networking disabled. The initial sandbox prevented socket creation; the approved scoped retry used the same isolated test design. No connection was made to the user's existing MySQL server/database. All 46 business tables/2,173 source rows, 52 explicit CHECKs, source timestamp equality, session timezone restoration and existing user/hash preservation were verified. Invalid KHS period, duplicate kode_branch and orphan Service Area were rejected by the engine. Rolling back exactly the 48 new migrations preserved the pre-existing user, and reapplying restored the source data. Re-running migrate created no duplicates. The temporary server was terminated after verification. Evidence summary: `docs/qa/mysql-migration-mariadb-20261103.json`.
+- MySQL-specific CHECKs are conditional in migrations; SQLite uses native FK/UNIQUE plus Laravel domain validations in the feature suite. CHECK enforcement was exercised on MariaDB. Oracle MySQL 8 was not directly engine-tested. Rollback's DROP CHECK versus MariaDB DROP CONSTRAINT syntax follows the detected server. Collation is utf8mb4_unicode_ci, avoiding MySQL-only 0900 on XAMPP.
+- Deployment handoff is `docs/MYSQL_MIGRATION.md`: configure DB_CONNECTION=mysql, DB_DATABASE=its and the user's own database credentials, clear the cached configuration, then php artisan migrate. Schema and initial master import run automatically; no --seed/import of raw dumps is needed. Switching to MySQL does not copy existing SQLite workspaces or wire normalized masters into the current UI. Deployment on the user's database was not performed.
+
+## Account login and MySQL runtime bridge — 4 November 2026
+
+### Implemented and deployed locally
+
+- The user had already migrated its and selected account-based roles. The configured MySQL/MariaDB database its was backed up before edits to `storage/app/private/backups/its-before-auth-20261104-083449.sql` (325,944 bytes; SHA-256 `112cdbb0594addce4a156e1d0b850f3bb1f79791e24f2e3582411cb0d2915a39`). No .env switch or Dompis Prov change was made.
+- Responsive branded Blade login/local first-account setup, password reveal, required fields, server validation and real POST forms. First-account setup is loopback-only, locked/transactional, closes after the first user, and accepts user-chosen credentials. No default account/password is installed.
+- Laravel session login, active-account/assignment checks, one active role across assigned Branches, throttling, CSRF, regenerated sessions, remember option and POST logout. Password changes invalidate other sessions through auth.session; inactive/invalid assignments revoke access. Superadmin can create/edit/deactivate real accounts and cannot deactivate/downgrade itself.
+- Authenticated users share one new workspace; legacy session workspaces remain untouched. Every request rebinds the SQL identity and role. Commands cannot change role/actor/profile, replace workspace state, reset shared data or edit synthetic users/master prices. Branch scope applies to documents, linked records, activity, exports, backups and scan access. Selected PM/Manager must be active accounts assigned to the PP Branch.
+- Real Branch names/codes and all 1,030 designator/package prices are read from SQL. Material/Jasa source rows remain separate, zero prices retained. UI master editing is read-only. Workflow documents still persist as the validated JSON aggregate; the normalized business tables are not yet transaction persistence.
+- Additive migration `2026_11_04_000001_add_account_to_prototype_audits` records actor_user_id with a nullable users.id_user FK. Applied to configured its after backup. Existing audits remain valid; total migrations 53.
+
+### Verification
+
+- PHP XAMPP: **68 tests passed / 697 assertions**, using fail-closed SQLite :memory: only. Coverage includes setup restriction/closure, password validation/hash, login/session/logout, CSRF, throttling, inactive/ambiguous assignment revocation, Superadmin-only account changes, self-lockout, shared-state identity, role/reset forgery rejection, revision/idempotency/audit, Branch-filtered read/export/scan, wrong-Branch and wrong-account approvers, actual SQL-master BOQ prices and PP numbering/approval. Prior financial/volume/v1/v2 regression suites remain passing.
+- **39 frontend tests**, **six offline source fidelity tests**, TypeScript/Vite build and Pint passed. Current build: main-DpxO_W31.js, auth-ZY2Rkg0S.js. The isolation probe was updated to the renamed shared-workspace test; both persistent SQLite/cached-config rejection cases still pass and preserve their sentinel.
+- Browser setup UI verified on configured its through both Artisan :8013 and Apache `/its/area3-prototype/public/login`. No account was created there. Desktop 1440px, tablet 768px and mobile 375px had no document horizontal overflow; setup remains readable and password toggle switches/masks correctly. Viewport override restored.
+- Browser login/logout and role behavior were exercised separately against a **marked disposable MariaDB 10.4.28 instance**, private datadir/socket, no database networking, web preview :8014, distinct session cookie. Five synthetic fixture accounts existed only there. Superadmin account list/new-account form rendered. A QA-only PP using the real master bridge generated **0001/LG.000/TA-03R424/11-2026**. Actual login as selected PM displayed the PP in its inbox and saved approval 1/2; logout/login as selected Manager displayed the same PP and saved approval 2/2 to **Sah**. Finance login showed role Finance with no PP-approval authority. These were synthetic internal QA decisions, not real project approvals or signatures.
+- Saved database evidence `docs/qa/auth-integration-20261104.json` confirms disposable revision 3, audit account IDs Admin=1, PM=2, Manager=3; selected approver names match. The live configured its still has **0 users, 0 roles, 0 workspaces**, 53 migrations and all **2,173 master rows**. The first actual account remains for the user to choose/create.
+- The original SQLite SHA-256 remains exactly `e2c39eba72710da656307627909f32267b6738c861509a3a70c78bddf8bb10bc`. No legacy recovery is claimed.
+
+Screenshots: `auth-login-desktop.jpg`, `auth-setup-desktop.jpg`, `auth-setup-mobile.jpg`, `auth-account-list.jpg`, `auth-pp-approved.jpg` in docs/qa. Login screenshots contain no entered credentials. All shown accounts/PP decisions are marked QA and belong to the disposable environment.
+
+### Remaining limits / not repeated
+
+BOQ Excel file selection is still explicitly simulated; its contents are not uploaded/parsed and the sample button is separate. The official template/sheet mapping and formal KHS metadata are pending. Signed payment scan upload remains real private storage; Finance/APM is manual bookkeeping without external transfer or signature authenticity checks. Full payment/scan/APM and release invariants passed automated regression; the complete payment chain, every report/filter, every mobile authenticated screen and actual OS print output were not repeated in this browser session. Remember-cookie lifetime and concurrent multi-server provisioning were not browser-tested. No production load, MFA/SSO, email reset or normalized operational migration is claimed. New login/setup/account pages use their own light theme; the existing workspace retains its light/dark option.
+
+### Cleanup status
+
+The agent-created Artisan preview on :8013 was stopped. The final command to stop the disposable QA process tree was rejected by the user; the private QA database and preview :8014 were therefore left running. No alternative termination was attempted. The QA browser session was logged out and its tab closed. Main Apache XAMPP/its were not stopped; the user-facing /public/login tab was retained, with its viewport reset.
+
+## Username, placement and workflow v3 — 4 November 2026
+
+### Implemented and migrated
+
+- Backed up configured database its before changes: `storage/app/private/backups/its-before-username-approval-v3-20261104-112005.sql`, 611,061 bytes, SHA-256 `32a858fe12d7cc6306c0a7d9544acc61cf1c5e6490668072b3cbb2821eef96f3`. Only its was targeted; no Dompis Prov access or configuration change.
+- Applied two additive migrations: users username/NIK/Region/Branch/Service Area/role, and versioned approval schema. Total **55 migrations**, **89 business foreign keys**. Username/NIK are unique; optional unknown NIK/placement remain NULL. Existing user has username **user-1** and retains its password. Form validation checks active placement hierarchy and explicit Branch assignments. No test account or credential was inserted into its.
+- Login now authenticates username with the existing session/CSRF/throttling protections. Account create/edit handles the six requested fields; users.role must agree with active SQL role assignments.
+- New PP uses five selected, Branch-authorized approvers: PM Konstruksi → Admin Area → Mgr Deployment → Mgr Bussiness Support → Head of PMO. Only 5/5 makes PP Sah. Return restarts all five decisions and retains append-only history/number.
+- New terms freeze those five assignees, require 5/5 before print/private scan upload, then require separate Finance approval tied to the current scan. Corrections preserve Finance history and replacement scans require new verification. APM settles the entire bill once. Historical v1/v2 decisions retain their rules; new terms on old PPs need an explicit future five-approver selection. See `WORKFLOW_V3.md`.
+
+### Final verification
+
+- XAMPP PHP: **73 tests passed / 894 assertions**. New coverage includes data-filled migration preservation, username login/email-login rejection, leading-zero NIK, uniqueness/placement hierarchy, all five assigned approvers, wrong actor/order, return/resubmit, actual private scan upload/correction/replacement, Finance scan binding, single full APM settlement, Final/BA PP/release/continuation. Original v1/v2 security, financial and volume regressions still pass. Tests use fail-closed SQLite :memory:; persistent/cached-config isolation probes pass.
+- Frontend: **44 tests passed**. Includes five-select form versus historical two-select form, five approval/return flow, Finance approval/APM binding, gated print with five named empty signature spaces, and continuation ledger preservation.
+- **Six offline source/snapshot fidelity tests**, TypeScript/Vite production build and Pint passed. Final assets: `main-DV-snJcI.js`, `auth-BZ_PJsGn.js`, `main-CD7xW62H.css`, `auth-YYlJks5j.css`. A TypeScript narrowing issue in a new test was corrected before the successful final build.
+- `docs/qa/username-approval-v3-preservation-20261104.json` compares canonical values from the pre-change backup with live its: all old columns of users (including password), workspace, audit and eight source master tables match exactly. **1 user, 1 workspace, 0 audits and 2,173 source master rows** remain. All six new users fields and three geographical FKs are present. No workflow transactions or synthetic approvals were written to its for QA.
+- Original SQLite SHA-256 remains `e2c39eba72710da656307627909f32267b6738c861509a3a70c78bddf8bb10bc`. Legacy data recovery from the earlier incident is not claimed.
+- Browser: real Apache login shows Username/password at desktop 1440×900 and mobile 375×812, with document width equal to viewport width. Screenshots: `docs/qa/username-login-v3-desktop.jpg`, `docs/qa/username-login-v3-mobile.jpg`. Temporary viewport override was restored. No password was supplied or used on the live database. No new preview server was started; the previously retained QA environment was untouched.
+
+### Limits
+
+Five-account login switching and the entire new chain were not manually repeated in a browser; HTTP/domain tests cover authorization and persistence. Signed scan storage is real, but signature authenticity and APM entry are human processes without bank integration. Excel BOQ import remains explicitly simulated pending the official template mapping. Workflow transactions still use the validated JSON aggregate; normalized operational tables are prepared schema rather than transaction storage. No production load/MFA/SSO/email reset or OS print verification is claimed.
+
+## Real BOQ workbook import and draft validation — 4 November 2026
+
+### Fix and source evidence
+
+- The user's first error came from selecting a file without parsing its contents: BOQ stayed empty, so Header PP was blocked. The PM error came from requiring the complete approval assignment during draft saves. File upload now reads the supplied format; missing approvers are accepted only on drafts. Supplied choices must still match active role/Branch. Submission requires all five approvers.
+- Actual supplied workbook copied unchanged to private test fixture `tests/Fixtures/boq/osp-fo-paket10.xlsx`; SHA-256 `06dedca8ee2fdf17ff00e0650de8682d0ba1d2982bccc9bc159ceb6021cdda78`. The Downloads original was read only. Sheet BoQ/header rows 6–7 define B code, D unit, E/F Material/Jasa prices, G volume. **14 positive source rows map to 26 separate Material/Jasa components**, Paket 10, Material **64,523,245**, Jasa **75,533,544**, total **140,056,789**. The two Jasa-only entries retain N/A Material. Source price values match the current master. No master rows/prices were edited.
+- Laravel parses bounded OOXML with built-in ZipArchive/DOM, without new package dependencies or formula execution. Zero-volume rows and labeled footer totals are excluded. Header/package/unit/code/component ambiguity, duplicate components, input formulas, invalid quantities/precision, macro/DTD and excessive archive sizes are rejected atomically. Cached H/I/J values are ignored; totals are recomputed.
+- Original file and manifest are saved privately under `prototype-boq/{workspace}/{uuid}`. Server resolves trusted manifest again on PP save, retains source metadata/row/quantity and rejects client-supplied manifest data or cross-user unbound upload references. Download is limited to saved, Branch-visible PP. No public storage link was created.
+- React populates BOQ and its Owner, displays source rows/prices versus KHS, preserves draft contents on failed import, and requires a reason plus explicit price review for discrepancies. Reviews expire on KHS version/price change. Header indicates that approvers become mandatory at submission, and empty selectors explain account setup. Existing document versions and ledger/approval/Finance/APM rules remain intact. Format details/limits: `BOQ_IMPORT.md`.
+
+### Final checks
+
+- **81 PHP tests passed / 1,073 assertions**, using fail-closed isolated SQLite :memory: and fake private storage. Eight new HTTP/file tests exercise the actual workbook, separate component totals, draft save/reload/source download without approvers, full-assignee submission, source/price spoofing, KHS re-review, invalid inputs/archives, cached-total tampering, wrong roles and Branch/upload ownership. Original authentication, historical workflow, financial/volume and configuration-isolation regressions pass.
+- **46 frontend tests passed**; new cases cover optional draft approvers versus submission and retained comparison prices/current-version review. **Six offline master fidelity tests**, TypeScript/Vite build and Pint passed. Final build: `main-XF8bnkhl.js`, `auth-BZ_PJsGn.js`; CSS remains `main-CD7xW62H.css`, `auth-YYlJks5j.css`.
+- Backup before changes: `storage/app/private/backups/its-before-boq-import-20261104-115321.sql`, **612,574 bytes**, SHA-256 `d4b1aef06fcf85da4abaaedecb22049007e216a04ae790f85c5153cc34079308`.
+- Read-only post-test comparison against this backup passed for all **13 checked tables**: eight masters, users/roles/assignments, workspace and audits. Evidence: `docs/qa/boq-import-preservation-20261104.json`. Live its remains **1 user, 1 workspace, 0 audits**, all **2,173 source master rows**, and **55 migrations**. No migration, synthetic account or test PP was inserted into its. SQLite SHA-256 remains `e2c39eba72710da656307627909f32267b6738c861509a3a70c78bddf8bb10bc`.
+
+### Limits and browser status
+
+The open in-app browser remains at the real login page. No user password was supplied, so authenticated upload clicks, mobile/dark layout and five-account switching were not manually repeated in browser; file upload/draft/authorization behavior was verified through real Laravel HTTP requests in isolated tests. No QA process was started or stopped, and the previously retained environment was untouched.
+
+Import supports this specific OSP FO layout with fixed numeric inputs, not arbitrary spreadsheets or input formula recalculation. The separate sample button remains synthetic. Files not yet attached/replaced are retained privately without automatic cleanup. PP transactions still use JSON aggregate storage; normalized importer/workflow tables are not operational persistence. Bank/signature verification and prior demo data recovery remain outside this fix.
+
+## Managed-account password minimum — 4 November 2026
+
+- Add/edit account forms and server validation now accept passwords from **6 characters**, retaining letters plus numbers, matching confirmation and the existing 72-byte maximum. Empty password fields on edit preserve the existing hash. Local first-Superadmin setup retains its existing 12-character rule. Existing accounts/passwords and database configuration were not changed.
+- Added one isolated HTTP regression: five characters rejected, six accepted and hashed, mismatched confirmation/letter-only/digit-only rejected, optional edit preserves the hash, six-character reset succeeds and can log in. Rendered account form contains minlength=6 and the matching help text.
+- Final checks: **82 PHP tests / 1,103 assertions**, **46 frontend tests**, TypeScript/Vite build and Pint passed. PHP tests remain fail-closed SQLite :memory:. Build remains main-XF8bnkhl.js/auth-BZ_PJsGn.js. No live account, migration or workflow transaction was created; browser account creation was not repeated.
+
+## Multiple PPs per Project ID and monitoring timeline — 4 November 2026
+
+- Confirmed the existing runtime permits repeated business projectCode across separate PPs. The prepared relational schema already has projects → project_plans (1:N), unique master project_code and unique pp_no, without a unique constraint on project_plans.project_id. No migration or live data rewrite was necessary. No business/ledger validation was changed.
+- Main PP table removes only the Jenis PP header/cell. It retains detail/edit actions and adds an accessible History icon linking to `/project-plan/{pp-id}/timeline`. Header form explains that one ID Project may have multiple PPs with unique numbers.
+- Timeline groups all Branch-visible PP siblings by trimmed, case-insensitive business ID. It displays separate PP approval counts/current role, selected people and decision histories, related BA KH/SPK, every term, scan history/current-file Finance approval, APM/payment history and BA PP/release summary. Optional PP filter and newest-first activity log are available. Events are matched by exact document relations, avoiding prefix collisions or unrelated activity. Missing historical decisions/names/times are not invented; old v1/v2 approval/payment semantics remain visible.
+- Read-only UI projection uses Laravel's existing scoped state; no new endpoint accepting state, approval command or account privilege was added. Grouping does not combine BOQs/root ledgers/budgets, or apply one PP's decisions to another.
+- **85 PHP tests passed / 1,136 assertions** on isolated SQLite :memory:. Added HTTP regressions create two PPs with one Project ID and different numbers/BOQ/root, verify only the targeted PP receives a decision, and check the timeline deep link never receives another Branch's same-code PP/activity. Route/shell coverage includes the new deep link; security, historical workflow, ledger, BOQ import and cached-configuration isolation regressions pass.
+- **52 frontend tests passed**. Six new tests cover multiple independent PP previews, grouped/exact document projection, five-step/Finance/scan/APM positions, removed column/accessibility/action links, return/history rendering and read-only behavior. TypeScript/Vite build and Pint passed. Final assets: `main-CWJlKnzS.js`, `main-YQMsRuSG.css`; auth assets unchanged.
+- No account, test workflow transaction, database migration or configuration change was written to its; all test mutations were isolated. Original SQLite hash remains `e2c39eba72710da656307627909f32267b6738c861509a3a70c78bddf8bb10bc`. Dompis Prov and the previously retained QA environment were untouched.
+- Visual browser QA is **not complete**. A clearly marked synthetic static preview was rendered from the real components in memory. Apache did not expose the non-public artifact path (404); browser policy then blocked the local-file protocol. No alternate serving/circumvention was attempted. The temporary HTML artifacts were removed and the agent-created 404 tab closed. No live password/account switch was used, no screenshot or responsive visual pass is claimed. Component rendering/logic and production build are verified automatically. Full workflow behavior remains server-owned; APM/signature verification limits are unchanged.
+
+Usage and semantics: `docs/PROJECT_TIMELINE.md`.
+
+## Fixed PP wording and HK schedule — 4 November 2026
+
+- Source `template-PP-header-pendahuluan-tim-jadwalproyek.docx` was inspected through OOXML and a rendered one-page reference. Shared JSON matches all three introduction paragraphs, team paragraph and activity names exactly; the reference chart asset matches the original embedded image byte-for-byte. Source SHA-256 and checks: `docs/qa/fixed-pp-template-20261104.json`. Document placeholders are examples, not authorization for external integrations or fabricated project/employee data.
+- its was backed up before changes: `storage/app/private/backups/its-before-fixed-pp-template-20261104-162423.sql`, 629,582 bytes, SHA-256 `735439f7d6a3c93d7330e040c2394a020305b50d19b9769abfbba8ff70df9354`. Backup size/hash verified after implementation. No account, operational workflow transaction, migration or .env change was written to its. Original SQLite remains SHA-256 `e2c39eba72710da656307627909f32267b6738c861509a3a70c78bddf8bb10bc`; Dompis Prov and retained QA environment were untouched.
+- New/current v3 PP drafts use server-owned fixed introduction/team text and activity names. Only HK is editable in the requested tabs. Whole nonnegative calendar HK, positive total, zero-stage skipping and sequential inclusive dates anchored on Header Saat Penggunaan are validated server-side. Client prose/team/marker/duration/name/date tampering is ignored. Existing BA KH duration/window checks still apply to canonical dates. Five approvers remain separately assigned; role prose never invents named personnel.
+- Reads do not migrate saved PP content. Submitted/approved/rejected PP stays locked. Historical v2 draft save retains its narrative/team/dates. A v1 draft saved into current workflow follows the existing v3 upgrade rule and now adopts the fixed template. New v3 continuations use default five 1-HK stages and retain notes separately; parent/root volume and budget behavior stays covered by regressions.
+- Template preview includes the six actual Header values, fixed sections and HK table. BOQ, budget/margin and risk/communication/quality remain as a separate appendix with continuation amounts limited to their allocation. Source 2020 S curve is explicitly a reference image, not the current project's plan/progress. Actual curve calculation awaits plan weights. Output remains HTML/browser print/PDF, without server DOCX export, electronic signatures or a claim of approved complete document formatting.
+- **88 PHP tests / 1,168 assertions passed**, fail-closed SQLite :memory:. Three new regressions cover canonicalization with leap-year/zero-HK boundaries and no invented team, atomic invalid-HK rejection/read preservation, and historical v2 draft preservation. Existing approval, BOQ upload, ledger, Finance/APM and cached-configuration isolation coverage passed.
+- **57 frontend tests passed**. Five new tests cover strict calendar/HK calculations, exactly five editable number controls with no prose/date inputs, template/header/reference rendering with retained appendices, historical v2 draft preservation, and continuation-only appendix totals/narratives. TypeScript/Vite build and targeted Pint passed.
+- Browser visual/responsive/print pagination QA was **not repeated**. No user password or account creation was used; no attempt was made to work around the earlier local-file URL restriction. The DOCX reference itself was rendered and inspected, but that does not establish final browser layout. Existing banking/manual signature-verification and aggregate-storage limits remain.
+
+Usage and implementation: `docs/PP_TEMPLATE.md`.

@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "title": "PROJECT PLAN SWAKELOLA KONSTRUKSI",
+  "introduction": [
+    {"title": "Latar Belakang", "text": "Perubahan harga KHS OSP FO dari pemberi kerja menyebabkan margin proyek sangat tipis."},
+    {"title": "Tujuan", "text": "Mekanisme swakelola berpotensi meningkatkan margin perusahaan melalui efisiensi biaya dan optimalisasi sumber daya internal."},
+    {"title": "Lingkup Pekerjaan", "text": "Pekerjaan meliputi pengadaan, instalasi, pengujian, dan serah terima jaringan sesuai standar Pemberi Kerja."}
+  ],
+  "team": "Untuk memastikan kelancaran proyek, diperlukan struktur organisasi yang mencakup Project Manager, Waspang, Project Admin, Teknisi/Jointer, dan Mandor.",
+  "stages": ["Persiapan", "Material Delivery", "Instalasi", "Commissioning Test", "Uji Terima"],
+  "durationSuffix": "hari kalender (durasi ini menjadi referensi durasi maksimal yang diizinkan untuk BAKH Mandor).",
+  "scheduleNote": "*Jumlah HK tidak boleh lebih dari durasi pekerjaan."
+}
