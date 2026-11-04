@@ -399,7 +399,7 @@ class PrototypeDomain
                 $this->required($member, ['name', 'job']);
             }
         }
-        if ($attest && (! $p['intro'] || (! $templated && ! $p['team']) || ! $p['risk'] || ! $p['communication'] || ! $p['quality'])) {
+        if ($attest && (! $p['intro'] || (! $templated && ! $p['team']) || (! isset($p['planBudget']) && ! $p['risk']) || ! $p['communication'] || ! $p['quality'])) {
             $this->fail('Lengkapi pendahuluan, tim, risiko, komunikasi dan kualitas.');
         }
         $p['status'] = $attest ? 'Sah' : 'Draft';
@@ -927,6 +927,15 @@ class PrototypeDomain
                 $p['continuationNotes'] = $notes;
                 $p['schedule'] = array_fill(0, 5, ['days' => 1]);
                 $p = ProjectPlanTemplate::apply($p);
+                $owners = [];
+                foreach ($root['boq'] as $row) {
+                    if (isset($allocations[$row['id']])) {
+                        $owners[] = ['rowId' => $row['id'], 'm' => $row['m'], 's' => $row['s'], 'qm' => $row['m'] === null ? 0 : $allocations[$row['id']]['m'], 'qs' => $row['s'] === null ? 0 : $allocations[$row['id']]['s']];
+                    }
+                }
+                $p = ProjectPlanBudget::apply($p, $owners, false);
+                $actor = $this->existing('users', $this->state['actorUserId'] ?? '') ?? [];
+                $p['preparedBy'] = ['userId' => $actor['id'] ?? '', 'name' => $actor['name'] ?? '', 'nik' => $actor['nik'] ?? '', 'role' => $this->state['role'], 'at' => now()->toISOString()];
             }
         }
         $this->put('projects', $p);

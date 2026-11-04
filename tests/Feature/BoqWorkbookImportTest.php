@@ -70,6 +70,8 @@ class BoqWorkbookImportTest extends TestCase
         $p['id'] = $p['rootId'] = 'pp-file-import';
         $p['branch'] = 'DENPASAR';
         $p['unit'] = 'Konstruksi';
+        $p['riskLevel'] = 'SEDANG';
+        $p['costs']['permit'] = 0;
         $p['budget'] = $import['source']['sourceTotal'];
         $p['boq'] = $import['rows'];
         $p['boqUpload'] = $import['source'];

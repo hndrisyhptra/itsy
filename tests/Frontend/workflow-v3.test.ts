@@ -9,6 +9,7 @@ import { type State, type Role, type Term, APPROVERS_V3, normalizeWorkflow, sele
 
 function state(scenario = 'D') {
   const s = normalizeWorkflow(seed(scenario)); s.schema = 3;
+  s.projects.forEach(p=>{p.riskLevel='SEDANG';p.costs.permit=0;});
   for (const [i,role] of APPROVERS_V3.entries()) if (!s.users.some(u => u.role === role)) s.users.push({id:'qa-approver-'+i,name:'QA '+role,email:`qa-${i}@example.test`,role,active:true});
   return s;
 }

@@ -1,4 +1,4 @@
-# Template tetap Header–Jadwal PP
+# Template tetap Project Plan
 
 Pembaruan 4 November 2026 mengacu pada `template-PP-header-pendahuluan-tim-jadwalproyek.docx` yang diberikan pengguna. Dokumen sumber dipertahankan. Placeholder Leonita/Proactive, identitas proyek contoh, nilai dan tanggal contoh bukan instruksi integrasi atau data proyek baru.
 
@@ -15,9 +15,9 @@ Pembaruan 4 November 2026 mengacu pada `template-PP-header-pendahuluan-tim-jadwa
 
 Preview/cetak PP bertemplate mengikuti urutan judul, Nomor, enam baris Header, Pendahuluan, Struktur Tim dan Jadwal HK pada contoh. Header memakai data PP aktual, termasuk No PP dari server dan Total Nilai dari anggaran Header. Preview sebelum simpan menampilkan nomor perkiraan; nomor tersimpan menjadi acuan.
 
-Gambar Kurva S sumber adalah contoh bertanggal tahun 2020. Gambar ditampilkan dengan keterangan **contoh referensi**, bukan bobot/progres proyek. Kurva aktual belum dihitung karena bobot rencana belum disediakan.
+Pembaruan berikutnya memakai `01._PROJECT_PLAN_DIGITAL.v5.docx` untuk bagian IV–VIII. Sesuai instruksi terbaru pengguna, **Kurva S dihilangkan dari form dan output**, termasuk pada preview template sebelumnya. Rincian tabel anggaran, rumus dan checklist tersedia pada [PP_BUDGET_TEMPLATE](PP_BUDGET_TEMPLATE.md).
 
-Output saat ini **HTML dan cetak/Simpan PDF browser: Header–Jadwal diikuti lampiran BOQ/anggaran/risiko**, belum generator DOCX/PDF server atau format resmi PP lengkap yang telah disetujui. Bagian BOQ, anggaran, risiko, komunikasi dan kualitas tetap tersimpan dalam alur PP. Belum ada klaim kesamaan tata letak Word per piksel atau hasil cetak browser satu halaman. Tidak ada TTD yang dibuat otomatis.
+Output saat ini **HTML dan cetak/Simpan PDF browser: bagian I–VIII dengan tabel anggaran dan penandatangan**, belum generator DOCX/PDF server atau format resmi PP lengkap yang telah disetujui. PP yang sudah menyimpan planBudget memakai output bagian IV–VIII terbaru; dokumen lama mempertahankan pratinjau historisnya tanpa Kurva S. BOQ, anggaran dan keputusan lama tidak ditulis ulang saat dibaca. Belum ada klaim kesamaan tata letak Word per piksel atau hasil cetak browser satu halaman. Tidak ada TTD yang dibuat otomatis.
 
 ## Sumber implementasi dan verifikasi
 

@@ -33,7 +33,7 @@ class AuthenticatedWorkspace
             $rows = $assignments->get($user->getKey(), collect())->whereIn('code', array_keys(AccountAccess::ROLES));
             $codes = $rows->pluck('code')->unique();
 
-            return ['id' => 'db-user-'.$user->getKey(), 'name' => $user->name, 'email' => $user->email,
+            return ['id' => 'db-user-'.$user->getKey(), 'name' => $user->name, 'email' => $user->email, 'nik' => $user->nik ?? '',
                 'role' => AccountAccess::ROLES[$codes->first() ?? ''] ?? 'Admin Konstruksi',
                 'active' => $user->active && $codes->count() === 1 && $codes->first() === $user->role && $rows->isNotEmpty(), 'branches' => $rows->pluck('name')->unique()->values()->all()];
         })->all();

@@ -208,6 +208,8 @@ class AuthenticationTest extends TestCase
         $state = $this->getJson('/api/prototype/state')->json('state');
         $p = app(PrototypeWorkspaceService::class)->scenario('B')['projects'][0];
         $p['id'] = $p['rootId'] = 'pp-real-account';
+        $p['riskLevel'] = 'SEDANG';
+        $p['costs']['permit'] = 0;
         $p['no'] = 'FORGED';
         $p['unit'] = 'Konstruksi';
         $p['branch'] = 'PEKALONGAN';

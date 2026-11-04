@@ -33,11 +33,11 @@ test('template tabs expose exactly five HK fields, fixed prose and derived dates
   const locked=renderToStaticMarkup(createElement(PlanSchedule,{p,editable:false,onChange:()=>{}})); assert.equal((locked.match(/disabled=""/g)??[]).length,5);
 });
 
-test('template print maps Header values, HK and reference curve while historical preview keeps its contents', () => {
+test('template print maps Header values, HK without a curve while historical preview keeps its contents', () => {
   const s=seed('B'), p=applyPlanTemplate({...s.projects[0],no:'0001/LG.000/TA-03R502/11-2026',name:'Proyek QA',budget:250000000});
   const html=renderToStaticMarkup(createElement(DocumentPreview,{state:s,kind:'Project Plan',project:p,onClose:()=>{}}));
-  for(const text of ['PROJECT PLAN SWAKELOLA KONSTRUKSI',p.no,p.name,'250.000.000','II. STRUKTUR ORGANISASI','III. JADWAL PROYEK','Jml HK','2020','belum dihitung','LAMPIRAN RENCANA PROYEK','BOQ Owner','Komunikasi','Manajemen Kualitas']) assert.ok(html.includes(text),text);
-  assert.doesNotMatch(html,/Nama rekaan|Leonita|Proactive|23KT05R210-0031/);
+  for(const text of ['PROJECT PLAN SWAKELOLA KONSTRUKSI',p.no,p.name,'250.000.000','II. STRUKTUR ORGANISASI','III. JADWAL PROYEK','Jml HK','LAMPIRAN RENCANA PROYEK','BOQ Owner','Komunikasi','Manajemen Kualitas']) assert.ok(html.includes(text),text);
+  assert.doesNotMatch(html,/Nama rekaan|Leonita|Proactive|23KT05R210-0031|Kurva S|pp-kurva-s-reference/);
   const original=structuredClone(s.projects[0]);original.intro='Pendahuluan historis tersimpan';
   const legacy=renderToStaticMarkup(createElement(DocumentPreview,{state:s,kind:'Project Plan',project:original,onClose:()=>{}}));
   assert.match(legacy,/Pendahuluan historis tersimpan/); assert.doesNotMatch(legacy,/pp-template-document/);

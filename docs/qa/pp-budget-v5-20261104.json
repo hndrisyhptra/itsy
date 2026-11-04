@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-04",
+  "source": "01._PROJECT_PLAN_DIGITAL.v5.docx",
+  "source_sha256": "c6d431bd8d10ff1d1f3ea45b0930a65dbe5e6470160ad8552dec68b588f97930",
+  "source_render_pages": 3,
+  "checks": {
+    "communication_exact": true,
+    "quality_exact": true,
+    "closing_exact": true,
+    "curve_not_referenced_in_components": true
+  },
+  "backup": {
+    "file": "its-before-pp-budget-v5-20261104-203240.sql",
+    "bytes": 629582,
+    "sha256": "b14a30680e7faee38f2b1ccfcd89ba0a23aac608cc85b033653d5db13ec46000"
+  },
+  "original_sqlite_sha256": "e2c39eba72710da656307627909f32267b6738c861509a3a70c78bddf8bb10bc",
+  "browser": "Real form URL redirected to login; no credentials or test data added. No responsive/print pagination claim.",
+  "limits": [
+    "BOP limit and Cost Structure reference are declared by Admin; no official ceiling master supplied.",
+    "Planning rows do not create SPK, actual payment submissions or bank payments.",
+    "Print remains HTML/browser PDF, without server DOCX export or generated signatures."
+  ],
+  "verification": {
+    "php_tests": 94,
+    "php_assertions": 1285,
+    "frontend_tests": 61,
+    "build": "passed",
+    "pint": "passed",
+    "isolation": "SQLite :memory:"
+  },
+  "bop_limit_user_confirmation": "Rupiah"
+}

@@ -1,0 +1,24 @@
+{
+  "owners": [{"rowId":"boq-qa","m":100,"s":200,"qm":10,"qs":10}],
+  "project": {
+    "costs":{"mandor":0,"material":0,"bop":0,"permit":0},
+    "riskLevel":"SEDANG",
+    "planBudget": {
+      "version":1,
+      "mandor":[{"rowId":"boq-qa","qtyM":4,"qtyS":5,"priceM":10,"priceS":20}],
+      "materials":[{"id":"material-qa","name":"Material QA","qty":2.5,"unit":"Pcs","price":10.01}],
+      "bop":[{"id":"bop-qa","description":"BOP QA","qty":2,"unit":"Ls","total":30.02}],
+      "permit":7.03,
+      "bopLimit":50,
+      "bopReference":"Referensi sintetis pengujian",
+      "usage":[
+        {"id":"usage-qa1","category":"mandor","term":"1","date":"2026-11-04","amount":70},
+        {"id":"usage-qa2","category":"mandor","term":"2","date":"2026-11-05","amount":70},
+        {"id":"usage-qa3","category":"material","term":"1","date":"2026-11-04","amount":25.03},
+        {"id":"usage-qa4","category":"bop","term":"1","date":"2026-11-04","amount":30.02},
+        {"id":"usage-qa5","category":"permit","term":"1","date":"2026-11-04","amount":7.03}
+      ]
+    }
+  },
+  "expected": {"ownerM":1000,"ownerS":2000,"ownerTotal":3000,"mandorM":40,"mandorS":100,"mandor":140,"material":25.03,"bop":30.02,"permit":7.03,"total":195.05,"revenue":2000,"cogs":195.05,"grossProfit":1804.95,"margin":90.25}
+}

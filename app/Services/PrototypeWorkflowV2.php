@@ -131,6 +131,38 @@ trait PrototypeWorkflowV2
                 $this->fail('Masukkan 1–500 baris BOQ sebelum Header PP.');
             }
         }
+        if ($version >= 3) {
+            $source = ! empty($old['parentId']) ? $this->record('projects', $old['rootId'])['boq'] : $rows;
+            $owners = [];
+            foreach ($source as $row) {
+                if (! empty($old['parentId']) && ! isset($old['allocations'][$row['id']])) {
+                    continue;
+                }
+                $owners[] = ['rowId' => $row['id'], 'm' => $row['m'], 's' => $row['s'],
+                    'qm' => $row['m'] === null ? 0 : (! empty($old['parentId']) ? ($old['allocations'][$row['id']]['m'] ?? 0) : $row['qty']),
+                    'qs' => $row['s'] === null ? 0 : (! empty($old['parentId']) ? ($old['allocations'][$row['id']]['s'] ?? 0) : $row['qty'])];
+            }
+            foreach (['planBudget', 'riskLevel', 'signatureRows'] as $key) {
+                if (array_key_exists($key, $input)) {
+                    $p[$key] = $input[$key];
+                } elseif (array_key_exists($key, $old ?? [])) {
+                    $p[$key] = $old[$key];
+                }
+            }
+            $p = ProjectPlanBudget::apply($p, $owners, $submit);
+            $actor = $this->existing('users', $this->state['actorUserId'] ?? '') ?? [];
+            $p['preparedBy'] = $old['preparedBy'] ?? ['userId' => $actor['id'] ?? '', 'name' => $actor['name'] ?? '', 'nik' => $actor['nik'] ?? '', 'role' => $this->state['role'], 'at' => now()->toISOString()];
+            if (isset($old['previousPlanning'])) {
+                $p['previousPlanning'] = $old['previousPlanning'];
+            } elseif ($old && ! isset($old['planBudget'])) {
+                $p['previousPlanning'] = array_intersect_key($old, array_flip(['costs', 'risk', 'communication', 'quality']));
+            }
+            $p['signatureUsers'] = [];
+            foreach ($assignments as $role => $userId) {
+                $u = $this->record('users', $userId);
+                $p['signatureUsers'][$role] = ['userId' => $u['id'], 'name' => $u['name'], 'nik' => $u['nik'] ?? ''];
+            }
+        }
         $p['no'] = $old['no'] ?? $this->nextProjectNumber($p);
         $id = $this->saveProject($p, $submit);
         $p = $this->record('projects', $id);
@@ -171,7 +203,7 @@ trait PrototypeWorkflowV2
         if ($decision !== 'Setujui' && ! $note) {
             $this->fail('Alasan pengembalian/penolakan wajib.');
         }
-        $a = ['role' => $role, 'userId' => $this->state['actorUserId'], 'actorName' => $this->record('users', $this->state['actorUserId'])['name'], 'decision' => $decision, 'note' => $note, 'at' => now()->toISOString()];
+        $a = ['role' => $role, 'userId' => $this->state['actorUserId'], 'actorName' => $this->record('users', $this->state['actorUserId'])['name'], 'actorNik' => $this->record('users', $this->state['actorUserId'])['nik'] ?? '', 'decision' => $decision, 'note' => $note, 'at' => now()->toISOString()];
         $p['approvalHistory'][] = $a;
         if ($decision === 'Setujui') {
             $p['approvals'][] = $a;

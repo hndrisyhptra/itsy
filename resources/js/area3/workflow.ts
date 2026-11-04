@@ -1,3 +1,4 @@
+import { applyBudgetPlan } from './plan-budget';
 import { applyPlanTemplate } from './plan-template';
 import { recordCommand } from './commands';
 import { type State, type Project, type Term, type Role, type Approval, getProject, getTerm, requireAdmin, requireFinance, validVolume, projectErrors, now, log } from './domain';
@@ -51,7 +52,7 @@ export function saveProjectV2(s: State, input: Project, submit: boolean) {
   if (old && !['Draft', 'Dikembalikan'].includes(old.status)) throw new Error('PP terkunci setelah diajukan, ditolak atau disetujui.');
   const version = (old?.workflowVersion ?? 1) >= 2 ? old!.workflowVersion! : s.schema >= 3 ? 3 : 2;
   if (version >= 3) Object.assign(p, applyPlanTemplate(p, true));
-  else { delete p.planTemplateVersion; delete p.teamText; delete p.durationDays; }
+  else { delete p.planTemplateVersion; delete p.teamText; delete p.durationDays; delete p.planBudget; delete p.planBudgetTotals; delete p.signatureRows; delete p.signatureUsers; delete p.closing; delete p.riskLevel; }
   const chain = validateAssignments(s, { ...p, workflowVersion: version }, submit);
   if (!['Konstruksi', 'Operation'].includes(p.unit) || !branchOptions(s).some(b => b.name === p.branch && b.active)) throw new Error('Pilih Unit Kerja dan Branch aktif.');
   if (!old && (p.parentId || p.rootId !== p.id)) throw new Error('PP lanjutan harus dibuat dari pelepasan BA PP.');
@@ -63,8 +64,16 @@ export function saveProjectV2(s: State, input: Project, submit: boolean) {
     p.boq = p.boq.map(r => { const k = s.khs.find(k => k.id === r.khsId && k.active); if (!k || !validVolume(r.qty) || r.qty <= 0) throw new Error('BOQ harus memakai designator aktif dan volume positif maksimal tiga desimal.'); const mismatch=!!p.boqUpload && (r.excelM!==k.m || r.excelS!==k.s); const reviewed=!mismatch || (r.reviewed && !!r.note.trim() && r.version===k.version && r.m===k.m && r.s===k.s); if(submit && !reviewed) throw new Error('Review selisih harga Excel dengan Master KHS dan isi alasan sebelum pengajuan.'); return { ...r, m: k.m, s: k.s, excelM: p.boqUpload?r.excelM:k.m, excelS: p.boqUpload?r.excelS:k.s, version: k.version, reviewed, note: p.boqUpload?r.note:'Input manual dari Master KHS' }; });
     p.boqStatus = submit ? 'Final' : 'Review';
   }
+  if (version >= 3) {
+    p.planBudget ??= old?.planBudget; p.riskLevel ??= old?.riskLevel; p.signatureRows ??= old?.signatureRows;
+    const actor=s.users.find(u=>u.id===s.actorUserId);
+    Object.assign(p,applyBudgetPlan(s,p,submit,true));
+    p.preparedBy=old?.preparedBy??{userId:actor?.id??'',name:actor?.name??'',nik:actor?.nik??'',role:s.role,at:now()};
+    p.previousPlanning=old?.previousPlanning??(old&&!old.planBudget?{costs:structuredClone(old.costs),risk:old.risk,communication:old.communication,quality:old.quality}:undefined);
+    p.signatureUsers=Object.fromEntries(Object.entries(chain).map(([role,id])=>{const u=s.users.find(u=>u.id===id)!;return [role,{userId:u.id,name:u.name,nik:u.nik??''}];}));
+  }
   const errors = projectErrors(s, p); if (errors.length) throw new Error(errors.join('\n'));
-  if (submit && (!p.intro.trim() || (!p.planTemplateVersion && (!p.team.length || p.team.some(t => !t.name.trim() || !t.job.trim()))) || !p.risk.trim() || !p.communication.trim() || !p.quality.trim() || p.schedule.some(v => (!p.planTemplateVersion || v.days > 0) && (!v.start || !v.end)))) throw new Error('Lengkapi seluruh rencana PP sebelum diajukan.');
+  if (submit && (!p.intro.trim() || (!p.planTemplateVersion && (!p.team.length || p.team.some(t => !t.name.trim() || !t.job.trim()))) || (!p.planBudget && !p.risk.trim()) || !p.communication.trim() || !p.quality.trim() || p.schedule.some(v => (!p.planTemplateVersion || v.days > 0) && (!v.start || !v.end)))) throw new Error('Lengkapi seluruh rencana PP sebelum diajukan.');
   p.workflowVersion = version; p.pmUserId = chain['PM Konstruksi']; if (version >= 3) p.approverUserIds = chain; else p.managerUserId = chain['Manager Konstruksi']; p.status = submit ? 'Diajukan' : 'Draft'; p.approvals = []; p.approvalHistory = old?.approvalHistory ?? [];
   if (!old) { s.settings ??= { ppNumberFormat: DEFAULT_PP_NUMBER_FORMAT, nextPpSequence: 1, ppNumberFormatVersion: 2 }; s.settings.nextPpSequence = number.nextSequence; s.projects.unshift(p); } else s.projects[s.projects.indexOf(old)] = p;
   log(s, submit ? 'PP diajukan ke PM terpilih' : 'Draft PP dan BOQ disimpan', p.no, '/project-plan/' + p.id); return p.id;
@@ -73,7 +82,7 @@ export function decideProject(s: State, id: string, decision: Approval['decision
   recordCommand('decideProject', [id, decision, note]); const p = getProject(s, id), role = projectApprovalRole(p);
   if (!role) throw new Error('PP belum diajukan untuk approval.'); assertAssigned(s, p, role);
   if (decision !== 'Setujui' && !note.trim()) throw new Error('Alasan pengembalian/penolakan wajib.');
-  const a: Approval = { role, userId: s.actorUserId, actorName: s.users.find(u => u.id === s.actorUserId)?.name, decision, note: note.trim(), at: now() };
+  const a: Approval = { role, userId: s.actorUserId, actorName: s.users.find(u => u.id === s.actorUserId)?.name, actorNik:s.users.find(u=>u.id===s.actorUserId)?.nik, decision, note: note.trim(), at: now() };
   (p.approvalHistory ??= []).push(a); p.approvals ??= [];
   if (decision === 'Setujui') { p.approvals.push(a); if (p.approvals.length === approvalRoles(p,true).length) p.status = 'Sah'; } else { p.status = decision === 'Kembalikan' ? 'Dikembalikan' : 'Ditolak'; p.approvals = []; }
   log(s, 'PP ' + decision, p.no, '/project-plan/' + id);

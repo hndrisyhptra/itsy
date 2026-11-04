@@ -2,12 +2,103 @@
   "version": 1,
   "title": "PROJECT PLAN SWAKELOLA KONSTRUKSI",
   "introduction": [
-    {"title": "Latar Belakang", "text": "Perubahan harga KHS OSP FO dari pemberi kerja menyebabkan margin proyek sangat tipis."},
-    {"title": "Tujuan", "text": "Mekanisme swakelola berpotensi meningkatkan margin perusahaan melalui efisiensi biaya dan optimalisasi sumber daya internal."},
-    {"title": "Lingkup Pekerjaan", "text": "Pekerjaan meliputi pengadaan, instalasi, pengujian, dan serah terima jaringan sesuai standar Pemberi Kerja."}
+    {
+      "title": "Latar Belakang",
+      "text": "Perubahan harga KHS OSP FO dari pemberi kerja menyebabkan margin proyek sangat tipis."
+    },
+    {
+      "title": "Tujuan",
+      "text": "Mekanisme swakelola berpotensi meningkatkan margin perusahaan melalui efisiensi biaya dan optimalisasi sumber daya internal."
+    },
+    {
+      "title": "Lingkup Pekerjaan",
+      "text": "Pekerjaan meliputi pengadaan, instalasi, pengujian, dan serah terima jaringan sesuai standar Pemberi Kerja."
+    }
   ],
   "team": "Untuk memastikan kelancaran proyek, diperlukan struktur organisasi yang mencakup Project Manager, Waspang, Project Admin, Teknisi/Jointer, dan Mandor.",
-  "stages": ["Persiapan", "Material Delivery", "Instalasi", "Commissioning Test", "Uji Terima"],
+  "stages": [
+    "Persiapan",
+    "Material Delivery",
+    "Instalasi",
+    "Commissioning Test",
+    "Uji Terima"
+  ],
   "durationSuffix": "hari kalender (durasi ini menjadi referensi durasi maksimal yang diizinkan untuk BAKH Mandor).",
-  "scheduleNote": "*Jumlah HK tidak boleh lebih dari durasi pekerjaan."
+  "scheduleNote": "*Jumlah HK tidak boleh lebih dari durasi pekerjaan.",
+  "riskLevels": [
+    "TINGGI",
+    "SEDANG",
+    "RENDAH"
+  ],
+  "communicationHeaders": [
+    "No",
+    "Stakeholder",
+    "Posisi",
+    "Informasi",
+    "Media",
+    "Frekuensi"
+  ],
+  "communicationRows": [
+    [
+      "1",
+      "Pemberi Kerja",
+      "Customer",
+      "Progress Project",
+      "Meeting/Group Chat",
+      "Mingguan"
+    ],
+    [
+      "2",
+      "PMO Area",
+      "PMO Area",
+      "Progress dan Kendala",
+      "Meeting/Group Chat",
+      "Mingguan"
+    ],
+    [
+      "3",
+      "Mgr Project Deployment Area",
+      "Mgr Area",
+      "Report Progress",
+      "Meeting/Group Chat",
+      "Sesuai Kebutuhan"
+    ],
+    [
+      "4",
+      "Mgr Bussiness Suport",
+      "Performansi Proyek",
+      "Realisasi Margin Proyek",
+      "Meeting",
+      "Closing Proyek"
+    ],
+    [
+      "5",
+      "Waspang",
+      "Pengawas Kualitas dan Delivery",
+      "Realisasi Kualitas dan Pekerjaan",
+      "Lensa Pro/Group Chat",
+      "Harian"
+    ],
+    [
+      "6",
+      "Admin Proyek",
+      "Dokumentasi Proyek",
+      "Kelengkapan Dokumen Proyek",
+      "Lensa Pro/Group Chat",
+      "Harian"
+    ],
+    [
+      "7",
+      "Mandor",
+      "Pelaksana Project",
+      "Evidence Pelaksanaan",
+      "Group Chat",
+      "Harian"
+    ]
+  ],
+  "quality": [
+    "Material yang digunakan sesuai dengan Lampiran List of Material dalam kontrak serta spesifikasi teknis yang ditetapkan oleh Pemberi Kerja.",
+    "Commissioning Test dan Uji Terima dilaksanakan sesuai dengan SOP pemberi kerja."
+  ],
+  "closing": "Project Plan ini disusun dengan sebenar-benarnya sebagai acuan pelaksanaan proyek agar berjalan sesuai dengan ruang lingkup, waktu, dan kualitas yang telah disepakati."
 }

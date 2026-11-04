@@ -126,3 +126,20 @@ Cleanup: Artisan :8013 stopped; disposable QA :8014/database remain running beca
 - [x] Only HK is editable in the two requested tabs; preserve issued history and historical v2 draft behavior. New continuation starts with five 1-HK activities and retains continuation notes separately.
 - [x] Header–Jadwal template print preview followed by retained BOQ/budget/risk/communication/quality appendices. Label the source 2020 S curve as a reference; actual curve and DOCX export remain unavailable.
 - [x] 88 PHP tests / 1,168 assertions, 57 frontend tests, production build and Pint passed. Browser visual/print pagination QA was not repeated; no policy workaround or test credentials used. See PP_TEMPLATE.md and LARAVEL_QA.md.
+
+## PP budget tables, margin and fixed closing — 4 November 2026
+
+- [x] Read/render all three pages of 01._PROJECT_PLAN_DIGITAL.v5.docx; preserve source and verify exact communication, quality and closing wording.
+- [x] Back up its before edits; remove Kurva S from form and preview per latest user instruction.
+- [x] Owner from canonical BOQ/allocation; editable Mandor prices/volumes with independent component ceilings, totals and comparison ratio.
+- [x] Add/delete Material Non Stock, BOP and usage rows; manual permit; rupiah BOP limit with Cost Structure reference (user confirmed rupiah), reconciled category usage before submission.
+- [x] Derive IV.5 and service-only revenue/COGS/Gross Profit/margin without double counting reimbursement; shared decimal test vector, negative margin and half-up rounding.
+- [x] Risk checklist, fixed communication table/quality/closing, editable/deletable print rows with server-bound names/NIK/actual dates and no generated signatures. Five approvals remain mandatory regardless of print rows.
+- [x] Archive previous v3 draft planning notes/costs on adoption; preserve locked/legacy documents, source prices, root budget and ledger.
+- [x] 94 PHP tests / 1,285 assertions, 61 frontend tests, TypeScript/Vite build and Pint passed. Real form URL redirects to login; authenticated responsive/print layout not manually verified. No live workflow/account data or migrations changed. See PP_BUDGET_TEMPLATE.md and LARAVEL_QA.md.
+
+## Usage dropdown amount autofill — 4 November 2026
+
+- [x] Selecting Material Non Stock, BOP or Perizinan on IV.5 fills the current category total, less existing allocations on other rows, using cents and a zero floor. The selected row's existing amount is excluded from that deduction; dates/terms/other rows remain intact.
+- [x] Amount stays editable for installments; selecting Jasa Mandor starts manual input at zero. Existing saved rows are not rewritten on read. Server amount/reconciliation validation and workflow rules remain unchanged.
+- [x] Two frontend regressions cover category totals, absent permit, existing installments/reselection, the actual select handler and draft persistence. 94 PHP tests / 1,285 assertions, 63 frontend tests and TypeScript/Vite build passed. UI-only change; no live data/configuration/migration mutation or browser visual verification.
