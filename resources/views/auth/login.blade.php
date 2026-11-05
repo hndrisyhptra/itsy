@@ -1,10 +1,10 @@
 @extends('auth.layout')
 @section('content')
 <main class="login-layout">
-    <section class="login-story" aria-label="Area 3 Construction Workspace">
+    <section class="login-story" aria-label="Area 3 Workspace">
         @include('auth.brand')
-        <div class="story-content"><span class="eyebrow"><i></i> TERHUBUNG DALAM SATU ALUR</span>
-            <h1>Satu ruang.<br>Setiap langkah<br><span>proyek Anda.</span></h1>
+        <div class="story-content"><span class="eyebrow"><i></i> TERHUBUNG DALAM SATU PLATFORM</span>
+            <h1>Inception to<span> Seattlement</span></h1>
             <p>Rencanakan pekerjaan, kelola persetujuan, dan pantau pembayaran dengan lebih terarah.</p>
             <div class="story-workflow" aria-label="Alur Project Plan, SPK, dan Pembayaran">
                 <div class="workflow-card"><span class="workflow-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M7 3h10v4H7zM5 5H3v16h18V5h-2M7 12h10M7 16h6"/></svg></span><div><small>01 / RENCANAKAN</small><strong>Project Plan</strong><p>BOQ & persetujuan proyek</p></div><span class="workflow-arrow">↗</span></div>
@@ -14,13 +14,13 @@
                 <div class="workflow-card"><span class="workflow-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4M15 15h2"/></svg></span><div><small>03 / SELESAIKAN</small><strong>Pembayaran</strong><p>Approval, verifikasi & APM</p></div><span class="workflow-arrow">↗</span></div>
             </div>
         </div>
-        <div class="story-footer"><span>it's Area 3</span><span>Administrasi Proyek Konstruksi</span></div>
+        <div class="story-footer"><span>it's Area 3</span><span>Administrasi Proyek</span></div>
     </section>
     <section class="login-form-panel">
         <div class="mobile-brand">@include('auth.brand')</div>
         <div class="login-form-wrap">
             <span class="form-kicker">AREA 3 WORKSPACE</span>
-            <h2>{{ $setup ? 'Siapkan akses pertama' : 'Selamat datang kembali' }}</h2>
+            <h2>{{ $setup ? 'Siapkan akses pertama' : 'Semangat Pagi...!!' }}</h2>
             <p class="form-intro">{{ $setup ? 'Buat akun Superadmin untuk mulai mengelola pengguna dan menjalankan alur proyek.' : 'Masuk dengan akun Anda untuk melanjutkan pekerjaan.' }}</p>
             @include('auth.errors')
             <form method="post" action="{{ $setup ? route('setup') : route('login') }}" class="access-form" data-access-form>
