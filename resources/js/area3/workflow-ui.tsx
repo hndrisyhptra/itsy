@@ -62,11 +62,18 @@ export function ProjectApprovalPanel({ s, p }: { s: State; p: Project }) {
   const [note, setNote] = useState(''), [pm, setPm] = useState(p.pmUserId ?? ''), [manager, setManager] = useState(p.managerUserId ?? '');
   const legacy = (p.workflowVersion ?? 1) < 2, roles = approvalRoles(p,true);
   return <Card title={legacy ? 'Riwayat Project Plan' : 'Approval Project Plan'} subtitle={legacy ? 'Dokumen historis tetap dipertahankan.' : roles.join(' → ')}>
+    <SubmissionRejectionNotice document={p} history={p.approvalHistory}/>
     {!legacy && <><div className="form-grid">{roles.map(role => <ApproverSelect key={role} s={s} branch={p.branch} role={role} label={role} value={selectedApprover(p,role)} onChange={() => {}} disabled/>)}</div><Notice>Status PP: {p.status} · {p.approvals?.length ?? 0}/{roles.length} disetujui. SPK tersedia setelah seluruh approval lengkap.</Notice>{canApproveProject(s, p) && <><Field label="Catatan / alasan pengembalian atau penolakan"><textarea value={note} onChange={e => setNote(e.target.value)}/></Field><div className="actions">{(['Tolak', 'Kembalikan', 'Setujui'] as Approval['decision'][]).map(decision => <Button key={decision} primary={decision === 'Setujui'} onClick={() => attempt(() => mutate(d => decideProject(d, p.id, decision, note)), 'Keputusan PP tersimpan.')}>{decision} PP</Button>)}</div></>}</>}
     {legacy && s.schema < 3 && <><div className="form-grid"><ApproverSelect s={s} branch={p.branch} role="PM Konstruksi" label="PM Konstruksi" value={pm} onChange={setPm} disabled={!operational(s)}/><ApproverSelect s={s} branch={p.branch} role="Manager Konstruksi" label="Manager Konstruksi" value={manager} onChange={setManager} disabled={!operational(s)}/></div>{operational(s) && <Button onClick={() => attempt(() => mutate(d => assignProjectApprovers(d,p.id,pm,manager)), 'Penanggung jawab tersimpan.')}>Simpan Penanggung Jawab</Button>}</>}
     {!!p.approvalHistory?.length && <Table headers={['Approver', 'Keputusan', 'Catatan', 'Waktu']}>{p.approvalHistory.map((a, i) => <tr key={i}><td>{a.actorName ?? a.userId}<small>{a.role}</small></td><td>{a.decision}</td><td>{a.note}</td><td>{new Date(a.at).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}</td></tr>)}</Table>}
     {s.schema >= 3 && (p.workflowVersion ?? 1) < 3 && p.status === 'Sah' && <FuturePaymentApprovers s={s} p={p}/>}
   </Card>;
+}
+
+export function SubmissionRejectionNotice({document,history=[]}:{document:{status:string;workflowVersion?:number};history?:Approval[]}) {
+  const last=history.at(-1);
+  if((document.workflowVersion??1)<3 || !['Ditolak','Draft'].includes(document.status) || last?.decision!=='Tolak')return null;
+  return <Notice tone="warning"><strong>Pengajuan ditolak. Perbaiki dan ajukan ulang dari awal.</strong><p>Catatan {last.actorName??last.role}: {last.note}</p><p>Admin Konstruksi perlu menyimpan perbaikan dan mengajukan kembali. Seluruh approval dimulai dari PM Konstruksi; keputusan sebelumnya tetap ada di riwayat.</p></Notice>;
 }
 
 export function ProjectInbox({ s }: { s: State }) {

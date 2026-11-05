@@ -6,6 +6,12 @@ trait PrototypeApprovalChain
 {
     public const APPROVERS_V3 = ['PM Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Bussiness Support', 'Head of PMO'];
 
+    private function canReviseSubmission(array $document): bool
+    {
+        return in_array($document['status'], ['Draft', 'Dikembalikan'], true)
+            || (($document['workflowVersion'] ?? 1) >= 3 && $document['status'] === 'Ditolak');
+    }
+
     private function approvalRoles(array $document, bool $project = false): array
     {
         if (($document['workflowVersion'] ?? 1) >= 3) {

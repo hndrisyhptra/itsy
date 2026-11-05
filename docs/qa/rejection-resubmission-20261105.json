@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-05",
+  "feature": "v3 rejected PP and payment correction and resubmission",
+  "database_backup": {
+    "file": "storage/app/private/backups/its-before-rejection-resubmit-20261105-144618.sql",
+    "bytes": 1019899,
+    "sha256": "1541823e46757029416eb9fab285eab65bbd534316b716efaaf50a2e774aae7c"
+  },
+  "checks": {
+    "php_tests": 127,
+    "php_assertions": 2282,
+    "frontend_tests": 86,
+    "targeted_new_http_cases": 11,
+    "targeted_http_assertions": 635,
+    "build": "passed",
+    "pint": "passed",
+    "php_test_database": "sqlite :memory: fail-closed"
+  },
+  "build_manifest": {
+    "resources/js/area3/auth.ts": {
+      "file": "assets/auth-BZ_PJsGn.js",
+      "name": "auth",
+      "src": "resources/js/area3/auth.ts",
+      "isEntry": true,
+      "css": [
+        "assets/auth-YYlJks5j.css"
+      ]
+    },
+    "resources/js/area3/main.tsx": {
+      "file": "assets/main-CrxKAb5G.js",
+      "name": "main",
+      "src": "resources/js/area3/main.tsx",
+      "isEntry": true,
+      "css": [
+        "assets/main-DU0imfO3.css"
+      ]
+    }
+  },
+  "scenarios": [
+    "PP rejected by each of five approvers, required notes and Admin resubmission",
+    "Final payment rejected by each of five approvers, same term and fresh five decisions",
+    "SQL rejected cycle and decisions retained while new cycle starts pending",
+    "No approval before resubmission, no skipped PM, no forged history/payment metadata",
+    "Real private work evidence correction after rejection, retained removal history and locking on resubmission",
+    "Historical v1/v2 rejection remains terminal; scan/Finance/APM/volume/Final gates retained"
+  ],
+  "limits": {
+    "manual_authenticated_browser": false,
+    "separate_mysql_engine_retest": false,
+    "new_migration_required": false,
+    "live_test_transactions_created": false
+  },
+  "changed_source_sha256": {
+    "app/Services/PrototypeApprovalChain.php": "9521b79cafb7e5af405a93c2441fcb5b2cf55738628b5d7fc6fe4e88a966cfcc",
+    "app/Services/PrototypeWorkflowV2.php": "e50ef092741ed7d6ffa2182db1ca22408b16712a88eb6fab705d101cbbc091f5",
+    "app/Services/PrototypeDomain.php": "f5f645d5e95e213045c9d4a80a6754aa8e29dd7b19b35f49d9c5e01038a2db10",
+    "app/Services/PrototypeTermWorkEvidence.php": "07d1fe39a4769d33769adc4c0e552d47d354ea580b51fc6db1a2513c09dc7619",
+    "resources/js/area3/domain.ts": "ad782a56cd997ecd60f98733a30bd58e165b7d945d083b04c10c1581684cd91a",
+    "resources/js/area3/workflow.ts": "78586e5a30ce314569c55be3c324e8ae972cf81c8baa56899be96dc631407a8e",
+    "resources/js/area3/projects.tsx": "0de4de49c3b3a06b00041eebfb45da1b48e606130c6263274d0b46aa6056ac51",
+    "resources/js/area3/payments.tsx": "de6aa21cdfc11b845aa013e72764440f24ef2c4c3414c0bb9b9e0831975b546e",
+    "resources/js/area3/workflow-ui.tsx": "3fef6c0db1cb815a6a61bbdba2bbaa46bad8496c421bf02d5700d0651f4e0f78",
+    "resources/js/area3/plan-budget-ui.tsx": "1cb06bf2a9bc504581aff8f6eedf281d304de0bb37816c3669fdce4eff5b5a15",
+    "resources/js/area3/term-work-evidence.tsx": "c6d8a0fa06d561b56702bef723fa61eaebfccd3e0716a66ef468c144b68ae88c",
+    "resources/js/area3/project-timeline.ts": "a1bbb5071bd375fb0416d350a9f5caeae40701e5a82226c7b4dc7711b9865134",
+    "tests/Feature/UsernameApprovalV3Test.php": "02353059b69e8ef4ae0a85f1491754700e5816fae1ea4686f86cac4bd218b07c",
+    "tests/Feature/TermWorkEvidenceTest.php": "de036044c9928bce3db8f656385e7c63d1696a4952dfa6a2bed6c1e4a8954a00",
+    "tests/Frontend/workflow-v3.test.ts": "310f7012e5ec79d5a80a5aa89156f56a17ffe022a4127adad85ac51a8768a55c"
+  }
+}

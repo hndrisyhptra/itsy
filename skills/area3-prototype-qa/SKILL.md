@@ -5,6 +5,9 @@ description: Test the its Area 3 interactive prototype through the linked busine
 
 # area3-prototype-qa
 
+## Rejection resubmission verification — 5 November 2026
+For v3 PP and payments, test rejection by each of the five selected approvers, mandatory notes, Admin-only correction/resubmission, restart from PM, retained numbers and rejected SQL cycles/decisions, no approval before resubmission or skipped approver, and work-evidence replacement with retained history. Rejection must not unlock scan/Finance/APM, the next term or premature BA PP. Keep historical v1/v2 terminal rejection tests. See docs/APPROVAL_RESUBMISSION.md.
+
 ## Current storage authority — 5 November 2026
 The user explicitly authorized active MySQL persistence. docs/MYSQL_RUNTIME.md supersedes older aggregate/demo storage descriptions below. Runtime transactions read/write business-table rows with per-document snapshots; prototype_workspaces.state is a preserved archive, never a fallback. Preserve atomic SQL records/revision/receipts/audit, actual five-approver decisions and exact ledger. Live sample BOQ, role switch and reset are unavailable. Tests remain fail-closed SQLite memory; disposable MySQL QA is separate from artisan test. Do not import the archive again after activation or invent historical identities/KHS contracts.
 

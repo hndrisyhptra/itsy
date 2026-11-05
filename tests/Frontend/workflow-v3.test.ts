@@ -4,7 +4,9 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { seed } from '../../resources/js/area3/seed';
 import { DocumentPreview } from '../../resources/js/area3/ui';
-import { ProjectApproverFields } from '../../resources/js/area3/workflow-ui';
+import { ProjectApproverFields, SubmissionRejectionNotice } from '../../resources/js/area3/workflow-ui';
+import { TermWorkEvidencePanel } from '../../resources/js/area3/term-work-evidence';
+import { projectPosition, paymentPosition } from '../../resources/js/area3/project-timeline';
 import { type State, type Role, type Term, APPROVERS_V3, normalizeWorkflow, selectActor, saveProject, decideProject, getProject, canApproveProject, assignPaymentApprovers, createTerm, getTerm, saveTerm, decide, approvalCount, canApproveTerm, verifyTermScan, recordApm, termTotal, getSpk, getDeal, attestBapp, releaseVolume, createContinuation, ledger } from '../../resources/js/area3/domain';
 
 function state(scenario = 'D') {
@@ -22,6 +24,48 @@ function payment(s:State, final=false) {
 }
 function approve(s:State,t:Term) { for (const role of APPROVERS_V3) { actor(s,role); assert.equal(canApproveTerm(s,t),true); decide(s,t.id,'Setujui','QA'); } }
 function scan(t:Term,id='qa-private-scan') { t.scan={id,name:'synthetic-unit-test.pdf',extension:'pdf',mime:'application/pdf',size:100,sha256:'a'.repeat(64),status:'Menunggu Verifikasi',uploadedAt:new Date().toISOString()}; delete t.financeApproval; }
+
+for (const [stage,rejector] of APPROVERS_V3.entries()) {
+  test(`v3 PP rejection by ${rejector} requires a fresh admin submission and five new approvals`,()=>{
+    const s=state('B'),input=structuredClone(s.projects[0]);input.id=input.rootId='pp-rejected-'+stage;input.unit='Konstruksi';input.approverUserIds=chain(s);
+    saveProject(s,input,true);let p=getProject(s,input.id);const no=p.no;
+    for(const role of APPROVERS_V3.slice(0,stage)){actor(s,role);decideProject(s,p.id,'Setujui','Siklus awal');}
+    actor(s,rejector);assert.throws(()=>decideProject(s,p.id,'Tolak','  '),/Alasan/);decideProject(s,p.id,'Tolak','Perbaiki PP');
+    assert.equal(p.status,'Ditolak');assert.deepEqual(p.approvals,[]);assert.equal(canApproveProject(s,p),false);assert.match(projectPosition(p),/pengajuan ulang Admin/);
+    const history=structuredClone(p.approvalHistory);assert.throws(()=>saveProject(s,p,true),/Admin/);
+    actor(s,'Admin Konstruksi');saveProject(s,{...p,approvalHistory:[],approvals:[],no:'FORGED'},false);p=getProject(s,p.id);
+    assert.equal(p.status,'Draft');assert.equal(p.no,no);assert.deepEqual(p.approvalHistory,history);
+    actor(s,'PM Konstruksi');assert.throws(()=>decideProject(s,p.id,'Setujui',''),/belum diajukan/);
+    actor(s,'Admin Konstruksi');saveProject(s,p,true);p=getProject(s,p.id);actor(s,'Admin Area');assert.equal(canApproveProject(s,p),false);assert.throws(()=>decideProject(s,p.id,'Setujui',''),/dipilih/);
+    for(const [i,role] of APPROVERS_V3.entries()){actor(s,role);decideProject(s,p.id,'Setujui','Siklus baru');assert.equal(p.status,i===4?'Sah':'Diajukan');}
+    assert.deepEqual(p.approvalHistory!.slice(0,stage+1),history);assert.equal(p.approvalHistory!.length,stage+6);assert.equal(p.no,no);
+  });
+  test(`v3 Final payment rejection by ${rejector} preserves history and restarts before scan Finance and APM`,()=>{
+    const s=state();let t=payment(s,true);const id=t.id;
+    for(const role of APPROVERS_V3.slice(0,stage)){actor(s,role);decide(s,id,'Setujui','Siklus awal');}
+    actor(s,rejector);assert.throws(()=>decide(s,id,'Tolak',''),/Alasan/);decide(s,id,'Tolak','Perbaiki volume');
+    assert.equal(t.status,'Ditolak');assert.deepEqual(t.approvals,[]);assert.match(paymentPosition(t),/pengajuan ulang Admin/);
+    const history=structuredClone(t.history);assert.throws(()=>saveTerm(s,t,true),/Admin/);
+    actor(s,'Admin Konstruksi');assert.throws(()=>createTerm(s,t.spkId),/Final|sebelumnya/);
+    saveTerm(s,{...t,history:[],approvals:[],paid:999,apmStatus:'Valid'},false);t=getTerm(s,id);
+    assert.equal(t.status,'Draft');assert.deepEqual(t.history,history);assert.equal(t.paid,0);assert.equal(t.apmStatus,'Belum Terbit');assert.equal(t.scan,undefined);
+    actor(s,'PM Konstruksi');assert.throws(()=>decide(s,id,'Setujui',''),/berurutan/);
+    actor(s,'Admin Konstruksi');saveTerm(s,t,true);t=getTerm(s,id);actor(s,'Head of PMO');assert.equal(canApproveTerm(s,t),false);assert.throws(()=>decide(s,id,'Setujui',''),/berurutan/);assert.equal(s.bapps.length,0);
+    for(const [i,role] of APPROVERS_V3.entries()){actor(s,role);decide(s,id,'Setujui','Siklus baru');assert.equal(t.status,i===4?'Disetujui':'Diajukan');}
+    assert.equal(t.history.length,stage+6);assert.deepEqual(t.history.slice(0,stage+1),history);assert.equal(s.bapps.length,1);
+    actor(s,'Finance');assert.throws(()=>recordApm(s,id,'APM/REJECTED'),/scan/);assert.equal(t.paid,0);
+  });
+}
+
+test('v3 rejected forms display the reason and allow evidence correction while historical rejected documents remain locked',()=>{
+  const s=state();let t=payment(s);actor(s,'PM Konstruksi');decide(s,t.id,'Tolak','Lengkapi <eviden>');actor(s,'Admin Konstruksi');
+  const notice=renderToStaticMarkup(createElement(SubmissionRejectionNotice,{document:t,history:t.history}));
+  assert.match(notice,/Lengkapi &lt;eviden&gt;/);assert.match(notice,/Seluruh approval dimulai dari PM Konstruksi/);
+  const panel=()=>renderToStaticMarkup(createElement(TermWorkEvidencePanel,{s,term:t}));assert.match(panel(),/Upload eviden pekerjaan/);
+  t.workflowVersion=2;assert.doesNotMatch(panel(),/type="file"/);assert.throws(()=>saveTerm(s,t,true),/terkunci/);
+  const p=s.projects[0];p.workflowVersion=2;p.status='Ditolak';assert.throws(()=>saveProject(s,p,true),/terkunci/);
+  t.workflowVersion=3;saveTerm(s,t,true);t=getTerm(s,t.id);assert.doesNotMatch(renderToStaticMarkup(createElement(SubmissionRejectionNotice,{document:t,history:t.history})),/ditolak/);
+});
 
 test('new PP form presents all five approvers in order and retains the two-field historical editor', () => {
   const s=state('B'),p=structuredClone(s.projects[0]); p.approverUserIds=chain(s);

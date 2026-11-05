@@ -84,8 +84,8 @@ trait PrototypeWorkflowV2
     {
         $this->admin();
         $old = $this->existing('projects', $input['id'] ?? '');
-        if ($old && ! in_array($old['status'], ['Draft', 'Dikembalikan'], true)) {
-            $this->fail('PP terkunci setelah diajukan, ditolak atau disetujui.');
+        if ($old && ! $this->canReviseSubmission($old)) {
+            $this->fail('PP terkunci pada status ini.');
         }
         $p = array_intersect_key($input, array_flip(['id', 'name', 'unit', 'branch', 'projectCode', 'budget', 'date', 'rootId', 'parentId', 'sourceBapp', 'allocations', 'intro', 'team', 'schedule', 'costs', 'risk', 'communication', 'quality', 'created']));
         $this->enum($p['unit'] ?? '', ['Konstruksi', 'Operation']);

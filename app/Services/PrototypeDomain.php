@@ -692,8 +692,8 @@ class PrototypeDomain
     {
         $this->admin();
         $t = $this->record('terms', $input['id'] ?? '');
-        if (! in_array($t['status'], ['Draft', 'Dikembalikan'], true)) {
-            $this->fail('Termin terkunci setelah diajukan/ditolak.');
+        if (! $this->canReviseSubmission($t)) {
+            $this->fail('Termin terkunci pada status ini.');
         }
         $t['type'] = $this->enum($input['type'] ?? '', ['Parsial', 'Final']);
         if ($t['number'] === 3 && $t['type'] !== 'Final') {
@@ -716,6 +716,10 @@ class PrototypeDomain
         }
         if ($this->termTotal($t) <= 0) {
             $this->fail('Masukkan volume aktual dengan nilai tagihan positif.');
+        }
+        if ($t['status'] === 'Ditolak') {
+            $t['status'] = 'Draft';
+            $t['approvals'] = [];
         }
         if ($submit) {
             $t['status'] = 'Diajukan';

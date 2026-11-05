@@ -177,3 +177,16 @@ Final BA KH date verification: **109 PHP tests / 1,477 assertions**, **71 fronte
 - [x] Preserve actual/type drafts, five approvals, wet-signature scan, Finance/APM and historical workflows. Ignore forged path/evidence/scan/payment metadata.
 - [x] 116 PHP tests / 1,647 assertions and 75 frontend tests, build and Pint passed. Disposable MariaDB controller upload/path/PM preview and full flow through APM passed. No manual authenticated browser QA or live test transactions.
 - [x] Deploy migration 2026_11_05_000002 to its (57 total); existing business/account/master rows and revision 16 unchanged. See TERM_WORK_EVIDENCE.md and QA evidence.
+
+## Database relationship handbook — 5 November 2026
+- [x] Inspect only live its schema metadata in a read-only transaction; inventory 61 tables, 497 columns, 61 primary keys and 106 foreign keys. No application/data/configuration changes.
+- [x] Describe every table, all outgoing FKs, logical links and snapshot storage. Distinguish 42 runtime tables, 11 prepared tables and eight Laravel infrastructure tables; do not infer use from row counts.
+- [x] Create an A5 PDF/Word handbook, nine readable SVG/PNG diagrams, complete Mermaid ERD and offline searchable HTML catalog with every column/incoming/outgoing FK.
+- [x] Validate schema/catalog/ERD coverage, references, SVG/XML, HTML search behavior and PDF page/text coverage; render and inspect all 42 pages. Documentation-only checks; application regression/build not repeated. See docs/DATABASE_RELATIONS.md and QA evidence.
+
+## Rejected v3 PP and payment resubmission — 5 November 2026
+- [x] Back up its before workflow edits: its-before-rejection-resubmit-20261105-144618.sql (1,019,899 bytes, SHA-256 1541823e46757029416eb9fab285eab65bbd534316b716efaaf50a2e774aae7c).
+- [x] Allow Admin correction and explicit resubmission of rejected v3 PP/terms on the same document. Preserve required rejection notes, identities/numbers, historical decisions and v1/v2 rejection behavior; all five new approvals restart from PM.
+- [x] Reopen rejected v3 work-proof correction under existing Admin/Branch/file rules, retain removed history, and lock again on resubmission. Keep scan/Finance/APM, Final/BA PP and volume gates unchanged.
+- [x] Match React form availability, budget previews, rejection guidance and timeline positions to server validation. SQL rejected cycles/decisions remain intact while new submission creates a new pending cycle; no schema migration or live data rewrite.
+- [x] 127 PHP tests / 2,282 assertions, 86 frontend tests, production build main-CrxKAb5G.js and explicit PHP Pint checks pass. New coverage rejects at every stage for both PP and Final termin, checks fresh five-approver cycles and SQL history, and verifies real eviden correction. Tests remain isolated SQLite memory; no live synthetic data, authenticated browser or separate MySQL engine retest. See docs/APPROVAL_RESUBMISSION.md.

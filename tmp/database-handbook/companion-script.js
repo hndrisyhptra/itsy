@@ -1,0 +1,2 @@
+
+const q=document.getElementById('q'), cards=[...document.querySelectorAll('article')];q.addEventListener('input',()=>{const s=q.value.toLowerCase().trim();let count=0;cards.forEach(c=>{const show=c.dataset.search.toLowerCase().includes(s);c.classList.toggle('hidden',!show);if(show)count++});document.querySelectorAll('.group').forEach(g=>g.classList.toggle('hidden',![...g.querySelectorAll('article')].some(c=>!c.classList.contains('hidden'))));document.getElementById('count').textContent=count+' tabel ditemukan'});

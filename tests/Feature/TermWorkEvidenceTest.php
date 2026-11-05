@@ -144,6 +144,30 @@ class TermWorkEvidenceTest extends TestCase
         $this->get($this->url($original['id']))->assertOk();
     }
 
+    public function test_rejection_allows_admin_to_replace_work_evidence_before_resubmission_and_keeps_removed_file_history(): void
+    {
+        $this->upload()->assertOk();
+        $original = $this->file($this->term());
+        $this->submit();
+        $this->asRole('PM Konstruksi');
+        $this->api('decide', [$this->termId, 'Tolak', 'Ganti bukti pekerjaan'])->assertOk();
+        $this->upload()->assertForbidden();
+        $this->asRole('Admin Konstruksi');
+        $this->assertSame('Ditolak', $this->term()['status']);
+        $this->api('removeTermWorkEvidence', [$this->termId, $original['id']])->assertOk();
+        $this->upload()->assertOk();
+        $rejected = $this->term();
+        $this->assertCount(2, $rejected['workEvidence']);
+        $this->assertNotEmpty($rejected['workEvidence'][0]['removedAt']);
+        $this->assertSame('Ganti bukti pekerjaan', $rejected['history'][0]['note']);
+        $this->get($this->url($original['id']))->assertOk();
+        $this->api('saveTerm', [$rejected, true])->assertOk();
+        $this->assertEmpty($this->term()['approvals']);
+        $this->upload()->assertUnprocessable();
+        $this->assertDatabaseCount('term_work_evidence', 2);
+        $this->assertCount(2, Storage::disk('local')->allFiles());
+    }
+
     public function test_wrong_role_branch_and_guest_cannot_upload_or_read_another_branch_file(): void
     {
         $this->upload()->assertOk();

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Upload, FileText, Eye, Download, Trash2, ExternalLink } from 'lucide-react';
-import { type State, type Term, type WorkEvidence, operational, dateLabel, removeTermWorkEvidence } from './domain';
+import { type State, type Term, type WorkEvidence, operational, canReviseSubmission, dateLabel, removeTermWorkEvidence } from './domain';
 import { appUrl, boot } from './laravel';
 import { mutate, uploadTermWorkEvidence, persistencePending } from './store';
 import { Button, Card, Table, Notice, Modal, attempt } from './ui';
@@ -15,7 +15,7 @@ export function WorkEvidencePreview({termId,file}:{termId:string;file:WorkEviden
 export function TermWorkEvidencePanel({s,term,embedded=false}:{s:State;term:Term;embedded?:boolean}) {
   const [busy,setBusy]=useState(false),[progress,setProgress]=useState(''),[error,setError]=useState(''),[preview,setPreview]=useState<WorkEvidence|null>(null);
   const files=term.workEvidence??[],active=files.filter(f=>!f.removedAt),removed=files.filter(f=>f.removedAt);
-  const editable=!embedded&&operational(s)&&['Draft','Dikembalikan'].includes(term.status);
+  const editable=!embedded&&operational(s)&&canReviseSubmission(term);
   async function upload(selected:File[]) {
     if(!selected.length)return;
     setError('');
@@ -36,5 +36,5 @@ export function TermWorkEvidencePanel({s,term,embedded=false}:{s:State;term:Term
     {removed.length>0&&<details><summary>Riwayat lampiran yang dikeluarkan ({removed.length})</summary>{rows(removed)}</details>}
     {preview&&<Modal title={'Eviden pekerjaan · '+preview.name} wide onClose={()=>setPreview(null)}><div className="preview-toolbar"><span>{preview.mime==='application/pdf'?'PDF':'Foto pekerjaan'}</span><div className="actions"><a className="btn" href={workEvidenceUrl(term.id,preview.id)} target="_blank" rel="noopener noreferrer"><ExternalLink size={14}/> Buka tab baru</a><a className="btn" href={workEvidenceUrl(term.id,preview.id)+'?download=1'}><Download size={14}/> Unduh</a></div></div><WorkEvidencePreview termId={term.id} file={preview}/></Modal>}
   </div>;
-  return embedded?<section className="work-evidence-section">{content}</section>:<Card title="Eviden Pekerjaan" subtitle="Lampiran pekerjaan untuk penilaian pengajuan pembayaran. Upload dan penghapusan tersedia saat Draft/Dikembalikan.">{content}</Card>;
+  return embedded?<section className="work-evidence-section">{content}</section>:<Card title="Eviden Pekerjaan" subtitle="Lampiran pekerjaan untuk penilaian pengajuan pembayaran. Upload dan penghapusan tersedia saat pengajuan dapat diperbaiki Admin.">{content}</Card>;
 }

@@ -10,8 +10,8 @@ trait PrototypeTermWorkEvidence
     {
         $this->admin();
         $term = $this->record('terms', $id);
-        if (! in_array($term['status'], ['Draft', 'Dikembalikan'], true)) {
-            $this->fail('Eviden pekerjaan hanya dapat diunggah pada Draft atau pengajuan Dikembalikan.');
+        if (! $this->canReviseSubmission($term)) {
+            $this->fail('Eviden pekerjaan hanya dapat diunggah pada pengajuan yang dapat diperbaiki Admin.');
         }
         if (count(array_filter($term['workEvidence'] ?? [], fn ($f) => empty($f['removedAt']))) >= 10) {
             $this->fail('Maksimal 10 lampiran eviden pekerjaan aktif per termin.');
@@ -37,7 +37,7 @@ trait PrototypeTermWorkEvidence
     {
         $this->admin();
         $term = $this->record('terms', $id);
-        if (! in_array($term['status'], ['Draft', 'Dikembalikan'], true)) {
+        if (! $this->canReviseSubmission($term)) {
             $this->fail('Lampiran terkunci selama approval atau setelah pengajuan selesai.');
         }
         $found = false;

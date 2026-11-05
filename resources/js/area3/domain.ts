@@ -4,7 +4,8 @@ import { mandorSphThreshold, sphThresholdApplies } from './sph';
 import type { PlanBudget, SignaturePlanRow, budgetSummary } from './plan-budget';
 import { applyPlanTemplate } from './plan-template';
 import { recordCommand } from './commands';
-import { saveProjectV2, assertAssigned, previewProjectNumber, rememberProjectNumber, approvalRoles, validateAssignments } from './workflow';
+import { saveProjectV2, assertAssigned, previewProjectNumber, rememberProjectNumber, approvalRoles, validateAssignments, canReviseSubmission } from './workflow';
+export { canReviseSubmission } from './workflow';
 export { APPROVERS_V3, approvalRoles, selectedApprover, assignPaymentApprovers, validateAssignments, decideProject, setNumberFormat, selectActor, assignProjectApprovers, verifyTermScan, projectApprovalRole, canApproveProject, canApproveTerm, branchOptions, previewProjectNumber, normalizeWorkflow } from './workflow';
 export const ROLES = ['Admin Konstruksi', 'PM Konstruksi', 'Manager Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Bussiness Support', 'Head of PMO', 'Finance', 'Superadmin'] as const;
 export type Role = typeof ROLES[number];
@@ -182,16 +183,17 @@ export function termErrors(s: State, t: Term) {
 }
 export function saveTerm(s: State, input: Term, submit = false) {
   recordCommand('saveTerm', [input, submit]);
-  requireAdmin(s); const old = getTerm(s, input.id); if (!['Draft', 'Dikembalikan'].includes(old.status)) throw new Error('Termin terkunci setelah diajukan atau ditolak.');
+  requireAdmin(s); const old = getTerm(s, input.id); if (!canReviseSubmission(old)) throw new Error('Termin terkunci pada status ini.');
   const t = structuredClone(old); t.type = input.type; t.actuals = structuredClone(input.actuals);
   const e = termErrors(s, t); if (e.length) throw new Error(e.join('\n'));
+  if (old.status === 'Ditolak') { t.status = 'Draft'; t.approvals = []; }
   if (submit) { t.status = 'Diajukan'; t.approvals = []; t.submitted = now(); }
   s.terms[s.terms.indexOf(old)] = t; log(s, submit ? 'Termin diajukan ke PM Konstruksi' : 'Draft termin disimpan', `${getSpk(s, t.spkId).no} · Termin ${t.number} · ${money(termTotal(s, t))}`, `/termin/${t.id}`);
 }
 export function removeTermWorkEvidence(s:State,termId:string,fileId:string) {
   recordCommand('removeTermWorkEvidence',[termId,fileId]); requireAdmin(s);
   const t=getTerm(s,termId);
-  if(!['Draft','Dikembalikan'].includes(t.status))throw new Error('Lampiran terkunci selama approval atau setelah pengajuan selesai.');
+  if(!canReviseSubmission(t))throw new Error('Lampiran terkunci selama approval atau setelah pengajuan selesai.');
   const file=t.workEvidence?.find(f=>f.id===fileId&&!f.removedAt);
   if(!file)throw new Error('Lampiran eviden pekerjaan aktif tidak ditemukan.');
   file.removedAt=now();file.removedBy=s.actorUserId;

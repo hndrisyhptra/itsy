@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Concerns\AuthenticatesArea3;
 use Tests\TestCase;
 
@@ -456,6 +457,122 @@ class UsernameApprovalV3Test extends TestCase
         $this->assertCount(7, $actual['approvalHistory']);
         $this->assertSame('Head of PMO', $actual['approvals'][4]['role']);
         $this->api('decideProject', [$p['id'], 'Setujui', 'duplicate'])->assertUnprocessable();
+    }
+
+    public static function rejectionStages(): array
+    {
+        return array_combine(PrototypeDomain::APPROVERS_V3, array_map(fn ($i) => [$i], range(0, 4)));
+    }
+
+    #[DataProvider('rejectionStages')]
+    public function test_pp_rejected_at_any_stage_requires_admin_resubmission_and_all_five_fresh_decisions(int $stage): void
+    {
+        $p = $this->newProject();
+        $this->api('saveProject', [$p, true])->assertOk();
+        foreach (array_slice(PrototypeDomain::APPROVERS_V3, 0, $stage) as $role) {
+            $this->asRole($role);
+            $this->api('decideProject', [$p['id'], 'Setujui', 'Siklus awal'])->assertOk();
+        }
+        $this->asRole(PrototypeDomain::APPROVERS_V3[$stage]);
+        $before = $this->getJson('/api/prototype/state')->json();
+        $this->api('decideProject', [$p['id'], 'Tolak', '   '])->assertUnprocessable();
+        $this->assertSame($before, $this->getJson('/api/prototype/state')->json());
+        $this->api('decideProject', [$p['id'], 'Tolak', 'Perbaiki rincian PP'])->assertOk();
+        $rejected = $this->projectRecord($p['id']);
+        $this->assertSame('Ditolak', $rejected['status']);
+        $this->assertEmpty($rejected['approvals']);
+        $this->assertSame('Perbaiki rincian PP', $rejected['approvalHistory'][$stage]['note']);
+        $this->assertDatabaseHas('approval_runs', ['cycle_no' => 1, 'status' => 'REJECTED']);
+        $decisions = DB::table('approval_decisions')->orderBy('id_approval_decision')->get()->all();
+        $this->api('saveProject', [$rejected, true])->assertForbidden();
+        $this->asRole('Admin Konstruksi');
+        $forged = $rejected;
+        $forged['approvalHistory'] = [];
+        $forged['approvals'] = collect($before['state']['projects'])->firstWhere('id', $p['id'])['approvals'];
+        $forged['no'] = 'FORGED';
+        $this->api('saveProject', [$forged, false])->assertOk();
+        $draft = $this->projectRecord($p['id']);
+        $this->assertSame('Draft', $draft['status']);
+        $this->assertSame($rejected['approvalHistory'], $draft['approvalHistory']);
+        $this->assertSame($rejected['no'], $draft['no']);
+        $this->assertDatabaseCount('approval_runs', 1);
+        $this->asRole('PM Konstruksi');
+        $this->api('decideProject', [$p['id'], 'Setujui', 'Belum diajukan ulang'])->assertUnprocessable();
+        $this->asRole('Admin Konstruksi');
+        $this->api('saveProject', [$draft, true])->assertOk();
+        $fresh = $this->projectRecord($p['id']);
+        $this->assertEmpty($fresh['approvals']);
+        $this->assertDatabaseHas('approval_runs', ['cycle_no' => 2, 'status' => 'PENDING']);
+        $this->assertEquals($decisions, DB::table('approval_decisions')->orderBy('id_approval_decision')->get()->all());
+        $this->asRole('Admin Area');
+        $this->api('decideProject', [$p['id'], 'Setujui', 'Tidak boleh lompat PM'])->assertForbidden();
+        foreach (PrototypeDomain::APPROVERS_V3 as $i => $role) {
+            $this->asRole($role);
+            $this->api('decideProject', [$p['id'], 'Setujui', 'Siklus baru'])->assertOk();
+            $this->assertSame($i === 4 ? 'Sah' : 'Diajukan', $this->projectRecord($p['id'])['status']);
+        }
+        $this->assertCount($stage + 6, $this->projectRecord($p['id'])['approvalHistory']);
+        $this->assertDatabaseHas('approval_runs', ['cycle_no' => 1, 'status' => 'REJECTED']);
+        $this->assertDatabaseHas('approval_runs', ['cycle_no' => 2, 'status' => 'APPROVED']);
+        $this->assertDatabaseCount('approval_decisions', $stage + 6);
+    }
+
+    #[DataProvider('rejectionStages')]
+    public function test_final_payment_rejected_at_any_stage_restarts_from_pm_without_scan_apm_or_early_ba_pp(int $stage): void
+    {
+        Storage::fake('local');
+        $t = $this->payment(true);
+        foreach (array_slice(PrototypeDomain::APPROVERS_V3, 0, $stage) as $role) {
+            $this->asRole($role);
+            $this->api('decide', [$t['id'], 'Setujui', 'Siklus awal'])->assertOk();
+        }
+        $this->asRole(PrototypeDomain::APPROVERS_V3[$stage]);
+        $before = $this->getJson('/api/prototype/state')->json();
+        $this->api('decide', [$t['id'], 'Tolak', ''])->assertUnprocessable();
+        $this->assertSame($before, $this->getJson('/api/prototype/state')->json());
+        $this->api('decide', [$t['id'], 'Tolak', 'Perbaiki volume dan eviden'])->assertOk();
+        $rejected = $this->getJson('/api/prototype/state')->json('state.terms.0');
+        $this->assertSame('Ditolak', $rejected['status']);
+        $this->assertEmpty($rejected['approvals']);
+        $this->assertCount($stage + 1, $rejected['history']);
+        $runs = DB::table('approval_runs')->whereNotNull('term_id');
+        $oldRun = (clone $runs)->first();
+        $this->assertSame('REJECTED', $oldRun->status);
+        $decisions = DB::table('approval_decisions')->orderBy('id_approval_decision')->get()->all();
+        $this->api('saveTerm', [$rejected, true])->assertForbidden();
+        $this->asRole('Admin Konstruksi');
+        $this->upload($t['id'])->assertUnprocessable();
+        $this->assertEmpty(Storage::disk('local')->allFiles());
+        $this->api('createTerm', [$t['spkId']])->assertUnprocessable();
+        $forged = $rejected;
+        $forged['history'] = [];
+        $forged['approvals'] = $before['state']['terms'][0]['approvals'];
+        $forged['paid'] = 999999;
+        $forged['apmStatus'] = 'Valid';
+        $this->api('saveTerm', [$forged, false])->assertOk();
+        $draft = $this->getJson('/api/prototype/state')->json('state.terms.0');
+        $this->assertSame('Draft', $draft['status']);
+        $this->assertSame($rejected['history'], $draft['history']);
+        $this->assertSame($rejected['number'], $draft['number']);
+        $this->assertSame($rejected['actuals'], $draft['actuals']);
+        $this->asRole('PM Konstruksi');
+        $this->api('decide', [$t['id'], 'Setujui', 'Belum diajukan ulang'])->assertForbidden();
+        $this->asRole('Admin Konstruksi');
+        $this->api('saveTerm', [$draft, true])->assertOk();
+        $this->assertSame('PENDING', (clone $runs)->where('cycle_no', 2)->value('status'));
+        $this->assertSame('REJECTED', DB::table('approval_runs')->where('id_approval_run', $oldRun->id_approval_run)->value('status'));
+        $this->assertEquals($decisions, DB::table('approval_decisions')->orderBy('id_approval_decision')->get()->all());
+        $this->assertDatabaseCount('ba_completions', 0);
+        $this->assertDatabaseCount('apm_settlements', 0);
+        $this->asRole('Head of PMO');
+        $this->api('decide', [$t['id'], 'Setujui', 'Tidak boleh lompat PM'])->assertForbidden();
+        $this->approvePayment($t['id']);
+        $approved = $this->getJson('/api/prototype/state')->json('state.terms.0');
+        $this->assertCount($stage + 6, $approved['history']);
+        $this->assertSame('Belum Terbit', $approved['apmStatus']);
+        $this->assertEquals(0, $approved['paid']);
+        $this->assertDatabaseCount('ba_completions', 1);
+        $this->assertDatabaseCount('apm_settlements', 0);
     }
 
     public function test_payment_requires_five_approvals_then_real_scan_and_separate_finance_approval_before_apm(): void

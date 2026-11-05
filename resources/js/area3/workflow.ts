@@ -5,6 +5,7 @@ import { type State, type Project, type Term, type Role, type Approval, getProje
 
 export const APPROVERS_V3: Role[] = ['PM Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Bussiness Support', 'Head of PMO'];
 type AssignedDocument = {workflowVersion?:number; pmUserId?:string; managerUserId?:string; approverUserIds?:Partial<Record<Role,string>>};
+export function canReviseSubmission(document: {status:string;workflowVersion?:number}) { return ['Draft','Dikembalikan'].includes(document.status) || ((document.workflowVersion ?? 1) >= 3 && document.status === 'Ditolak'); }
 export function approvalRoles(document: AssignedDocument, project = false): Role[] { return (document.workflowVersion ?? 1) >= 3 ? APPROVERS_V3 : project || (document.workflowVersion ?? 1) >= 2 ? ['PM Konstruksi','Manager Konstruksi'] : ['PM Konstruksi','Manager Konstruksi','Finance']; }
 export function selectedApprover(document: AssignedDocument, role:Role) { return (document.workflowVersion ?? 1) >= 3 ? document.approverUserIds?.[role] : role === 'PM Konstruksi' ? document.pmUserId : document.managerUserId; }
 export function validateAssignments(s:State, document:AssignedDocument & {branch:string}, required=true) {
@@ -54,7 +55,7 @@ export function canApproveProject(s: State, p: Project) { const role = projectAp
 export function canApproveTerm(s: State, t: Term) { const role = t.status === 'Diajukan' ? approvalRoles(t)[t.approvals.length] : undefined; return !!role && role === s.role && ((t.workflowVersion ?? 1) < 2 || (s.actorUserId === selectedApprover(t,role) && s.users.some(u => u.id === s.actorUserId && u.active && u.role === role))); }
 export function saveProjectV2(s: State, input: Project, submit: boolean) {
   requireAdmin(s); const p = structuredClone(input), old = s.projects.find(x => x.id === p.id);
-  if (old && !['Draft', 'Dikembalikan'].includes(old.status)) throw new Error('PP terkunci setelah diajukan, ditolak atau disetujui.');
+  if (old && !canReviseSubmission(old)) throw new Error('PP terkunci pada status ini.');
   const version = (old?.workflowVersion ?? 1) >= 2 ? old!.workflowVersion! : s.schema >= 3 ? 3 : 2;
   if (version >= 3) Object.assign(p, applyPlanTemplate(p, true));
   else { delete p.planTemplateVersion; delete p.teamText; delete p.durationDays; delete p.planBudget; delete p.planBudgetTotals; delete p.signatureRows; delete p.signatureUsers; delete p.closing; delete p.riskLevel; }

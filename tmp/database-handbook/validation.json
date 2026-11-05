@@ -1,0 +1,24 @@
+{
+  "schema": {
+    "tables": 61,
+    "columns": 497,
+    "foreign_keys": 106,
+    "primary_keys": 61
+  },
+  "descriptions_complete": true,
+  "column_references_valid": true,
+  "mermaid_complete": true,
+  "svg_xml_valid": true,
+  "html_offline": true,
+  "catalog_entries": 61,
+  "diagram_count": 9,
+  "pdf_pages": 42,
+  "pdf_size": "A5",
+  "database_access": "metadata only, read-only transaction",
+  "runtime_code_changed": false,
+  "test_scope": "documentation and artifact validation",
+  "files": {
+    "output/documents/Buku-Saku-Relasi-Database-its-Area-3.docx": "541ee9fe1edf6d5cb271ae15d68102698b85409faf055519d597e3cd8cd99033",
+    "tmp/database-handbook/render/Buku-Saku-Relasi-Database-its-Area-3.pdf": "968811f2b9fafd39cec2b9587bf8522e03a7811e0e3271cbf6e1571ed2aaa4a5"
+  }
+}

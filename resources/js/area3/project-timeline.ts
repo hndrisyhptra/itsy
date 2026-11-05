@@ -29,14 +29,14 @@ export function projectPosition(p:Project):string {
   if(p.status==='Sah') return (p.workflowVersion??1)<2?'PP Sah · alur historis':'PP Sah · seluruh approval selesai';
   if(p.status==='Diajukan') return 'Menunggu approval '+(approvalRoles(p,true)[p.approvals?.length??0]??'—');
   if(p.status==='Dikembalikan') return 'Dikembalikan · menunggu perbaikan Admin Konstruksi';
-  if(p.status==='Ditolak') return 'Ditolak · proses PP berhenti';
+  if(p.status==='Ditolak') return (p.workflowVersion??1)>=3?'Ditolak · menunggu perbaikan dan pengajuan ulang Admin Konstruksi dari PM':'Ditolak · proses PP berhenti';
   return 'Draft · belum diajukan';
 }
 
 export function paymentPosition(t:Term):string {
   if(t.status==='Diajukan') return 'Menunggu approval '+(approvalRoles(t)[t.approvals.length]??'—');
   if(t.status==='Dikembalikan') return 'Dikembalikan · menunggu perbaikan Admin Konstruksi';
-  if(t.status==='Ditolak') return 'Ditolak · proses pembayaran berhenti';
+  if(t.status==='Ditolak') return (t.workflowVersion??1)>=3?'Ditolak · menunggu perbaikan dan pengajuan ulang Admin Konstruksi dari PM':'Ditolak · proses pembayaran berhenti';
   if(t.status==='Draft') return 'Draft · belum diajukan';
   if((t.workflowVersion??1)<2) return t.apmStatus==='Valid'?'APM valid · lihat realisasi pembayaran':'Menunggu APM';
   if(t.apmStatus==='Valid') return 'APM valid · tagihan lunas';

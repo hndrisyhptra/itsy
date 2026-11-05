@@ -1,5 +1,5 @@
 import { Plus, Trash2 } from 'lucide-react';
-import { type State, type Project, type Role, money, num, dateLabel, uid, selectedApprover } from './domain';
+import { canReviseSubmission, type State, type Project, type Role, money, num, dateLabel, uid, selectedApprover } from './domain';
 import { type BudgetCategory, type PlanBudget, type SignaturePlanRow, categories, printRoles, ownerPlanRows, draftPlanBudget, budgetSummary, cents, lineAmount, ratioPercent, selectUsageCategory } from './plan-budget';
 import { ppTemplate } from './plan-template';
 import { Table, Notice, Button, Field, Input } from './ui';
@@ -12,7 +12,7 @@ const priceCell=(value:number|null)=>value===null?'—':money(value);
 function VolumeLabel({m,s,qm,qs}:{m:number|null;s:number|null;qm:number;qs:number}){return m!==null&&s!==null&&qm!==qs?<>M {num(qm)} / J {num(qs)}</>:<>{num(m!==null?qm:qs)}</>;}
 
 export function BudgetPlanSection({s,p,editable=false,onChange,printing=false}:{s:State;p:Project;editable?:boolean;onChange?:(p:Project)=>void;printing?:boolean}) {
-  const b=draftPlanBudget(s,p), totals=!['Draft','Dikembalikan'].includes(p.status)&&p.planBudgetTotals?p.planBudgetTotals:budgetSummary(s,p,b),owners=ownerPlanRows(s,p), change=<K extends keyof PlanBudget>(key:K,value:PlanBudget[K])=>onChange?.({...p,planBudget:{...b,[key]:value}});
+  const b=draftPlanBudget(s,p), totals=!canReviseSubmission(p)&&p.planBudgetTotals?p.planBudgetTotals:budgetSummary(s,p,b),owners=ownerPlanRows(s,p), change=<K extends keyof PlanBudget>(key:K,value:PlanBudget[K])=>onChange?.({...p,planBudget:{...b,[key]:value}});
   const updateMandor=(i:number,key:'priceM'|'priceS'|'qtyM'|'qtyS',value:number)=>change('mandor',b.mandor.map((r,k)=>k===i?{...r,[key]:value}:r));
   return <div className="plan-budget-section"><h3>IV. KEBUTUHAN ANGGARAN DAN PERKIRAAN MARGIN</h3><h4>1. Kebutuhan Jasa Mandor (BoQ) dari gambar rencana kerja (APD)</h4><h4>BoQ TA - Telkom / Owner Project</h4>{!printing&&<Notice>Tabel Owner mengikuti BOQ Plan dan alokasi PP ini. Harga serta volume sumber tidak diubah di sini.</Notice>}<Table headers={['Designator','Material','Jasa','Volume','Jml_Mat','Jml_Jasa','Total Harga']}>{owners.map(row=><tr key={row.rowId}><td><b>{row.code}</b><small>{row.name} · {row.unit}</small></td><td className="numeric">{priceCell(row.m)}</td><td className="numeric">{priceCell(row.s)}</td><td className="numeric"><VolumeLabel {...row}/></td><td className="numeric">{priceCell(row.m===null?null:lineAmount(row.qm,row.m))}</td><td className="numeric">{priceCell(row.s===null?null:lineAmount(row.qs,row.s))}</td><td className="numeric">{money((cents(lineAmount(row.qm,row.m??0))+cents(lineAmount(row.qs,row.s??0)))/100)}</td></tr>)}</Table><div className="total-row"><span>Total BoQ Owner</span><strong>{money(totals.ownerTotal)}</strong></div>
     <h4>BoQ TA - Mandor</h4><Table headers={['Designator','Material','Jasa','Volume','Jml_Mat','Jml_Jasa','Total Harga','% Perbandingan HSS TA-Telkom']}>{owners.map((owner,i)=>{
@@ -32,7 +32,7 @@ function MarginTable({totals:t}:{totals:ReturnType<typeof budgetSummary>}) {
 }
 
 export function signaturePerson(s:State,p:Project,row:SignaturePlanRow) {
-  const draft=['Draft','Dikembalikan'].includes(p.status),creator=row.role==='Admin Konstruksi';
+  const draft=canReviseSubmission(p),creator=row.role==='Admin Konstruksi';
   const id=creator?p.preparedBy?.userId??s.actorUserId:selectedApprover({...p,workflowVersion:3},row.role),user=s.users.find(u=>u.id===id),snapshot=creator?p.preparedBy:p.signatureUsers?.[row.role];
   const decision=(p.approvals??[]).find(a=>a.role===row.role&&a.userId===id&&a.decision==='Setujui');
   return {name:decision?.actorName??(!draft?snapshot?.name:undefined)??user?.name??snapshot?.name??'Belum dipilih',nik:decision?.actorNik??(!draft?snapshot?.nik:undefined)??user?.nik??snapshot?.nik??'',date:creator?p.preparedBy?.at:decision?.at,status:creator?'Dibuat':decision?'Disetujui di aplikasi':'Belum disetujui'};

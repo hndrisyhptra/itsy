@@ -2,6 +2,8 @@
 
 Aplikasi mandiri Laravel 12/PHP 8.2 + React/TypeScript untuk administrasi konstruksi dan pembayaran mandor. Folder utama `/Applications/XAMPP/xamppfiles/htdocs/its/area3-prototype`. Tidak memakai atau mengubah proyek/database Dompis Prov.
 
+Panduan struktur tersedia pada [buku saku relasi database](docs/DATABASE_RELATIONS.md): PDF/Word ukuran A5, visual relasi dan katalog seluruh tabel dengan pencarian.
+
 ## Menjalankan dan login
 
 Database aktif menggunakan MySQL/MariaDB **its**. Transaksi sudah dipindahkan ke tabel bisnis pada 5 November 2026; PP yang ada tidak hilang. Lihat [penyimpanan aktif dan hasil verifikasi](docs/MYSQL_RUNTIME.md). Jalankan migration tambahan saat memperbarui kode agar kolom identitas akun dan versi approval terbaru tersedia:
@@ -43,6 +45,8 @@ Sembilan menu dipertahankan: Dashboard, Project Plan, SPK, Pembayaran, BA PP, In
 5. Maksimal tiga termin, termin ketiga wajib Final, tidak ada termin setelah Final lebih awal. APM valid tetap diperlukan sebelum termin berikutnya. BA PP Sah mendahului pelepasan/PP lanjutan dan anggaran root tidak dihitung dua kali.
 
 Dokumen versi 1/2 yang sudah tersimpan mempertahankan riwayat/aturan lamanya. Untuk termin baru dari PP lama, tetapkan lima approver pembayaran berikutnya pada detail PP. Penanggung jawab termin yang sudah tersimpan tidak berubah. PP lanjutan baru memakai versi 3.
+
+**Penolakan PP/termin versi 3** wajib disertai catatan. Admin Konstruksi dapat memperbaiki dan mengajukan ulang dokumen yang sama; lima approval dimulai kembali dari PM. Riwayat penolakan, nomor PP/termin, dan lampiran tetap dipertahankan. Pengajuan tidak otomatis masuk ke approver sampai admin mengirim ulang. Tidak perlu migration tambahan. Lihat [APPROVAL_RESUBMISSION](docs/APPROVAL_RESUBMISSION.md).
 
 Header PP berurutan ID Project, Branch, Unit Kerja (Konstruksi/Operation), No PP otomatis. Penomoran global workspace diatur Superadmin melalui Pengaturan → Penomoran PP. Format bawaan `{SEQ}/LG.000/TA-03{BRANCH}/{MM}-{YYYY}`, contoh `0001/LG.000/TA-03R424/11-2026`. Kode diambil dari `branches.kode_branch`, waktu server Jakarta, urutan minimal empat digit tanpa reset otomatis. Nomor yang sudah diberikan tetap dipertahankan. Harga server, ceiling per komponen dan ledger volume maksimum tiga desimal tetap berlaku. Dokumen historis versi 1 tetap menggunakan aturan historisnya.
 

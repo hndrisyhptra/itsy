@@ -5,6 +5,9 @@ description: Implement its Area 3 Project Plan, BOQ, mandor contracting, assigne
 
 # area3-business-workflow
 
+## Rejection resubmission authority — 5 November 2026
+The user changed v3 rejection behavior. Rejected PP/payment submissions require a note and return to Admin correction/resubmission on the same document. Preserve the rejected status until a draft save/resubmission, immutable decision history and document numbers. All five active approvals restart from the selected PM only after the Admin resubmits; never reuse previous-cycle approvals. Permit v3 rejected work-evidence correction under the existing Admin/Branch/file rules. Keep v1/v2 historical rejection behavior unchanged. Follow docs/APPROVAL_RESUBMISSION.md; older terminal-rejection guidance below applies only to historical versions.
+
 ## Current storage authority — 5 November 2026
 The user explicitly authorized active MySQL persistence. docs/MYSQL_RUNTIME.md supersedes older aggregate/demo storage descriptions below. Runtime transactions read/write business-table rows with per-document snapshots; prototype_workspaces.state is a preserved archive, never a fallback. Preserve atomic SQL records/revision/receipts/audit, actual five-approver decisions and exact ledger. Live sample BOQ, role switch and reset are unavailable. Tests remain fail-closed SQLite memory; disposable MySQL QA is separate from artisan test. Do not import the archive again after activation or invent historical identities/KHS contracts.
 
@@ -28,7 +31,7 @@ Preserve the v2 process: BOQ inside PP → PP submission → assigned PM → ass
 - Each SPK has at most three terms. Term 3 must be Final. Any earlier Final blocks all subsequent terms.
 - The preceding Partial must have the required approvals plus a valid APM before the next term exists. Full payment is not a prerequisite.
 - APM, payment, physical completion, document status and approval status are distinct fields.
-- Return/reject requires a reason. Return permits correction and restarts the active approval chain; all prior decisions remain in append-only history. Rejection is terminal in this prototype.
+- Return/reject requires a reason. Return permits correction and restarts the active approval chain; all prior decisions remain in append-only history. Rejection is terminal for historical v1/v2 only; v3 follows the resubmission authority above.
 - Submitted/approved quantities and issued price snapshots are immutable through draft forms.
 
 ## Implementation checklist

@@ -1,0 +1,399 @@
+erDiagram
+    apm_settlements {
+        char_36_ id_apm_settlement PK
+        char_36_ term_id FK
+        char_36_ verified_scan_id FK
+        bigint_20__unsigned recorded_by FK
+    }
+    approval_decisions {
+        char_36_ id_approval_decision PK
+        char_36_ step_id FK
+        bigint_20__unsigned actor_user_id FK
+    }
+    approval_runs {
+        char_36_ id_approval_run PK
+        char_36_ pp_id FK
+        char_36_ term_id FK
+        bigint_20__unsigned submitted_by FK
+    }
+    approval_steps {
+        char_36_ id_approval_step PK
+        char_36_ run_id FK
+        bigint_20__unsigned assigned_user_id FK
+    }
+    areas {
+        bigint_20__unsigned id_area PK
+    }
+    ba_completions {
+        char_36_ id_ba_pp PK
+        char_36_ final_term_id FK
+        char_36_ file_id FK
+        bigint_20__unsigned attested_by FK
+        char_36_ workspace_id FK
+    }
+    boq_components {
+        char_36_ id_boq_component PK
+        char_36_ boq_line_id FK
+    }
+    boq_import_batches {
+        char_36_ id_boq_import PK
+        char_36_ pp_id FK
+        bigint_20__unsigned template_id FK
+        char_36_ file_id FK
+        bigint_20__unsigned khs_price_list_id FK
+        bigint_20__unsigned uploaded_by FK
+        bigint_20__unsigned validated_by FK
+    }
+    boq_import_rows {
+        bigint_20__unsigned id_boq_import_row PK
+        char_36_ batch_id FK
+        bigint_20__unsigned matched_khs_price_id FK
+        bigint_20__unsigned reviewed_by FK
+    }
+    boq_import_templates {
+        bigint_20__unsigned id_boq_import_template PK
+        char_36_ file_id FK
+        bigint_20__unsigned created_by FK
+    }
+    boq_lines {
+        char_36_ id_boq PK
+        char_36_ root_pp_id FK
+        bigint_20__unsigned khs_price_id FK
+        char_36_ source_import_id FK
+        int_10__unsigned source_row_no FK
+        bigint_20__unsigned source_price_id FK
+    }
+    branches {
+        bigint_20__unsigned id_branch PK
+        bigint_20__unsigned region_id FK
+    }
+    cache {
+        varchar_255_ key PK
+    }
+    cache_locks {
+        varchar_255_ key PK
+    }
+    command_receipts {
+        char_36_ id_command_receipt PK
+        bigint_20__unsigned actor_user_id FK
+    }
+    continuation_allocations {
+        bigint_20__unsigned id_continuation_allocation PK
+        char_36_ continuation_pp_id FK
+        char_36_ source_release_id FK
+        char_36_ boq_component_id FK
+    }
+    contracts {
+        char_36_ id_contract PK
+        char_36_ pp_id FK
+        char_36_ workspace_id FK
+    }
+    contract_components {
+        char_36_ id_contract_component PK
+        char_36_ contract_id FK
+        char_36_ boq_component_id FK
+    }
+    contract_documents {
+        char_36_ id_contract_document PK
+        char_36_ contract_id FK
+        char_36_ file_id FK
+        bigint_20__unsigned attested_by FK
+    }
+    designators {
+        bigint_20__unsigned id_designator PK
+        bigint_20__unsigned designator_type_id FK
+    }
+    designator_package_prices {
+        bigint_20__unsigned id_designator_package_price PK
+        bigint_20__unsigned designator_id FK
+        bigint_20__unsigned package_id FK
+    }
+    designator_types {
+        bigint_20__unsigned id_designator_type PK
+    }
+    document_files {
+        char_36_ id_document_file PK
+        bigint_20__unsigned uploaded_by FK
+    }
+    failed_jobs {
+        bigint_20__unsigned id PK
+    }
+    jobs {
+        bigint_20__unsigned id PK
+    }
+    job_batches {
+        varchar_255_ id PK
+    }
+    khs_prices {
+        bigint_20__unsigned id_khs_price PK
+        bigint_20__unsigned price_list_id FK
+        bigint_20__unsigned designator_id FK
+        bigint_20__unsigned source_price_id FK
+    }
+    khs_price_lists {
+        bigint_20__unsigned id_khs_price_list PK
+        bigint_20__unsigned package_id FK
+        bigint_20__unsigned branch_id FK
+    }
+    master_import_batches {
+        char_36_ id_master_import PK
+        char_36_ file_id FK
+        bigint_20__unsigned imported_by FK
+    }
+    master_import_rows {
+        bigint_20__unsigned id_master_import_row PK
+        char_36_ batch_id FK
+    }
+    measurement_units {
+        smallint_5__unsigned id_measurement_unit PK
+    }
+    migrations {
+        int_10__unsigned id PK
+    }
+    numbering_rules {
+        bigint_20__unsigned id_numbering_rule PK
+        bigint_20__unsigned updated_by FK
+    }
+    number_sequences {
+        bigint_20__unsigned id_number_sequence PK
+        bigint_20__unsigned rule_id FK
+    }
+    packages {
+        bigint_20__unsigned id_package PK
+    }
+    password_reset_tokens {
+        varchar_255_ email PK
+    }
+    payment_terms {
+        char_36_ id_payment_term PK
+        char_36_ contract_id FK
+        bigint_20__unsigned pm_user_id FK
+        bigint_20__unsigned manager_user_id FK
+        char_36_ workspace_id FK
+        char_36_ work_order_id FK
+    }
+    projects {
+        char_36_ id_project PK
+        bigint_20__unsigned branch_id FK
+        bigint_20__unsigned service_area_id FK
+        smallint_5__unsigned work_unit_id FK
+    }
+    project_plans {
+        char_36_ id_pp PK
+        char_36_ project_id FK
+        bigint_20__unsigned numbering_rule_id FK
+        varchar_100_ number_scope_key FK
+        char_36_ root_pp_id FK
+        char_36_ parent_pp_id FK
+        bigint_20__unsigned pm_user_id FK
+        bigint_20__unsigned manager_user_id FK
+        bigint_20__unsigned created_by FK
+        char_36_ workspace_id FK
+    }
+    project_plan_budget_rows {
+        char_36_ id_budget_row PK
+        char_36_ pp_id FK
+    }
+    project_plan_costs {
+        bigint_20__unsigned id_pp_cost PK
+        char_36_ pp_id FK
+    }
+    project_plan_schedule {
+        bigint_20__unsigned id_pp_schedule PK
+        char_36_ pp_id FK
+    }
+    project_plan_team {
+        bigint_20__unsigned id_pp_team PK
+        char_36_ pp_id FK
+        bigint_20__unsigned user_id FK
+    }
+    prototype_audits {
+        bigint_20__unsigned id PK
+        char_36_ workspace_id FK
+        bigint_20__unsigned actor_user_id FK
+    }
+    prototype_workspaces {
+        char_36_ id PK
+    }
+    regions {
+        bigint_20__unsigned id_region PK
+        bigint_20__unsigned area_id FK
+    }
+    roles {
+        smallint_5__unsigned id_role PK
+    }
+    service_areas {
+        bigint_20__unsigned id_service_area PK
+        bigint_20__unsigned branch_id FK
+        bigint_20__unsigned region_id FK
+    }
+    sessions {
+        varchar_255_ id PK
+    }
+    term_actuals {
+        bigint_20__unsigned id_term_actual PK
+        char_36_ term_id FK
+        char_36_ contract_component_id FK
+    }
+    term_scans {
+        char_36_ id_term_scan PK
+        char_36_ term_id FK
+        char_36_ file_id FK
+        bigint_20__unsigned verified_by FK
+    }
+    term_work_evidence {
+        char_36_ id_term_evidence PK
+        char_36_ term_id FK
+        char_36_ file_id FK
+        bigint_20__unsigned uploaded_by FK
+        bigint_20__unsigned removed_by FK
+    }
+    users {
+        bigint_20__unsigned id_user PK
+        bigint_20__unsigned id_regions FK
+        bigint_20__unsigned id_branch FK
+        bigint_20__unsigned id_service_areas FK
+    }
+    user_assignments {
+        bigint_20__unsigned id_user_assignment PK
+        bigint_20__unsigned user_id FK
+        smallint_5__unsigned role_id FK
+        bigint_20__unsigned branch_id FK
+    }
+    volume_balances {
+        bigint_20__unsigned id_volume_balance PK
+        char_36_ boq_component_id FK
+    }
+    volume_movements {
+        char_36_ id_volume_movement PK
+        char_36_ receipt_id FK
+        char_36_ boq_component_id FK
+    }
+    volume_releases {
+        char_36_ id_volume_release PK
+        char_36_ completion_id FK
+        char_36_ contract_component_id FK
+        char_36_ boq_component_id FK
+        bigint_20__unsigned authorized_by FK
+    }
+    workflow_events {
+        char_36_ id_event PK
+        char_36_ workspace_id FK
+    }
+    workflow_metadata {
+        char_36_ id_workspace PK
+    }
+    work_orders {
+        char_36_ id_spk PK
+        char_36_ workspace_id FK
+        char_36_ contract_id FK
+    }
+    work_units {
+        smallint_5__unsigned id_work_unit PK
+    }
+    term_scans ||--o| apm_settlements : "term_id, verified_scan_id"
+    users ||--o{ apm_settlements : "recorded_by"
+    approval_steps ||--o| approval_decisions : "step_id"
+    users |o--o{ approval_decisions : "actor_user_id"
+    project_plans |o--o{ approval_runs : "pp_id"
+    payment_terms |o--o{ approval_runs : "term_id"
+    users |o--o{ approval_runs : "submitted_by"
+    approval_runs ||--o{ approval_steps : "run_id"
+    users |o--o{ approval_steps : "assigned_user_id"
+    payment_terms ||--o| ba_completions : "final_term_id"
+    document_files |o--o{ ba_completions : "file_id"
+    users |o--o{ ba_completions : "attested_by"
+    prototype_workspaces |o--o{ ba_completions : "workspace_id"
+    boq_lines ||--o{ boq_components : "boq_line_id"
+    project_plans |o--o{ boq_import_batches : "pp_id"
+    boq_import_templates ||--o{ boq_import_batches : "template_id"
+    document_files ||--o| boq_import_batches : "file_id"
+    khs_price_lists ||--o{ boq_import_batches : "khs_price_list_id"
+    users ||--o{ boq_import_batches : "uploaded_by"
+    users |o--o{ boq_import_batches : "validated_by"
+    boq_import_batches ||--o{ boq_import_rows : "batch_id"
+    khs_prices |o--o{ boq_import_rows : "matched_khs_price_id"
+    users |o--o{ boq_import_rows : "reviewed_by"
+    document_files ||--o{ boq_import_templates : "file_id"
+    users ||--o{ boq_import_templates : "created_by"
+    boq_import_rows |o--o| boq_lines : "source_import_id, source_row_no"
+    project_plans ||--o{ boq_lines : "root_pp_id"
+    khs_prices |o--o{ boq_lines : "khs_price_id"
+    designator_package_prices |o--o{ boq_lines : "source_price_id"
+    regions |o--o{ branches : "region_id"
+    users ||--o{ command_receipts : "actor_user_id"
+    project_plans ||--o{ continuation_allocations : "continuation_pp_id"
+    volume_releases ||--o{ continuation_allocations : "source_release_id, boq_component_id"
+    project_plans ||--o{ contracts : "pp_id"
+    prototype_workspaces |o--o{ contracts : "workspace_id"
+    contracts ||--o{ contract_components : "contract_id"
+    boq_components ||--o{ contract_components : "boq_component_id"
+    contracts ||--o{ contract_documents : "contract_id"
+    document_files |o--o{ contract_documents : "file_id"
+    users |o--o{ contract_documents : "attested_by"
+    designator_types |o--o{ designators : "designator_type_id"
+    designators ||--o{ designator_package_prices : "designator_id"
+    packages ||--o{ designator_package_prices : "package_id"
+    users |o--o{ document_files : "uploaded_by"
+    khs_price_lists ||--o{ khs_prices : "price_list_id"
+    designators ||--o{ khs_prices : "designator_id"
+    designator_package_prices |o--o{ khs_prices : "source_price_id"
+    packages ||--o{ khs_price_lists : "package_id"
+    branches |o--o{ khs_price_lists : "branch_id"
+    document_files ||--o{ master_import_batches : "file_id"
+    users ||--o{ master_import_batches : "imported_by"
+    master_import_batches ||--o{ master_import_rows : "batch_id"
+    users |o--o{ numbering_rules : "updated_by"
+    numbering_rules ||--o{ number_sequences : "rule_id"
+    contracts ||--o{ payment_terms : "contract_id"
+    users |o--o{ payment_terms : "pm_user_id"
+    users |o--o{ payment_terms : "manager_user_id"
+    prototype_workspaces |o--o{ payment_terms : "workspace_id"
+    work_orders |o--o{ payment_terms : "work_order_id"
+    branches ||--o{ projects : "branch_id"
+    service_areas |o--o{ projects : "branch_id, service_area_id"
+    work_units ||--o{ projects : "work_unit_id"
+    projects ||--o{ project_plans : "project_id"
+    number_sequences |o--o{ project_plans : "numbering_rule_id, number_scope_key"
+    project_plans |o--o{ project_plans : "root_pp_id"
+    project_plans |o--o{ project_plans : "parent_pp_id"
+    users |o--o{ project_plans : "pm_user_id"
+    users |o--o{ project_plans : "manager_user_id"
+    users |o--o{ project_plans : "created_by"
+    prototype_workspaces |o--o{ project_plans : "workspace_id"
+    project_plans ||--o{ project_plan_budget_rows : "pp_id"
+    project_plans ||--o{ project_plan_costs : "pp_id"
+    project_plans ||--o{ project_plan_schedule : "pp_id"
+    project_plans ||--o{ project_plan_team : "pp_id"
+    users |o--o{ project_plan_team : "user_id"
+    users |o--o{ prototype_audits : "actor_user_id"
+    prototype_workspaces ||--o{ prototype_audits : "workspace_id"
+    areas |o--o{ regions : "area_id"
+    branches ||--o{ service_areas : "branch_id"
+    regions |o--o{ service_areas : "region_id"
+    payment_terms ||--o{ term_actuals : "term_id"
+    contract_components ||--o{ term_actuals : "contract_component_id"
+    payment_terms ||--o{ term_scans : "term_id"
+    document_files ||--o| term_scans : "file_id"
+    users |o--o{ term_scans : "verified_by"
+    document_files ||--o| term_work_evidence : "file_id"
+    users |o--o{ term_work_evidence : "removed_by"
+    payment_terms ||--o{ term_work_evidence : "term_id"
+    users ||--o{ term_work_evidence : "uploaded_by"
+    branches |o--o{ users : "id_branch"
+    regions |o--o{ users : "id_regions"
+    service_areas |o--o{ users : "id_service_areas"
+    users ||--o{ user_assignments : "user_id"
+    roles ||--o{ user_assignments : "role_id"
+    branches ||--o{ user_assignments : "branch_id"
+    boq_components ||--o| volume_balances : "boq_component_id"
+    command_receipts ||--o{ volume_movements : "receipt_id"
+    boq_components ||--o{ volume_movements : "boq_component_id"
+    ba_completions ||--o{ volume_releases : "completion_id"
+    contract_components ||--o{ volume_releases : "contract_component_id"
+    boq_components ||--o{ volume_releases : "boq_component_id"
+    users ||--o{ volume_releases : "authorized_by"
+    prototype_workspaces ||--o{ workflow_events : "workspace_id"
+    prototype_workspaces ||--o| workflow_metadata : "id_workspace"
+    contracts ||--o{ work_orders : "contract_id"
+    prototype_workspaces ||--o{ work_orders : "workspace_id"
