@@ -11,7 +11,7 @@ class PrototypeDomain
     use PrototypeTermWorkEvidence;
     use PrototypeWorkflowV2;
 
-    public const ROLES = ['Admin Konstruksi', 'PM Konstruksi', 'Manager Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Bussiness Support', 'Head of PMO', 'Finance', 'Superadmin'];
+    public const ROLES = ['Admin Konstruksi', 'PM Konstruksi', 'Manager Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Bussiness Support', 'Mgr Project Support', 'Head of PMO', 'Finance', 'Superadmin'];
 
     private array $state;
 

@@ -26,6 +26,8 @@ Akun pertama menjadi **Superadmin**, ditugaskan ke seluruh Branch aktif. Setelah
 
 Pada tambah/ubah akun melalui Kelola akun, kata sandi minimal **6 karakter**, mengandung huruf dan angka, maksimal 72 byte dan harus cocok dengan konfirmasi. Saat mengubah akun, kosongkan kedua kolom untuk mempertahankan kata sandi. Penyiapan Superadmin pertama tetap mengikuti aturan 12 karakter di atas.
 
+**Mgr Project Support** juga tersedia pada form akun untuk akses lihat sesuai Branch, tanpa mengubah lima approver.
+
 Buat akun **Admin Konstruksi, PM Konstruksi, Admin Area, Mgr Deployment, Mgr Bussiness Support, Head of PMO, dan Finance** sesuai kebutuhan pengujian. Login memakai **username**, lalu keluar/masuk bergantian sesuai peran. Peran mengikuti `users.role` yang konsisten dengan `roles`/`user_assignments`, bukan pemilih role. Kelima approver dipilih pada PP dan wajib memiliki penugasan Branch yang mencakup PP. Manager Konstruksi tersedia untuk dokumen alur lama saja. Akun tanpa penugasan aktif, akun nonaktif atau akun dengan beberapa peran aktif berbeda ditolak. Pemulihan kata sandi melalui email belum disediakan; hubungi Superadmin.
 
 Login memiliki pembatasan percobaan, regenerasi sesi, CSRF dan opsi Ingat saya. Keluar hanya melalui POST dari menu profil. Endpoint workspace, laporan, cadangan dan scan memerlukan login. Respons pribadi memakai no-store/noindex. Jika data berubah dari pengguna lain, gunakan **Muat ulang data**; konflik revisi 409 tidak menimpa transaksi.
@@ -34,11 +36,11 @@ Dependensi dikunci dengan `composer.lock`/`package-lock.json`. Untuk mengubah Re
 
 ## Identitas akun terbaru
 
-Migration menambahkan `username`, `nik`, `id_regions`, `id_branch`, `id_service_areas`, dan `role` pada users. Akun lama diberi username `user-ID` (akun existing saat pembaruan: **user-1**), dengan kata sandi tetap. Username dapat diganti Superadmin melalui Kelola akun; username baru disimpan dalam huruf kecil dan unik. NIK adalah teks agar nol di depan dipertahankan. Region → Branch → Service Area divalidasi server; Branch utama harus termasuk daftar Branch penugasan. Data yang belum diketahui tetap kosong, tanpa NIK/penempatan rekaan. Migration tambahan sudah dijalankan pada its setelah backup; total 57 migration.
+Migration menambahkan `username`, `nik`, `id_regions`, `id_branch`, `id_service_areas`, dan `role` pada users. Akun lama diberi username `user-ID` (akun existing saat pembaruan: **user-1**), dengan kata sandi tetap. Username dapat diganti Superadmin melalui Kelola akun; username baru disimpan dalam huruf kecil dan unik. NIK adalah teks agar nol di depan dipertahankan. Region → Branch → Service Area divalidasi server; Branch utama harus termasuk daftar Branch penugasan. Data yang belum diketahui tetap kosong, tanpa NIK/penempatan rekaan. Migration tambahan sudah dijalankan pada its setelah backup; total 58 migration setelah penambahan Master Designator.
 
 ## Alur kerja
 
-Sembilan menu dipertahankan: Dashboard, Project Plan, SPK, Pembayaran, BA PP, Inbox Approval, Master KHS, Laporan, Pengaturan. BOQ menjadi langkah pertama PP; BA KH berada dalam proses SPK. Alur terbaru: [WORKFLOW_V3](docs/WORKFLOW_V3.md); versi sebelumnya tetap menjadi referensi historis.
+Sembilan menu dipertahankan: Dashboard, Project Plan, SPK, Pembayaran, BA PP, Inbox Approval, Master Designator, Laporan, Pengaturan. BOQ menjadi langkah pertama PP; BA KH berada dalam proses SPK. Alur terbaru: [WORKFLOW_V3](docs/WORKFLOW_V3.md); versi sebelumnya tetap menjadi referensi historis.
 
 1. Admin Konstruksi/Superadmin mengisi BOQ dan rencana PP, memilih lima approver, lalu mengajukan.
 2. **PM → Admin Area → Mgr Deployment → Mgr Bussiness Support → Head of PMO** menyetujui berurutan. PP Sah/BA KH/SPK memerlukan 5/5.
@@ -83,7 +85,7 @@ Pada SPH Telkom Akses, harga Material/Jasa masing-masing dibatasi harga per satu
 
 Workspace akun baru dimulai tanpa transaksi rekaan. Workspace sesi demo lama dan data SQLite tidak dihapus atau digabungkan otomatis. Hanya dokumen dari Branch penugasan yang dikirim ke akun, termasuk data terkait, aktivitas, CSV, cadangan JSON, serta akses file scan. Penetapan workspace berasal dari server, tidak menerima ID kepemilikan client. Approval/audit memakai identitas login pada setiap permintaan, bukan role terakhir yang tersimpan di workspace bersama. Perintah pergantian role, reset skenario, penggantian profil/pengguna demo dan perubahan master sintetis ditolak di jalur login.
 
-Master yang sudah diimpor memuat 16 Branch, 724 designator dan 1.030 harga paket. Semua 2.173 baris sumber dan ID aslinya dipertahankan. Komponen Material/Jasa mengikuti jenis designator sumber (ID tipe 1/2), tidak digabung berdasarkan kemiripan nama; tujuh harga nol tetap nol. Master harga saat ini **hanya dibaca** pada UI. Counter versi lokal membantu snapshot workflow dan bukan metadata kontrak KHS resmi. Referensi/periode KHS serta pemetaan audit user sumber belum tersedia.
+Master yang sudah diimpor memuat 16 Branch, 724 designator dan 1.030 harga paket. Semua 2.173 baris sumber dan ID aslinya dipertahankan. Komponen Material/Jasa mengikuti jenis designator sumber (ID tipe 1/2), tidak digabung berdasarkan kemiripan nama; tujuh harga nol tetap nol. Master aktif kini dikelola Superadmin melalui **Master Designator → Designator / KHS / Paket KHS**, dengan tambah, edit, hapus arsip dan ikon bertooltip. Peran lain hanya melihat; identitas yang sudah dipakai BOQ dilindungi. Lihat [MASTER_DESIGNATOR](docs/MASTER_DESIGNATOR.md). Counter versi lokal membantu snapshot workflow dan bukan metadata kontrak KHS resmi. Referensi/periode KHS serta pemetaan audit user sumber belum tersedia.
 
 CSV/JSON dibuat Laravel dari data sesuai akses. UUID permintaan mencegah transaksi ganda; revisi mencegah tab/akun menimpa data lebih baru. CSV menetralkan teks formula. Unduhan JSON tidak mencakup file scan/Excel asli atau hash kata sandi, cookie, session key dan kredensial database.
 

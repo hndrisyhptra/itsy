@@ -213,6 +213,18 @@ class RelationalWorkflowStore
         DB::table('workflow_metadata')->updateOrInsert(['id_workspace' => $w], ['metadata' => $this->json(Arr::except($state, [...array_keys(self::RECORDS), 'events']))]);
     }
 
+    /** Master edits share the workspace lock but must not rewrite business snapshots. */
+    public function writeReferenceMetadata(PrototypeWorkspace $workspace, array $state): void
+    {
+        Area3MigrationTarget::assertAllowed();
+        if (DB::transactionLevel() === 0 || ! $workspace->relational_migrated_at) {
+            throw new RuntimeException('Pembaruan master memerlukan transaksi dan penyimpanan aktif.');
+        }
+        DB::table('workflow_metadata')->where('id_workspace', $workspace->id)->update([
+            'metadata' => $this->json(Arr::except($state, [...array_keys(self::RECORDS), 'events'])),
+        ]);
+    }
+
     private function record(PrototypeWorkspace $workspace, string $collection, array $document, int $position, array $columns): void
     {
         [$table, $pk] = self::RECORDS[$collection];

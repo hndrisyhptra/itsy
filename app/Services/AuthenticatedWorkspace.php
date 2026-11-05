@@ -49,12 +49,14 @@ class AuthenticatedWorkspace
             $m = (int) $p->designator_type_id === 1 ? (float) $p->price : null;
             $s = (int) $p->designator_type_id === 2 ? (float) $p->price : null;
             $previous = $old->get($id);
-            $changed = $previous && ($previous['m'] != $m || $previous['s'] != $s || ($previous['m'] === null) !== ($m === null) || ($previous['s'] === null) !== ($s === null));
+            $active = (bool) $p->is_active && ! $p->price_deleted && ! $p->designator_deleted && ! $p->package_deleted && ! $p->type_deleted;
+            $changed = $previous && ($previous['m'] != $m || $previous['s'] != $s || ($previous['m'] === null) !== ($m === null) || ($previous['s'] === null) !== ($s === null)
+                || $previous['code'] !== $p->code || $previous['name'] !== $p->item_name || $previous['unit'] !== $p->unit || $previous['package'] !== $p->package || $previous['active'] !== $active);
 
             // Version is a local snapshot counter, not a fabricated KHS contract version.
             return ['id' => $id, 'code' => $p->code, 'name' => $p->item_name, 'unit' => $p->unit, 'package' => $p->package,
                 'm' => $m, 's' => $s, 'version' => ($previous['version'] ?? 1) + ($changed ? 1 : 0),
-                'active' => (bool) $p->is_active && ! $p->price_deleted && ! $p->designator_deleted && ! $p->package_deleted && ! $p->type_deleted,
+                'active' => $active,
                 'history' => $previous['history'] ?? []];
         })->keyBy('id');
         // Retain removed reference labels for already saved document snapshots.

@@ -5,6 +5,9 @@ description: Test the its Area 3 interactive prototype through the linked busine
 
 # area3-prototype-qa
 
+## Master management authority — 6 November 2026
+The user authorized real SQL master CRUD. Follow docs/MASTER_DESIGNATOR.md, superseding older read-only-master guidance. Keep Master Designator as one of nine parents, with Designator/KHS/Paket KHS submenus and accessible icon tooltips. Only Superadmin mutates SQL masters; other roles read. Preserve soft-deleted references, used identities, issued snapshots and archive; use shared locks/revisions, reference-only metadata writes, receipts and before/after master audit. Mgr Project Support is a real account role, not an extra approver. Verify CRUD/permissions/CSRF, zero prices, concurrency/replay, historical preservation and current-version BOQ review using isolated memory tests.
+
 ## Header draft, BOP removal and preview stamp verification — 5 November 2026
 Test complete-Header v3 Draft persistence/list status without BOQ, HK completion, risk or approvers; incomplete Header must not consume SQL numbers/revision/audit. Submission still requires all planning. New PP must not restore the shared prior-form cache; failed saves retain input, successful saves clear/navigate only after confirmation. Positive BOP submits without cap/reference while numeric/source guards stay intact. Stamps must match current-cycle selected-user decisions only; print CSS hides stamps/statuses and displays a truly empty wet-signature area. Do not equate CSS/SSR tests with visual print QA. See docs/PP_DRAFTS_PREVIEW.md.
 

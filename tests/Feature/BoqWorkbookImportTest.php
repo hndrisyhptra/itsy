@@ -171,7 +171,12 @@ class BoqWorkbookImportTest extends TestCase
         $p['boq'][0]['note'] = 'Harga KHS diperiksa sebelumnya';
         $this->api($p)->assertOk();
         $priceId = (int) str_replace('db-price-', '', $p['boq'][0]['khsId']);
-        DB::table('designator_package_prices')->where('id_designator_package_price', $priceId)->update(['price' => '704702.00']);
+        $this->asRole('Superadmin');
+        $source = DB::table('designator_package_prices')->where('id_designator_package_price', $priceId)->first();
+        $revision = $this->getJson('/api/masters')->assertOk()->json('revision');
+        $this->postJson('/api/masters/khs', ['action' => 'save', 'id' => $priceId, 'data' => ['designator_id' => $source->designator_id, 'package_id' => $source->package_id, 'price' => '704702.00'],
+            'revision' => $revision, 'request_id' => (string) Str::uuid()])->assertOk();
+        $this->asRole('Admin Konstruksi');
         $this->api($p, true)->assertUnprocessable();
         $saved = $this->api($p)->assertOk()->assertJsonPath('state.projects.0.boq.0.reviewed', false)->json('state.projects.0');
         $this->assertEquals(704702, $saved['boq'][0]['m']);

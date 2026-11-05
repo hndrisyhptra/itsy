@@ -5,6 +5,9 @@ description: Build or revise the its Area 3 interface with its specific enterpri
 
 # area3-design-system
 
+## Master management authority — 6 November 2026
+The user authorized real SQL master CRUD. Follow docs/MASTER_DESIGNATOR.md, superseding older read-only-master guidance. Keep Master Designator as one of nine parents, with Designator/KHS/Paket KHS submenus and accessible icon tooltips. Only Superadmin mutates SQL masters; other roles read. Preserve soft-deleted references, used identities, issued snapshots and archive; use shared locks/revisions, reference-only metadata writes, receipts and before/after master audit. Mgr Project Support is a real account role, not an extra approver. Verify CRUD/permissions/CSRF, zero prices, concurrency/replay, historical preservation and current-version BOQ review using isolated memory tests.
+
 ## Current BOQ/draft authority — 4 November 2026
 The supplied OSP FO workbook now defines a real private .xlsx import (docs/BOQ_IMPORT.md). Laravel parses sheet BoQ/header rows 6–7, positive quantities, exact package/code/unit matches and separate M-/J- components. Preserve source prices/row provenance; KHS prices own totals. Require explicit mismatch review at the current KHS version. Never evaluate input formulas or accept client manifests. Only the separate sample button remains simulated. Drafts may omit approvers; submitted PP must have all five selected active Branch-assigned accounts. Older pending-import descriptions below are historical.
 

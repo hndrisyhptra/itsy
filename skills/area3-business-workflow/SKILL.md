@@ -5,6 +5,9 @@ description: Implement its Area 3 Project Plan, BOQ, mandor contracting, assigne
 
 # area3-business-workflow
 
+## Master management authority — 6 November 2026
+The user authorized real SQL master CRUD. Follow docs/MASTER_DESIGNATOR.md, superseding older read-only-master guidance. Keep Master Designator as one of nine parents, with Designator/KHS/Paket KHS submenus and accessible icon tooltips. Only Superadmin mutates SQL masters; other roles read. Preserve soft-deleted references, used identities, issued snapshots and archive; use shared locks/revisions, reference-only metadata writes, receipts and before/after master audit. Mgr Project Support is a real account role, not an extra approver. Verify CRUD/permissions/CSRF, zero prices, concurrency/replay, historical preservation and current-version BOQ review using isolated memory tests.
+
 ## Header-only draft and PP preview authority — 5 November 2026
 The latest request permits a v3 Draft after complete Header, without BOQ, positive/complete HK, risk or assigned approvers. Submission retains all requirements. Preserve valid entered data and source validation, start new PP forms clean, and clear/navigate to the list only after server confirmation. BOP cap/Cost Structure fields and requirements were removed. Preview stamps represent actual selected-user approvals in the current cycle; print must leave the signature column blank for wet signatures. Never invent decisions or signatures. See docs/PP_DRAFTS_PREVIEW.md.
 

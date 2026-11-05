@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\MasterDesignatorController;
 use App\Http\Controllers\PrototypeBoqController;
 use App\Http\Controllers\PrototypeController;
 use App\Http\Controllers\PrototypeExportController;
@@ -25,6 +26,8 @@ Route::middleware(PrivatePrototype::class)->group(function () {
         Route::get('/akun/{user}/edit', [AccountController::class, 'edit'])->name('accounts.edit');
         Route::put('/akun/{user}', [AccountController::class, 'save'])->name('accounts.update');
         Route::get('/api/prototype/state', [PrototypeController::class, 'state'])->name('prototype.state');
+        Route::get('/api/masters', [MasterDesignatorController::class, 'index']);
+        Route::post('/api/masters/{entity}', [MasterDesignatorController::class, 'store'])->where('entity', 'designator|khs|paket-khs')->middleware('throttle:60,1');
         Route::post('/api/prototype/commands', [PrototypeController::class, 'command'])->middleware('throttle:180,1')->name('prototype.commands');
         Route::get('/api/prototype/exports/csv', PrototypeExportController::class)->middleware('throttle:30,1')->name('prototype.csv');
         Route::get('/api/prototype/backup', [PrototypeController::class, 'backup'])->middleware('throttle:30,1')->name('prototype.backup');
@@ -37,7 +40,7 @@ Route::middleware(PrivatePrototype::class)->group(function () {
         Route::get('/', fn () => redirect()->route('prototype.dashboard'));
         Route::get('/dashboard', [PrototypeController::class, 'show'])->name('prototype.dashboard');
         Route::get('/{module}/{path?}', [PrototypeController::class, 'show'])
-            ->where('module', 'project-plan|boq|ba-kh|spk|termin|inbox|ba-pp|master-khs|laporan|pengaturan')
+            ->where('module', 'project-plan|boq|ba-kh|spk|termin|inbox|ba-pp|master-designator|master-khs|laporan|pengaturan')
             ->where('path', '[a-zA-Z0-9/-]+');
     });
 });

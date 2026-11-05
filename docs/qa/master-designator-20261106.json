@@ -1,0 +1,30 @@
+{
+  "before_backup": "/Applications/XAMPP/xamppfiles/htdocs/its/area3-prototype/storage/app/private/backups/its-before-master-designator-20261106-052659.sql",
+  "before_sha256": "fc7c8c3e387cb911a8ce1247b3e1b2f4de9bafed80852e8c0d2544a38b5f1970",
+  "after_backup": "/Applications/XAMPP/xamppfiles/htdocs/its/area3-prototype/storage/app/private/backups/its-after-master-designator-20261106-054028.sql",
+  "after_sha256": "485ae991ad30b4ad3a5e06c164f679454595ed2f81458f094046ae7cf1534f86",
+  "existing_data_unchanged": true,
+  "populated_tables_compared": 37,
+  "changed_existing_data_tables": [],
+  "roles_preserved": true,
+  "added_role": {
+    "id_role": 10,
+    "code": "MGR_PROJECT_SUPPORT",
+    "name": "Mgr Project Support"
+  },
+  "audit_rows": 0,
+  "migrations": 58,
+  "users": 14,
+  "designators": 724,
+  "prices": 1030,
+  "php_tests": 145,
+  "php_assertions": 2644,
+  "frontend_tests": 113,
+  "build": "passed",
+  "pint": "passed",
+  "test_database": "SQLite :memory: only",
+  "browser_visual_qa": "not repeated; previous permission denied",
+  "main_asset": "assets/main-BesTn3Da.js",
+  "main_css": "assets/main-GJ3nlcb_.css",
+  "verification_note": "Initial post-migration checker included qualified its.migrations in preservation comparison; corrected verification compared populated-table SQL INSERT records from before/after private backups, excluding migrations and the newly added role."
+}

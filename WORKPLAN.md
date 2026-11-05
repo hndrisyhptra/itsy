@@ -224,3 +224,12 @@ Historical iteration; superseded by the dashboard restoration below.
 - [x] Remove BOP limit/Cost Structure fields, caption and backend validation; ignore stale payload fields, retain valid cost/COGS/source/precision rules and locked snapshots.
 - [x] Render APPROVED preview indicators only from actual current-cycle selected-user decisions; hide stamps and signature-cell status on print with an empty wet-signature container. Never fabricate approval identities/signatures.
 - [x] 140 PHP tests / 2,553 assertions, 110 frontend tests, TypeScript/Vite build and scoped Pint passed. All framework tests use SQLite memory; no migration, live synthetic transactions or bulk rewrite. Browser/print visual and separate MySQL engine QA not repeated. See docs/PP_DRAFTS_PREVIEW.md and QA evidence.
+
+## Master Designator dan Mgr Project Support — 6 November 2026
+
+- [x] Backup its sebelum perubahan; menu Master Designator dengan submenu Designator/KHS/Paket KHS dan tombol ikon ber-tooltip.
+- [x] Superadmin CRUD SQL sumber asli, validasi relasi/harga, hapus arsip, lindungi identitas terpakai dan snapshot lama.
+- [x] Kunci/revisi workspace, receipt dan audit sebelum/sesudah; hanya metadata referensi ditulis saat perubahan master.
+- [x] Role MGR_PROJECT_SUPPORT dapat dibuat/login melalui username; approval tetap lima peran yang ditetapkan.
+- [x] Migration tambahan diterapkan: total 58; role id_role 10, tabel master_data_changes kosong. Perbandingan backup sebelum/sesudah membuktikan seluruh data pada 37 tabel berisi data tetap sama, kecuali tambahan role/migration yang memang dimaksudkan; 14 akun, 724 designator dan 1.030 harga dipertahankan.
+- [x] 145 PHP tests / 2.644 assertions, 113 frontend tests, TypeScript/Vite build dan Pint. Browser visual belum diulang setelah penolakan izin sebelumnya. Tidak ada akun/PP/harga uji pada its. Lihat docs/MASTER_DESIGNATOR.md dan docs/qa/master-designator-20261106.json.

@@ -3,6 +3,7 @@ import { type State, type BoqRow, type BoqUpload, now } from './domain';
 import { seed } from './seed';
 import { boot, appUrl } from './laravel';
 import { type Command, setCommandRecorder } from './commands';
+import type { MasterEntity, MasterCatalog } from './master-data';
 const listeners = new Set<() => void>();
 const DRAFT_PREFIX = 'area3-laravel-draft-' + (boot?.account ? boot.account.id + '-' : '');
 let state: State = structuredClone(boot?.state ?? seed());
@@ -52,6 +53,22 @@ async function commit(command: Command, resultId?: string, scan?: { termId: stri
 }
 function send(command: Command, resultId?: string) { active = commit(command,resultId); void active.catch(() => {}); }
 export function waitForPersistence() { return active ?? Promise.resolve(); }
+export async function saveMaster(entity:MasterEntity,input:{action:'save'|'delete';id?:number;data?:Record<string,unknown>;revision:number}):Promise<{catalog:MasterCatalog;revision:number}> {
+  if(!boot?.account||persistencePending)throw new Error('Gunakan sesi login aktif dan tunggu penyimpanan sebelumnya.');
+  persistencePending=true; persistenceError=''; state=structuredClone(state); emit();
+  const operation=(async()=>{
+    try {
+      const response=await fetch(appUrl('/api/masters/'+entity),{method:'POST',credentials:'same-origin',headers:{Accept:'application/json','Content-Type':'application/json','X-CSRF-TOKEN':csrf},body:JSON.stringify({...input,request_id:crypto.randomUUID()}),signal:AbortSignal.timeout(20000)});
+      if(response.status===401||response.status===419){if(boot.accountUrls)window.location.assign(boot.accountUrls.login);}
+      const data=await response.json();
+      if(!response.ok)throw new Error((Object.values(data.errors??{}).flat() as string[]).join('\n')||data.message||'Master gagal disimpan.');
+      confirmed=data.state; state=structuredClone(confirmed); revision=data.revision; csrf=data.csrf??csrf;
+      return {catalog:data.catalog as MasterCatalog,revision:data.revision as number};
+    } finally {persistencePending=false; state=structuredClone(state); emit();}
+  })();
+  active=operation.then(()=>{}); void active.catch(()=>{});
+  return operation;
+}
 export async function uploadBoq(file:File):Promise<{rows:BoqRow[];source:BoqUpload}> {
   if (!boot || persistencePending) throw new Error('Upload BOQ memerlukan sesi login aktif; tunggu transaksi sebelumnya selesai.');
   const body=new FormData(); body.set('file',file);

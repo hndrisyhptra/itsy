@@ -51,3 +51,12 @@ body{color:var(--text);background:var(--bg)}[data-theme=dark] .metric-label,[dat
 
 /* Private work evidence preview, independent of wet-signature scan workflow. */
 .work-evidence-section{margin:18px 0;padding-top:16px;border-top:1px solid var(--border);min-width:0}.work-evidence-frame{display:block;width:100%;height:65vh;min-height:320px;border:1px solid var(--border);border-radius:6px;background:var(--bg)}.work-evidence-image{display:block;max-width:100%;max-height:65vh;object-fit:contain;margin:0 auto}.work-evidence-section details{min-width:0}.work-evidence-section summary{cursor:pointer;color:var(--muted)}
+
+/* Master Designator navigation and dense reference tables. */
+.master-nav-parent{width:100%;border:0;text-align:left;background:transparent;font:inherit;cursor:pointer}
+.master-chevron{margin-left:auto;transition:transform .15s}.master-chevron.open{transform:rotate(180deg)}
+.master-submenu{padding:3px 0 5px 19px}.master-submenu .nav-link{font-size:12px;min-height:34px;padding-block:8px}
+.collapsed .master-submenu{display:none}.master-pagination{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;color:var(--muted);font-size:12px}
+.master-pagination .actions{align-items:center}.master-table table{font-size:12px}.master-table th,.master-table td{padding:9px 11px;border:1px solid var(--border)}
+.master-table td:nth-child(2){min-width:210px;white-space:normal}.master-form textarea{width:100%}
+@media(max-width:767px){.master-pagination{flex-wrap:wrap}.master-table td:nth-child(2){min-width:175px}}

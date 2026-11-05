@@ -14,6 +14,7 @@ class AccountAccess
         'ADMIN_AREA' => 'Admin Area',
         'MGR_DEPLOYMENT' => 'Mgr Deployment',
         'MGR_BUSSINESS_SUPPORT' => 'Mgr Bussiness Support',
+        'MGR_PROJECT_SUPPORT' => 'Mgr Project Support',
         'HEAD_OF_PMO' => 'Head of PMO',
         'FINANCE' => 'Finance',
         'SUPERADMIN' => 'Superadmin',

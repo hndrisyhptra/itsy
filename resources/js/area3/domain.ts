@@ -8,7 +8,7 @@ import { recordCommand } from './commands';
 import { saveProjectV2, assertAssigned, previewProjectNumber, rememberProjectNumber, approvalRoles, validateAssignments, canReviseSubmission } from './workflow';
 export { canReviseSubmission } from './workflow';
 export { APPROVERS_V3, approvalRoles, selectedApprover, assignPaymentApprovers, validateAssignments, decideProject, setNumberFormat, selectActor, assignProjectApprovers, verifyTermScan, projectApprovalRole, canApproveProject, canApproveTerm, branchOptions, previewProjectNumber, normalizeWorkflow } from './workflow';
-export const ROLES = ['Admin Konstruksi', 'PM Konstruksi', 'Manager Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Bussiness Support', 'Head of PMO', 'Finance', 'Superadmin'] as const;
+export const ROLES = ['Admin Konstruksi', 'PM Konstruksi', 'Manager Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Bussiness Support', 'Mgr Project Support', 'Head of PMO', 'Finance', 'Superadmin'] as const;
 export type Role = typeof ROLES[number];
 export type Component = 'm' | 's';
 export interface Khs { id: string; code: string; name: string; unit: string; package: string; m: number | null; s: number | null; version: number; active: boolean; history: { at: string; actor: Role; m: number | null; s: number | null }[] }
