@@ -5,11 +5,11 @@ Pembaruan 4 November 2026 mengacu pada `template-PP-header-pendahuluan-tim-jadwa
 ## Perilaku
 
 - PP versi 3 yang baru atau disimpan kembali sebagai Draft/Dikembalikan memakai redaksi tetap Latar Belakang, Tujuan, Lingkup Pekerjaan serta Struktur Organisasi & Tim Proyek. Tim mengikuti paragraf peran pada template; aplikasi tidak mengarang nama personel. Lima approver tetap dipilih terpisah pada Header PP.
-- Aktivitas tetap: Persiapan, Material Delivery, Instalasi, Commissioning Test, Uji Terima. Pada kedua tab tersebut pengguna hanya dapat mengubah **Jml HK**. HK bilangan bulat nonnegatif, total harus positif; tahap nol dilewati. Jumlah seluruh HK menjadi durasi kalender maksimal BA KH Mandor.
+- Aktivitas tetap: Persiapan, Material Delivery, Instalasi, Commissioning Test, Uji Terima. Pada kedua tab tersebut pengguna hanya dapat mengubah **Jml HK**. HK bilangan bulat nonnegatif, total harus positif saat pengajuan; draft Header boleh belum ber-HK positif; tahap nol dilewati. Jumlah seluruh HK menjadi durasi kalender maksimal BA KH Mandor.
 - Tanggal tahap dihitung berurutan dari **Saat Penggunaan** pada Header PP, inklusif. Contoh 2 HK mulai 28 Februari 2028 berakhir 29 Februari; tahap berikutnya mulai 1 Maret. Akhir pekan/libur tetap dihitung sebagai hari kalender. Batas teknis total 1.000.000 hari dan tanggal empat digit tahun; bukan kebijakan batas kontrak baru.
 - Laravel menyusun kembali seluruh redaksi, nama aktivitas, tanggal dan durasi. Input browser untuk bagian tetap diabaikan. Versi template server disimpan sebagai `planTemplateVersion: 1`, bersama `intro`, `teamText`, `durationDays`, dan `schedule` pada agregat JSON yang ada; tidak memerlukan migration.
 - PP lanjutan baru memakai template yang sama dengan HK awal 1 per aktivitas seperti PP baru; pengguna menyesuaikan HK sebelum pengajuan. Catatan lanjutan disimpan terpisah dalam `continuationNotes`. Anggaran dan ledger root/alokasi tetap mengikuti BA PP, bukan duplikasi BOQ.
-- Pembacaan tidak mengubah dokumen tersimpan. PP versi 1/2 yang sudah terbit mempertahankan redaksi/tim/jadwal historis. Draf versi 2 tetap memakai isian lamanya; draf versi 1 yang disimpan ulang pada workspace versi 3 mengikuti peningkatan alur yang sudah ada dan memakai template baru. PP sudah Diajukan/Sah/Ditolak tidak dapat ditulis ulang lewat form. PP versi 3 Draft/Dikembalikan baru mengadopsi template saat disimpan oleh pengguna.
+- Pembacaan tidak mengubah dokumen tersimpan. PP versi 1/2 yang sudah terbit mempertahankan redaksi/tim/jadwal historis. Draf versi 2 tetap memakai isian lamanya; draf versi 1 yang disimpan ulang pada workspace versi 3 mengikuti peningkatan alur yang sudah ada dan memakai template baru. PP Diajukan/Sah terkunci. PP versi 3 Draft/Dikembalikan/Ditolak dapat diperbaiki Admin dan mengadopsi template pada simpan berikutnya sesuai aturan pengajuan ulang.
 
 ## Preview dan batas output
 
@@ -26,3 +26,6 @@ Output saat ini **HTML dan cetak/Simpan PDF browser: bagian I–VIII dengan tabe
 - Pratinjau/form: `resources/js/area3/plan-template.ts`, `plan-document.tsx`, `projects.tsx`, `ui.tsx`.
 - Bukti kecocokan seluruh paragraf tetap, nama aktivitas dan gambar sumber: `docs/qa/fixed-pp-template-20261104.json`.
 - Database its dicadangkan sebelum perubahan: `storage/app/private/backups/its-before-fixed-pp-template-20261104-162423.sql` (629.582 byte; SHA-256 dicatat pada bukti QA). Pengujian memakai SQLite :memory:; tidak ada perubahan akun atau transaksi pada database pengguna oleh pengerjaan ini.
+
+
+Pembaruan draft/preview 5 November 2026: Header PP yang lengkap sudah cukup untuk menyimpan Draft tanpa BOQ atau jadwal lengkap. Persyaratan BOQ dan HK positif tetap berlaku saat pengajuan. Preview bagian VIII menampilkan cap APPROVED hanya untuk keputusan nyata pada siklus aktif; media cetak mengosongkan sel TTD basah. Lihat [PP_DRAFTS_PREVIEW](PP_DRAFTS_PREVIEW.md).

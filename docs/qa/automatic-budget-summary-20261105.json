@@ -1,0 +1,53 @@
+{
+  "date": "2026-11-05",
+  "change": "Server-owned PP budget recap without installments/dates; separate BOQ columns and compact bordered tables",
+  "backup": {
+    "path": "storage/app/private/backups/its-before-automatic-budget-summary-20261105-211745.sql",
+    "bytes": 1019899,
+    "sha256": "b1fe8eac3610f42fbefac80b27555b73bdd4ebaf13fad227ef1be839b1617c58"
+  },
+  "php": {
+    "passed": 131,
+    "assertions": 2369,
+    "database": "SQLite :memory: with fail-closed bootstrap"
+  },
+  "frontend": {
+    "passed": 96
+  },
+  "pint": "passed for three changed PHP files",
+  "build": {
+    "passed": true,
+    "entry": {
+      "file": "assets/main-BUgKGaqO.js",
+      "name": "main",
+      "src": "resources/js/area3/main.tsx",
+      "isEntry": true,
+      "css": [
+        "assets/main-BzwfxDWX.css"
+      ]
+    }
+  },
+  "canonical_recap": {
+    "version": 2,
+    "sources": [
+      "mandorS",
+      "mandorM",
+      "material",
+      "bop",
+      "permit"
+    ],
+    "positive_only": true,
+    "requires_term_or_date": false,
+    "permit_separate_from_cogs": true
+  },
+  "storage_verification": "HTTP commands, SQL budget rows and document snapshots verified in isolated SQLite; historical manual snapshot preserved on read/approval",
+  "live_synthetic_transactions": false,
+  "migration_required": false,
+  "live_data_rewrite": false,
+  "browser_visual_qa": {
+    "verified": false,
+    "reason": "Not repeated after previous preview permission denial; responsive, dark/light and print pagination unverified"
+  },
+  "separate_mysql_engine_retest": false,
+  "documentation": "docs/PP_BUDGET_TEMPLATE.md"
+}

@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use DateTimeImmutable;
 use Illuminate\Validation\ValidationException;
 
 final class ProjectPlanBudget
@@ -17,7 +16,7 @@ final class ProjectPlanBudget
         if (! is_array($input)) {
             self::fail('Form anggaran tidak valid.');
         }
-        $b = ['version' => 1, 'mandor' => [], 'materials' => [], 'bop' => [], 'usage' => [], 'permit' => self::number($input['permit'] ?? $p['costs']['permit'] ?? 0), 'bopLimit' => isset($input['bopLimit']) ? self::number($input['bopLimit']) : null, 'bopReference' => self::text($input['bopReference'] ?? '', 500)];
+        $b = ['version' => 2, 'mandor' => [], 'materials' => [], 'bop' => [], 'usage' => [], 'permit' => self::number($input['permit'] ?? $p['costs']['permit'] ?? 0)];
         $rows = $input['mandor'] ?? array_map(fn ($r) => ['rowId' => $r['rowId'], 'qtyM' => $r['qm'], 'qtyS' => $r['qs'], 'priceM' => 0, 'priceS' => 0], $owners);
         if (! is_array($rows) || ! array_is_list($rows) || count($rows) !== count($owners) || count(array_unique(array_column($rows, 'rowId'))) !== count($owners)) {
             self::fail('Designator BOQ Mandor harus sesuai BOQ Plan.');
@@ -57,12 +56,6 @@ final class ProjectPlanBudget
             $b['bop'][] = $r;
             $totals['bop'] = self::add($totals['bop'], $r['total']);
         }
-        if ($b['bopLimit'] !== null && $totals['bop'] > $b['bopLimit']) {
-            self::fail('Total BOP melebihi batas Cost Structure yang diisi.');
-        }
-        if ($submit && $totals['bop'] > 0 && ($b['bopLimit'] === null || ! $b['bopReference'])) {
-            self::fail('Isi batas BOP dan referensi Cost Structure sebelum pengajuan.');
-        }
         $totals['ownerTotal'] = self::add($totals['ownerM'], $totals['ownerS']);
         $totals['mandor'] = self::add($totals['mandorM'], $totals['mandorS']);
         $totals['permit'] = $b['permit'];
@@ -75,25 +68,18 @@ final class ProjectPlanBudget
         $totals['grossProfit'] = self::add($totals['revenue'], -$totals['cogs']);
         $totals['margin'] = $totals['revenue'] ? round((float) bcdiv(bcmul((string) $totals['grossProfit'], '100', 6), (string) $totals['revenue'], 6), 2) : null;
         $totals['usage'] = array_fill_keys(array_keys(self::CATEGORIES), 0.0);
-        foreach (self::rows($input['usage'] ?? []) as $row) {
-            $category = $row['category'] ?? '';
-            if (! is_string($category) || ! isset(self::CATEGORIES[$category])) {
-                self::fail('Kategori waktu penggunaan tidak valid.');
+        // Point IV.5 is a server-owned recap, not a payment/installment schedule.
+        // Ignore old/client usage rows, including term/date/amount and version overrides.
+        foreach ([['mandor', 's', 'mandorS'], ['mandor', 'm', 'mandorM'], ['material', null, 'material'], ['bop', null, 'bop'], ['permit', null, 'permit']] as [$category, $component, $source]) {
+            if ($totals[$source] <= 0) {
+                continue;
             }
-            $r = ['id' => $row['id'], 'category' => $category, 'term' => self::text($row['term'] ?? '', 100), 'date' => self::text($row['date'] ?? '', 10), 'amount' => self::number($row['amount'] ?? null)];
-            if ($r['date'] && ! self::date($r['date'])) {
-                self::fail('Tanggal waktu penggunaan tidak valid.');
-            }
-            if ($submit && (! $r['term'] || ! self::date($r['date']) || ! $r['amount'])) {
-                self::fail('Lengkapi termin, tanggal dan nilai positif pada waktu penggunaan.');
+            $r = ['id' => 'usage-'.$category.($component ? '-'.$component : ''), 'category' => $category, 'amount' => $totals[$source]];
+            if ($component) {
+                $r['component'] = $component;
             }
             $b['usage'][] = $r;
             $totals['usage'][$category] = self::add($totals['usage'][$category], $r['amount']);
-        }
-        foreach (self::CATEGORIES as $category => $label) {
-            if ($totals['usage'][$category] > $totals[$category] || ($submit && $totals['usage'][$category] !== $totals[$category])) {
-                self::fail('Rincian waktu penggunaan '.$label.' harus sesuai total anggarannya.');
-            }
         }
         $template = json_decode(file_get_contents(resource_path('data/project-plan-template.json')), true, flags: JSON_THROW_ON_ERROR);
         $risk = $p['riskLevel'] ?? '';
@@ -157,16 +143,6 @@ final class ProjectPlanBudget
         }
 
         return trim($v);
-    }
-
-    private static function date(string $v): bool
-    {
-        if (! preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/D', $v)) {
-            return false;
-        }
-        $date = DateTimeImmutable::createFromFormat('!Y-m-d', $v);
-
-        return $date && $date->format('Y-m-d') === $v;
     }
 
     private static function product(float|int $q, float|int $p): float

@@ -1,0 +1,47 @@
+{
+  "date": "2026-11-05",
+  "change": "Header-only PP drafts, clean new forms, preview-only approval stamps and removed BOP cap/reference",
+  "backup": {
+    "path": "storage/app/private/backups/its-before-pp-drafts-preview-20261105-230244.sql",
+    "bytes": 1047622,
+    "sha256": "b2d77823569c92f2c3b5bd1a123efb45c3efe96936c27e6570d6e83082ef87c6"
+  },
+  "php": {
+    "passed": 140,
+    "assertions": 2553,
+    "database": "SQLite :memory:; fail-closed bootstrap"
+  },
+  "frontend": {
+    "passed": 110,
+    "new_tests": 7
+  },
+  "pint": "passed on six changed PHP files",
+  "build": {
+    "passed": true,
+    "entry": {
+      "file": "assets/main-7sUiVCmn.js",
+      "name": "main",
+      "src": "resources/js/area3/main.tsx",
+      "isEntry": true,
+      "css": [
+        "assets/main-BDyr0v-u.css"
+      ]
+    }
+  },
+  "coverage": [
+    "Header-only draft SQL row/status/number and no fabricated BOQ/budget rows",
+    "invalid Header rollback without counter/revision/audit consumption",
+    "required BOQ/HK/approvers on submission",
+    "fresh new PP cache policy",
+    "failed save input/cache preservation and confirmed retry cleanup",
+    "BOP without cap/reference with source validation preserved",
+    "current-cycle/actor approval stamps",
+    "print CSS hiding stamps/status and empty signature container"
+  ],
+  "migration_required": false,
+  "live_synthetic_transactions": false,
+  "bulk_data_rewrite": false,
+  "visual_browser_or_print_pdf_verified": false,
+  "separate_mysql_engine_retest": false,
+  "documentation": "docs/PP_DRAFTS_PREVIEW.md"
+}

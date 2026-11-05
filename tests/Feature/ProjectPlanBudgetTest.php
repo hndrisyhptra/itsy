@@ -19,6 +19,8 @@ class ProjectPlanBudgetTest extends TestCase
             $this->assertEquals($expected, $result['planBudgetTotals'][$key], $key);
         }
         $this->assertEquals(['mandor' => 140, 'material' => 25.03, 'bop' => 30.02, 'permit' => 7.03], $result['costs']);
+        $this->assertSame(2, $result['planBudget']['version']);
+        $this->assertEquals($fixture['automaticUsage'], $result['planBudget']['usage']);
         $this->assertStringContainsString('Lensa Pro/Group Chat', $result['communication']);
         $this->assertStringContainsString('Commissioning Test dan Uji Terima', $result['quality']);
         $this->assertStringStartsWith('Project Plan ini disusun dengan sebenar-benarnya', $result['closing']);
@@ -41,9 +43,10 @@ class ProjectPlanBudgetTest extends TestCase
         $this->assertEquals(0, $result['planBudget']['mandor'][0]['qtyS']);
         $this->assertEquals(0, $result['planBudget']['mandor'][0]['priceS']);
         $this->assertCount(6, $result['signatureRows']);
+        $this->assertSame([], $result['planBudget']['usage']);
     }
 
-    public function test_invalid_prices_components_usage_ids_and_risk_are_rejected_without_mutating_input(): void
+    public function test_invalid_prices_components_source_ids_and_risk_are_rejected_without_mutating_input(): void
     {
         $fixture = json_decode(file_get_contents(base_path('tests/Fixtures/pp-budget-vector.json')), true);
         $variants = [];
@@ -53,19 +56,10 @@ class ProjectPlanBudgetTest extends TestCase
             $variants[] = $p;
         }
         $p = $fixture['project'];
-        $p['planBudget']['bopLimit'] = 20;
+        $p['planBudget']['bop'][0]['total'] = -1;
         $variants[] = $p;
         $p = $fixture['project'];
-        $p['planBudget']['bopReference'] = '';
-        $variants[] = $p;
-        $p = $fixture['project'];
-        $p['planBudget']['usage'][0]['amount'] = 1;
-        $variants[] = $p;
-        $p = $fixture['project'];
-        $p['planBudget']['usage'][0]['category'] = '__proto__';
-        $variants[] = $p;
-        $p = $fixture['project'];
-        $p['planBudget']['usage'][0]['date'] = '2026-02-30';
+        $p['planBudget']['materials'][0]['price'] = -1;
         $variants[] = $p;
         $p = $fixture['project'];
         $p['planBudget']['materials'][] = $p['planBudget']['materials'][0];
@@ -85,5 +79,44 @@ class ProjectPlanBudgetTest extends TestCase
                 $this->assertSame($before, $input);
             }
         }
+    }
+
+    public function test_recap_is_server_owned_ignores_stale_client_installments_and_needs_no_dates(): void
+    {
+        $fixture = json_decode(file_get_contents(base_path('tests/Fixtures/pp-budget-vector.json')), true);
+        foreach ([[], 'invalid client recap', [['id' => 'client', 'category' => '__proto__', 'amount' => -1, 'date' => '2026-02-30', 'term' => '']]] as $usage) {
+            $p = $fixture['project'];
+            $p['planBudget']['usage'] = $usage;
+            $p['planBudget']['version'] = 1;
+            $before = $p;
+            $result = ProjectPlanBudget::apply($p, $fixture['owners'], true);
+            $this->assertSame($before, $p);
+            $this->assertSame(2, $result['planBudget']['version']);
+            $this->assertEquals($fixture['automaticUsage'], $result['planBudget']['usage']);
+            $this->assertEquals(195.05, $result['planBudgetTotals']['cogs']);
+            $this->assertEquals(7.03, $result['planBudgetTotals']['usage']['permit']);
+            foreach ($result['planBudget']['usage'] as $row) {
+                $this->assertArrayNotHasKey('term', $row);
+                $this->assertArrayNotHasKey('date', $row);
+            }
+        }
+    }
+
+    public function test_recap_rebuilds_from_source_edits_and_hides_zero_categories_without_changing_margin_rules(): void
+    {
+        $fixture = json_decode(file_get_contents(base_path('tests/Fixtures/pp-budget-vector.json')), true);
+        $p = $fixture['project'];
+        $p['planBudget']['mandor'][0]['priceS'] = 30;
+        $p['planBudget']['materials'] = $p['planBudget']['bop'] = [];
+        $p['planBudget']['permit'] = 0;
+        $result = ProjectPlanBudget::apply($p, $fixture['owners'], true);
+        $this->assertEquals([
+            ['id' => 'usage-mandor-s', 'category' => 'mandor', 'component' => 's', 'amount' => 150],
+            ['id' => 'usage-mandor-m', 'category' => 'mandor', 'component' => 'm', 'amount' => 40],
+        ], $result['planBudget']['usage']);
+        $this->assertEquals(190, $result['planBudgetTotals']['total']);
+        $this->assertEquals(190, $result['planBudgetTotals']['cogs']);
+        $this->assertEquals(190, $result['planBudgetTotals']['usage']['mandor']);
+        $this->assertEquals(90.5, $result['planBudgetTotals']['margin']);
     }
 }

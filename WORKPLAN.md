@@ -190,3 +190,37 @@ Final BA KH date verification: **109 PHP tests / 1,477 assertions**, **71 fronte
 - [x] Reopen rejected v3 work-proof correction under existing Admin/Branch/file rules, retain removed history, and lock again on resubmission. Keep scan/Finance/APM, Final/BA PP and volume gates unchanged.
 - [x] Match React form availability, budget previews, rejection guidance and timeline positions to server validation. SQL rejected cycles/decisions remain intact while new submission creates a new pending cycle; no schema migration or live data rewrite.
 - [x] 127 PHP tests / 2,282 assertions, 86 frontend tests, production build main-CrxKAb5G.js and explicit PHP Pint checks pass. New coverage rejects at every stage for both PP and Final termin, checks fresh five-approver cycles and SQL history, and verifies real eviden correction. Tests remain isolated SQLite memory; no live synthetic data, authenticated browser or separate MySQL engine retest. See docs/APPROVAL_RESUBMISSION.md.
+
+## Leader dashboard analytics — 5 November 2026
+Historical iteration; superseded by the dashboard restoration below.
+- [x] Replace the four dashboard operational cards with unique ID Project/PP totals, SPK Sah, approved invoices, recorded payments and outstanding; deduplicate continuation BOQ and preserve historical partial settlement.
+- [x] Add Branch/ID filters, PP status counts, all current approval-stage queues, mutually exclusive payment stages and per-ID portfolio with PP/detail/timeline links. Keep the nine-menu shell and existing Inbox intact.
+- [x] Use read-only projections of Laravel's authorized saved state; no schema, live data, workflow or Dompis Prov changes.
+- [x] 127 PHP tests / 2,282 assertions, 96 frontend tests and TypeScript/Vite build pass. Browser preview permission denied; responsive/dark/light visual and click QA remains unverified. See docs/DASHBOARD_ANALYTICS.md.
+
+## Restore original dashboard summary — 5 November 2026
+- [x] Restore the original title/toolbar, three primary cards and six mini metrics. Remove the four specified operational cards and the additional analytics/portfolio panels; preserve the shared nine-menu shell.
+- [x] Provide Semua Branch dropdown from the authorized Branch master, including Branches without PP, with consistent filtering of all summary values. Preserve role/assignee-based approval count, historical payment amounts and root-BOQ deduplication.
+- [x] Replace unused analytics code/styles/tests with the smaller read-only summary. No migration, workflow, live database or Dompis Prov edits.
+- [x] 127 PHP tests / 2,282 assertions, 94 frontend tests and TypeScript/Vite build pass. Browser visual/interaction QA not repeated after the previous permission denial. See docs/DASHBOARD_SUMMARY.md and docs/qa/dashboard-summary-20261105.json.
+
+## Automatic PP budget recap and compact table grids — 5 November 2026
+- [x] Back up active its before validation changes: its-before-automatic-budget-summary-20261105-211745.sql, 1,019,899 bytes, SHA-256 b1fe8eac3610f42fbefac80b27555b73bdd4ebaf13fad227ef1be839b1617c58.
+- [x] Replace editable point IV.5 manual usage/term/date rows with canonical budget-version-2 positive-category recap; derive Mandor Jasa/Material, Non Stock, BOP and separate permit from source inputs, ignore forged/stale recap payloads and preserve all ceilings/rounding/margin rules.
+- [x] Keep submitted/approved historical budget-version-1 schedules unchanged; only authorized v3 draft/correction saves adopt the new recap. SQL detail rows and per-document snapshots persist atomically through existing storage, without a migration or live data rewrite.
+- [x] Separate Designator, Uraian Pekerjaan and Satuan in Owner/Mandor BOQ; use compact bordered PP form tables and bordered document previews/print styling. Keep positive/zero and missing-component meanings intact.
+- [x] 131 PHP tests / 2,369 assertions, 96 frontend tests, TypeScript/Vite build and scoped Pint passed. HTTP SQL persistence, historical read/approval and continuation/source-change coverage added. All framework tests remain SQLite memory; browser/authenticated visual, print pagination and separate MySQL-engine retest not performed. See docs/PP_BUDGET_TEMPLATE.md and QA evidence.
+
+## PP-derived BA KH and SPK numbering — 5 November 2026
+- [x] Back up active its before workflow changes: its-before-contract-numbering-20261105-222558.sql, 1,047,622 bytes, SHA-256 03a077b6ba245dc96e44cf2ef8ff5be340b4751df5e3c2e8fb76bab7587921ea.
+- [x] Derive current-account new/draft BA KH/SPK numbers from the selected saved PP with fixed -01/-02 codes, ignoring client/cached numbers and retaining PP padding/Branch/period/counter. Use the continuation PP number where applicable.
+- [x] Match read-only form numbers, preview and save commands; preserve issued/Sah snapshots, SQL uniqueness, volume, prices, approvals and historical offline workflows. Existing draft numbers adopt the format on authorized save; no migration or live bulk data rewrite.
+- [x] 137 PHP tests / 2,486 assertions, 103 frontend tests, TypeScript/Vite build and scoped Pint passed. Shared vectors and HTTP SQL snapshots/columns, duplicate rollback and unchanged PP/counters verified. Browser/authenticated visual and separate MySQL engine retest not performed. See docs/CONTRACT_NUMBERING.md and QA evidence.
+
+## Header-only PP drafts, preview stamps and BOP cap removal — 5 November 2026
+- [x] Back up active its before workflow changes: its-before-pp-drafts-preview-20261105-230244.sql, 1,047,622 bytes, SHA-256 b2d77823569c92f2c3b5bd1a123efb45c3efe96936c27e6570d6e83082ef87c6.
+- [x] Allow complete-Header v3 Drafts without BOQ, completed HK, risk or approvers, through controller/domain/React; canonical zero-HK schedule and empty BOQ status persist to SQL. Keep submission gates, input validation, numbering, Branch authorization and historical v1/v2 behavior.
+- [x] Make new PP forms fresh, retain per-ID edit recovery, await server save confirmation before clearing/navigating to the PP list, and keep editor/cache on server failure. Draft status and retry persistence are covered.
+- [x] Remove BOP limit/Cost Structure fields, caption and backend validation; ignore stale payload fields, retain valid cost/COGS/source/precision rules and locked snapshots.
+- [x] Render APPROVED preview indicators only from actual current-cycle selected-user decisions; hide stamps and signature-cell status on print with an empty wet-signature container. Never fabricate approval identities/signatures.
+- [x] 140 PHP tests / 2,553 assertions, 110 frontend tests, TypeScript/Vite build and scoped Pint passed. All framework tests use SQLite memory; no migration, live synthetic transactions or bulk rewrite. Browser/print visual and separate MySQL engine QA not repeated. See docs/PP_DRAFTS_PREVIEW.md and QA evidence.

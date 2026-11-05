@@ -580,7 +580,11 @@ class PrototypeDomain
             }
             $d = array_merge($old, ['evidence' => $d['evidence'] ?? '']);
         } else {
-            $period = BakhSchedule::period($this->record('projects', $d['projectId'] ?? ''));
+            $project = $this->record('projects', $d['projectId'] ?? '');
+            if (($this->state['schema'] ?? 1) >= 3) {
+                $d['no'] = ContractNumber::fromProject($project['no'], '01');
+            }
+            $period = BakhSchedule::period($project);
             if (! $period) {
                 $this->fail('Jadwal PP belum lengkap atau total HK belum valid untuk periode BA KH otomatis.');
             }
@@ -615,6 +619,9 @@ class PrototypeDomain
         $d = $this->record('deals', $v['dealId'] ?? '');
         if ($d['status'] !== 'Sah') {
             $this->fail('SPK hanya dapat dibuat dari BA KH sah.');
+        }
+        if ((! $old || $old['status'] === 'Draft') && ($this->state['schema'] ?? 1) >= 3) {
+            $v['no'] = ContractNumber::fromProject($this->record('projects', $d['projectId'])['no'], '02');
         }
         $this->required($v, ['no']);
         foreach ($this->state['spks'] as $x) {

@@ -5,6 +5,12 @@ description: Implement its Area 3 Project Plan, BOQ, mandor contracting, assigne
 
 # area3-business-workflow
 
+## Header-only draft and PP preview authority — 5 November 2026
+The latest request permits a v3 Draft after complete Header, without BOQ, positive/complete HK, risk or assigned approvers. Submission retains all requirements. Preserve valid entered data and source validation, start new PP forms clean, and clear/navigate to the list only after server confirmation. BOP cap/Cost Structure fields and requirements were removed. Preview stamps represent actual selected-user approvals in the current cycle; print must leave the signature column blank for wet signatures. Never invent decisions or signatures. See docs/PP_DRAFTS_PREVIEW.md.
+
+## Automatic BA KH/SPK numbers — 5 November 2026
+Active account new/draft documents derive their number from the selected saved PP: insert -01 for BA KH or -02 for SPK before the first slash. SPK must derive from PP, never append to the BA KH number. Laravel ignores client/cached numbers; React shows matching read-only values and previews. Preserve already Terbit/Sah numbers, uniqueness, PP numbering counters, snapshots and all other workflow gates. See docs/CONTRACT_NUMBERING.md.
+
 ## Rejection resubmission authority — 5 November 2026
 The user changed v3 rejection behavior. Rejected PP/payment submissions require a note and return to Admin correction/resubmission on the same document. Preserve the rejected status until a draft save/resubmission, immutable decision history and document numbers. All five active approvals restart from the selected PM only after the Admin resubmits; never reuse previous-cycle approvals. Permit v3 rejected work-evidence correction under the existing Admin/Branch/file rules. Keep v1/v2 historical rejection behavior unchanged. Follow docs/APPROVAL_RESUBMISSION.md; older terminal-rejection guidance below applies only to historical versions.
 

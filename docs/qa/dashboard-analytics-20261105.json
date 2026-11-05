@@ -1,0 +1,34 @@
+{
+  "date": "2026-11-05",
+  "change": "Read-only leader dashboard analytics",
+  "php": {
+    "passed": 127,
+    "assertions": 2282,
+    "database": "SQLite :memory:; fail-closed test bootstrap unchanged"
+  },
+  "frontend": {
+    "passed": 96,
+    "new_analytics_tests": 10
+  },
+  "build": {
+    "passed": true,
+    "entry": {
+      "file": "assets/main-DWCA6rQs.js",
+      "name": "main",
+      "src": "resources/js/area3/main.tsx",
+      "isEntry": true,
+      "css": [
+        "assets/main-BCuYSoqW.css"
+      ]
+    }
+  },
+  "live_database_mutations": false,
+  "schema_changed": false,
+  "workflow_changed": false,
+  "browser_visual_qa": {
+    "verified": false,
+    "reason": "Isolated preview access permission denied; no alternate browser access attempted; preview server stopped"
+  },
+  "scope": "Laravel-authorized Branch state only; distinct project IDs, per-ID PP drilldown, root BOQ deduplication, approved-current-term finances, historical partial payment, current approval and scan/Finance/APM stages",
+  "documentation": "docs/DASHBOARD_ANALYTICS.md"
+}

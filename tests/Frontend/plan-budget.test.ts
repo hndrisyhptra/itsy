@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { createElement, Children, isValidElement, type ReactNode } from 'react';
+import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { seed } from '../../resources/js/area3/seed';
 import { type Project, type State, type Role, APPROVERS_V3, normalizeWorkflow, saveProject, getProject, decideProject, selectActor } from '../../resources/js/area3/domain';
 import { applyPlanTemplate } from '../../resources/js/area3/plan-template';
-import { applyBudgetPlan, budgetSummary, lineAmount, ratioPercent, selectUsageCategory, type BudgetCategory } from '../../resources/js/area3/plan-budget';
+import { applyBudgetPlan, budgetSummary, lineAmount, ratioPercent, draftPlanBudget } from '../../resources/js/area3/plan-budget';
 import { BudgetPlanSection, RiskQualitySection, signaturePerson } from '../../resources/js/area3/plan-budget-ui';
 import { DocumentPreview } from '../../resources/js/area3/ui';
 
@@ -20,37 +20,50 @@ function fixture() {
   return {s,p};
 }
 
-test('usage category selection fills current Non Stock, BOP and permit totals without changing source data or other row fields',()=>{
-  const {s,p}=fixture();p.planBudget!.usage=[{id:'usage-select',category:'mandor',term:'2',date:p.date,amount:123}];
-  const before=structuredClone(p);
-  for(const [category,expected]of [['material',25.03],['bop',30.02],['permit',7.03],['mandor',0]]as const){
-    const rows=selectUsageCategory(s,p,'usage-select',category);
-    assert.deepEqual(rows,[{...before.planBudget!.usage[0],category,amount:expected}]);
-    assert.deepEqual(p,before);
-  }
-  p.planBudget!.permit=0;assert.equal(selectUsageCategory(s,p,'usage-select','permit')[0].amount,0);
+test('budget recap derives positive source amounts without installments, dates or trusting stale usage rows',()=>{
+  const {s,p}=fixture(),before=structuredClone(p);
+  p.planBudget!.usage=[{id:'usage-stale',category:'mandor',amount:999999,term:'',date:'2026-02-30'}];
+  const result=applyBudgetPlan(s,p,true,true);
+  assert.equal(result.planBudget!.version,2);
+  assert.deepEqual(result.planBudget!.usage,vector.automaticUsage);
+  assert.deepEqual(p.planBudget!.mandor,before.planBudget!.mandor);
+  assert.equal(p.planBudget!.usage[0].date,'2026-02-30');
+  saveProject(s,p,true);const saved=getProject(s,p.id);
+  assert.equal(saved.status,'Diajukan');assert.deepEqual(saved.planBudget!.usage,vector.automaticUsage);
+  assert.equal(saved.approvals!.length,0);
 });
 
-test('usage category prefills only remaining cents and the actual dropdown handler persists its selected amount in a draft',()=>{
-  const {s,p}=fixture();p.planBudget!.usage.find(r=>r.category==='material')!.amount=10.01;
-  const target=p.planBudget!.usage[0],rows=selectUsageCategory(s,p,target.id,'material');
-  assert.equal(rows[0].amount,15.02);assert.equal(rows[2].amount,10.01);
-  assert.equal(selectUsageCategory(s,{...p,planBudget:{...p.planBudget!,usage:rows}},target.id,'material')[0].amount,15.02);
-  p.planBudget!.usage.find(r=>r.category==='material')!.amount=25.03;
-  assert.equal(selectUsageCategory(s,p,target.id,'material')[0].amount,0);
+test('source edits refresh the automatic recap and remove categories when their total becomes zero',()=>{
+  const {s,p}=fixture();const initial=applyBudgetPlan(s,p);
+  const changed=structuredClone(initial);changed.planBudget!.mandor[0].priceS=30;changed.planBudget!.materials=[];changed.planBudget!.bop=[];changed.planBudget!.permit=0;
+  const next=applyBudgetPlan(s,changed,true,true);
+  assert.deepEqual(next.planBudget!.usage,[{id:'usage-mandor-s',category:'mandor',component:'s',amount:150},{id:'usage-mandor-m',category:'mandor',component:'m',amount:40}]);
+  assert.equal(next.planBudgetTotals!.total,190);assert.equal(next.planBudgetTotals!.usage.mandor,190);
+  assert.equal(next.planBudgetTotals!.usage.permit,0);assert.deepEqual(initial.planBudget!.usage,vector.automaticUsage);
+  const html=renderToStaticMarkup(createElement(BudgetPlanSection,{s,p:next,editable:true}));
+  const recap=html.match(/<div class="table-scroll budget-recap-table">([\s\S]*?)<\/table><\/div>/)![1];
+  assert.ok(recap.includes('Jasa Mandor'));assert.ok(recap.includes('Material BOQ Mandor'));
+  assert.doesNotMatch(recap,/Material Non Stock|>BOP<|Preliminary/);
+});
 
-  p.planBudget!.usage=[{...target,amount:0}];let next:Project|undefined;
-  type SelectProps={'aria-label'?:string;children?:ReactNode;onChange?:(event:{target:{value:BudgetCategory}})=>void};
-  function findSelect(node:ReactNode):SelectProps|undefined {
-    for(const child of Children.toArray(node))if(isValidElement<SelectProps>(child)){
-      if(child.type==='select'&&child.props['aria-label']==='Kebutuhan Anggaran 1')return child.props;
-      const found=findSelect(child.props.children);if(found)return found;
-    }
-  }
-  const select=findSelect(BudgetPlanSection({s,p,editable:true,onChange:updated=>{next=updated;}}));
-  assert.ok(select?.onChange);select.onChange({target:{value:'material'}});assert.ok(next);
-  assert.equal(next.planBudget!.usage[0].amount,25.03);assert.equal(next.planBudget!.usage[0].category,'material');
-  saveProject(s,next,false);assert.equal(getProject(s,p.id).planBudget!.usage[0].amount,25.03);
+test('submitted historical budget version 1 keeps its original installment rows and totals unchanged',()=>{
+  const {s,p}=fixture();p.status='Sah';p.planBudgetTotals=budgetSummary(s,p,p.planBudget);
+  const before=JSON.stringify(p),budget=draftPlanBudget(s,p);
+  assert.equal(budget.version,1);assert.deepEqual(budget.usage,p.planBudget!.usage);
+  const html=renderToStaticMarkup(createElement(BudgetPlanSection,{s,p,printing:true}));
+  assert.ok(html.includes('Termin Bayar / Reimburse'));assert.ok(html.includes('historis'));assert.equal(JSON.stringify(p),before);
+  p.status='Ditolak';assert.equal(draftPlanBudget(s,p).version,2);
+});
+
+test('continuation recap uses its component allocation and never adds the root budget again',()=>{
+  const {s,p}=fixture();s.projects.push(structuredClone(p));
+  const child:Project={...structuredClone(p),id:'pp-budget-child',parentId:p.id,rootId:p.id,allocations:{'boq-qa':{m:1.5,s:2}}};
+  child.planBudget!.mandor[0].qtyM=1.5;child.planBudget!.mandor[0].qtyS=2;
+  child.planBudget!.materials=[];child.planBudget!.bop=[];child.planBudget!.permit=0;
+  const before=JSON.stringify(p),result=applyBudgetPlan(s,child,true,true);
+  assert.equal(result.planBudgetTotals!.ownerTotal,550);assert.equal(result.planBudgetTotals!.total,55);
+  assert.deepEqual(result.planBudget!.usage,[{id:'usage-mandor-s',category:'mandor',component:'s',amount:40},{id:'usage-mandor-m',category:'mandor',component:'m',amount:15}]);
+  assert.equal(JSON.stringify(p),before);
 });
 
 test('shared budget vector computes rounded component costs, service-only revenue and margin without counting reimbursement twice',()=>{
@@ -66,13 +79,13 @@ test('shared budget vector computes rounded component costs, service-only revenu
   assert.equal(applyBudgetPlan(s,negative,true,true).planBudgetTotals?.margin,-12.35);
 });
 
-test('plan saves reject exceeded component ceilings, unmatched disbursement, duplicate IDs and missing risk without replacing saved state',()=>{
+test('plan saves reject exceeded component ceilings, invalid source amounts, duplicate IDs and missing risk without replacing saved state',()=>{
   const {s,p}=fixture();saveProject(s,p,false);
   const baseline=JSON.stringify(s),variants:Project[]=[];
   for(const[key,value]of [['priceM',101],['qtyS',11],['priceS',-.01],['priceM',.001],['qtyS',.0001]]as const){const bad=structuredClone(p);bad.planBudget!.mandor[0][key]=value;variants.push(bad);}
-  let bad=structuredClone(p);bad.planBudget!.bopLimit=1;variants.push(bad);
-  bad=structuredClone(p);bad.planBudget!.usage[0].amount=1;variants.push(bad);
-  bad=structuredClone(p);bad.planBudget!.usage[0].date='2026-02-30';variants.push(bad);
+  let bad=structuredClone(p);bad.planBudget!.bop[0].total=-1;variants.push(bad);
+  bad=structuredClone(p);bad.planBudget!.materials[0].price=-1;variants.push(bad);
+  bad=structuredClone(p);bad.planBudget!.bop[0].qty=.0001;variants.push(bad);
   bad=structuredClone(p);bad.planBudget!.materials.push(bad.planBudget!.materials[0]);variants.push(bad);
   bad=structuredClone(p);bad.riskLevel='';variants.push(bad);
   bad=structuredClone(p);bad.planBudget!.mandor[0].rowId='unknown';variants.push(bad);
@@ -91,11 +104,14 @@ test('deleting or editing print rows does not bypass five PP approvals and no un
 test('budget form exposes template columns and working row actions; risk text is fixed and curve is removed',()=>{
   const {s,p}=fixture(),result=applyBudgetPlan(s,p);
   const budget=renderToStaticMarkup(createElement(BudgetPlanSection,{s,p:result,editable:true,onChange:()=>{}}));
-  for(const label of ['BoQ TA - Telkom / Owner Project','BoQ TA - Mandor','Jml_Mat','Jml_Jasa','Tambah Material','Tambah BOP','Tambah Waktu Penggunaan','Referensi Cost Structure','195,05','90,25'])assert.ok(budget.includes(label),label);
+  for(const label of ['BoQ TA - Telkom / Owner Project','BoQ TA - Mandor','Jml_Mat','Jml_Jasa','Tambah Material','Tambah BOP','Uraian Pekerjaan','Satuan','195,05','90,25'])assert.ok(budget.includes(label),label);
+  assert.doesNotMatch(budget,/Termin Bayar|Tanggal Penggunaan|Tambah Waktu Penggunaan|Nilai Penggunaan/);
+  assert.equal((budget.match(/>Uraian Pekerjaan<\/th>/g)??[]).length,2);
+  assert.equal((budget.match(/class="budget-description"/g)??[]).length,2);
   const risk=renderToStaticMarkup(createElement(RiskQualitySection,{s,p:result,editable:true,onChange:()=>{}}));
   assert.equal((risk.match(/type="checkbox"/g)??[]).length,3);assert.equal((risk.match(/type="checkbox"[^>]*checked/g)??[]).length,1);assert.doesNotMatch(risk,/<textarea/);
   for(const text of ['KOMUNIKASI DAN DOKUMENTASI','MANAJEMEN KUALITAS','PENUTUP','Lensa Pro/Group Chat','Tambah Penandatangan','Hapus Penandatangan'])assert.ok(risk.includes(text),text);
   const preview=renderToStaticMarkup(createElement(DocumentPreview,{state:s,kind:'Project Plan',project:result,onClose:()=>{}}));
   assert.doesNotMatch(preview,/Kurva S|pp-kurva-s-reference|ANDRA UTAMA|AMRAN QURAISY|HENDRA CAHYA|APPROVED/);
-  assert.match(preview,/Ruang TTD basah/);assert.match(preview,/IV\. KEBUTUHAN ANGGARAN/);assert.match(preview,/VIII\. PENUTUP/);
+  assert.match(preview,/pp-signature-print/);assert.match(preview,/IV\. KEBUTUHAN ANGGARAN/);assert.match(preview,/VIII\. PENUTUP/);assert.match(preview,/budget-recap-table/);assert.doesNotMatch(preview,/Termin Bayar \/ Reimburse/);
 });

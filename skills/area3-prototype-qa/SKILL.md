@@ -5,6 +5,15 @@ description: Test the its Area 3 interactive prototype through the linked busine
 
 # area3-prototype-qa
 
+## Header draft, BOP removal and preview stamp verification — 5 November 2026
+Test complete-Header v3 Draft persistence/list status without BOQ, HK completion, risk or approvers; incomplete Header must not consume SQL numbers/revision/audit. Submission still requires all planning. New PP must not restore the shared prior-form cache; failed saves retain input, successful saves clear/navigate only after confirmation. Positive BOP submits without cap/reference while numeric/source guards stay intact. Stamps must match current-cycle selected-user decisions only; print CSS hides stamps/statuses and displays a truly empty wet-signature area. Do not equate CSS/SSR tests with visual print QA. See docs/PP_DRAFTS_PREVIEW.md.
+
+## BA KH/SPK numbering verification — 5 November 2026
+Test fixed -01/-02 derivation from saved PP across save/generate/direct attestation, stale draft numbers and forged client values. Preserve source padding/Branch/period, custom formats, continuation PP numbers, existing Terbit/Sah snapshots, uniqueness and unchanged PP counters. Verify readonly form/preview values and SQL columns/document snapshots, with duplicate rollback. Shared vectors: tests/Fixtures/contract-numbering.json; rules: docs/CONTRACT_NUMBERING.md.
+
+## Automatic budget recap verification — 5 November 2026
+Test v3 PP submission with empty/stale/forged usage rows and no installment/date values: Laravel must derive canonical positive version-2 rows from source budgets and persist rows/snapshot atomically. Verify source edits and zero-category removal, separate Mandor components/permit, continuation suballocations, source-price/volume/BOP/risk validation and preserved locked version-1 schedules. BOQ Owner/Mandor must have separate designator/description/unit columns and compact form/preview table grids. Do not mistake markup tests for responsive/print visual QA. See docs/PP_BUDGET_TEMPLATE.md.
+
 ## Rejection resubmission verification — 5 November 2026
 For v3 PP and payments, test rejection by each of the five selected approvers, mandatory notes, Admin-only correction/resubmission, restart from PM, retained numbers and rejected SQL cycles/decisions, no approval before resubmission or skipped approver, and work-evidence replacement with retained history. Rejection must not unlock scan/Finance/APM, the next term or premature BA PP. Keep historical v1/v2 terminal rejection tests. See docs/APPROVAL_RESUBMISSION.md.
 

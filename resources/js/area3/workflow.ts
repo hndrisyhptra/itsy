@@ -57,7 +57,7 @@ export function saveProjectV2(s: State, input: Project, submit: boolean) {
   requireAdmin(s); const p = structuredClone(input), old = s.projects.find(x => x.id === p.id);
   if (old && !canReviseSubmission(old)) throw new Error('PP terkunci pada status ini.');
   const version = (old?.workflowVersion ?? 1) >= 2 ? old!.workflowVersion! : s.schema >= 3 ? 3 : 2;
-  if (version >= 3) Object.assign(p, applyPlanTemplate(p, true));
+  if (version >= 3) Object.assign(p, applyPlanTemplate(p, true, submit));
   else { delete p.planTemplateVersion; delete p.teamText; delete p.durationDays; delete p.planBudget; delete p.planBudgetTotals; delete p.signatureRows; delete p.signatureUsers; delete p.closing; delete p.riskLevel; }
   const chain = validateAssignments(s, { ...p, workflowVersion: version }, submit);
   if (!['Konstruksi', 'Operation'].includes(p.unit) || !branchOptions(s).some(b => b.name === p.branch && b.active)) throw new Error('Pilih Unit Kerja dan Branch aktif.');
@@ -66,9 +66,9 @@ export function saveProjectV2(s: State, input: Project, submit: boolean) {
   if (old) { p.continuationNotes = old.continuationNotes; p.rootId = old.rootId; p.parentId = old.parentId; p.sourceBapp = old.sourceBapp; p.allocations = structuredClone(old.allocations); }
   if (p.parentId) { p.budget = old!.budget; p.boq = old!.boq; p.boqStatus = old!.boqStatus; }
   else {
-    if (!p.boq.length || p.boq.length > 500 || new Set(p.boq.map(r => r.id)).size !== p.boq.length || new Set(p.boq.map(r => r.khsId)).size !== p.boq.length) throw new Error('Masukkan 1–500 designator unik pada BOQ sebelum Header PP.');
+    if ((!p.boq.length && (submit || version < 3)) || p.boq.length > 500 || new Set(p.boq.map(r => r.id)).size !== p.boq.length || new Set(p.boq.map(r => r.khsId)).size !== p.boq.length) throw new Error('Masukkan 1–500 designator unik pada BOQ sebelum pengajuan PP.');
     p.boq = p.boq.map(r => { const k = s.khs.find(k => k.id === r.khsId && k.active); if (!k || !validVolume(r.qty) || r.qty <= 0) throw new Error('BOQ harus memakai designator aktif dan volume positif maksimal tiga desimal.'); const mismatch=!!p.boqUpload && (r.excelM!==k.m || r.excelS!==k.s); const reviewed=!mismatch || (r.reviewed && !!r.note.trim() && r.version===k.version && r.m===k.m && r.s===k.s); if(submit && !reviewed) throw new Error('Review selisih harga Excel dengan Master KHS dan isi alasan sebelum pengajuan.'); return { ...r, m: k.m, s: k.s, excelM: p.boqUpload?r.excelM:k.m, excelS: p.boqUpload?r.excelS:k.s, version: k.version, reviewed, note: p.boqUpload?r.note:'Input manual dari Master KHS' }; });
-    p.boqStatus = submit ? 'Final' : 'Review';
+    p.boqStatus = submit ? 'Final' : p.boq.length ? 'Review' : 'Belum diimpor';
   }
   if (version >= 3) {
     p.planBudget ??= old?.planBudget; p.riskLevel ??= old?.riskLevel; p.signatureRows ??= old?.signatureRows;

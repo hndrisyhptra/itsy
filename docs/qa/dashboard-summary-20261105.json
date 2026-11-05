@@ -1,0 +1,34 @@
+{
+  "date": "2026-11-05",
+  "change": "Restore original dashboard summary with authorized Branch dropdown; remove four operational cards",
+  "php": {
+    "passed": 127,
+    "assertions": 2282,
+    "database": "isolated SQLite :memory:"
+  },
+  "frontend": {
+    "passed": 94,
+    "dashboard_summary_tests": 8,
+    "replaces_previous_analytics_tests": 10
+  },
+  "build": {
+    "passed": true,
+    "entry": {
+      "file": "assets/main-DxzI5ucE.js",
+      "name": "main",
+      "src": "resources/js/area3/main.tsx",
+      "isEntry": true,
+      "css": [
+        "assets/main-ByxTnhQO.css"
+      ]
+    }
+  },
+  "live_database_mutations": false,
+  "schema_changed": false,
+  "workflow_changed": false,
+  "browser_visual_qa": {
+    "verified": false,
+    "reason": "Not repeated after prior preview access permission denial"
+  },
+  "documentation": "docs/DASHBOARD_SUMMARY.md"
+}

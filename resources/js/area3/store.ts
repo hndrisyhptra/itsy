@@ -45,7 +45,8 @@ async function commit(command: Command, resultId?: string, scan?: { termId: stri
     } catch { /* Preserve the last confirmed state. Draft forms are kept locally. */ }
     state = structuredClone(confirmed);
     persistenceError = `${error instanceof Error ? error.message : 'Koneksi Laravel terputus.'} Perubahan belum dikonfirmasi; data server ditampilkan kembali. Draft formulir tetap tersedia.`;
-    if(scan?.kind!=='work-evidence')window.dispatchEvent(new CustomEvent('area3:server-error',{detail:persistenceError}));
+    // Keep PP editor input mounted on a failed save; its explicit save handler shows the error.
+    if(scan?.kind!=='work-evidence'&&command.command!=='saveProject')window.dispatchEvent(new CustomEvent('area3:server-error',{detail:persistenceError}));
     throw error;
   } finally { clearTimeout(timeout); persistencePending=false; emit(); }
 }

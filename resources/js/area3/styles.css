@@ -29,5 +29,25 @@ body{color:var(--text);background:var(--bg)}[data-theme=dark] .metric-label,[dat
 
 .sph-price-field{min-width:135px;max-width:220px}.sph-price-field small{display:block;white-space:normal;line-height:1.5;margin-top:6px}.sph-price-field input[aria-invalid=true]{border-color:var(--danger,#c43a46)}
 
+/* Compact PP tables with a visible grid in forms and document previews. */
+.pp-form-card,.plan-budget-section,.plan-risk-section{--table-border:#c7cdd8}
+[data-theme=dark] .pp-form-card,[data-theme=dark] .plan-budget-section,[data-theme=dark] .plan-risk-section{--table-border:#485064}
+.pp-form-card .table-scroll table,.plan-budget-section table,.plan-risk-section table{border-collapse:collapse;border:1px solid var(--table-border)}
+.pp-form-card .table-scroll th,.pp-form-card .table-scroll td,.plan-budget-section th,.plan-budget-section td,.plan-risk-section th,.plan-risk-section td{border:1px solid var(--table-border);padding:6px 8px;font-size:11px;line-height:1.5}
+.pp-form-card .table-scroll th,.plan-budget-section th,.plan-risk-section th{font-size:10px;letter-spacing:0;white-space:normal}
+.pp-form-card .table-scroll input,.pp-form-card .table-scroll select,.plan-budget-section .table-scroll input,.plan-risk-section .table-scroll input,.plan-risk-section .table-scroll select{font-size:11px;padding:5px 7px;min-height:30px}
+.plan-budget-section .table-scroll table{min-width:600px}.plan-budget-section .budget-boq-table table{min-width:1120px}.plan-budget-section .budget-recap-table table{min-width:520px}.plan-budget-section .budget-boq-table th:nth-child(1){width:12%}.plan-budget-section .budget-boq-table th:nth-child(2){width:23%}.plan-budget-section .budget-boq-table th:nth-child(3){width:5%}
+.plan-budget-section input.number-input{min-width:80px;text-align:right;font-variant-numeric:tabular-nums}.plan-budget-section .budget-designator{min-width:110px;max-width:160px;white-space:normal;overflow-wrap:anywhere}.plan-budget-section .budget-description{min-width:180px;max-width:260px;white-space:normal;overflow-wrap:anywhere}.plan-budget-section .budget-volume{min-width:100px;gap:4px}
+.document table{border-collapse:collapse;border:1px solid #777}.document th,.document td{border:1px solid #777;padding:5px 7px;line-height:1.45}.document .table-scroll th{background:#f5f6f8;color:#252b35}
+.document .plan-budget-section,.document .plan-risk-section{--table-border:#777}.pp-full-plan .plan-budget-section .table-scroll table{min-width:0}.pp-full-plan .plan-budget-section .budget-designator{min-width:0;max-width:none}.pp-full-plan .plan-budget-section .budget-description{min-width:0;max-width:none}.pp-full-plan .plan-budget-section .table-scroll th,.pp-full-plan .plan-budget-section .table-scroll td,.pp-full-plan .plan-risk-section .table-scroll th,.pp-full-plan .plan-risk-section .table-scroll td{font-size:10px;padding:5px 6px;color:#252b35;background:#fff}
+@media print{.document table{border-collapse:collapse}.document .table-scroll th,.document .table-scroll td{border:1px solid #555}.pp-full-plan .plan-budget-section .table-scroll table{table-layout:fixed;min-width:0}.pp-full-plan .plan-budget-section .table-scroll th,.pp-full-plan .plan-budget-section .table-scroll td,.pp-full-plan .plan-risk-section .table-scroll th,.pp-full-plan .plan-risk-section .table-scroll td{font-size:7.5pt;padding:4pt;overflow-wrap:anywhere;white-space:normal}.document tr{break-inside:avoid}.document thead{display:table-header-group}}
+
+/* PP approval indicators are preview-only; print reserves a truly blank wet-signature cell. */
+.pp-signature-cell{min-width:120px;vertical-align:middle}.pp-signature-screen{min-height:66px;display:flex;align-items:center;justify-content:center}.pp-approval-stamp{display:inline-flex;flex-direction:column;align-items:center;gap:3px;padding:7px 11px;border:3px double #227346;border-radius:4px;color:#227346;background:#fff;text-align:center;line-height:1.4}.pp-approval-stamp strong{font-size:14px;letter-spacing:1.5px}.document .pp-approval-stamp small{font-size:9px;color:#227346}.pp-signature-print{display:none;min-height:72px}
+@media print{.pp-signature-screen,.pp-approval-stamp{display:none!important}.pp-signature-print{display:block!important;min-height:72px}.pp-signature-cell{height:78px}}
+
+/* Original dashboard summary; retain the shared desktop/mobile metric layout. */
+.dashboard-overview{min-width:0}.dashboard-overview .section-toolbar{flex-wrap:wrap}.dashboard-overview .metric-main,.dashboard-overview .mini-metrics>div{min-width:0}.dashboard-overview .metric-main>strong,.dashboard-overview .mini-metrics strong{overflow-wrap:anywhere}
+
 /* Private work evidence preview, independent of wet-signature scan workflow. */
 .work-evidence-section{margin:18px 0;padding-top:16px;border-top:1px solid var(--border);min-width:0}.work-evidence-frame{display:block;width:100%;height:65vh;min-height:320px;border:1px solid var(--border);border-radius:6px;background:var(--bg)}.work-evidence-image{display:block;max-width:100%;max-height:65vh;object-fit:contain;margin:0 auto}.work-evidence-section details{min-width:0}.work-evidence-section summary{cursor:pointer;color:var(--muted)}

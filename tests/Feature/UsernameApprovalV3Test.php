@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\PrototypeWorkspace;
 use App\Models\User;
 use App\Services\AccountAccess;
+use App\Services\ContractNumber;
 use App\Services\ProjectPlanTemplate;
 use App\Services\PrototypeDomain;
 use App\Services\PrototypeWorkspaceService;
@@ -83,6 +84,128 @@ class UsernameApprovalV3Test extends TestCase
         $p['planBudget'] = $b;
 
         return $p;
+    }
+
+    public function test_complete_header_can_save_a_real_draft_without_boq_schedule_budget_or_approvers(): void
+    {
+        $p = $this->newProject();
+        $p['boq'] = $p['schedule'] = $p['approverUserIds'] = [];
+        unset($p['planBudget'], $p['riskLevel'], $p['signatureRows']);
+        $this->api('saveProject', [$p, false])->assertOk();
+        $draft = $this->projectRecord($p['id']);
+        $this->assertSame('Draft', $draft['status']);
+        $this->assertSame('Belum diimpor', $draft['boqStatus']);
+        $this->assertSame([], $draft['boq']);
+        $this->assertSame([], $draft['approverUserIds']);
+        $this->assertSame([], $draft['approvals']);
+        $this->assertSame(0, $draft['durationDays']);
+        $this->assertCount(5, $draft['schedule']);
+        $this->assertEquals(['mandor' => 0, 'material' => 0, 'bop' => 0, 'permit' => 0], $draft['costs']);
+        $sql = DB::table('project_plans')->where('source_id', $p['id'])->first();
+        $this->assertSame('DRAFT', $sql->status);
+        $this->assertSame($draft['no'], $sql->pp_no);
+        $this->assertSame(0, DB::table('boq_lines')->where('root_pp_id', $sql->id_pp)->count());
+        $this->assertSame(0, DB::table('project_plan_budget_rows')->where('pp_id', $sql->id_pp)->count());
+        $this->assertEquals($draft['boq'], json_decode($sql->document_data, true)['boq']);
+        $this->get('/project-plan')->assertOk();
+        $again = $draft;
+        $again['name'] = 'Header dilanjutkan';
+        $this->api('saveProject', [$again, false])->assertOk();
+        $this->assertSame($draft['no'], $this->projectRecord($p['id'])['no']);
+        $this->assertSame(1, DB::table('project_plans')->where('source_id', $p['id'])->count());
+        $before = $this->getJson('/api/prototype/state')->json();
+        $again['approverUserIds'] = $this->chain();
+        $again['schedule'] = array_fill(0, 5, ['days' => 1]);
+        $this->api('saveProject', [$again, true])->assertUnprocessable();
+        $after = $this->getJson('/api/prototype/state')->json();
+        $this->assertSame($before['revision'], $after['revision']);
+        $this->assertSame($before['state']['projects'], $after['state']['projects']);
+    }
+
+    public function test_incomplete_header_cannot_create_draft_or_consume_number_revision_and_audit(): void
+    {
+        $p = $this->newProject();
+        $p['boq'] = $p['schedule'] = $p['approverUserIds'] = [];
+        $before = $this->getJson('/api/prototype/state')->json();
+        foreach (['name', 'projectCode', 'date', 'branch', 'budget'] as $field) {
+            $bad = $p;
+            $bad[$field] = $field === 'budget' ? 0 : '';
+            $this->api('saveProject', [$bad, false])->assertStatus($field === 'branch' ? 403 : 422);
+            $after = $this->getJson('/api/prototype/state')->json();
+            $this->assertSame($before['revision'], $after['revision']);
+            $this->assertSame($before['state']['settings'], $after['state']['settings']);
+            $this->assertDatabaseMissing('project_plans', ['source_id' => $p['id']]);
+            $this->assertDatabaseCount('prototype_audits', 0);
+        }
+    }
+
+    public function test_bop_submission_does_not_require_or_trust_removed_limit_and_reference_fields(): void
+    {
+        $p = $this->budgetProject();
+        $p['planBudget']['bopLimit'] = 1;
+        $p['planBudget']['bopReference'] = ['stale' => 'client field no longer used'];
+        $this->api('saveProject', [$p, true])->assertOk();
+        $saved = $this->projectRecord($p['id']);
+        $this->assertSame('Diajukan', $saved['status']);
+        $this->assertEquals(30.02, $saved['costs']['bop']);
+        $this->assertEquals(30.02, $saved['planBudgetTotals']['usage']['bop']);
+        $this->assertEquals(555.05, $saved['planBudgetTotals']['total']);
+        $this->assertArrayNotHasKey('bopLimit', $saved['planBudget']);
+        $this->assertArrayNotHasKey('bopReference', $saved['planBudget']);
+        $sql = DB::table('project_plans')->where('source_id', $p['id'])->first();
+        $this->assertEquals($saved['planBudget'], json_decode($sql->document_data, true)['planBudget']);
+    }
+
+    public function test_contract_numbers_follow_the_saved_pp_in_sql_snapshots_and_reject_duplicates_atomically(): void
+    {
+        $p = $this->budgetProject();
+        $this->api('saveProject', [$p, true])->assertOk();
+        foreach (PrototypeDomain::APPROVERS_V3 as $role) {
+            $this->asRole($role);
+            $this->api('decideProject', [$p['id'], 'Setujui', 'QA'])->assertOk();
+        }
+        $this->asRole('Admin Konstruksi');
+        $p = $this->projectRecord($p['id']);
+        $before = $this->getJson('/api/prototype/state')->json('state');
+        $deal = app(PrototypeWorkspaceService::class)->scenario('C')['deals'][0];
+        $deal['id'] = 'bakh-auto-number-qa';
+        $deal['projectId'] = $p['id'];
+        $deal['no'] = 'FORGED/CLIENT';
+        $deal['rows'] = [['rowId' => $p['boq'][0]['id'], 'm' => false, 's' => true, 'qm' => 0, 'qs' => 1,
+            'pm' => 0, 'ps' => 100, 'sphM' => 0, 'sphS' => 100, 'offerM' => 0, 'offerS' => 100,
+            'capM' => $p['boq'][0]['m'], 'capS' => $p['boq'][0]['s']]];
+        $this->api('saveDeal', [$deal, 'save'])->assertOk();
+        $sql = DB::table('contracts')->where('source_id', $deal['id'])->first();
+        $number = ContractNumber::fromProject($p['no'], '01');
+        $this->assertSame($number, $sql->bakh_no);
+        $this->assertSame($number, json_decode($sql->document_data, true)['no']);
+        $baseline = $this->getJson('/api/prototype/state')->json();
+        $duplicate = $deal;
+        $duplicate['id'] = 'bakh-duplicate-qa';
+        $duplicate['no'] = 'BYPASS/CLIENT';
+        $this->api('saveDeal', [$duplicate, 'save'])->assertUnprocessable();
+        $this->assertSame($baseline['revision'], $this->getJson('/api/prototype/state')->json('revision'));
+        $this->assertDatabaseMissing('contracts', ['source_id' => $duplicate['id']]);
+        $this->api('saveDeal', [$deal, 'generate'])->assertOk();
+        $this->api('saveDeal', [$deal, 'attest'])->assertOk();
+        $saved = collect($this->getJson('/api/prototype/state')->json('state.deals'))->firstWhere('id', $deal['id']);
+        $spk = app(PrototypeWorkspaceService::class)->scenario('D')['spks'][0];
+        $spk['id'] = 'spk-auto-number-qa';
+        $spk['dealId'] = $deal['id'];
+        $spk['no'] = 'FORGED/CLIENT';
+        $spk['start'] = $saved['start'];
+        $spk['end'] = $saved['end'];
+        $expectedSpk = ContractNumber::fromProject($p['no'], '02');
+        foreach (['save', 'generate', 'attest'] as $action) {
+            $this->api('saveSpk', [$spk, $action])->assertOk();
+            $row = DB::table('work_orders')->where('source_id', $spk['id'])->first();
+            $this->assertSame($expectedSpk, $row->spk_no);
+            $this->assertSame($expectedSpk, json_decode($row->document_data, true)['no']);
+            $this->assertSame($expectedSpk, DB::table('contracts')->where('source_id', $deal['id'])->value('spk_no'));
+        }
+        $after = $this->getJson('/api/prototype/state')->json('state');
+        $this->assertSame($before['settings'], $after['settings']);
+        $this->assertSame($before['projects'], $after['projects']);
     }
 
     public function test_sph_threshold_uses_saved_pp_budget_and_rejects_over_limit_requests_atomically(): void
@@ -230,13 +353,13 @@ class UsernameApprovalV3Test extends TestCase
         $p['signatureRows'] = [];
         $this->api('saveProject', [$p, false])->assertOk();
         $before = $this->getJson('/api/prototype/state')->json();
-        foreach (['usage', 'bopLimit', 'ids', 'component', 'risk'] as $case) {
+        foreach (['sourceAmount', 'bopAmount', 'ids', 'component', 'risk'] as $case) {
             $bad = $p;
-            if ($case === 'usage') {
-                $bad['planBudget']['usage'][0]['amount'] = 1;
+            if ($case === 'sourceAmount') {
+                $bad['planBudget']['materials'][0]['price'] = -1;
             }
-            if ($case === 'bopLimit') {
-                $bad['planBudget']['bopLimit'] = 1;
+            if ($case === 'bopAmount') {
+                $bad['planBudget']['bop'][0]['total'] = -1;
             }
             if ($case === 'ids') {
                 $bad['planBudget']['materials'][] = $bad['planBudget']['materials'][0];
@@ -258,6 +381,57 @@ class UsernameApprovalV3Test extends TestCase
         $this->assertSame([], $saved['signatureRows']);
         $this->assertCount(5, $saved['approverUserIds']);
         $this->assertSame('Diajukan', $saved['status']);
+    }
+
+    public function test_pp_submission_rebuilds_automatic_budget_recap_and_persists_it_without_terms_or_dates(): void
+    {
+        $p = $this->budgetProject();
+        $p['planBudget']['usage'] = [['id' => 'stale-usage', 'category' => 'mandor', 'amount' => 1, 'term' => '', 'date' => '2026-02-30']];
+        $this->api('saveProject', [$p, false])->assertOk();
+        $draft = $this->projectRecord($p['id']);
+        $this->assertSame(2, $draft['planBudget']['version']);
+        $this->assertEquals(500, $draft['planBudgetTotals']['usage']['mandor']);
+        $p = $draft;
+        $p['planBudget']['usage'] = 'do not trust client recap';
+        $this->api('saveProject', [$p, true])->assertOk();
+        $saved = $this->projectRecord($p['id']);
+        $this->assertSame('Diajukan', $saved['status']);
+        $this->assertCount(0, $saved['approvals']);
+        $this->assertEquals(555.05, $saved['planBudgetTotals']['total']);
+        $this->assertEquals(7.03, $saved['planBudgetTotals']['usage']['permit']);
+        $sql = DB::table('project_plans')->where('source_id', $p['id'])->first();
+        $rows = DB::table('project_plan_budget_rows')->where('pp_id', $sql->id_pp)->where('category', 'usage')->orderBy('position')->pluck('row_data')->map(fn ($row) => json_decode($row, true))->all();
+        $this->assertEquals($saved['planBudget']['usage'], $rows);
+        $this->assertEquals($saved['planBudget'], json_decode($sql->document_data, true)['planBudget']);
+        foreach ($rows as $row) {
+            $this->assertGreaterThan(0, $row['amount']);
+            $this->assertArrayNotHasKey('term', $row);
+            $this->assertArrayNotHasKey('date', $row);
+        }
+        $before = $saved;
+        $this->api('saveProject', [$saved, false])->assertUnprocessable();
+        $this->assertSame($before, $this->projectRecord($p['id']));
+    }
+
+    public function test_reading_and_approving_an_existing_manual_budget_keeps_its_historical_schedule(): void
+    {
+        $p = $this->budgetProject();
+        $this->api('saveProject', [$p, true])->assertOk();
+        $sql = DB::table('project_plans')->where('source_id', $p['id'])->first();
+        $historical = json_decode($sql->document_data, true);
+        // Emulate an already submitted pre-change snapshot in isolated memory storage only.
+        $historical['planBudget'] = $p['planBudget'];
+        DB::table('project_plans')->where('id_pp', $sql->id_pp)->update(['document_data' => json_encode($historical)]);
+        $before = DB::table('project_plans')->where('id_pp', $sql->id_pp)->value('document_data');
+        $read = $this->projectRecord($p['id']);
+        $this->assertEquals($p['planBudget'], $read['planBudget']);
+        $this->assertSame($before, DB::table('project_plans')->where('id_pp', $sql->id_pp)->value('document_data'));
+        $this->asRole('PM Konstruksi');
+        $this->api('decideProject', [$p['id'], 'Setujui', 'QA'])->assertOk();
+        $approved = $this->projectRecord($p['id']);
+        $this->assertSame(1, $approved['planBudget']['version']);
+        $this->assertEquals($p['planBudget']['usage'], $approved['planBudget']['usage']);
+        $this->assertEquals($historical['planBudgetTotals'], $approved['planBudgetTotals']);
     }
 
     public function test_fixed_pp_template_ignores_client_redaction_and_dates_and_submits_without_invented_team(): void
@@ -305,8 +479,15 @@ class UsernameApprovalV3Test extends TestCase
             $stage['days'] = 0;
         }
         unset($stage);
-        $this->api('saveProject', [$p, false])->assertUnprocessable();
-        $this->assertSame($original, $this->getJson('/api/prototype/state')->json('state.projects'));
+        $this->api('saveProject', [$p, false])->assertOk();
+        $draft = $this->projectRecord($p['id']);
+        $this->assertSame('Draft', $draft['status']);
+        $this->assertSame(0, $draft['durationDays']);
+        $beforeSubmit = $this->getJson('/api/prototype/state')->json();
+        $this->api('saveProject', [$p, true])->assertUnprocessable();
+        $afterSubmit = $this->getJson('/api/prototype/state')->json();
+        $this->assertSame($beforeSubmit['revision'], $afterSubmit['revision']);
+        $this->assertSame($beforeSubmit['state']['projects'], $afterSubmit['state']['projects']);
     }
 
     public function test_same_business_project_id_has_multiple_independent_pp_numbers_roots_and_approvals(): void

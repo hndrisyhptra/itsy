@@ -94,7 +94,7 @@ trait PrototypeWorkflowV2
         }
         $version = ($old['workflowVersion'] ?? 1) >= 2 ? $old['workflowVersion'] : (($this->state['schema'] ?? 1) >= 3 ? 3 : 2);
         if ($version >= 3) {
-            $p = ProjectPlanTemplate::apply($p);
+            $p = ProjectPlanTemplate::apply($p, $submit);
         }
         $assignments = $this->validateAssignments($input, $version, $p['branch'], $submit);
         $import = $input['_boqImport'] ?? null;
@@ -128,7 +128,7 @@ trait PrototypeWorkflowV2
                 }
                 $rows[] = ['id' => $rowId, 'khsId' => $khs['id'], 'qty' => $row['qty'], 'm' => $khs['m'], 's' => $khs['s'], 'excelM' => $source['excelM'] ?? $khs['m'], 'excelS' => $source['excelS'] ?? $khs['s'], 'version' => $khs['version'], 'reviewed' => $reviewed, 'note' => $note] + ($source ? ['sourceRow' => $source['sourceRow'], 'sourceCode' => $source['sourceCode'], 'sourceQty' => $source['qty']] : []);
             }
-            if (! $rows || count($rows) > 500) {
+            if ((! $rows && ($submit || $version < 3)) || count($rows) > 500) {
                 $this->fail('Masukkan 1–500 baris BOQ sebelum Header PP.');
             }
         }
@@ -169,7 +169,7 @@ trait PrototypeWorkflowV2
         $p = $this->record('projects', $id);
         if (empty($p['parentId'])) {
             $p['boq'] = $rows;
-            $p['boqStatus'] = $submit ? 'Final' : 'Review';
+            $p['boqStatus'] = $submit ? 'Final' : ($rows ? 'Review' : 'Belum diimpor');
         }
         $p['workflowVersion'] = $version;
         if ($import) {

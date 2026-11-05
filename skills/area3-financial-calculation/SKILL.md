@@ -5,6 +5,12 @@ description: Implement and verify official KHS component prices, agreed BA KH/SP
 
 # area3-financial-calculation
 
+## Removed BOP cap/reference — 5 November 2026
+The user removed the BOP limit and Cost Structure reference inputs and backend requirements. Ignore stale fields on editable saves and preserve locked snapshots. Keep valid nonnegative BOP details, precision, submission completeness, COGS/recap calculations and technical amount limits. No official BOP ceiling is implied. Header-only v3 Drafts may have no BOQ/budget yet; submission still requires complete valid planning. See docs/PP_DRAFTS_PREVIEW.md.
+
+## Automatic PP budget recap — 5 November 2026
+Point IV.5 now derives positive category rows from source Mandor Material/Jasa, Non Stock, BOP and separate permit reimbursement. New/editable v3 saves use budget version 2; Laravel ignores client usage/term/date/amount summaries and recomputes them. Do not require manual installments, dates or usage reconciliation. Preserve version-1 schedules on locked submitted/approved documents. COGS remains IV.1+IV.2+IV.3 with permit separate; component ceilings, rounding and continuation allocations remain unchanged. See docs/PP_BUDGET_TEMPLATE.md.
+
 ## Current storage authority — 5 November 2026
 The user explicitly authorized active MySQL persistence. docs/MYSQL_RUNTIME.md supersedes older aggregate/demo storage descriptions below. Runtime transactions read/write business-table rows with per-document snapshots; prototype_workspaces.state is a preserved archive, never a fallback. Preserve atomic SQL records/revision/receipts/audit, actual five-approver decisions and exact ledger. Live sample BOQ, role switch and reset are unavailable. Tests remain fail-closed SQLite memory; disposable MySQL QA is separate from artisan test. Do not import the archive again after activation or invent historical identities/KHS contracts.
 

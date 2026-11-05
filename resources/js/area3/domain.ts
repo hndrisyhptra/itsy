@@ -1,5 +1,6 @@
 import { applyBudgetPlan } from './plan-budget';
 import { bakhPeriod, syncBakhPeriod } from './bakh-schedule';
+import { contractNumber, syncDealNumber, syncSpkNumber } from './contract-numbering';
 import { mandorSphThreshold, sphThresholdApplies } from './sph';
 import type { PlanBudget, SignaturePlanRow, budgetSummary } from './plan-budget';
 import { applyPlanTemplate } from './plan-template';
@@ -120,7 +121,7 @@ export function finalizeBoq(s: State, projectId: string) {
   recordCommand('finalizeBoq', [projectId]); requireAdmin(s); const p = getProject(s, projectId); if (p.boqStatus !== 'Review' || !p.boq.length) throw new Error('Muat BOQ terlebih dahulu.'); if (p.boq.some(r => { const k = s.khs.find(k => k.id === r.khsId); return !k?.active || !r.reviewed || r.version !== k.version || !Number.isFinite(r.qty) || r.qty <= 0; })) throw new Error('Finalisasi diblokir: selesaikan seluruh review dan revalidasi Master KHS.'); p.boqStatus = 'Final'; log(s, 'BOQ difinalisasi', `${p.no} · ${money(boqTotal(p))}`, `/boq/${p.id}`); }
 export function blankDeal(s: State, projectId: string): Deal {
   const p = getProject(s, projectId); const root = getProject(s, p.rootId); const period=bakhPeriod(p);
-  return { id: uid('bakh'), projectId, no: '', mandor: '', status: 'Draft', rows: root.boq.map(r => ({ rowId: r.id, m: false, s: false, qm: 0, qs: 0, pm: round((r.m ?? 0) * .85), ps: round((r.s ?? 0) * .85), sphM: p.planBudget ? mandorSphThreshold(p,r.id,'m') ?? 0 : round((r.m ?? 0) * .8), sphS: p.planBudget ? mandorSphThreshold(p,r.id,'s') ?? 0 : round((r.s ?? 0) * .8), offerM: round((r.m ?? 0) * .9), offerS: round((r.s ?? 0) * .9), capM: r.m, capS: r.s })), place: '', location: '', witel: '', date: today(), start: period?.start ?? '', end: period?.end ?? '', signer: '', fo: '', jointer: '', evidence: '' };
+  return { id: uid('bakh'), projectId, no: contractNumber(p.no,'01'), mandor: '', status: 'Draft', rows: root.boq.map(r => ({ rowId: r.id, m: false, s: false, qm: 0, qs: 0, pm: round((r.m ?? 0) * .85), ps: round((r.s ?? 0) * .85), sphM: p.planBudget ? mandorSphThreshold(p,r.id,'m') ?? 0 : round((r.m ?? 0) * .8), sphS: p.planBudget ? mandorSphThreshold(p,r.id,'s') ?? 0 : round((r.s ?? 0) * .8), offerM: round((r.m ?? 0) * .9), offerS: round((r.s ?? 0) * .9), capM: r.m, capS: r.s })), place: '', location: '', witel: '', date: today(), start: period?.start ?? '', end: period?.end ?? '', signer: '', fo: '', jointer: '', evidence: '' };
 }
 export function dealErrors(s: State, d: Deal, formal = false) {
   const e: string[] = [], p = getProject(s, d.projectId);
@@ -150,7 +151,7 @@ export function dealErrors(s: State, d: Deal, formal = false) {
 }
 export function saveDeal(s: State, input: Deal, action: 'save' | 'generate' | 'attest' = 'save') {
   recordCommand('saveDeal', [input, action]);
-  requireAdmin(s); const old = s.deals.find(v => v.id === input.id); if (old?.status === 'Sah') throw new Error('Snapshot BA KH sah tidak dapat diedit.'); const d = syncBakhPeriod(s,structuredClone(input));
+  requireAdmin(s); const old = s.deals.find(v => v.id === input.id); if (old?.status === 'Sah') throw new Error('Snapshot BA KH sah tidak dapat diedit.'); const d = syncDealNumber(s,syncBakhPeriod(s,structuredClone(input)));
   if(old?.status!=='Terbit'&&!bakhPeriod(getProject(s,d.projectId)))throw new Error('Jadwal PP belum lengkap atau total HK belum valid untuk periode BA KH otomatis.');
   if (old?.status === 'Terbit') { if (action !== 'attest') throw new Error('BA KH terbit terkunci; hanya pengesahan bukti dokumen tersedia.'); Object.assign(d, structuredClone(old), { evidence: input.evidence }); }
   const e = dealErrors(s, d, action !== 'save'); if (e.length) throw new Error(e.join('\n'));
@@ -158,11 +159,11 @@ export function saveDeal(s: State, input: Deal, action: 'save' | 'generate' | 'a
   d.status = action === 'attest' ? 'Sah' : action === 'generate' ? 'Terbit' : 'Draft';
   if (old) s.deals[s.deals.indexOf(old)] = d; else s.deals.push(d); log(s, action === 'attest' ? 'BA KH disahkan' : action === 'generate' ? 'BA KH diterbitkan' : 'Negosiasi disimpan', d.no, `/ba-kh/${d.id}`); return d.id;
 }
-export function blankSpk(s: State, dealId: string): Spk { const d = getDeal(s, dealId); return { id: uid('spk'), dealId, no: '', status: 'Draft', date: today(), start: d.start, end: d.end, place: d.place, address: '', supervisor: '', phone: '', signer: d.signer, position: '', evidence: '' }; }
+export function blankSpk(s: State, dealId: string): Spk { const d = getDeal(s, dealId); return { id: uid('spk'), dealId, no: contractNumber(getProject(s,d.projectId).no,'02'), status: 'Draft', date: today(), start: d.start, end: d.end, place: d.place, address: '', supervisor: '', phone: '', signer: d.signer, position: '', evidence: '' }; }
 export function saveSpk(s: State, input: Spk, action: 'save' | 'generate' | 'attest' = 'save') {
   recordCommand('saveSpk', [input, action]);
-  requireAdmin(s); const v = structuredClone(input), d = getDeal(s, v.dealId); const old = s.spks.find(x => x.id === v.id);
-  if (old?.status === 'Sah') throw new Error('SPK sah tidak dapat diubah.'); if (old?.status === 'Terbit') { if (action !== 'attest') throw new Error('SPK terbit terkunci; hanya pengesahan bukti dokumen tersedia.'); Object.assign(v, structuredClone(old), { evidence: input.evidence }); } if (d.status !== 'Sah') throw new Error('SPK hanya dari BA KH sah.');
+  requireAdmin(s); const v = syncSpkNumber(s,structuredClone(input)); const old = s.spks.find(x => x.id === v.id);
+  if (old?.status === 'Sah') throw new Error('SPK sah tidak dapat diubah.'); if (old?.status === 'Terbit') { if (action !== 'attest') throw new Error('SPK terbit terkunci; hanya pengesahan bukti dokumen tersedia.'); Object.assign(v, structuredClone(old), { evidence: input.evidence }); } const d = getDeal(s, v.dealId); if (d.status !== 'Sah') throw new Error('SPK hanya dari BA KH sah.');
   if (s.spks.some(x => x.id !== v.id && (x.dealId === v.dealId || x.no === v.no.trim()))) throw new Error('BA KH sudah memiliki SPK atau nomor SPK duplikat.');
   if (!v.no.trim()) throw new Error('Nomor SPK wajib diisi.');
   if (action !== 'save' && (!v.place || !v.date || !v.start || !v.end || !v.address || !v.supervisor || !v.phone || !v.signer || !v.position)) throw new Error('Lengkapi seluruh informasi SPK sebelum penerbitan.');

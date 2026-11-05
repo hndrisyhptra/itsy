@@ -48,7 +48,7 @@ class PrototypeController extends Controller
             $rules['args.'.$i] = ['sometimes', $type];
         }
         $nested = match ($input['command']) {
-            'saveProject' => ['args.0.id' => 'required|string|max:100', 'args.0.schedule' => 'required|array|size:5', 'args.0.schedule.*' => 'array', 'args.0.team' => 'present|array|max:100', 'args.0.team.*' => 'array', 'args.0.costs' => 'required|array', 'args.0.boq' => 'present|array|max:500', 'args.0.boq.*' => 'array', 'args.0.boqUpload' => 'sometimes|nullable|array', 'args.0.boqUpload.id' => 'required_with:args.0.boqUpload|uuid'],
+            'saveProject' => ['args.0.id' => 'required|string|max:100', 'args.0.schedule' => 'sometimes|array|max:5', 'args.0.schedule.*' => 'array', 'args.0.team' => 'present|array|max:100', 'args.0.team.*' => 'array', 'args.0.costs' => 'required|array', 'args.0.boq' => 'present|array|max:500', 'args.0.boq.*' => 'array', 'args.0.boqUpload' => 'sometimes|nullable|array', 'args.0.boqUpload.id' => 'required_with:args.0.boqUpload|uuid'],
             'saveDeal' => ['args.0.id' => 'required|string|max:100', 'args.0.rows' => 'required|array|max:500', 'args.0.rows.*' => 'array'],
             'saveTerm' => ['args.0.id' => 'required|string|max:100', 'args.0.actuals' => 'present|array|max:500', 'args.0.actuals.*' => 'array'],
             'releaseVolume' => ['args.1.*' => 'array'],

@@ -1,0 +1,44 @@
+{
+  "date": "2026-11-05",
+  "change": "Automatic BA KH 01 and SPK 02 numbers derived from saved selected PP",
+  "backup": {
+    "path": "storage/app/private/backups/its-before-contract-numbering-20261105-222558.sql",
+    "bytes": 1047622,
+    "sha256": "03a077b6ba245dc96e44cf2ef8ff5be340b4751df5e3c2e8fb76bab7587921ea"
+  },
+  "php": {
+    "passed": 137,
+    "assertions": 2486,
+    "database": "isolated SQLite :memory: with fail-closed bootstrap"
+  },
+  "frontend": {
+    "passed": 103,
+    "new_numbering_tests": 7
+  },
+  "pint": "passed on four changed PHP files",
+  "build": {
+    "passed": true,
+    "entry": {
+      "file": "assets/main-fcGvcCfJ.js",
+      "name": "main",
+      "src": "resources/js/area3/main.tsx",
+      "isEntry": true,
+      "css": [
+        "assets/main-BzwfxDWX.css"
+      ]
+    }
+  },
+  "example": {
+    "pp": "0002/LG.000/TA-03R546/11-2026",
+    "bakh": "0002-01/LG.000/TA-03R546/11-2026",
+    "spk": "0002-02/LG.000/TA-03R546/11-2026"
+  },
+  "storage_verification": "HTTP command SQL contract/work-order columns and document snapshots, duplicate rollback, unchanged PP and counters; isolated memory tests",
+  "migration_required": false,
+  "live_bulk_data_rewrite": false,
+  "live_synthetic_transactions": false,
+  "historical_issued_numbers": "preserved",
+  "browser_visual_verified": false,
+  "separate_mysql_engine_retest": false,
+  "documentation": "docs/CONTRACT_NUMBERING.md"
+}
