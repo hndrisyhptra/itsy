@@ -29,7 +29,7 @@ class AuthenticatedWorkspace
         ])->all();
         $assignments = DB::table('user_assignments as a')->join('roles as r', 'r.id_role', '=', 'a.role_id')->join('branches as b', 'b.id_branch', '=', 'a.branch_id')
             ->where('a.active', true)->where('b.is_active', true)->whereNull('b.deleted_at')->get(['a.user_id', 'r.code', 'b.name'])->groupBy('user_id');
-        $state['users'] = User::orderBy('name')->get()->map(function ($user) use ($assignments) {
+        $state['users'] = User::orderBy('name')->get(['id_user', 'name', 'email', 'nik', 'role', 'active'])->map(function ($user) use ($assignments) {
             $rows = $assignments->get($user->getKey(), collect())->whereIn('code', array_keys(AccountAccess::ROLES));
             $codes = $rows->pluck('code')->unique();
 
@@ -37,7 +37,15 @@ class AuthenticatedWorkspace
                 'role' => AccountAccess::ROLES[$codes->first() ?? ''] ?? 'Admin Konstruksi',
                 'active' => $user->active && $codes->count() === 1 && $codes->first() === $user->role && $rows->isNotEmpty(), 'branches' => $rows->pluck('name')->unique()->values()->all()];
         })->all();
-        $old = collect($state['khs'])->keyBy('id');
+        $state['khs'] = $this->catalog($state['khs']);
+
+        return $state;
+    }
+
+    /** Reference-only path for uploads: no document/account graph is loaded. */
+    public function catalog(array $previous): array
+    {
+        $old = collect($previous)->keyBy('id');
         $prices = DB::table('designator_package_prices as p')->join('designators as d', 'd.id_designator', '=', 'p.designator_id')
             ->join('packages as k', 'k.id_package', '=', 'p.package_id')->join('designator_types as t', 't.id_designator_type', '=', 'd.designator_type_id')
             ->whereIn('d.designator_type_id', [1, 2])->orderBy('p.id_designator_package_price')->get([
@@ -66,27 +74,37 @@ class AuthenticatedWorkspace
                 $catalog->put($id, $item);
             }
         }
-        $state['khs'] = $catalog->values()->all();
 
-        return $state;
+        return $catalog->values()->all();
+
     }
 
-    public function visible(array $state): array
+    public function visible(array $state, bool $bind = true): array
     {
         $account = $this->account();
-        $state = $this->bind($state);
+        if ($bind) {
+            $state = $this->bind($state);
+        }
         $state['branches'] = array_values(array_filter($state['branches'], fn ($b) => in_array($b['name'], $account['branches'], true)));
         $state['users'] = array_values(array_filter($state['users'], fn ($u) => $u['id'] === $account['id'] || array_intersect($u['branches'], $account['branches'])));
         $state['projects'] = array_values(array_filter($state['projects'], fn ($p) => in_array($p['branch'], $account['branches'], true)));
-        $state['deals'] = array_values(array_filter($state['deals'], fn ($d) => in_array($d['projectId'], array_column($state['projects'], 'id'), true)));
-        $state['spks'] = array_values(array_filter($state['spks'], fn ($s) => in_array($s['dealId'], array_column($state['deals'], 'id'), true)));
-        $state['terms'] = array_values(array_filter($state['terms'], fn ($t) => in_array($t['spkId'], array_column($state['spks'], 'id'), true)));
-        $state['bapps'] = array_values(array_filter($state['bapps'], fn ($b) => in_array($b['termId'], array_column($state['terms'], 'id'), true)));
+        $ids = array_fill_keys(array_column($state['projects'], 'id'), true);
+        $state['deals'] = array_values(array_filter($state['deals'], fn ($d) => isset($ids[$d['projectId']])));
+        $ids = array_fill_keys(array_column($state['deals'], 'id'), true);
+        $state['spks'] = array_values(array_filter($state['spks'], fn ($s) => isset($ids[$s['dealId']])));
+        $ids = array_fill_keys(array_column($state['spks'], 'id'), true);
+        $state['terms'] = array_values(array_filter($state['terms'], fn ($t) => isset($ids[$t['spkId']])));
+        $ids = array_fill_keys(array_column($state['terms'], 'id'), true);
+        $state['bapps'] = array_values(array_filter($state['bapps'], fn ($b) => isset($ids[$b['termId']])));
         $routes = ['/project-plan' => 'projects', '/boq' => 'projects', '/ba-kh' => 'deals', '/spk' => 'spks', '/termin' => 'terms', '/ba-pp' => 'bapps'];
-        $state['events'] = array_values(array_filter($state['events'], function ($e) use ($state, $routes, $account) {
+        $routeIds = [];
+        foreach ($routes as $prefix => $collection) {
+            $routeIds[$prefix] = array_fill_keys(array_column($state[$collection], 'id'), true);
+        }
+        $state['events'] = array_values(array_filter($state['events'], function ($e) use ($routeIds, $routes, $account) {
             foreach ($routes as $prefix => $collection) {
                 if (str_starts_with($e['route'], $prefix.'/')) {
-                    return in_array(substr($e['route'], strlen($prefix) + 1), array_column($state[$collection], 'id'), true);
+                    return isset($routeIds[$prefix][substr($e['route'], strlen($prefix) + 1)]);
                 }
             }
 

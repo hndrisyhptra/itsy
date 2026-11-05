@@ -34,9 +34,15 @@ Login memiliki pembatasan percobaan, regenerasi sesi, CSRF dan opsi Ingat saya. 
 
 Dependensi dikunci dengan `composer.lock`/`package-lock.json`. Untuk mengubah React/CSS/logo sidebar di `resources/js/area3/App.tsx`, jalankan `npm run build` lalu muat ulang halaman. Saat pengembangan dapat memakai `npm run dev`. Login memakai Blade serta entry Vite `resources/js/area3/auth.ts` dan `auth.css`.
 
+## Antrean upload dan optimasi
+
+Upload BOQ serta PDF/foto eviden pada layar aplikasi memakai antrean database Laravel. Status proses tampil pada dokumen; BOQ selesai dapat diambil kembali melalui **Gunakan hasil**. Upload terkait harus selesai sebelum pengajuan approval. Di XAMPP lokal, worker mulai otomatis saat upload dengan pengguna OS Apache agar akses file privat tetap sesuai. Bila berhenti, gunakan **Lanjutkan antrean**. Detail worker, tabel/endpoint, batas operasional dan bukti optimasi: [UPLOAD_QUEUE_PERFORMANCE](docs/UPLOAD_QUEUE_PERFORMANCE.md).
+
+Penyimpanan kini menulis dokumen yang berubah saja, pembacaan layar dibatasi Branch di SQL, preview file memakai query langsung, dan modul halaman dimuat sesuai kebutuhan. Pada uji perubahan pengaturan dengan 20 PP: 1.330 → 8 query; JavaScript utama sekitar 27% lebih kecil. Angka ini bukan hasil uji beban serentak.
+
 ## Identitas akun terbaru
 
-Migration menambahkan `username`, `nik`, `id_regions`, `id_branch`, `id_service_areas`, dan `role` pada users. Akun lama diberi username `user-ID` (akun existing saat pembaruan: **user-1**), dengan kata sandi tetap. Username dapat diganti Superadmin melalui Kelola akun; username baru disimpan dalam huruf kecil dan unik. NIK adalah teks agar nol di depan dipertahankan. Region → Branch → Service Area divalidasi server; Branch utama harus termasuk daftar Branch penugasan. Data yang belum diketahui tetap kosong, tanpa NIK/penempatan rekaan. Migration tambahan sudah dijalankan pada its setelah backup; total 58 migration setelah penambahan Master Designator.
+Migration menambahkan `username`, `nik`, `id_regions`, `id_branch`, `id_service_areas`, dan `role` pada users. Akun lama diberi username `user-ID` (akun existing saat pembaruan: **user-1**), dengan kata sandi tetap. Username dapat diganti Superadmin melalui Kelola akun; username baru disimpan dalam huruf kecil dan unik. NIK adalah teks agar nol di depan dipertahankan. Region → Branch → Service Area divalidasi server; Branch utama harus termasuk daftar Branch penugasan. Data yang belum diketahui tetap kosong, tanpa NIK/penempatan rekaan. Migration tambahan sudah dijalankan pada its setelah backup; total 59 migration setelah penambahan antrean upload.
 
 ## Alur kerja
 

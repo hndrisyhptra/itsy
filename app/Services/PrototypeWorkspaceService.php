@@ -66,14 +66,14 @@ class PrototypeWorkspaceService
         });
     }
 
-    public function payload(PrototypeWorkspace $workspace): array
+    public function payload(PrototypeWorkspace $workspace, ?array $state = null): array
     {
-        return ['state' => app(AuthenticatedWorkspace::class)->visible(app(RelationalWorkflowStore::class)->read($workspace)), 'revision' => $workspace->revision, 'csrf' => csrf_token()];
+        return ['state' => app(AuthenticatedWorkspace::class)->visible($state ?? app(RelationalWorkflowStore::class)->read($workspace, app(AuthenticatedWorkspace::class)->account()['branchIds']), $state === null), 'revision' => $workspace->revision, 'csrf' => csrf_token()];
     }
 
-    public function command(PrototypeWorkspace $workspace, array $input): array
+    public function command(PrototypeWorkspace $workspace, array $input, bool $includePayload = true): array
     {
-        return DB::transaction(function () use ($workspace, $input) {
+        return DB::transaction(function () use ($workspace, $input, $includePayload) {
             $row = PrototypeWorkspace::whereKey($workspace->id)->lockForUpdate()->firstOrFail();
             $access = app(AuthenticatedWorkspace::class);
             $before = $access->bind(app(RelationalWorkflowStore::class)->read($row));
@@ -82,7 +82,7 @@ class PrototypeWorkspaceService
             if ($replay) {
                 abort_unless($replay->actor_user_id === auth()->id() && $replay->command === $input['command'], 409, 'ID permintaan sudah digunakan.');
 
-                return $this->payload($row) + ['replayed' => true];
+                return ($includePayload ? $this->payload($row) : []) + ['replayed' => true];
             }
             if ($row->revision !== $input['revision']) {
                 throw new HttpResponseException(response()->json($this->payload($row) + ['message' => 'Data berubah di tab lain. Muat ulang data terbaru; perubahan tidak ditimpa.'], 409));
@@ -95,13 +95,18 @@ class PrototypeWorkspaceService
                     $input['args'][0]['_boqImport'] = app(BoqImportStorage::class)->read($row, $input['args'][0]['boqUpload']['id'], $project);
                 }
             }
+            if (in_array($input['command'], ['saveProject', 'saveTerm'], true) && ($input['args'][1] ?? false)) {
+                $pending = DB::table('upload_tasks')->where('workspace_id', $row->id)->where('document_id', $input['args'][0]['id'] ?? '')
+                    ->where('kind', $input['command'] === 'saveTerm' ? 'evidence' : 'boq')->whereIn('status', ['queued', 'processing'])->exists();
+                abort_if($pending, 422, 'Tunggu antrean upload dokumen ini selesai sebelum mengajukan approval.');
+            }
             $state = app(PrototypeDomain::class)->execute($before, $input['command'], $input['args'], $input['result_id'] ?? null)['state'];
             $balanceQuery = fn () => DB::table('volume_balances')->join('boq_components as c', 'c.id_boq_component', '=', 'volume_balances.boq_component_id')
                 ->join('boq_lines as b', 'b.id_boq', '=', 'c.boq_line_id')->join('project_plans as p', 'p.id_pp', '=', 'b.root_pp_id')
                 ->where('p.workspace_id', $row->id)->select('volume_balances.*');
             $balances = $balanceQuery()->get()->keyBy('boq_component_id');
             $row->revision++;
-            app(RelationalWorkflowStore::class)->write($row, $state);
+            app(RelationalWorkflowStore::class)->write($row, $state, $before);
             $row->save();
             DB::table('prototype_audits')->insert([
                 'workspace_id' => $row->id, 'request_id' => $input['request_id'], 'command' => $input['command'],
@@ -138,7 +143,7 @@ class PrototypeWorkspaceService
                 }
             }
 
-            return $this->payload($row);
+            return $includePayload ? $this->payload($row, $state) : ['revision' => $row->revision];
         }, 3);
     }
 }

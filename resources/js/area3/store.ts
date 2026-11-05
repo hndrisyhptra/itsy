@@ -4,6 +4,7 @@ import { seed } from './seed';
 import { boot, appUrl } from './laravel';
 import { type Command, setCommandRecorder } from './commands';
 import type { MasterEntity, MasterCatalog } from './master-data';
+import { enqueueUpload, uploadTask, waitUpload } from './upload-queue';
 const listeners = new Set<() => void>();
 const DRAFT_PREFIX = 'area3-laravel-draft-' + (boot?.account ? boot.account.id + '-' : '');
 let state: State = structuredClone(boot?.state ?? seed());
@@ -69,15 +70,23 @@ export async function saveMaster(entity:MasterEntity,input:{action:'save'|'delet
   active=operation.then(()=>{}); void active.catch(()=>{});
   return operation;
 }
-export async function uploadBoq(file:File):Promise<{rows:BoqRow[];source:BoqUpload}> {
+export async function uploadBoq(file:File,documentId:string,onProgress?:(message:string)=>void,signal?:AbortSignal):Promise<{rows:BoqRow[];source:BoqUpload}> {
   if (!boot || persistencePending) throw new Error('Upload BOQ memerlukan sesi login aktif; tunggu transaksi sebelumnya selesai.');
-  const body=new FormData(); body.set('file',file);
-  const response=await fetch(appUrl('/api/prototype/boq/import'),{method:'POST',credentials:'same-origin',headers:{Accept:'application/json','X-CSRF-TOKEN':csrf},body,signal:AbortSignal.timeout(30000)});
-  if(response.status===401 || response.status===419) { if(boot.accountUrls) window.location.assign(boot.accountUrls.login); }
-  let data;
-  try { data=await response.json(); } catch { throw new Error('Server tidak dapat menerima file. Pastikan file .xlsx maksimal 10 MB dan sesi masih aktif.'); }
-  if(!response.ok) throw new Error((Object.values(data.errors??{}).flat() as string[]).join('\n') || data.message || 'File BOQ gagal dibaca.');
-  return data;
+  const task=await enqueueUpload('boq',documentId,file,undefined,signal);
+  await waitUpload(task,onProgress,signal);
+  return (await uploadTask(task.id,true,signal)).result;
+}
+export async function refreshState():Promise<void> {
+  if(!boot)return;
+  for(let attempt=0;attempt<3;attempt++){
+    if(persistencePending)await waitForPersistence().catch(()=>{});
+    const response=await fetch(boot.urls.state,{credentials:'same-origin',headers:{Accept:'application/json'},signal:AbortSignal.timeout(15000)});
+    if(!response.ok)throw new Error('Data terbaru belum dapat dimuat. Gunakan Muat ulang data.');
+    const data=await response.json();
+    if(persistencePending||data.revision<revision)continue;
+    confirmed=data.state;state=structuredClone(confirmed);revision=data.revision;csrf=data.csrf??csrf;emit();return;
+  }
+  throw new Error('Data sedang berubah. Muat ulang untuk melihat hasil upload terbaru.');
 }
 export function uploadTermScan(termId: string, file: File) {
   if (!boot || persistencePending) return Promise.reject(new Error('Tunggu konfirmasi transaksi Laravel sebelumnya.'));
@@ -86,11 +95,16 @@ export function uploadTermScan(termId: string, file: File) {
   active = commit({ command: 'uploadScan', args: [] }, undefined, { termId, file });
   return active;
 }
-export function uploadTermWorkEvidence(termId:string,file:File) {
+export async function queueTermWorkEvidence(termId:string,file:File) {
+  // This is an append to the current server term; it never replaces client state.
+  if(!boot)throw new Error('Gunakan sesi login aktif.');
+  return enqueueUpload('evidence',termId,file);
+}
+export async function uploadTermWorkEvidence(termId:string,file:File,onProgress?:(message:string)=>void) {
   if(!boot||persistencePending)return Promise.reject(new Error('Tunggu transaksi sebelumnya dan gunakan sesi login aktif.'));
-  state=structuredClone(state);
-  active=commit({command:'_attachTermWorkEvidence',args:[]},undefined,{termId,file,kind:'work-evidence'});
-  return active;
+  const task=await queueTermWorkEvidence(termId,file);
+  await waitUpload(task,onProgress);
+  await refreshState();
 }
 export function mutate<T>(fn: (draft: State) => T): T {
   if (persistencePending) throw new Error('Tunggu konfirmasi transaksi Laravel sebelumnya.');

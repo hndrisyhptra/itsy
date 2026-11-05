@@ -1,0 +1,37 @@
+{
+  "date": "2026-11-06",
+  "php_tests": 156,
+  "php_assertions": 2729,
+  "frontend_tests": 116,
+  "build": "passed",
+  "pint": "passed",
+  "test_database": "SQLite :memory: fail-closed",
+  "database_queue_worker_test": "real database queue, one queued BOQ job executed through queue:work --once in isolated memory",
+  "query_fixture": {
+    "project_plans": 20,
+    "action": "change PP numbering format; compare explicit full write vs incremental write",
+    "full_write_queries": 1330,
+    "incremental_write_queries": 8,
+    "snapshot_and_balance_preserved": true
+  },
+  "main_js": {
+    "file": "assets/main-BaP_BX9d.js",
+    "bytes": 339861,
+    "previous_approx_kb": 465.91,
+    "reduction_about_percent": 27,
+    "gzip_kb_vite": 106.71
+  },
+  "lazy_routes": [
+    "resources/js/area3/contracts.tsx",
+    "resources/js/area3/dashboard.tsx",
+    "resources/js/area3/management.tsx",
+    "resources/js/area3/master-designator.tsx",
+    "resources/js/area3/payments.tsx",
+    "resources/js/area3/project-timeline-page.tsx",
+    "resources/js/area3/projects.tsx"
+  ],
+  "browser_qa": "not repeated after prior permission denial",
+  "concurrent_user_load_test": "not performed",
+  "live_apache_worker_file_flow": "ready for next real upload; not tested using user production file",
+  "synthetic_live_records": 0
+}

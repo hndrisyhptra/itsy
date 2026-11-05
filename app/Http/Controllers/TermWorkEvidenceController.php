@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\PrototypeWorkspaceService;
 use App\Services\RelationalWorkflowStore;
+use App\Services\UploadQueue;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -52,7 +53,7 @@ class TermWorkEvidenceController extends Controller
     public function show(Request $request, string $term, string $evidence, PrototypeWorkspaceService $service, RelationalWorkflowStore $store)
     {
         $workspace = $service->workspace($request);
-        $record = collect($service->payload($workspace)['state']['terms'])->firstWhere('id', $term);
+        $record = app(UploadQueue::class)->term($workspace, $term);
         abort_unless($record && collect($record['workEvidence'] ?? [])->contains('id', $evidence), 404);
         $file = DB::table('term_work_evidence as e')->join('document_files as f', 'f.id_document_file', '=', 'e.file_id')
             ->where('e.id_term_evidence', $store->id($workspace->id, 'term-evidence', $evidence))

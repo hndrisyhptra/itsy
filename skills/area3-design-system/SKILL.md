@@ -5,6 +5,9 @@ description: Build or revise the its Area 3 interface with its specific enterpri
 
 # area3-design-system
 
+## Queue/performance authority — 6 November 2026
+Follow docs/UPLOAD_QUEUE_PERFORMANCE.md. Active UI queues BOQ and work evidence in the database; show recoverable pending/completed/failed status without presenting accepted bytes as parsed BOQ or attached proof. Recheck active account/Branch/term status in the worker, retain real audit/private paths and block submission while related uploads are pending. Tests may process jobs in isolated memory but must not start detached workers. Incremental writes must preserve unchanged snapshots, affected-root balances and cross-record projections; SQL Branch scoping uses each PP's branch_id, including PP sharing one business Project ID. Verify idempotency/retries/cleanup, cross-Branch access and previous workflow invariants. Bundle/query measurements are scoped evidence, not a load-test guarantee.
+
 ## Master management authority — 6 November 2026
 The user authorized real SQL master CRUD. Follow docs/MASTER_DESIGNATOR.md, superseding older read-only-master guidance. Keep Master Designator as one of nine parents, with Designator/KHS/Paket KHS submenus and accessible icon tooltips. Only Superadmin mutates SQL masters; other roles read. Preserve soft-deleted references, used identities, issued snapshots and archive; use shared locks/revisions, reference-only metadata writes, receipts and before/after master audit. Mgr Project Support is a real account role, not an extra approver. Verify CRUD/permissions/CSRF, zero prices, concurrency/replay, historical preservation and current-version BOQ review using isolated memory tests.
 

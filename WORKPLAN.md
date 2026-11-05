@@ -233,3 +233,12 @@ Historical iteration; superseded by the dashboard restoration below.
 - [x] Role MGR_PROJECT_SUPPORT dapat dibuat/login melalui username; approval tetap lima peran yang ditetapkan.
 - [x] Migration tambahan diterapkan: total 58; role id_role 10, tabel master_data_changes kosong. Perbandingan backup sebelum/sesudah membuktikan seluruh data pada 37 tabel berisi data tetap sama, kecuali tambahan role/migration yang memang dimaksudkan; 14 akun, 724 designator dan 1.030 harga dipertahankan.
 - [x] 145 PHP tests / 2.644 assertions, 113 frontend tests, TypeScript/Vite build dan Pint. Browser visual belum diulang setelah penolakan izin sebelumnya. Tidak ada akun/PP/harga uji pada its. Lihat docs/MASTER_DESIGNATOR.md dan docs/qa/master-designator-20261106.json.
+
+## Upload queue dan optimasi — 6 November 2026
+
+- [x] Backup its sebelum perubahan: its-before-upload-queue-20261106-055100.sql (1.049.284 byte; SHA-256 fb87d6ba0fbd71318474032ddc8b10aacf934d0f8be1dc04949689f9dcb8d9e9).
+- [x] Antrean SQL BOQ/eviden, HTTP 202, status/recovery, parser dan file privat, retry/idempotency/cleanup, pemeriksaan ulang akun/Branch/status, serta blok approval saat pending.
+- [x] Autostart/resume worker lokal memakai identitas proses web dan lock eksklusif, heartbeat; tidak mengubah izin privat atau menjalankan proses terpisah pada tests.
+- [x] Penulisan dokumen inkremental, balance/event batch, lookup katalog berindeks di memori, SQL scope Branch PP sendiri dan preview file langsung; lazy route modules.
+- [x] Migration 59 diterapkan pada its, 61 fingerprint tabel lama dipertahankan (kolom proyeksi Branch baru diverifikasi terpisah); task/jobs tetap kosong, autostart aktif dan PHP CLI tersedia. Tidak ada uji transaksi pada its.
+- [x] 156 PHP tests / 2.729 assertions, 116 frontend tests, build dan Pint. Fixture 20 PP: 1.330 → 8 query untuk perubahan pengaturan; main JS sekitar 27% lebih kecil. Browser/Apache autostart dengan file pengguna dan load-test serentak belum dilakukan. Lihat docs/UPLOAD_QUEUE_PERFORMANCE.md.

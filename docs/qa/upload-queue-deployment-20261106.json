@@ -1,0 +1,14 @@
+{
+    "database": "its",
+    "migration": "2026_11_06_000002_create_upload_tasks_table",
+    "migration_count": 59,
+    "preserved_tables": 61,
+    "existing_data_unchanged": true,
+    "branch_projection_verified": true,
+    "upload_tasks": 0,
+    "jobs": 0,
+    "autostart": true,
+    "worker_php_executable": true,
+    "worker_started": "on next upload under web-server OS identity",
+    "synthetic_live_records": 0
+}

@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { UploadTasks } from './upload-tasks';
+import { waitUpload } from './upload-queue';
 import { Upload, FileText, Eye, Download, Trash2, ExternalLink } from 'lucide-react';
 import { type State, type Term, type WorkEvidence, operational, canReviseSubmission, dateLabel, removeTermWorkEvidence } from './domain';
 import { appUrl, boot } from './laravel';
-import { mutate, uploadTermWorkEvidence, persistencePending } from './store';
+import { mutate, queueTermWorkEvidence, persistencePending, refreshState } from './store';
 import { Button, Card, Table, Notice, Modal, attempt } from './ui';
 
 export const workEvidenceUrl=(termId:string,fileId:string)=>appUrl('/api/prototype/payments/'+encodeURIComponent(termId)+'/work-evidence/'+encodeURIComponent(fileId));
@@ -12,17 +14,19 @@ export function WorkEvidencePreview({termId,file}:{termId:string;file:WorkEviden
   return file.mime==='application/pdf'?<iframe className="work-evidence-frame" title={'Preview PDF '+file.name} src={url}/>:<img className="work-evidence-image" alt={'Eviden pekerjaan '+file.name} src={url}/>;
 }
 
-export function TermWorkEvidencePanel({s,term,embedded=false}:{s:State;term:Term;embedded?:boolean}) {
-  const [busy,setBusy]=useState(false),[progress,setProgress]=useState(''),[error,setError]=useState(''),[preview,setPreview]=useState<WorkEvidence|null>(null);
+export function TermWorkEvidencePanel({s,term,embedded=false,onBusy}:{s:State;term:Term;embedded?:boolean;onBusy?:(busy:boolean)=>void}) {
+  const [busy,setBusy]=useState(false),[progress,setProgress]=useState(''),[error,setError]=useState(''),[preview,setPreview]=useState<WorkEvidence|null>(null),[pendingCount,setPendingCount]=useState(0);
+  useEffect(()=>{onBusy?.(busy||pendingCount>0);return()=>onBusy?.(false);},[busy,pendingCount,onBusy]);
+  const refreshing=useRef(false);
   const files=term.workEvidence??[],active=files.filter(f=>!f.removedAt),removed=files.filter(f=>f.removedAt);
   const editable=!embedded&&operational(s)&&canReviseSubmission(term);
   async function upload(selected:File[]) {
     if(!selected.length)return;
     setError('');
-    if(active.length+selected.length>10){setError('Maksimal 10 lampiran eviden pekerjaan aktif per termin.');return;}
+    if(active.length+pendingCount+selected.length>10){setError('Maksimal 10 lampiran eviden pekerjaan aktif per termin.');return;}
     if(selected.some(f=>!(/\.(pdf|jpe?g|png|webp)$/i).test(f.name)||f.size<=0||f.size>10*1024*1024)) {setError('Pilih PDF atau foto JPG, PNG, WebP; maksimal 10 MB per file.');return;}
     setBusy(true);
-    try {for(let i=0;i<selected.length;i++){setProgress(`Mengunggah eviden ${i+1} dari ${selected.length}…`);await uploadTermWorkEvidence(term.id,selected[i]);}}
+    try {const tasks=[];for(let i=0;i<selected.length;i++){setProgress(`Mengantrekan eviden ${i+1} dari ${selected.length}…`);tasks.push(await queueTermWorkEvidence(term.id,selected[i]));}setProgress(`Memproses ${tasks.length} eviden dalam antrean…`);await Promise.all(tasks.map(task=>waitUpload(task)));await refreshState();}
     catch(e){setError(e instanceof Error?e.message:'Eviden gagal diunggah.');}
     finally{setBusy(false);setProgress('');}
   }
@@ -30,6 +34,7 @@ export function TermWorkEvidencePanel({s,term,embedded=false}:{s:State;term:Term
   const content=<div className="stack">
     {embedded&&<h3>Eviden pekerjaan ({active.length})</h3>}
     {editable&&<div className="upload-box"><Upload size={24}/><p>Upload PDF atau foto pekerjaan. Maksimal 10 file aktif, masing-masing 10 MB.</p><input aria-label="Upload eviden pekerjaan" type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.webp" disabled={!boot||busy||persistencePending||active.length>=10} onChange={e=>{const selected=Array.from(e.target.files??[]);e.target.value='';void upload(selected);}}/>{busy&&<p role="status">{progress}</p>}</div>}
+    {!embedded&&boot?.account&&<UploadTasks kind="evidence" documentId={term.id} onPending={setPendingCount} onReady={task=>{if(!refreshing.current&&!persistencePending&&!files.some(f=>f.id===task.id)){refreshing.current=true;void refreshState().catch(e=>setError(e instanceof Error?e.message:String(e))).finally(()=>{refreshing.current=false;});}}}/>}
     {error&&<Notice tone="error"><span role="alert">{error}</span></Notice>}
     {active.length?rows(active):<p className="muted">Belum ada eviden pekerjaan yang diunggah.</p>}
     {!editable&&active.length>0&&<small>File yang diunggah Admin tersedia untuk ditinjau selama approval.</small>}

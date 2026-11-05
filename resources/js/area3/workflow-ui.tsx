@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { UploadTasks } from './upload-tasks';
+import { uploadTask, type UploadTask } from './upload-queue';
 import { Upload } from 'lucide-react';
 import { DEFAULT_PP_NUMBER_FORMAT } from './workflow';
 import { type State, type Project, type Approval, type Role, APPROVERS_V3, approvalRoles, selectedApprover, assignPaymentApprovers, uid, money, num, boqTotal, operational, branchOptions, decideProject, canApproveProject, assignProjectApprovers, setNumberFormat } from './domain';
@@ -7,7 +9,11 @@ import { boot, appUrl } from './laravel';
 import { Link, Card, Field, Input, Button, Table, Notice, Badge, attempt } from './ui';
 
 export function BoqDraftEditor({ s, p, onChange, disabled, onBusy }: { s:State; p:Project; onChange:(p:Project)=>void; disabled:boolean; onBusy?:(value:boolean)=>void }) {
-  const [loading,setLoading]=useState(false),[error,setError]=useState('');
+  const [loading,setLoading]=useState(false),[error,setError]=useState(''),[progress,setProgress]=useState('');
+  const latest=useRef(p),controller=useRef<AbortController|null>(null);latest.current=p;
+  useEffect(()=>()=>{controller.current?.abort();onBusy?.(false);},[]);
+  const apply=(imported:{rows:Project['boq'];source:NonNullable<Project['boqUpload']>})=>{const current=latest.current,total=imported.rows.reduce((sum,r)=>sum+r.qty*((r.m??0)+(r.s??0)),0);onChange({...current,boq:imported.rows,boqUpload:imported.source,boqStatus:'Review',budget:current.budget>0?current.budget:Math.round(total*100)/100});};
+  async function useResult(task:UploadTask){setError('');try{apply((await uploadTask(task.id,true)).result);}catch(e){setError(e instanceof Error?e.message:'Hasil upload belum dapat digunakan.');}}
   if(p.parentId) return <Notice>BOQ lanjutan menggunakan alokasi BA PP. BOQ Owner otomatis {money(p.budget)}; volume root dipertahankan.</Notice>;
   async function selectFile(file?:File) {
     if(!file) return;
@@ -15,10 +21,10 @@ export function BoqDraftEditor({ s, p, onChange, disabled, onBusy }: { s:State; 
     if(!file.name.toLowerCase().endsWith('.xlsx') || file.size>10*1024*1024) { setError('Gunakan file .xlsx maksimal 10 MB.'); return; }
     setLoading(true); onBusy?.(true);
     try {
-      const imported=await uploadBoq(file);
-      const total=imported.rows.reduce((sum,r)=>sum+r.qty*((r.m??0)+(r.s??0)),0);
-      onChange({...p,boq:imported.rows,boqUpload:imported.source,boqStatus:'Review',budget:p.budget>0?p.budget:Math.round(total*100)/100});
-    } catch(e) { setError(e instanceof Error?e.message:'File BOQ gagal dibaca. Isi draft sebelumnya tetap tersedia.'); }
+      controller.current=new AbortController();setProgress('Mengunggah file ke antrean…');
+      const imported=await uploadBoq(file,p.id,message=>{setProgress(message);onBusy?.(false);},controller.current.signal);
+      apply(imported);
+    } catch(e) { if(!(e instanceof DOMException&&e.name==='AbortError'))setError(e instanceof Error?e.message:'File BOQ gagal dibaca. Isi draft sebelumnya tetap tersedia.'); }
     finally { setLoading(false); onBusy?.(false); }
   }
   const update=(id:string,values:Partial<Project['boq'][number]>)=>onChange({...p,boq:p.boq.map(r=>r.id===id?{...r,...values}:r)});
@@ -28,12 +34,13 @@ export function BoqDraftEditor({ s, p, onChange, disabled, onBusy }: { s:State; 
     <Notice>Upload template BOQ dengan sheet BoQ, kolom Designator, Satuan, Material, Jasa dan VOL. Hanya volume positif diimpor; harga Master KHS digunakan untuk BOQ Owner.</Notice>
     <div className="upload-box"><Upload size={27}/><h3>Upload BOQ Plan</h3><p>Excel .xlsx maksimal 10 MB. Memilih file baru mengganti isi BOQ draft setelah file berhasil divalidasi.</p>
       <input disabled={disabled||loading||!boot} aria-label="Pilih file template BOQ Excel" type="file" accept=".xlsx" onChange={e=>{const file=e.target.files?.[0];e.target.value='';void selectFile(file);}}/>
-      {loading && <p role="status">Membaca file dan mencocokkan designator dengan Master KHS…</p>}
+      {loading && <p role="status">{progress}</p>}
       {error && <Notice tone="error"><span role="alert">{error}</span></Notice>}
       {p.boqUpload && <Notice><b>{p.boqUpload.name}</b><p>{p.boqUpload.package} · {p.boqUpload.sourceRows} baris sumber → {p.boq.length} komponen BOQ. Total sumber {money(p.boqUpload.sourceTotal)}.</p><small>File asli tersimpan privat. Volume dapat disesuaikan pada draft; harga sumber tetap menjadi pembanding.</small>{s.projects.some(x=>x.id===p.id && x.boqUpload?.id===p.boqUpload?.id) && <p><a href={appUrl('/api/prototype/boq/'+p.id+'/source')}>Unduh file BOQ asli</a></p>}</Notice>}
       {!boot && <Notice tone="warning">Upload Excel memerlukan sesi login Laravel.</Notice>}
       {!boot?.account && !p.boq.length && <Button disabled={disabled||loading} onClick={()=>onChange({...p,boqUpload:undefined,boq:s.khs.filter(k=>k.active).slice(0,6).map((k,i)=>({id:uid('row'),khsId:k.id,qty:[1200,800,12,4,8,6][i],m:k.m,s:k.s,excelM:k.m,excelS:k.s,version:k.version,reviewed:true,note:'Contoh sintetis; bukan hasil parsing file'}))})}>Muat Contoh BOQ (Simulasi)</Button>}
     </div>
+    {boot?.account&&<UploadTasks kind="boq" documentId={p.id} onUse={!disabled&&!loading?task=>void useResult(task):undefined}/>}
     {!!unresolved && <Notice tone="warning">{unresolved} komponen memiliki selisih harga. Isi alasan dan konfirmasikan penggunaan harga KHS sebelum mengajukan PP. Draf tetap dapat disimpan.</Notice>}
     <Table headers={['Designator / Paket','Satuan','Volume','Material Excel / KHS','Jasa Excel / KHS','Jumlah KHS','Review / Aksi']}>{p.boq.map(r=>{
       const k=s.khs.find(k=>k.id===r.khsId),mismatch=!!p.boqUpload && !!k && (r.excelM!==k.m || r.excelS!==k.s);

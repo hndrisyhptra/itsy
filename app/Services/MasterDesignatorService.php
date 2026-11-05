@@ -87,7 +87,7 @@ class MasterDesignatorService
                 'actor_user_id' => auth()->id(), 'command_name' => $command, 'aggregate_type' => 'MASTER', 'aggregate_id' => $row->id,
                 'expected_revision' => $input['revision'], 'resulting_revision' => $row->revision, 'before_sha256' => $beforeHash, 'after_sha256' => $afterHash, 'created_at' => now()]);
 
-            return app(PrototypeWorkspaceService::class)->payload($row) + ['catalog' => $this->catalog(), 'recordId' => $id];
+            return app(PrototypeWorkspaceService::class)->payload($row, $updated) + ['catalog' => $this->catalog(), 'recordId' => $id];
         }, 3);
     }
 

@@ -17,10 +17,10 @@ class BoqImportStorage
         return 'prototype-boq/'.$workspace->id.'/'.$id;
     }
 
-    public function store(PrototypeWorkspace $workspace, UploadedFile $file, array $catalog): array
+    public function store(PrototypeWorkspace $workspace, UploadedFile $file, array $catalog, ?string $id = null): array
     {
         $parsed = app(BoqWorkbookImport::class)->parse($file->getRealPath(), $catalog);
-        $id = (string) Str::uuid();
+        $id ??= (string) Str::uuid();
         $directory = $this->directory($workspace, $id);
         $parsed['source'] += ['id' => $id, 'name' => mb_substr(preg_replace('/[\x00-\x1F\x7F]/u', '', basename($file->getClientOriginalName())), 0, 200), 'sha256' => hash_file('sha256', $file->getRealPath()), 'size' => $file->getSize(), 'uploadedBy' => (string) auth()->id(), 'uploadedAt' => now()->toISOString()];
         try {

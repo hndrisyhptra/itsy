@@ -12,6 +12,10 @@ use RuntimeException;
 /** Business records own runtime data. The old workspace JSON is a read-only archive. */
 class RelationalWorkflowStore
 {
+    private array $userCache = [];
+
+    private array $khsIndex = [];
+
     private const RECORDS = [
         'projects' => ['project_plans', 'id_pp'], 'deals' => ['contracts', 'id_contract'],
         'spks' => ['work_orders', 'id_spk'], 'terms' => ['payment_terms', 'id_payment_term'],
@@ -36,7 +40,7 @@ class RelationalWorkflowStore
             return null;
         }
 
-        return DB::table('users')->where('id_user', $m[1])->value('id_user');
+        return $this->userCache[$id] ??= DB::table('users')->where('id_user', $m[1])->value('id_user');
     }
 
     private function dateTime(?string $value): ?string
@@ -52,7 +56,7 @@ class RelationalWorkflowStore
         };
     }
 
-    public function read(PrototypeWorkspace $workspace): array
+    public function read(PrototypeWorkspace $workspace, ?array $branchIds = null): array
     {
         Area3MigrationTarget::assertAllowed();
         abort_unless($workspace->relational_migrated_at, 503, 'Penyimpanan transaksi belum diaktifkan. Jalankan area3:activate-storage setelah migration.');
@@ -61,9 +65,21 @@ class RelationalWorkflowStore
             throw new RuntimeException('Metadata transaksi tidak ditemukan; arsip lama tidak digunakan sebagai pengganti.');
         }
         $state = json_decode($metadata, true, 512, JSON_THROW_ON_ERROR);
-        foreach (self::RECORDS as $collection => [$table]) {
-            $state[$collection] = DB::table($table)->where('workspace_id', $workspace->id)->orderBy('position')->get('document_data')
-                ->map(fn ($r) => json_decode($r->document_data, true, 512, JSON_THROW_ON_ERROR))->all();
+        $allowed = [];
+        foreach (self::RECORDS as $collection => [$table, $pk]) {
+            $query = DB::table($table)->where('workspace_id', $workspace->id)->orderBy('position');
+            if ($branchIds !== null) {
+                match ($collection) {
+                    'projects' => $query->whereIn('branch_id', $branchIds),
+                    'deals' => $query->whereIn('pp_id', $allowed['projects']),
+                    'spks' => $query->whereIn('contract_id', $allowed['deals']),
+                    'terms' => $query->whereIn('work_order_id', $allowed['spks']),
+                    'bapps' => $query->whereIn('final_term_id', $allowed['terms']),
+                };
+            }
+            $rows = $query->get([$pk, 'document_data']);
+            $allowed[$collection] = $rows->pluck($pk)->all();
+            $state[$collection] = $rows->map(fn ($r) => json_decode($r->document_data, true, 512, JSON_THROW_ON_ERROR))->all();
         }
         $state['events'] = DB::table('workflow_events')->where('workspace_id', $workspace->id)->orderBy('position')->get('event_data')
             ->map(fn ($r) => json_decode($r->event_data, true, 512, JSON_THROW_ON_ERROR))->all();
@@ -72,11 +88,28 @@ class RelationalWorkflowStore
     }
 
     /** Caller holds the workspace lock and one transaction for records, revision and audit. */
-    public function write(PrototypeWorkspace $workspace, array $state): void
+    public function write(PrototypeWorkspace $workspace, array $state, ?array $previous = null): void
     {
         Area3MigrationTarget::assertAllowed();
         if (DB::transactionLevel() === 0) {
             throw new RuntimeException('Penyimpanan transaksi memerlukan transaksi database dan kunci workspace.');
+        }
+        $this->userCache = [];
+        $this->khsIndex = array_column($state['khs'], null, 'id');
+        $changed = [];
+        foreach (self::RECORDS as $collection => $_) {
+            $old = array_column($previous[$collection] ?? [], null, 'id');
+            foreach ($state[$collection] as $document) {
+                if (! isset($old[$document['id']]) || $old[$document['id']] != $document) {
+                    $changed[$collection][$document['id']] = true;
+                }
+            }
+        }
+        // Contract SQL projections also contain SPK fields even when deal data is unchanged.
+        foreach ($state['spks'] as $spk) {
+            if (isset($changed['spks'][$spk['id']])) {
+                $changed['deals'][$spk['dealId']] = true;
+            }
         }
         $w = $workspace->id;
         $key = fn ($type, $source) => $this->id($w, $type, $source);
@@ -102,6 +135,9 @@ class RelationalWorkflowStore
 
         // Insert parent PP headers before linking root/parent references (including historical ordering).
         foreach ($state['projects'] as $i => $p) {
+            if (! isset($changed['projects'][$p['id']])) {
+                continue;
+            }
             $id = $key('projects', $p['id']);
             $branch = DB::table('branches')->whereRaw('UPPER(name) = ?', [mb_strtoupper($p['branch'])])->first();
             if (! $branch) {
@@ -121,7 +157,7 @@ class RelationalWorkflowStore
             $existing = DB::table('project_plans')->where('id_pp', $id)->first();
             $number = $state['settings']['issuedPpNumbers'][$p['no']] ?? null;
             $this->record($workspace, 'projects', $p, $i, [
-                'project_id' => $projectId, 'pp_no' => $p['no'],
+                'project_id' => $projectId, 'branch_id' => $branch->id_branch, 'pp_no' => $p['no'],
                 'usage_date' => $p['date'], 'budget' => $p['budget'],
                 'pm_user_id' => $this->user($p['pmUserId'] ?? null),
                 'manager_user_id' => $this->user($p['managerUserId'] ?? null),
@@ -139,12 +175,22 @@ class RelationalWorkflowStore
             ] : []));
         }
         foreach ($state['projects'] as $p) {
+            if (! isset($changed['projects'][$p['id']])) {
+                continue;
+            }
             $id = $key('projects', $p['id']);
             DB::table('project_plans')->where('id_pp', $id)->update(['root_pp_id' => $key('projects', $p['rootId']), 'parent_pp_id' => empty($p['parentId']) ? null : $key('projects', $p['parentId'])]);
-            $this->projectChildren($workspace, $p, $state);
+            $prior = collect($previous['projects'] ?? [])->firstWhere('id', $p['id']);
+            $planning = ['boqUpload', 'team', 'schedule', 'costs', 'planBudget', 'boq', 'parentId', 'rootId'];
+            if (! $prior || Arr::only($prior, $planning) != Arr::only($p, $planning)) {
+                $this->projectChildren($workspace, $p, $state);
+            }
             $this->approvals($workspace, $p, true);
         }
         foreach ($state['deals'] as $i => $d) {
+            if (! isset($changed['deals'][$d['id']])) {
+                continue;
+            }
             $spk = $spks->firstWhere('dealId', $d['id']);
             $this->record($workspace, 'deals', $d, $i, [
                 'pp_id' => $key('projects', $d['projectId']), 'mandor_name' => $d['mandor'],
@@ -176,9 +222,15 @@ class RelationalWorkflowStore
             DB::table('contract_components')->where('contract_id', $key('deals', $d['id']))->whereNotIn('id_contract_component', $keep)->delete();
         }
         foreach ($state['spks'] as $i => $spk) {
+            if (! isset($changed['spks'][$spk['id']])) {
+                continue;
+            }
             $this->record($workspace, 'spks', $spk, $i, ['contract_id' => $key('deals', $spk['dealId']), 'spk_no' => $spk['no'], 'status' => $spk['status']]);
         }
         foreach ($state['terms'] as $i => $t) {
+            if (! isset($changed['terms'][$t['id']])) {
+                continue;
+            }
             $spk = $spks[$t['spkId']];
             $this->record($workspace, 'terms', $t, $i, [
                 'contract_id' => $key('deals', $spk['dealId']), 'work_order_id' => $key('spks', $t['spkId']),
@@ -204,13 +256,73 @@ class RelationalWorkflowStore
             $this->workEvidenceFiles($workspace, $t);
         }
         foreach ($state['bapps'] as $i => $b) {
+            if (! isset($changed['bapps'][$b['id']])) {
+                continue;
+            }
             $this->record($workspace, 'bapps', $b, $i, ['final_term_id' => $key('terms', $b['termId']), 'document_no' => $b['no'], 'status' => $b['status'] === 'Sah' ? 'ATTESTED' : 'DRAFT', 'evidence_reference' => $b['evidence'] ?: null]);
         }
+        $this->refreshBalances($workspace, $state, $changed);
+        $events = [];
         foreach ($state['events'] as $i => $e) {
-            DB::table('workflow_events')->updateOrInsert(['id_event' => $key('event', $e['id'])], ['workspace_id' => $w, 'source_id' => $e['id'], 'position' => $i, 'event_data' => $this->json($e)]);
+            $events[] = ['id_event' => $key('event', $e['id']), 'workspace_id' => $w, 'source_id' => $e['id'], 'position' => $i, 'event_data' => $this->json($e)];
+        }
+        foreach (array_chunk($events, 100) as $chunk) {
+            DB::table('workflow_events')->upsert($chunk, ['id_event'], ['position', 'event_data']);
         }
         // Small configuration/reference metadata only: never an alternate copy of transactions.
         DB::table('workflow_metadata')->updateOrInsert(['id_workspace' => $w], ['metadata' => $this->json(Arr::except($state, [...array_keys(self::RECORDS), 'events']))]);
+    }
+
+    /** Recalculate only roots touched by this command, batch-write actual balance changes. */
+    private function refreshBalances(PrototypeWorkspace $workspace, array $state, array $changed): void
+    {
+        $projects = array_column($state['projects'], null, 'id');
+        $deals = array_column($state['deals'], null, 'id');
+        $spks = array_column($state['spks'], null, 'id');
+        $terms = array_column($state['terms'], null, 'id');
+        $roots = [];
+        foreach (self::RECORDS as $collection => $_) {
+            foreach ($state[$collection] as $document) {
+                if (! isset($changed[$collection][$document['id']])) {
+                    continue;
+                }
+                $projectId = match ($collection) {
+                    'projects' => $document['id'], 'deals' => $document['projectId'],
+                    'spks' => $deals[$document['dealId']]['projectId'],
+                    'terms' => $deals[$spks[$document['spkId']]['dealId']]['projectId'],
+                    'bapps' => $deals[$spks[$terms[$document['termId']]['spkId']]['dealId']]['projectId'],
+                };
+                $roots[$projects[$projectId]['rootId']] = true;
+            }
+        }
+        if (! $roots) {
+            return;
+        }
+        $domain = app(PrototypeDomain::class)->load($state);
+        $balances = DB::table('volume_balances')->join('boq_components as c', 'c.id_boq_component', '=', 'volume_balances.boq_component_id')
+            ->join('boq_lines as b', 'b.id_boq', '=', 'c.boq_line_id')->whereIn('b.root_pp_id', array_map(fn ($id) => $this->id($workspace->id, 'projects', $id), array_keys($roots)))
+            ->get('volume_balances.*')->keyBy('boq_component_id');
+        $updates = [];
+        foreach (array_keys($roots) as $root) {
+            foreach ($projects[$root]['boq'] as $row) {
+                foreach (['m', 's'] as $c) {
+                    if ($row[$c] === null) {
+                        continue;
+                    }
+                    $id = $this->id($workspace->id, 'boq-component', $root.'|'.$row['id'].'|'.$c);
+                    $ledger = $domain->ledger($root, $row['id'], $c);
+                    $values = ['original_quantity' => $ledger['total'], 'available' => $ledger['available'], 'reserved' => $ledger['reserved'], 'committed' => $ledger['committed'], 'accepted' => $ledger['accepted']];
+                    $old = $balances->get($id);
+                    if ($old && ! array_filter($values, fn ($v, $key) => bccomp((string) $v, (string) $old->$key, 3) !== 0, ARRAY_FILTER_USE_BOTH)) {
+                        continue;
+                    }
+                    $updates[] = $values + ['boq_component_id' => $id, 'revision' => $workspace->revision];
+                }
+            }
+        }
+        foreach (array_chunk($updates, 100) as $chunk) {
+            DB::table('volume_balances')->upsert($chunk, ['boq_component_id'], ['original_quantity', 'available', 'reserved', 'committed', 'accepted', 'revision']);
+        }
     }
 
     /** Master edits share the workspace lock but must not rewrite business snapshots. */
@@ -321,7 +433,7 @@ class RelationalWorkflowStore
         foreach ($p['boq'] as $row) {
             $boq = $key('boq', $p['id'].'|'.$row['id']);
             $keep[] = $boq;
-            $k = collect($state['khs'])->firstWhere('id', $row['khsId']);
+            $k = $this->khsIndex[$row['khsId']];
             $source = preg_match('/^db-price-(\d+)$/D', $row['khsId'], $m) ? (int) $m[1] : null;
             DB::table('boq_lines')->updateOrInsert(['id_boq' => $boq], ['root_pp_id' => $pp, 'khs_price_id' => null, 'source_price_id' => $source, 'source_row_id' => $row['id'], 'source_data' => $this->json($row), 'designator_code_snapshot' => $k['code'], 'description_snapshot' => $k['name'], 'unit_snapshot' => $k['unit']]);
             foreach (['m', 's'] as $c) {
@@ -330,8 +442,7 @@ class RelationalWorkflowStore
                 }
                 $id = $key('boq-component', $p['id'].'|'.$row['id'].'|'.$c);
                 DB::table('boq_components')->updateOrInsert(['id_boq_component' => $id], ['boq_line_id' => $boq, 'component' => strtoupper($c), 'quantity' => $row['qty'], 'official_unit_price' => $row[$c]]);
-                $ledger = $domain->ledger($p['id'], $row['id'], $c);
-                DB::table('volume_balances')->updateOrInsert(['boq_component_id' => $id], ['original_quantity' => $ledger['total'], 'available' => $ledger['available'], 'reserved' => $ledger['reserved'], 'committed' => $ledger['committed'], 'accepted' => $ledger['accepted'], 'revision' => $workspace->revision]);
+
             }
         }
         $removed = DB::table('boq_lines')->where('root_pp_id', $pp)->whereNotIn('id_boq', $keep)->pluck('id_boq');

@@ -1,18 +1,30 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { LayoutDashboard, FolderKanban, FileSignature, ReceiptText, ClipboardCheck, Inbox, Database, ChartNoAxesCombined, Settings, PanelLeftClose, PanelLeftOpen, Search, Bell, ChevronDown, ChevronRight, ArrowUpRight, FlaskConical, Menu, Moon, Sun } from 'lucide-react';
 import { useStore, mutate, reset, clearAllDrafts, persistenceError, persistencePending, waitForPersistence } from './store';
 import { type State, ROLES, getDeal, dateLabel } from './domain';
 import { SCENARIOS } from './seed';
 import { boot } from './laravel';
 import { Link, usePath, navigate, Button, Badge, Empty, Notice, Modal, Toasts, attempt, toast } from './ui';
-import { Dashboard } from './dashboard';
-import { ProjectTimeline } from './project-timeline-page';
-import { Projects, ProjectEditor, ProjectDetail, BoqPage } from './projects';
-import { ContractHub, Contracts, DealEditor, SpkEditor } from './contracts';
-import { Terms, TermEditor, ApprovalInbox, Bapps, BappDetail } from './payments';
+const Dashboard=lazy(()=>import('./dashboard').then(m=>({default:m.Dashboard})));
+const ProjectTimeline=lazy(()=>import('./project-timeline-page').then(m=>({default:m.ProjectTimeline})));
+const Projects=lazy(()=>import('./projects').then(m=>({default:m.Projects})));
+const ProjectEditor=lazy(()=>import('./projects').then(m=>({default:m.ProjectEditor})));
+const ProjectDetail=lazy(()=>import('./projects').then(m=>({default:m.ProjectDetail})));
+const BoqPage=lazy(()=>import('./projects').then(m=>({default:m.BoqPage})));
+const ContractHub=lazy(()=>import('./contracts').then(m=>({default:m.ContractHub})));
+const Contracts=lazy(()=>import('./contracts').then(m=>({default:m.Contracts})));
+const DealEditor=lazy(()=>import('./contracts').then(m=>({default:m.DealEditor})));
+const SpkEditor=lazy(()=>import('./contracts').then(m=>({default:m.SpkEditor})));
+const Terms=lazy(()=>import('./payments').then(m=>({default:m.Terms})));
+const TermEditor=lazy(()=>import('./payments').then(m=>({default:m.TermEditor})));
+const ApprovalInbox=lazy(()=>import('./payments').then(m=>({default:m.ApprovalInbox})));
+const Bapps=lazy(()=>import('./payments').then(m=>({default:m.Bapps})));
+const BappDetail=lazy(()=>import('./payments').then(m=>({default:m.BappDetail})));
 import { canApproveProject, canApproveTerm, selectActor } from './domain';
-import { MasterKhs, Reports, SettingsPage } from './management';
-import { MasterDesignator } from './master-designator';
+const MasterKhs=lazy(()=>import('./management').then(m=>({default:m.MasterKhs})));
+const Reports=lazy(()=>import('./management').then(m=>({default:m.Reports})));
+const SettingsPage=lazy(()=>import('./management').then(m=>({default:m.SettingsPage})));
+const MasterDesignator=lazy(()=>import('./master-designator').then(m=>({default:m.MasterDesignator})));
 import { MASTER_TABS } from './master-data';
 const NAV = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard }, { path: '/project-plan', label: 'Project Plan', icon: FolderKanban },
@@ -58,7 +70,7 @@ export default function App() {
     </aside>
     <div className="main-shell"><header className="topbar"><Button className="mobile-toggle" aria-label="Buka menu" onClick={() => setMobile(!mobile)}><Menu size={19}/></Button><div className="breadcrumbs"><Link to="/dashboard">Workspace</Link><ChevronRight size={13}/><span>{active?.label ?? 'Dashboard'}</span>{id && <><ChevronRight size={13}/><span>{navModule==='master-designator' ? MASTER_TABS.find(t=>t.id===id)?.label??'Designator' : id === 'new' ? 'Baru' : module === 'project-plan' && parts[2] === 'timeline' ? 'Timeline' : 'Detail'}</span></>}</div><div className="top-actions"><Button className="mobile-search" aria-label="Buka pencarian" onClick={() => setPanel('search')}><Search size={18}/></Button><div className="global-search"><Search size={15}/><input aria-label="Pencarian global" placeholder="Cari PP, SPK, proyek…" value={query} onChange={e => setQuery(e.target.value)}/><kbd>⌕</kbd>{query && <div className="search-results">{searchResults.length ? searchResults.map(r => <Link to={r.route} key={r.route}><strong>{r.title}</strong><small>{r.detail}</small><ArrowUpRight size={14}/></Link>) : <p>Tidak ada hasil untuk “{query}”.</p>}</div>}</div><Button className="icon-button" aria-label="Notifikasi" onClick={() => setPanel(panel === 'notifications' ? '' : 'notifications')}><Bell size={18}/>{inboxCount > 0 && <i className="notification-dot"/>}</Button><button className="profile-button" aria-label="Buka profil" onClick={() => setPanel(panel === 'profile' ? '' : 'profile')}><span className="avatar">{s.profile.name.trim().split(/\s+/).slice(0,2).map(v => v[0]).join('').toUpperCase()}</span><span>{s.profile.name}<small>{s.role}</small></span><ChevronDown size={14}/></button></div></header>
       {boot?.account ? <div className="demo-bar"><span><span className="demo-label">WORKSPACE</span> Akses mengikuti akun dan Branch penugasan.</span><div><strong>{s.role}</strong><span>{boot.account.branches.length} Branch</span><Button disabled={persistencePending} onClick={() => window.location.reload()}>Muat ulang data</Button></div></div> : <> <div className="demo-bar"><span><span className="demo-label">PROTOTIPE</span> Simulasikan alur kerja dengan berganti peran.</span><div><label htmlFor="role">Peran demo</label><select disabled={persistencePending} id="role" aria-label="Peran demo" value={s.role} onChange={e => mutate(d => { d.role = e.target.value as State['role']; })}>{ROLES.map(r => <option key={r}>{r}</option>)}</select><select disabled={persistencePending} aria-label="Pengguna demo aktif" value={s.actorUserId ?? ''} onChange={e => mutate(d => selectActor(d, e.target.value))}>{s.users.filter(u => u.active && u.role === s.role).map(u => <option key={u.id} value={u.id}>{u.name}</option>)}</select><Button onClick={() => setPanel('scenario')}><FlaskConical size={14}/> Skenario demo <ChevronDown size={13}/></Button></div></div> </>}
-      <main key={s.generation} className="page-content">{persistenceError && <Notice tone="error">{persistenceError}</Notice>}{content}</main><footer className="app-footer"><span>it's Area 3 <span>·</span> Administrasi Proyek Konstruksi</span><span><i/> {persistencePending ? 'Menyimpan ke Laravel' : 'Tersimpan di Laravel'} · {new Intl.DateTimeFormat('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit' }).format(new Date(s.lastSaved))} WIB</span></footer>
+      <main key={s.generation} className="page-content">{persistenceError && <Notice tone="error">{persistenceError}</Notice>}<Suspense fallback={<div className="empty" role="status">Memuat halaman…</div>}>{content}</Suspense></main><footer className="app-footer"><span>it's Area 3 <span>·</span> Administrasi Proyek Konstruksi</span><span><i/> {persistencePending ? 'Menyimpan ke Laravel' : 'Tersimpan di Laravel'} · {new Intl.DateTimeFormat('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit' }).format(new Date(s.lastSaved))} WIB</span></footer>
     </div>
     {panel === 'search' && <Modal title="Pencarian Global" onClose={() => setPanel('')}><input className="full-width" aria-label="Cari PP SPK atau proyek" placeholder="Cari PP, SPK, proyek…" value={query} onChange={e => setQuery(e.target.value)}/><div className="mobile-search-results">{query ? searchResults.length ? searchResults.map(r => <Link to={r.route} key={r.route}><strong>{r.title}</strong><small>{r.detail}</small></Link>) : <Empty title="Tidak ada hasil"/> : <p className="muted">Masukkan nomor PP, SPK, atau nama proyek.</p>}</div></Modal>}
     {panel === 'notifications' && <Modal title="Notifikasi & Aktivitas" onClose={() => setPanel('')}><Notice>{inboxCount} tugas menunggu peran {s.role}.</Notice><div className="activity-list">{s.events.slice(0, 8).map(e => <Link to={e.route} key={e.id}><span className="activity-dot"/><div><strong>{e.title}</strong><p>{e.detail}</p><small>{e.actor} · {dateLabel(e.at)}</small></div><ChevronRight size={14}/></Link>)}</div></Modal>}
