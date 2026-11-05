@@ -1,14 +1,15 @@
-# it's Area 3 — Laravel Prototype
+# it's Area 3 — Construction Workspace
 
 Aplikasi mandiri Laravel 12/PHP 8.2 + React/TypeScript untuk administrasi konstruksi dan pembayaran mandor. Folder utama `/Applications/XAMPP/xamppfiles/htdocs/its/area3-prototype`. Tidak memakai atau mengubah proyek/database Dompis Prov.
 
 ## Menjalankan dan login
 
-Database aktif sudah dikonfigurasi pengguna ke MySQL/MariaDB **its** dan dimigrasikan. Jalankan migration tambahan saat memperbarui kode agar kolom identitas akun dan versi approval terbaru tersedia:
+Database aktif menggunakan MySQL/MariaDB **its**. Transaksi sudah dipindahkan ke tabel bisnis pada 5 November 2026; PP yang ada tidak hilang. Lihat [penyimpanan aktif dan hasil verifikasi](docs/MYSQL_RUNTIME.md). Jalankan migration tambahan saat memperbarui kode agar kolom identitas akun dan versi approval terbaru tersedia:
 
 ```sh
 cd /Applications/XAMPP/xamppfiles/htdocs/its/area3-prototype
 /Applications/XAMPP/xamppfiles/bin/php artisan migrate
+/Applications/XAMPP/xamppfiles/bin/php artisan area3:activate-storage
 npm run build
 /Applications/XAMPP/xamppfiles/bin/php artisan serve --host=127.0.0.1 --port=8013
 ```
@@ -29,7 +30,7 @@ Dependensi dikunci dengan `composer.lock`/`package-lock.json`. Untuk mengubah Re
 
 ## Identitas akun terbaru
 
-Migration menambahkan `username`, `nik`, `id_regions`, `id_branch`, `id_service_areas`, dan `role` pada users. Akun lama diberi username `user-ID` (akun existing saat pembaruan: **user-1**), dengan kata sandi tetap. Username dapat diganti Superadmin melalui Kelola akun; username baru disimpan dalam huruf kecil dan unik. NIK adalah teks agar nol di depan dipertahankan. Region → Branch → Service Area divalidasi server; Branch utama harus termasuk daftar Branch penugasan. Data yang belum diketahui tetap kosong, tanpa NIK/penempatan rekaan. Migration tambahan sudah dijalankan pada its setelah backup; total 55 migration.
+Migration menambahkan `username`, `nik`, `id_regions`, `id_branch`, `id_service_areas`, dan `role` pada users. Akun lama diberi username `user-ID` (akun existing saat pembaruan: **user-1**), dengan kata sandi tetap. Username dapat diganti Superadmin melalui Kelola akun; username baru disimpan dalam huruf kecil dan unik. NIK adalah teks agar nol di depan dipertahankan. Region → Branch → Service Area divalidasi server; Branch utama harus termasuk daftar Branch penugasan. Data yang belum diketahui tetap kosong, tanpa NIK/penempatan rekaan. Migration tambahan sudah dijalankan pada its setelah backup; total 57 migration.
 
 ## Alur kerja
 
@@ -51,6 +52,8 @@ Header PP berurutan ID Project, Branch, Unit Kerja (Konstruksi/Operation), No PP
 
 Pendahuluan & Tim serta Jadwal Proyek pada PP versi 3 kini mengikuti template Word kiriman: redaksi dan aktivitas terkunci, hanya HK jadwal yang dapat diubah. Total durasi dan tanggal tahap dihitung otomatis dari Saat Penggunaan. Kurva S dihilangkan dari form dan preview. Anggaran & Margin kini memuat tabel Owner dari BOQ Plan, BOQ Mandor per designator, baris Material Non Stock/BOP/waktu penggunaan yang dapat ditambah atau dihapus, perizinan dan margin otomatis. Batas BOP memakai nilai rupiah serta referensi Cost Structure dari Admin. Pada poin 5, memilih Material Non Stock/BOP/Perizinan otomatis mengisi Nilai dari total atau sisa alokasi kategori; nilai tetap dapat disesuaikan untuk termin. Risiko dipilih melalui checklist; komunikasi, kualitas dan penutup mengikuti teks tetap. Baris tabel penandatangan dapat diubah/dihapus, sementara lima approval tetap wajib. Rincian anggaran: [PP_BUDGET_TEMPLATE](docs/PP_BUDGET_TEMPLATE.md). PP historis tetap dipertahankan. Rincian dan batas output: [PP_TEMPLATE](docs/PP_TEMPLATE.md).
 
+Pada SPH Telkom Akses, harga Material/Jasa masing-masing dibatasi harga per satuan BOQ TA–Mandor pada PP yang dipilih. SPH baru diawali dari harga tersebut; kelebihan memunculkan peringatan langsung dan ditolak Laravel saat simpan/terbit/pengesahan. Dokumen terbit serta PP historis tanpa rincian BOQ Mandor mempertahankan aturan lamanya. Rincian: [SPH_THRESHOLD](docs/SPH_THRESHOLD.md).
+
 ## Database dan penyimpanan
 
 | Data | Lokasi/aturan |
@@ -59,8 +62,10 @@ Pendahuluan & Tim serta Jadwal Proyek pada PP versi 3 kini mengikuti template Wo
 | Peran/Branch pengguna | `roles`, `user_assignments`, `branches` |
 | Branch dan kode PP | Master relasional `branches.kode_branch` |
 | Harga/acuan BOQ | `designators`, `designator_types`, `packages`, `designator_package_prices` |
-| Transaksi workflow | Agregat JSON `prototype_workspaces.state` pada database aktif, satu workspace akun bersama |
+| Transaksi workflow | Tabel bisnis MySQL: `project_plans`, BOQ, kontrak, SPK, pembayaran dan approval; snapshot lengkap per dokumen |
+| Arsip workspace | `prototype_workspaces.state` dipertahankan sebagai arsip sebelum pemindahan, bukan sumber transaksi aktif |
 | Audit | `prototype_audits`: akun `actor_user_id`, role, perintah, request UUID, revisi dan hash |
+| Eviden pekerjaan | `storage/app/private/work-evidence/`; path SQL pada `document_files.storage_key`, relasi `term_work_evidence` |
 | Scan nyata | `storage/app/private/prototype-scans/`, tidak dilayani sebagai aset publik |
 | BOQ Excel asli dan manifest | `storage/app/private/prototype-boq/`, metadata sumber tertaut pada PP; unduhan mengikuti akses Branch |
 | Draft/tema | localStorage browser; draft dipisahkan per akun dan dibersihkan saat keluar |
@@ -71,6 +76,10 @@ Workspace akun baru dimulai tanpa transaksi rekaan. Workspace sesi demo lama dan
 Master yang sudah diimpor memuat 16 Branch, 724 designator dan 1.030 harga paket. Semua 2.173 baris sumber dan ID aslinya dipertahankan. Komponen Material/Jasa mengikuti jenis designator sumber (ID tipe 1/2), tidak digabung berdasarkan kemiripan nama; tujuh harga nol tetap nol. Master harga saat ini **hanya dibaca** pada UI. Counter versi lokal membantu snapshot workflow dan bukan metadata kontrak KHS resmi. Referensi/periode KHS serta pemetaan audit user sumber belum tersedia.
 
 CSV/JSON dibuat Laravel dari data sesuai akses. UUID permintaan mencegah transaksi ganda; revisi mencegah tab/akun menimpa data lebih baru. CSV menetralkan teks formula. Unduhan JSON tidak mencakup file scan/Excel asli atau hash kata sandi, cookie, session key dan kredensial database.
+
+Tanggal Mulai dan Tanggal Selesai pada **Dokumen BA KH** otomatis mengikuti jadwal PP terpilih dan tampil baca saja untuk dokumen baru/draft. Laravel menghitung ulang saat simpan/generate/pengesahan; draft lokal lama tidak menimpa periode otomatis. Dokumen Terbit/Sah mempertahankan snapshot tanggalnya. Tidak perlu migration tambahan. Detail: [BAKH_SCHEDULE](docs/BAKH_SCHEDULE.md).
+
+Pada detail **Pembayaran/Termin**, Admin dapat mengunggah **eviden pekerjaan PDF/JPG/PNG/WebP** saat Draft/Dikembalikan (maksimal 10 file aktif, 10 MB per file). Approver dapat preview/unduh langsung dari Inbox Approval. File privat tersimpan di server; path dicatat pada `document_files.storage_key` dan relasi termin pada `term_work_evidence`. Lampiran terkunci selama approval; penghapusan saat koreksi tetap menyimpan riwayat. Migration sudah diterapkan ke its. Detail: [TERM_WORK_EVIDENCE](docs/TERM_WORK_EVIDENCE.md).
 
 ## Struktur dan pengujian
 
@@ -98,8 +107,8 @@ Tes PHP memakai SQLite `:memory:` dengan bootstrap fail-closed, termasuk bila ca
 
 ## Batas prototype
 
-- Login dan peran akun sudah nyata. Transaksi masih agregat JSON; tabel bisnis ternormalisasi seperti `project_plans`, approval_runs dan pembayaran belum menjadi runtime operasional. Tahap pemindahan ini terpisah.
-- Impor Excel mendukung layout OSP FO kiriman dengan input angka tetap; format lain dan formula input belum didukung. Tombol contoh tetap simulasi. Retensi/pembersihan file unggahan belum otomatis.
+- Login/peran dan transaksi utama sudah memakai MySQL its. Rincian dinamis/historis masih memakai snapshot JSON per dokumen; beberapa tabel konsep belum menjadi sumber aplikasi. Lihat [MYSQL_RUNTIME](docs/MYSQL_RUNTIME.md). Audit login/logout dan perubahan akun belum terpusat; audit workflow sudah tersedia.
+- Impor Excel mendukung layout OSP FO kiriman dengan input angka tetap; format lain dan formula input belum didukung. Tombol contoh tidak tersedia pada aplikasi login. Retensi/pembersihan file unggahan belum otomatis.
 - Scan disimpan nyata, namun keaslian TTD diverifikasi manusia. APM adalah pencatatan pelunasan manual, tidak memanggil bank atau membuktikan transfer. Reversal belum tersedia.
 - Dokumen masih preview HTML/cetak browser, belum generator DOCX/PDF server atau tanda tangan elektronik. Tidak membuat tanda tangan rekaan.
 - Reset/skenario sintetis hanya fixture/offline; tidak tersedia pada workspace akun bersama. Belum ada pemulihan/impor cadangan JSON melalui UI.

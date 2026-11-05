@@ -143,3 +143,37 @@ Cleanup: Artisan :8013 stopped; disposable QA :8014/database remain running beca
 - [x] Selecting Material Non Stock, BOP or Perizinan on IV.5 fills the current category total, less existing allocations on other rows, using cents and a zero floor. The selected row's existing amount is excluded from that deduction; dates/terms/other rows remain intact.
 - [x] Amount stays editable for installments; selecting Jasa Mandor starts manual input at zero. Existing saved rows are not rewritten on read. Server amount/reconciliation validation and workflow rules remain unchanged.
 - [x] Two frontend regressions cover category totals, absent permit, existing installments/reselection, the actual select handler and draft persistence. 94 PHP tests / 1,285 assertions, 63 frontend tests and TypeScript/Vite build passed. UI-only change; no live data/configuration/migration mutation or browser visual verification.
+
+## SPH threshold from approved BOQ Mandor — 5 November 2026
+
+- [x] Back up its before workflow changes; preserve live data and original SQLite.
+- [x] Limit draft/new SPH Material/Jasa per row to the selected PP Mandor unit prices; independent components, equality/zero allowed, missing itemized references rejected. Populate new SPH defaults from the same source.
+- [x] Show immediate accessible per-field threshold alert and per-unit reference. Server rejects save/generate/attest above the threshold and ignores fabricated client policy fields/status.
+- [x] Preserve issued snapshots through evidence attestation/SPK validation, retain historical PP without itemized budgets, and keep KHS agreement/ledger/approval/payment invariants.
+- [x] 99 PHP tests / 1,352 assertions, 67 frontend tests, production build and Pint passed. No migration/configuration/live workflow mutation. Browser after login not manually retested. See SPH_THRESHOLD.md and LARAVEL_QA.md.
+
+
+## Active MySQL storage — 5 November 2026
+- [x] Confirmed the existing PP was in MySQL workspace JSON while business tables were empty; backed up its before deployment.
+- [x] Add relational document storage, PP/BOQ/budget/contract/payment/approval/file/ledger projections, atomic receipts/revision/audit, and fail-closed activation with idempotent verified backfill.
+- [x] Deploy migration and activation on its: 1 PP, 20 BOQ rows, 1 BA KH, 5 actual approval decisions retained; identities/source masters/archive/revision unchanged. No test data or Dompis changes.
+- [x] Remove live demo/sample behavior and update configuration/docs. Login pages without boot fail closed. Preserve private upload directories.
+- [x] 104 PHP tests / 1,406 assertions, 67 frontend tests, build and Pint pass; disposable MariaDB full workflow through APM passes. Snapshot/projection limits and browser QA limits: docs/MYSQL_RUNTIME.md.
+
+
+## Automatic BA KH period — 5 November 2026
+- [x] Back up active its before workflow edits; identify stale draft period against the approved PP schedule.
+- [x] Derive new/draft BA KH dates from the selected PP in React and Laravel, ignore stale/client periods, display read-only controls and keep calendar/HK bounds.
+- [x] Preserve issued/approved snapshots, prices, PP schedule, approval chain and exact volume ledger. Existing MySQL storage writes canonical dates on the next authorized save.
+- [x] Cover shared date vectors, draft save/generate/attestation, continuation source, issued snapshots, invalid schedule and HTTP SQL persistence. See docs/BAKH_SCHEDULE.md and current QA evidence.
+
+Final BA KH date verification: **109 PHP tests / 1,477 assertions**, **71 frontend tests**, production build and Pint passed.
+
+
+## Work evidence upload and approver preview — 5 November 2026
+- [x] Back up its before changes and before deployment; preserve all identities, supplied masters and existing workflow rows/revision.
+- [x] Add actual private PDF/JPEG/PNG/WebP uploads for draft/returned terms, ten active files/10 MB each, server-owned metadata and atomic SQL path/document/term relation.
+- [x] Add preview/download to detail and selected inbox item, authorization by active account/Branch, range delivery and immutable pending/approved evidence with retained removal history.
+- [x] Preserve actual/type drafts, five approvals, wet-signature scan, Finance/APM and historical workflows. Ignore forged path/evidence/scan/payment metadata.
+- [x] 116 PHP tests / 1,647 assertions and 75 frontend tests, build and Pint passed. Disposable MariaDB controller upload/path/PM preview and full flow through APM passed. No manual authenticated browser QA or live test transactions.
+- [x] Deploy migration 2026_11_05_000002 to its (57 total); existing business/account/master rows and revision 16 unchanged. See TERM_WORK_EVIDENCE.md and QA evidence.

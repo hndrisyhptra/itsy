@@ -18,7 +18,7 @@ if (typeof window !== 'undefined') window.addEventListener('beforeunload', event
   event.preventDefault();
   event.returnValue = '';
 });
-async function commit(command: Command, resultId?: string, scan?: { termId: string; file: File }): Promise<void> {
+async function commit(command: Command, resultId?: string, scan?: { termId: string; file: File; kind?:'work-evidence' }): Promise<void> {
   if (!boot) return;
   persistencePending = true; persistenceError = ''; emit();
   const controller = new AbortController();
@@ -27,7 +27,7 @@ async function commit(command: Command, resultId?: string, scan?: { termId: stri
     const requestId = crypto.randomUUID();
     const form = new FormData();
     if (scan) { form.set('file', scan.file); form.set('revision', String(revision)); form.set('request_id', requestId); }
-    const response = await fetch(scan ? appUrl('/api/prototype/payments/' + scan.termId + '/scan') : boot.urls.commands, { method:'POST', credentials:'same-origin', signal:controller.signal,
+    const response = await fetch(scan ? appUrl('/api/prototype/payments/' + scan.termId + (scan.kind ? '/work-evidence' : '/scan')) : boot.urls.commands, { method:'POST', credentials:'same-origin', signal:controller.signal,
       headers: scan ? {'Accept':'application/json','X-CSRF-TOKEN':csrf} : {'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':csrf},
       body: scan ? form : JSON.stringify({...command,revision,request_id:requestId,result_id:resultId ?? null}) });
     const data = await response.json();
@@ -45,7 +45,7 @@ async function commit(command: Command, resultId?: string, scan?: { termId: stri
     } catch { /* Preserve the last confirmed state. Draft forms are kept locally. */ }
     state = structuredClone(confirmed);
     persistenceError = `${error instanceof Error ? error.message : 'Koneksi Laravel terputus.'} Perubahan belum dikonfirmasi; data server ditampilkan kembali. Draft formulir tetap tersedia.`;
-    window.dispatchEvent(new CustomEvent('area3:server-error',{detail:persistenceError}));
+    if(scan?.kind!=='work-evidence')window.dispatchEvent(new CustomEvent('area3:server-error',{detail:persistenceError}));
     throw error;
   } finally { clearTimeout(timeout); persistencePending=false; emit(); }
 }
@@ -66,6 +66,12 @@ export function uploadTermScan(termId: string, file: File) {
   // useSyncExternalStore needs a new snapshot to render the upload's pending state.
   state = structuredClone(state);
   active = commit({ command: 'uploadScan', args: [] }, undefined, { termId, file });
+  return active;
+}
+export function uploadTermWorkEvidence(termId:string,file:File) {
+  if(!boot||persistencePending)return Promise.reject(new Error('Tunggu transaksi sebelumnya dan gunakan sesi login aktif.'));
+  state=structuredClone(state);
+  active=commit({command:'_attachTermWorkEvidence',args:[]},undefined,{termId,file,kind:'work-evidence'});
   return active;
 }
 export function mutate<T>(fn: (draft: State) => T): T {

@@ -1,5 +1,7 @@
 # Konsep database MySQL — it's Area 3
 
+**Update 5 November 2026:** Migration tambahan dan pemindahan transaksi sudah diterapkan pada `its`. Sumber aktif adalah tabel bisnis dengan snapshot per dokumen; JSON workspace menjadi arsip. Lihat [MYSQL_RUNTIME.md](MYSQL_RUNTIME.md). Uraian konsep/agregat sebelumnya di bawah bersifat historis bila bertentangan.
+
 **Pembaruan 4 November 2026:** SQL dasar di bawah merupakan referensi versi 2 dan dipertahankan agar data sumber tetap identik. Database its kini sudah memakai migration Laravel; dua migration tambahan menyediakan identitas username/penempatan pengguna dan schema approval versi 3. Alur aktif mengikuti [WORKFLOW_V3](WORKFLOW_V3.md), dengan lima approver serta Finance sesudah scan. Gunakan migration, bukan impor ulang SQL dasar. Akun/master dibaca dari its; transaksi workflow masih agregat JSON. Lihat [MYSQL_MIGRATION](MYSQL_MIGRATION.md) dan [LARAVEL_QA](LARAVEL_QA.md) untuk status terbaru; status awal berikut bersifat historis.
 
 Diperbarui 3 November 2026 berdasarkan delapan contoh tabel dari pengguna. Rancangan mengikuti `WORKFLOW_V2.md`: upload BOQ sebelum Header PP, approval PM lalu Manager, BA KH dalam SPK, serta APM setelah verifikasi scan yang melunasi seluruh tagihan.

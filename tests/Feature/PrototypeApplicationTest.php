@@ -113,7 +113,7 @@ class PrototypeApplicationTest extends TestCase
     {
         $this->withSession(['area3_owner' => 'backup-owner']);
 
-        $response = $this->get('/api/prototype/backup')->assertDownload('its-area3-cadangan-demo.json');
+        $response = $this->get('/api/prototype/backup')->assertDownload('its-area3-cadangan.json');
         $data = json_decode($response->streamedContent(), true, 512, JSON_THROW_ON_ERROR);
         $this->assertSame('Superadmin Test', $data['profile']['name']);
         $this->assertArrayNotHasKey('owner_key', $data);

@@ -6,6 +6,7 @@ use App\Http\Controllers\PrototypeBoqController;
 use App\Http\Controllers\PrototypeController;
 use App\Http\Controllers\PrototypeExportController;
 use App\Http\Controllers\PrototypeScanController;
+use App\Http\Controllers\TermWorkEvidenceController;
 use App\Http\Middleware\ActiveAccount;
 use App\Http\Middleware\PrivatePrototype;
 use Illuminate\Support\Facades\Route;
@@ -31,6 +32,8 @@ Route::middleware(PrivatePrototype::class)->group(function () {
         Route::get('/api/prototype/boq/{project}/source', [PrototypeBoqController::class, 'show'])->where('project', '[a-zA-Z0-9-]{3,100}');
         Route::post('/api/prototype/payments/{term}/scan', [PrototypeScanController::class, 'store'])->where('term', '[a-zA-Z0-9-]{3,100}')->middleware('throttle:prototype-scans');
         Route::get('/api/prototype/payments/{term}/scan', [PrototypeScanController::class, 'show'])->where('term', '[a-zA-Z0-9-]{3,100}');
+        Route::post('/api/prototype/payments/{term}/work-evidence', [TermWorkEvidenceController::class, 'store'])->where('term', '[a-zA-Z0-9-]{3,100}')->middleware('throttle:prototype-scans');
+        Route::get('/api/prototype/payments/{term}/work-evidence/{evidence}', [TermWorkEvidenceController::class, 'show'])->where('term', '[a-zA-Z0-9-]{3,100}')->whereUuid('evidence');
         Route::get('/', fn () => redirect()->route('prototype.dashboard'));
         Route::get('/dashboard', [PrototypeController::class, 'show'])->name('prototype.dashboard');
         Route::get('/{module}/{path?}', [PrototypeController::class, 'show'])

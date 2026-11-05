@@ -8,6 +8,7 @@ use Illuminate\Validation\ValidationException;
 /** Server authority for the demo workflow. The React calculations are UX previews. */
 class PrototypeDomain
 {
+    use PrototypeTermWorkEvidence;
     use PrototypeWorkflowV2;
 
     public const ROLES = ['Admin Konstruksi', 'PM Konstruksi', 'Manager Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Bussiness Support', 'Head of PMO', 'Finance', 'Superadmin'];
@@ -25,6 +26,8 @@ class PrototypeDomain
             'setNumberFormat' => $this->setNumberFormat($args[0] ?? ''),
             'selectActor' => $this->selectActor($args[0] ?? ''),
             '_attachTermScan' => $this->attachTermScan($args[0] ?? '', $this->object($args[1] ?? null)),
+            '_attachTermWorkEvidence' => $this->attachTermWorkEvidence($args[0] ?? '', $this->object($args[1] ?? null)),
+            'removeTermWorkEvidence' => $this->removeTermWorkEvidence($args[0] ?? '', $args[1] ?? ''),
             'verifyTermScan' => $this->verifyTermScan($args[0] ?? '', $args[1] ?? '', $args[2] ?? ''),
             'importDemo' => $this->importDemo($args[0] ?? ''),
             'reviewBoq' => $this->reviewBoq($args[0] ?? '', $args[1] ?? '', $args[2] ?? ''),
@@ -493,6 +496,8 @@ class PrototypeDomain
         }
         $selected = false;
         $seen = [];
+        $saved = $this->existing('deals', $d['id'] ?? '');
+        $checkSph = isset($p['planBudget']) && ! ($saved && $saved['projectId'] === $p['id'] && in_array($saved['status'], ['Terbit', 'Sah'], true));
         foreach ($d['rows'] ?? [] as $r) {
             $source = collect($root['boq'])->firstWhere('id', $r['rowId'] ?? '');
             if (! $source || isset($seen[$r['rowId']])) {
@@ -519,7 +524,19 @@ class PrototypeDomain
                 if ($price > $source[$c]) {
                     $this->fail('Harga '.($c === 'm' ? 'Material' : 'Jasa').' melebihi KHS komponen.');
                 }
-                $this->number($r[$c === 'm' ? 'sphM' : 'sphS'] ?? -1);
+                $sph = $this->number($r[$c === 'm' ? 'sphM' : 'sphS'] ?? -1);
+                if ($checkSph) {
+                    $plan = collect($p['planBudget']['mandor'] ?? [])->firstWhere('rowId', $r['rowId']);
+                    $threshold = $plan[$c === 'm' ? 'priceM' : 'priceS'] ?? null;
+                    $component = $c === 'm' ? 'Material' : 'Jasa';
+                    $code = $this->existing('khs', $source['khsId'])['code'] ?? $source['khsId'];
+                    if ((! is_int($threshold) && ! is_float($threshold)) || ! is_finite((float) $threshold) || $threshold < 0) {
+                        $this->fail('Referensi BOQ TA - Mandor '.$component.' '.$code.' belum tersedia.');
+                    }
+                    if ($sph > $threshold) {
+                        $this->fail('SPH '.$component.' '.$code.' melebihi threshold BOQ TA - Mandor (maksimal Rp'.number_format($threshold, 2, ',', '.').' per satuan).');
+                    }
+                }
                 $this->number($r[$c === 'm' ? 'offerM' : 'offerS'] ?? -1);
             }
         }
@@ -562,6 +579,13 @@ class PrototypeDomain
                 $this->fail('BA KH terbit terkunci; hanya bukti pengesahan dapat dicatat.');
             }
             $d = array_merge($old, ['evidence' => $d['evidence'] ?? '']);
+        } else {
+            $period = BakhSchedule::period($this->record('projects', $d['projectId'] ?? ''));
+            if (! $period) {
+                $this->fail('Jadwal PP belum lengkap atau total HK belum valid untuk periode BA KH otomatis.');
+            }
+            $d['start'] = $period['start'];
+            $d['end'] = $period['end'];
         }
         $this->validateDeal($d, $action !== 'save');
         if ($action === 'attest') {

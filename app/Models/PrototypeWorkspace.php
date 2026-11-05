@@ -13,6 +13,6 @@ class PrototypeWorkspace extends Model
 
     protected function casts(): array
     {
-        return ['state' => 'array', 'revision' => 'integer'];
+        return ['state' => 'array', 'revision' => 'integer', 'relational_migrated_at' => 'datetime'];
     }
 }

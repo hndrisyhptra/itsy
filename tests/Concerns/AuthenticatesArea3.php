@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\AccountAccess;
 use App\Services\PrototypeDomain;
 use App\Services\PrototypeWorkspaceService;
+use App\Services\RelationalWorkflowStore;
 use Illuminate\Support\Facades\DB;
 
 trait AuthenticatesArea3
@@ -52,7 +53,23 @@ trait AuthenticatesArea3
             $t['managerUserId'] = $manager;
         }
         unset($t);
-        PrototypeWorkspace::updateOrCreate(['owner_key' => hash('sha256', 'area3-authenticated-workflow-v1')], ['state' => $state, 'revision' => 0]);
+        $existing = PrototypeWorkspace::where('owner_key', hash('sha256', 'area3-authenticated-workflow-v1'))->first();
+        if ($existing?->relational_migrated_at) {
+            // Fixture replacement is strictly test-only; the live app has no reset endpoint.
+            if (DB::getDriverName() !== 'sqlite' || DB::connection()->getDatabaseName() !== ':memory:' || ! app()->environment('testing')) {
+                throw new \RuntimeException('Fixture replacement requires isolated memory storage.');
+            }
+            foreach (['term_work_evidence', 'volume_movements', 'command_receipts', 'continuation_allocations', 'volume_releases', 'ba_completions',
+                'apm_settlements', 'term_scans', 'approval_decisions', 'approval_steps', 'approval_runs', 'term_actuals', 'payment_terms',
+                'work_orders', 'contract_documents', 'contract_components', 'contracts', 'volume_balances', 'boq_components', 'boq_lines',
+                'boq_import_rows', 'boq_import_batches', 'boq_import_templates', 'document_files', 'project_plan_budget_rows',
+                'project_plan_team', 'project_plan_schedule', 'project_plan_costs', 'project_plans', 'projects',
+                'number_sequences', 'numbering_rules', 'workflow_events', 'workflow_metadata', 'prototype_audits'] as $table) {
+                DB::table($table)->delete();
+            }
+        }
+        $workspace = PrototypeWorkspace::updateOrCreate(['owner_key' => hash('sha256', 'area3-authenticated-workflow-v1')], ['state' => $state, 'revision' => 0, 'relational_migrated_at' => null]);
+        app(RelationalWorkflowStore::class)->activate($workspace);
 
         return $state;
     }

@@ -1,0 +1,136 @@
+[
+  {
+    "name": "current PP crosses the month boundary",
+    "schedule": [
+      {
+        "days": 1,
+        "start": "2026-11-30",
+        "end": "2026-11-30"
+      },
+      {
+        "days": 4,
+        "start": "2026-12-01",
+        "end": "2026-12-04"
+      },
+      {
+        "days": 7,
+        "start": "2026-12-05",
+        "end": "2026-12-11"
+      },
+      {
+        "days": 1,
+        "start": "2026-12-12",
+        "end": "2026-12-12"
+      },
+      {
+        "days": 1,
+        "start": "2026-12-13",
+        "end": "2026-12-13"
+      }
+    ],
+    "expected": {
+      "start": "2026-11-30",
+      "end": "2026-12-13",
+      "hk": 14
+    }
+  },
+  {
+    "name": "historical gaps cannot exceed HK",
+    "schedule": [
+      {
+        "days": 2,
+        "start": "2026-11-01",
+        "end": "2026-11-02"
+      },
+      {
+        "days": 3,
+        "start": "2026-11-10",
+        "end": "2026-11-12"
+      }
+    ],
+    "expected": {
+      "start": "2026-11-01",
+      "end": "2026-11-05",
+      "hk": 5
+    }
+  },
+  {
+    "name": "zero stages and leap day",
+    "schedule": [
+      {
+        "days": 0,
+        "start": "",
+        "end": ""
+      },
+      {
+        "days": 3,
+        "start": "2028-02-28",
+        "end": "2028-03-01"
+      }
+    ],
+    "expected": {
+      "start": "2028-02-28",
+      "end": "2028-03-01",
+      "hk": 3
+    }
+  },
+  {
+    "name": "all-zero schedule is unavailable",
+    "schedule": [
+      {
+        "days": 0,
+        "start": "",
+        "end": ""
+      }
+    ],
+    "expected": null
+  },
+  {
+    "name": "impossible dates are unavailable",
+    "schedule": [
+      {
+        "days": 2,
+        "start": "2026-02-30",
+        "end": "2026-03-01"
+      }
+    ],
+    "expected": null
+  },
+  {
+    "name": "inverted stage is unavailable",
+    "schedule": [
+      {
+        "days": 2,
+        "start": "2026-12-03",
+        "end": "2026-12-01"
+      }
+    ],
+    "expected": null
+  },
+  {
+    "name": "missing positive-stage date is unavailable",
+    "schedule": [
+      {
+        "days": 2,
+        "start": "2026-11-01",
+        "end": ""
+      }
+    ],
+    "expected": null
+  },
+  {
+    "name": "HK beyond maximum four-digit date keeps valid project endpoint",
+    "schedule": [
+      {
+        "days": 1000000,
+        "start": "9999-12-31",
+        "end": "9999-12-31"
+      }
+    ],
+    "expected": {
+      "start": "9999-12-31",
+      "end": "9999-12-31",
+      "hk": 1000000
+    }
+  }
+]

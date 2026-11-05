@@ -26,7 +26,7 @@ class Area3MigrationTest extends TestCase
     public function test_user_extension_backfills_username_and_role_without_changing_password_or_guessing_placement(): void
     {
         $this->migrate();
-        $this->artisan('migrate:rollback', ['--step' => 2, '--force' => true])->assertSuccessful();
+        $this->artisan('migrate:rollback', ['--step' => 4, '--force' => true])->assertSuccessful();
         $password = Hash::make('ChosenPassword123');
         DB::table('users')->insert(['id_user' => 88, 'name' => 'Legacy fixture', 'email' => 'legacy@example.test', 'password' => $password]);
         DB::table('roles')->insert(['id_role' => 91, 'code' => 'SUPERADMIN', 'name' => 'Superadmin']);
@@ -62,7 +62,7 @@ class Area3MigrationTest extends TestCase
             $this->assertSame([$key], $primary['columns'], $table);
             $foreignKeys += count(Schema::getForeignKeys($table));
         }
-        $this->assertSame(89, $foreignKeys);
+        $this->assertSame(95, $foreignKeys);
         $this->assertFalse(Schema::hasTable('area3_users'));
         $this->assertFalse(Schema::hasColumn('users', 'id'));
         $this->assertTrue(Schema::hasColumn('boq_lines', 'source_import_id'));
@@ -100,7 +100,7 @@ class Area3MigrationTest extends TestCase
         $this->assertSame(1, DB::table('branches')->where('name', 'DENPASAR')->count());
         $this->migrate();
         $this->assertSame(1030, DB::table('designator_package_prices')->count());
-        $this->assertSame(55, DB::table('migrations')->count());
+        $this->assertSame(57, DB::table('migrations')->count());
     }
 
     public function test_users_alignment_preserves_existing_ids_and_passwords_and_the_model_uses_id_user(): void

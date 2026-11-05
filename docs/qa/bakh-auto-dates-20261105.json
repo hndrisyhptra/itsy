@@ -1,0 +1,51 @@
+{
+  "date": "2026-11-05",
+  "change": "Auto-fill new/draft BA KH execution dates from the selected approved PP schedule; read-only controls and server derivation",
+  "backup": {
+    "path": "storage/app/private/backups/its-before-bakh-auto-dates-20261105-104913.sql",
+    "bytes": 1000681,
+    "sha256": "43034315e98c91222af61e1e5960c32c69ed735a370328f341823020d404adeb"
+  },
+  "before": {
+    "revision": 13,
+    "pp_period": {
+      "start": "2026-11-30",
+      "end": "2026-12-13",
+      "hk": 14
+    },
+    "deal_status": "Draft",
+    "deal_period": {
+      "start": "2026-11-08",
+      "end": "2026-11-22"
+    }
+  },
+  "behavior": [
+    "New/draft form, preview and save use PP dates, including stale browser drafts.",
+    "Server ignores new/draft client periods; updates scalar contract dates and per-document snapshot atomically.",
+    "Issued/approved periods are immutable. PP itself is unchanged.",
+    "Calendar days inclusive; historical gap range capped by total HK. Invalid source schedule fails closed."
+  ],
+  "verification": {
+    "php_tests": 109,
+    "php_assertions": 1477,
+    "php_database": "isolated SQLite :memory: only",
+    "frontend_tests": 71,
+    "frontend_failures": 0,
+    "shared_date_vectors": 8,
+    "http_sql_persistence": "passed for save, generate and attestation",
+    "build": "passed",
+    "pint": "passed",
+    "bundle": "assets/main-Br8dTOhl.js",
+    "authenticated_manual_browser_qa": false
+  },
+  "live_workflow_commands_run": false,
+  "schema_changes": false,
+  "environment_changes": false,
+  "source_files_and_sql_masters_changed": false,
+  "dompis_touched": false,
+  "limits": [
+    "Persist canonical draft dates when the user next saves/generates/attests; no silent live backfill.",
+    "Previously issued documents with invalid historical schedules need a formal correction; do not rewrite them.",
+    "No working-day/holiday calendar introduced; HK remains inclusive calendar days."
+  ]
+}

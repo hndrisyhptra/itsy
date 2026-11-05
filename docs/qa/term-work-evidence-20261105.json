@@ -1,0 +1,80 @@
+{
+  "date": "2026-11-05",
+  "feature": "Term work evidence private file upload, MySQL path persistence and approver preview",
+  "backup_before_changes": {
+    "path": "storage/app/private/backups/its-before-term-work-evidence-20261105-111751.sql",
+    "bytes": 1009914,
+    "sha256": "884332ceb26f9e6de33802da33992a31a41e46a74c3e82026744d072bdcefd09"
+  },
+  "backup_before_deployment": {
+    "path": "storage/app/private/backups/its-before-term-work-evidence-20261105-113507.sql",
+    "bytes": 1009914,
+    "sha256": "824619636c5462fd20a60ad0a46a20918b27be50c4009c66e666d8479b53af3c"
+  },
+  "deployment": {
+    "driver": "mysql",
+    "database": "its",
+    "version": "10.4.28-MariaDB",
+    "migrations": 57,
+    "new_migration": "2026_11_05_000002_create_term_work_evidence_table",
+    "revision_preserved": 16,
+    "existing_identities_masters_and_workflow_fingerprints_unchanged": true,
+    "archive_sha256": "b1ebc62518ac1d091449d5db108f4424e2eaa0eda4b9675bbd0daa0b27309520",
+    "live_evidence_rows_at_deployment": 0
+  },
+  "storage": {
+    "disk": "local",
+    "root": "storage/app/private",
+    "key": "work-evidence/{workspace_id}/{source_term_id}/{uuid}.{extension}",
+    "path_column": "document_files.storage_key",
+    "relation_table": "term_work_evidence",
+    "primary_key": "id_term_evidence",
+    "maximum_active_files": 10,
+    "max_file_bytes": 10485760,
+    "types": [
+      "application/pdf",
+      "image/jpeg",
+      "image/png",
+      "image/webp"
+    ],
+    "removed_files": "logical removal with retained private bytes and metadata"
+  },
+  "verification": {
+    "php_tests": 116,
+    "php_assertions": 1647,
+    "php_database": "SQLite :memory: only; fail-closed bootstrap retained",
+    "frontend_tests": 75,
+    "build": "passed",
+    "pint": "passed",
+    "assets": {
+      "file": "assets/main-CQY00PAI.js",
+      "name": "main",
+      "src": "resources/js/area3/main.tsx",
+      "isEntry": true,
+      "css": [
+        "assets/main-DU0imfO3.css"
+      ]
+    },
+    "isolated_mariadb_directory": "/private/tmp/area3-relational-qa-acdu23ca",
+    "isolated_mariadb_controller_actual_upload_path_and_pm_preview": "passed",
+    "isolated_mariadb_full_workflow_through_apm": "passed",
+    "manual_authenticated_browser_qa": false
+  },
+  "security_checks": [
+    "Only Admin/Superadmin in document Branch uploads on draft/returned status.",
+    "Approvers preview actual private files through authenticated Branch-scoped GET with inline/download and PDF range support.",
+    "Pending/rejected/approved files cannot be added or removed. Return permits amendments while preserving past files.",
+    "Posted path/uploader/evidence/scan/Finance/APM/payment metadata cannot bypass server state.",
+    "Invalid type/size, revision conflict, replay and SQL failure leave no duplicate or orphan new files."
+  ],
+  "live_test_transactions_or_accounts_added": false,
+  "environment_changed": false,
+  "dompis_touched": false,
+  "limits": [
+    "Attachments are optional; existing approval requirements unchanged.",
+    "Individual uploads commit independently when multiple files are selected.",
+    "No HEIC/Office conversion, OCR, antivirus or automated history retention cleanup.",
+    "Native browser PDF/image rendering not manually tested after login; headers/bytes/range/component rendering verified automatically.",
+    "MySQL full-flow wet-signature scan is synthetic metadata; work evidence upload used real synthetic PDF bytes in the isolated filesystem."
+  ]
+}

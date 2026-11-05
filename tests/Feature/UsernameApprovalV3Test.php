@@ -8,6 +8,7 @@ use App\Services\AccountAccess;
 use App\Services\ProjectPlanTemplate;
 use App\Services\PrototypeDomain;
 use App\Services\PrototypeWorkspaceService;
+use App\Services\RelationalWorkflowStore;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
@@ -83,12 +84,86 @@ class UsernameApprovalV3Test extends TestCase
         return $p;
     }
 
+    public function test_sph_threshold_uses_saved_pp_budget_and_rejects_over_limit_requests_atomically(): void
+    {
+        $p = $this->budgetProject();
+        $this->api('saveProject', [$p, true])->assertOk();
+        foreach (PrototypeDomain::APPROVERS_V3 as $role) {
+            $this->asRole($role);
+            $this->api('decideProject', [$p['id'], 'Setujui', 'QA'])->assertOk();
+        }
+        $this->asRole('Admin Konstruksi');
+        $saved = $this->projectRecord($p['id']);
+        $deal = app(PrototypeWorkspaceService::class)->scenario('C')['deals'][0];
+        $deal['id'] = 'bakh-sph-http-qa';
+        $deal['no'] = 'SPH/HTTP/QA';
+        $deal['projectId'] = $p['id'];
+        $deal['date'] = $deal['start'] = $deal['end'] = $saved['schedule'][0]['start'];
+        $deal['evidence'] = 'Bukti sintetis QA';
+        $deal['rows'] = [['rowId' => $saved['boq'][0]['id'], 'm' => false, 's' => true, 'qm' => 0, 'qs' => 1, 'pm' => 0, 'ps' => 100, 'sphM' => 0, 'sphS' => 100, 'offerM' => 0, 'offerS' => 100, 'capM' => $saved['boq'][0]['m'], 'capS' => $saved['boq'][0]['s']]];
+        $before = $this->getJson('/api/prototype/state')->json();
+        $bad = $deal;
+        $bad['rows'][0]['sphS'] = 100.01;
+        $bad['status'] = 'Sah';
+        $bad['sphThresholdS'] = 999999;
+        $bad['planBudget'] = ['mandor' => [['priceS' => 999999]]];
+        foreach (['save', 'generate', 'attest'] as $action) {
+            $this->api('saveDeal', [$bad, $action])->assertUnprocessable()->assertJsonValidationErrors('prototype');
+            $after = $this->getJson('/api/prototype/state')->json();
+            $this->assertSame($before['revision'], $after['revision']);
+            $this->assertSame($before['state']['deals'], $after['state']['deals']);
+            $this->assertSame($before['state']['projects'], $after['state']['projects']);
+            $this->assertDatabaseCount('prototype_audits', 6);
+        }
+        $this->api('saveDeal', [$deal, 'save'])->assertOk();
+        $this->api('saveDeal', [$deal, 'generate'])->assertOk();
+        $this->api('saveDeal', [$bad, 'attest'])->assertOk();
+        $record = collect($this->getJson('/api/prototype/state')->json('state.deals'))->firstWhere('id', $deal['id']);
+        $this->assertEquals(100, $record['rows'][0]['sphS']);
+        $this->assertSame('Sah', $record['status']);
+    }
+
+    public function test_bakh_dates_are_server_derived_from_pp_and_persist_in_sql_for_old_draft_and_attestation(): void
+    {
+        $p = $this->budgetProject();
+        $p['date'] = '2026-11-30';
+        foreach ([1, 4, 7, 1, 1] as $i => $days) {
+            $p['schedule'][$i]['days'] = $days;
+        }
+        $this->api('saveProject', [$p, true])->assertOk();
+        foreach (PrototypeDomain::APPROVERS_V3 as $role) {
+            $this->asRole($role);
+            $this->api('decideProject', [$p['id'], 'Setujui', 'QA'])->assertOk();
+        }
+        $this->asRole('Admin Konstruksi');
+        $saved = $this->projectRecord($p['id']);
+        $deal = app(PrototypeWorkspaceService::class)->scenario('C')['deals'][0];
+        $deal['id'] = 'bakh-date-http-qa';
+        $deal['no'] = 'BAKH/DATES/QA';
+        $deal['projectId'] = $p['id'];
+        $deal['start'] = '2000-01-01';
+        $deal['end'] = '2100-12-31';
+        $deal['evidence'] = 'Bukti sintetis QA';
+        $deal['rows'] = [['rowId' => $saved['boq'][0]['id'], 'm' => false, 's' => true, 'qm' => 0, 'qs' => 1, 'pm' => 0, 'ps' => 100, 'sphM' => 0, 'sphS' => 100, 'offerM' => 0, 'offerS' => 100, 'capM' => $saved['boq'][0]['m'], 'capS' => $saved['boq'][0]['s']]];
+        foreach (['save', 'generate', 'attest'] as $action) {
+            $response = $this->api('saveDeal', [$deal, $action])->assertOk();
+            $record = collect($response->json('state.deals'))->firstWhere('id', $deal['id']);
+            $this->assertSame('2026-11-30', $record['start']);
+            $this->assertSame('2026-12-13', $record['end']);
+            $sql = DB::table('contracts')->where('source_id', $deal['id'])->first();
+            $this->assertSame('2026-11-30', $sql->start_date);
+            $this->assertSame('2026-12-13', $sql->end_date);
+            $this->assertSame('2026-12-13', json_decode($sql->document_data, true)['end']);
+        }
+        $this->assertSame($saved, $this->projectRecord($p['id']));
+    }
+
     public function test_adopting_budget_template_archives_existing_v3_draft_notes_and_costs_without_changing_them_on_read(): void
     {
         $p = $this->newProject();
         $this->api('saveProject', [$p, false])->assertOk();
         $workspace = PrototypeWorkspace::firstOrFail();
-        $state = $workspace->state;
+        $state = app(RelationalWorkflowStore::class)->read($workspace);
         $previous = ['costs' => ['mandor' => 123, 'material' => 45, 'bop' => 67, 'permit' => 0], 'risk' => 'Catatan risiko lama', 'communication' => 'Catatan komunikasi lama', 'quality' => 'Catatan kualitas lama'];
         foreach ($state['projects'] as &$row) {
             if ($row['id'] === $p['id']) {
@@ -97,8 +172,7 @@ class UsernameApprovalV3Test extends TestCase
             }
         }
         unset($row);
-        $workspace->state = $state;
-        $workspace->save();
+        DB::transaction(fn () => app(RelationalWorkflowStore::class)->write($workspace, $state));
         $before = $this->projectRecord($p['id']);
         foreach ($previous as $key => $value) {
             $this->assertSame($value, $before[$key]);

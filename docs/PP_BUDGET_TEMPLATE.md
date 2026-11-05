@@ -51,3 +51,7 @@ Hanya v3 Draft/Dikembalikan yang disimpan pengguna mengadopsi format baru. Memba
 Cadangan sebelum perubahan: `storage/app/private/backups/its-before-pp-budget-v5-20261104-203240.sql`. Bukti kecocokan teks, hash cadangan dan hasil uji: `docs/qa/pp-budget-v5-20261104.json` dan `LARAVEL_QA.md`.
 
 Output tetap HTML/cetak atau Simpan PDF browser. Belum ada generator DOCX/PDF server, validasi keaslian TTD atau pembayaran bank otomatis. Form nyata masih meminta login pada pemeriksaan browser; layout responsif dan pagination hasil cetak belum diverifikasi secara visual.
+
+## Referensi untuk SPH Telkom Akses — 5 November 2026
+
+Harga Material/Jasa pada BOQ TA–Mandor menjadi batas harga per satuan SPH Material/Jasa masing-masing designator. Nilai tepat pada batas boleh digunakan; SPH baru terisi dari harga BOQ Mandor. Kelebihan memunculkan peringatan dan ditolak server. Batas mengikuti PP yang dipilih, termasuk PP lanjutan. Rincian kompatibilitas dan pengujian: [SPH_THRESHOLD](SPH_THRESHOLD.md).

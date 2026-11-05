@@ -2,7 +2,13 @@
 
 Target: `/Applications/XAMPP/xamppfiles/htdocs/its/area3-prototype`.
 
-**Current status (4 November): real BOQ import for the supplied OSP FO layout, draft without mandatory approvers, username login, validated account placement, five selected PP/payment approvers and post-scan Finance approval are implemented. The final entries supersede earlier pending-import/account counts/two-stage descriptions; dated entries remain historical evidence.**
+**Historical status (4 November): real BOQ import for the supplied OSP FO layout, draft without mandatory approvers, username login, validated account placement, five selected PP/payment approvers and post-scan Finance approval are implemented. The final entries supersede earlier pending-import/account counts/two-stage descriptions; dated entries remain historical evidence.**
+
+## Current status — 5 November 2026: MySQL runtime
+
+The user explicitly requested real MySQL transaction persistence and removal of demo mode. Migration and verified activation have been deployed on **its**. Business records now own runtime data; workspace JSON is a preserved archive. 1 PP / 20 BOQ rows / 1 BA KH / 5 approval decisions retained, with identities, source masters, revision and archive hashes unchanged. Live reset, role switching and sample BOQ are unavailable.
+
+**104 PHP tests / 1,406 assertions**, **67 frontend tests**, production build and Pint passed. All framework tests use fail-closed SQLite memory storage. Disposable MariaDB migration/backfill and a full server-command flow through five approvals, SPK, Final payment, Finance and APM passed separately. That MySQL flow uses synthetic scan metadata; real private upload validation remains covered by HTTP tests. Browser after login was not manually retested. Deployment/backup details, per-document JSON boundaries and prepared-but-unused concept tables: [MYSQL_RUNTIME.md](MYSQL_RUNTIME.md). These statements supersede historical aggregate/demo limitations below.
 
 ## Automated verification
 
@@ -239,3 +245,31 @@ Behavior and formulas: `docs/PP_BUDGET_TEMPLATE.md`.
 - Autofill happens on category selection; reading a saved PP does not mutate amounts. The React helper and actual select onChange share one implementation. Laravel's existing amount limits, exact category reconciliation and locked-document controls remain authoritative and unchanged. No new command, database write/migration or configuration change was introduced.
 - **94 PHP tests / 1,285 assertions passed** in fail-closed SQLite :memory:; **63 frontend tests passed**. Two added regressions verify rounded category sources, absent permit, immutable inputs, other installment allocations, zero remainder/reselection, actual dropdown handler dispatch and saving its resulting amount in a draft. Component-event testing is automated; no authenticated browser click or visual-layout pass is claimed.
 - TypeScript/Vite production build passed: `main-DvqZRaHe.js`; CSS/auth assets unchanged. This is real form calculation; actual payment submissions and the existing prototype banking/signature limits are unchanged.
+
+## SPH Material/Jasa threshold — 5 November 2026
+
+- its backed up before edits: `storage/app/private/backups/its-before-sph-threshold-20261105-092002.sql`, 644,783 bytes, SHA-256 `c1f6fb781dbd968ff774740fb43e1d663e7345f863dac54738cf1d12a171caaa`; 14 users/one workspace at backup. Size/hash verified after implementation. No live workflow/account transaction, migration or environment change was performed. Original SQLite remains `e2c39eba72710da656307627909f32267b6738c861509a3a70c78bddf8bb10bc`; Dompis Prov and retained QA environment were untouched. Evidence: `docs/qa/sph-threshold-20261105.json`.
+- New/draft SPH Material/Jasa now compares each unit price with the corresponding saved BOQ TA–Mandor price for the selected PP/source row. It does not offset components or use root Mandor prices for a continuation. Equality and zero thresholds are valid. An itemized PP with a missing reference row fails closed. Client threshold/plan/status fields do not determine the policy.
+- New SPH defaults use the same prices. Fields show a per-unit rupiah limit and an immediate red role-alert message with aria-invalid/max when exceeded. Laravel rejects save, generate and attest above the cap. Material/Jasa agreement ceilings, reverse offers, ledger capacity and approvals/payment rules remain unchanged.
+- Saved Terbit/Sah BA KH retains historical snapshots/policy. Issued evidence attestation ignores attempted price replacement, and subsequent SPK validation can still proceed. PP without itemized Mandor budget preserves its historical behavior; no reference/threshold is invented. Merely sending status Sah does not grant the exception.
+- **99 PHP tests / 1,352 assertions passed**, isolated SQLite :memory:. Four domain regressions cover independent one-cent overages for all actions, equality/zero/missing reference, historical PP behavior and issued attestation/SPK continuity. One real HTTP regression approves a current PP, rejects fabricated/over-limit requests without revision/audit/data changes, accepts the boundary and preserves the generated snapshot during attestation.
+- **67 frontend tests passed**. Four new regressions cover defaults/exact-boundary actions, independent components/forged status/zero/missing references, continuation ownership and historical behavior, and accessible per-field immediate alerts/max hints. TypeScript/Vite build and Pint passed. Final assets: `main-CoxRuQKV.js`, `main-KEw9el5U.css`; auth unchanged.
+- No authenticated browser click, responsive screenshot or manual visual-layout test is claimed. Alerts were rendered and checked as React components; saved rules were exercised through real Laravel HTTP requests in isolated tests. Existing HTML/browser-print, bank and physical-signature verification limitations remain unchanged.
+
+Behavior and implementation: `docs/SPH_THRESHOLD.md`.
+
+
+## BA KH period follows PP automatically — 5 November 2026
+
+The active draft had 8–22 November while its approved PP schedule is 30 November–13 December (14 calendar HK). New/draft forms now derive read-only dates from that PP, including stale local drafts; Laravel derives them again for save/generate/attestation. Submitted date/status manipulation cannot override the source. Issued/approved document periods remain immutable. No live workflow command, schema change, fake signature or master/account modification was performed; a fresh its backup was verified first.
+
+Shared PHP/TS vectors, continuation selection, draft normalization, issued snapshot preservation, read-only controls and real HTTP-to-SQL storage are covered. Build and Pint pass; authenticated browser clicks were not manually repeated. See [BAKH_SCHEDULE.md](BAKH_SCHEDULE.md) and `qa/bakh-auto-dates-20261105.json` for final test counts and backup evidence.
+
+Final BA KH date verification: **109 PHP tests / 1,477 assertions**, **71 frontend tests**, production build and Pint passed.
+
+
+## Term work evidence — 5 November 2026
+
+Actual private PDF/JPEG/PNG/WebP upload now persists file path/metadata in document_files and term_work_evidence, with workEvidence snapshots for detail/inbox previews. Ten active files/10 MB each; only draft/returned Admin uploads/removal, pending/approved files immutable, removed history retained. Access/range/inline/download use authenticated Branch-scoped endpoints. Work proof does not substitute for scan/Finance/APM. Migration has been deployed to its after a fresh backup; identity/master and all existing workflow row fingerprints plus revision 16 remain unchanged.
+
+**116 PHP tests / 1,647 assertions**, **75 frontend tests**, build and Pint passed. Real HTTP tests cover every allowed type, SQL paths/byte hashes, permissions, request replay/conflict/orphan cleanup, database failure, capacity and return/lock semantics. Disposable MariaDB migration and controller file upload/PM preview passed before full five-approval/payment/APM regression. Browser visual preview after login was not manually verified. No synthetic transactions or files were inserted on the live database. See [TERM_WORK_EVIDENCE.md](TERM_WORK_EVIDENCE.md) and `qa/term-work-evidence-20261105.json`.

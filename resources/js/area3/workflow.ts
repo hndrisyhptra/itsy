@@ -39,6 +39,11 @@ export function previewProjectNumber(s: State, p: Project) {
   } while (s.projects.some(x => x.no.toLowerCase() === value.toLowerCase()));
   return { value, nextSequence: sequence };
 }
+export function rememberProjectNumber(s:State,p:Project,number:{value:string;nextSequence:number}) {
+  const date=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jakarta',year:'numeric',month:'2-digit'}).formatToParts(new Date());
+  s.settings!.issuedPpNumbers ??= {};
+  s.settings!.issuedPpNumbers[number.value]={sequence:number.nextSequence-1,pattern:s.settings!.ppNumberFormat,branch:branchOptions(s).find(b=>b.name===p.branch)?.code??'',period:date.find(v=>v.type==='month')!.value+'-'+date.find(v=>v.type==='year')!.value,at:now()};
+}
 function approver(s: State, id: string | undefined, role: Role) { const u = s.users.find(u => u.id === id && u.active && u.role === role); if (!u) throw new Error('Pilih pengguna aktif dengan peran ' + role + '.'); return u; }
 export function assertAssigned(s: State, document: AssignedDocument, role: Role) {
   const u = approver(s, selectedApprover(document, role), role);
@@ -75,7 +80,7 @@ export function saveProjectV2(s: State, input: Project, submit: boolean) {
   const errors = projectErrors(s, p); if (errors.length) throw new Error(errors.join('\n'));
   if (submit && (!p.intro.trim() || (!p.planTemplateVersion && (!p.team.length || p.team.some(t => !t.name.trim() || !t.job.trim()))) || (!p.planBudget && !p.risk.trim()) || !p.communication.trim() || !p.quality.trim() || p.schedule.some(v => (!p.planTemplateVersion || v.days > 0) && (!v.start || !v.end)))) throw new Error('Lengkapi seluruh rencana PP sebelum diajukan.');
   p.workflowVersion = version; p.pmUserId = chain['PM Konstruksi']; if (version >= 3) p.approverUserIds = chain; else p.managerUserId = chain['Manager Konstruksi']; p.status = submit ? 'Diajukan' : 'Draft'; p.approvals = []; p.approvalHistory = old?.approvalHistory ?? [];
-  if (!old) { s.settings ??= { ppNumberFormat: DEFAULT_PP_NUMBER_FORMAT, nextPpSequence: 1, ppNumberFormatVersion: 2 }; s.settings.nextPpSequence = number.nextSequence; s.projects.unshift(p); } else s.projects[s.projects.indexOf(old)] = p;
+  if (!old) { s.settings ??= { ppNumberFormat: DEFAULT_PP_NUMBER_FORMAT, nextPpSequence: 1, ppNumberFormatVersion: 2 }; rememberProjectNumber(s,p,number); s.settings.nextPpSequence = number.nextSequence; s.projects.unshift(p); } else s.projects[s.projects.indexOf(old)] = p;
   log(s, submit ? 'PP diajukan ke PM terpilih' : 'Draft PP dan BOQ disimpan', p.no, '/project-plan/' + p.id); return p.id;
 }
 export function decideProject(s: State, id: string, decision: Approval['decision'], note: string) {

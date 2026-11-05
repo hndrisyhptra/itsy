@@ -1,5 +1,7 @@
 # Migration Area 3 ke database its
 
+**Update 5 November 2026:** Migration tambahan dan pemindahan transaksi sudah diterapkan pada `its`. Sumber aktif adalah tabel bisnis dengan snapshot per dokumen; JSON workspace menjadi arsip. Lihat [MYSQL_RUNTIME.md](MYSQL_RUNTIME.md). Uraian konsep/agregat sebelumnya di bawah bersifat historis bila bertentangan.
+
 Migration Laravel siap untuk database MySQL/MariaDB **its** yang dibuat pengguna di phpMyAdmin. Migration belum dijalankan ke database tersebut. `.env`, cache konfigurasi aktif dan SQLite demo lama dipertahankan.
 
 ## Menjalankan
@@ -75,3 +77,6 @@ Pengguna mengonfirmasi its telah dimigrasikan. Sebelum perubahan akun, cadangan 
 Dua migration lanjutan sudah diterapkan pada its setelah backup privat: 000002_extend_users_identity_and_placement menambah username/nik/id_regions/id_branch/id_service_areas/role dengan tiga FK geografis, dan 000003_version_the_approval_chain menambah workflow_version pada approval_runs/approval_steps, memperluas expected_role ke 40 karakter, serta membatasi pasangan tahap/role menurut versi. Total 55 migration. Akun lama mendapat user-ID dan role dari penugasan tunggal yang sudah ada; password/kolom lama tidak diubah, NIK/penempatan tidak ditebak. users.role harus sesuai penugasan agar dapat login. Kolom metadata boleh NULL untuk kompatibilitas data lama; username wajib/unik pada form aplikasi. Region/Branch/Service Area divalidasi server.
 
 Versi 3 memiliki lima approver PP/termin sebelum cetak, lalu approval Finance setelah upload scan termin. Finance dicatat terpisah dari lima keputusan pekerjaan. Versi 2 tetap valid dalam schema, dan rollback ditolak bila sudah ada approval versi 3 pada tabel ternormalisasi. Runtime workflow tetap agregat JSON, belum dipindahkan ke approval_runs/steps. Detail: WORKFLOW_V3.md. Pemeriksaan data sebelum/sesudah: docs/qa/username-approval-v3-preservation-20261104.json. Base SQL concept lama merekam versi 2; migration terbaru adalah otoritas struktur terpasang.
+
+
+Update eviden pekerjaan 5 November 2026: migration `2026_11_05_000002_create_term_work_evidence_table` sudah diterapkan pada its, total 57 migration, tanpa mengubah transaksi lama. Detail penggunaan, path SQL dan bukti: [TERM_WORK_EVIDENCE.md](TERM_WORK_EVIDENCE.md).

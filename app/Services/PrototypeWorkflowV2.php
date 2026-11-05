@@ -71,6 +71,7 @@ trait PrototypeWorkflowV2
             $sequence = $settings['nextPpSequence']++;
             $no = strtr($format, ['{SEQ}' => str_pad((string) $sequence, 4, '0', STR_PAD_LEFT), '{BRANCH}' => $branch['code'], '{YYYY}' => now('Asia/Jakarta')->format('Y'), '{MM}' => now('Asia/Jakarta')->format('m'), '{UNIT}' => strtoupper($p['unit'])]);
             if (! collect($this->state['projects'])->contains(fn ($v) => mb_strtolower($v['no']) === mb_strtolower($no))) {
+                $settings['issuedPpNumbers'][$no] = ['sequence' => $sequence, 'pattern' => $format, 'branch' => $branch['code'], 'period' => now('Asia/Jakarta')->format('m-Y'), 'at' => now()->toISOString()];
                 $this->state['settings'] = $settings;
 
                 return $no;
@@ -89,7 +90,7 @@ trait PrototypeWorkflowV2
         $p = array_intersect_key($input, array_flip(['id', 'name', 'unit', 'branch', 'projectCode', 'budget', 'date', 'rootId', 'parentId', 'sourceBapp', 'allocations', 'intro', 'team', 'schedule', 'costs', 'risk', 'communication', 'quality', 'created']));
         $this->enum($p['unit'] ?? '', ['Konstruksi', 'Operation']);
         if (! collect($this->state['branches'])->contains(fn ($b) => $b['name'] === ($p['branch'] ?? '') && $b['active'])) {
-            $this->fail('Pilih Branch aktif dari daftar demo.');
+            $this->fail('Pilih Branch aktif dari daftar penugasan.');
         }
         $version = ($old['workflowVersion'] ?? 1) >= 2 ? $old['workflowVersion'] : (($this->state['schema'] ?? 1) >= 3 ? 3 : 2);
         if ($version >= 3) {
@@ -270,7 +271,7 @@ trait PrototypeWorkflowV2
         if (isset($t['scan'])) {
             $t['scanHistory'][] = $t['scan'];
         }
-        $t['scan'] = $file + ['status' => 'Menunggu Verifikasi', 'uploadedAt' => now()->toISOString()];
+        $t['scan'] = $file + ['status' => 'Menunggu Verifikasi', 'uploadedAt' => now()->toISOString(), 'uploadedBy' => $this->state['actorUserId'] ?? ''];
         unset($t['financeApproval']);
         $this->put('terms', $t);
         $this->log('Scan TTD basah diunggah', 'Termin '.$t['number'], '/termin/'.$id);

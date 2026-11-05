@@ -1,0 +1,76 @@
+{
+  "date": "2026-11-05",
+  "task": "Active MySQL transaction persistence; remove live demo behavior",
+  "database": {
+    "driver": "mysql",
+    "database": "its",
+    "version": "10.4.28-MariaDB",
+    "migrations": 56,
+    "revision_preserved": 13,
+    "source_of_truth": "Business records with per-document document_data snapshots; metadata and indexed projections",
+    "old_workspace_state": "unchanged read-only archive"
+  },
+  "backup": {
+    "path": "storage/app/private/backups/its-before-relational-workflow-20261105-101741.sql",
+    "bytes": 650930,
+    "sha256": "9fc7ad0b0c1a4d40c19ee0051001a0bc92eb08df477213b35585cf3f0368b639"
+  },
+  "preserved": {
+    "archive_sha256": "b1ebc62518ac1d091449d5db108f4424e2eaa0eda4b9675bbd0daa0b27309520",
+    "users_and_all_supplied_masters": "verified identical before/after",
+    "users": 14,
+    "pp_no": "0001/LG.000/TA-03R502/11-2026",
+    "pp_status": "Sah",
+    "sqlite_sha256": "e2c39eba72710da656307627909f32267b6738c861509a3a70c78bddf8bb10bc"
+  },
+  "deployed_counts": {
+    "projects": 1,
+    "project_plans": 1,
+    "boq_lines": 20,
+    "boq_components": 20,
+    "project_plan_schedule": 5,
+    "project_plan_costs": 4,
+    "project_plan_budget_rows": 27,
+    "contracts": 1,
+    "contract_components": 11,
+    "approval_runs": 1,
+    "approval_steps": 5,
+    "approval_decisions": 5,
+    "document_files": 1,
+    "volume_balances": 20,
+    "work_orders": 0,
+    "payment_terms": 0
+  },
+  "verification": {
+    "php_tests": 104,
+    "php_assertions": 1406,
+    "php_database": "SQLite :memory: only, fail-closed bootstrap preserved",
+    "frontend_tests": 67,
+    "frontend_failures": 0,
+    "build": "passed",
+    "pint": "passed",
+    "master_fidelity_tests": 6,
+    "bundle": "main-B3wBF6lb.js"
+  },
+  "isolated_mariadb": {
+    "evidence_directory": "/private/tmp/area3-relational-qa-u9fu2eja",
+    "migration_and_idempotent_backfill": "passed",
+    "full_server_command_flow_through_apm": "passed",
+    "receipts": 20,
+    "volume_movements": 3,
+    "work_orders": 1,
+    "term_scans": 1,
+    "apm_settlements": 1,
+    "synthetic_scan_metadata_only": true,
+    "servers_started_for_this_task": "stopped automatically",
+    "live_workflow_test_mutations": false
+  },
+  "limits": [
+    "Per-document JSON remains canonical for dynamic/historical details; scalar/child projections updated atomically.",
+    "Prepared volume_releases, continuation_allocations and boq_import_* are not runtime sources; corresponding data is preserved in records/private manifests/ledger.",
+    "HTML/browser printing, manual wet signatures and Finance-entered APM; no bank/ERP integration.",
+    "No authenticated manual browser QA this turn; real private-file upload validation is covered by isolated HTTP tests.",
+    "No load/MFA/SSO/internet deployment testing."
+  ],
+  "dompis_touched": false
+}

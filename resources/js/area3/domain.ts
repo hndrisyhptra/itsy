@@ -1,8 +1,10 @@
 import { applyBudgetPlan } from './plan-budget';
+import { bakhPeriod, syncBakhPeriod } from './bakh-schedule';
+import { mandorSphThreshold, sphThresholdApplies } from './sph';
 import type { PlanBudget, SignaturePlanRow, budgetSummary } from './plan-budget';
 import { applyPlanTemplate } from './plan-template';
 import { recordCommand } from './commands';
-import { saveProjectV2, assertAssigned, previewProjectNumber, approvalRoles, validateAssignments } from './workflow';
+import { saveProjectV2, assertAssigned, previewProjectNumber, rememberProjectNumber, approvalRoles, validateAssignments } from './workflow';
 export { APPROVERS_V3, approvalRoles, selectedApprover, assignPaymentApprovers, validateAssignments, decideProject, setNumberFormat, selectActor, assignProjectApprovers, verifyTermScan, projectApprovalRole, canApproveProject, canApproveTerm, branchOptions, previewProjectNumber, normalizeWorkflow } from './workflow';
 export const ROLES = ['Admin Konstruksi', 'PM Konstruksi', 'Manager Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Bussiness Support', 'Head of PMO', 'Finance', 'Superadmin'] as const;
 export type Role = typeof ROLES[number];
@@ -16,12 +18,13 @@ export interface DealRow { rowId: string; m: boolean; s: boolean; qm: number; qs
 export interface Deal { id: string; projectId: string; no: string; mandor: string; status: 'Draft' | 'Terbit' | 'Sah'; rows: DealRow[]; place: string; location: string; witel: string; date: string; start: string; end: string; signer: string; fo: string; jointer: string; evidence: string }
 export interface Spk { id: string; dealId: string; no: string; status: 'Draft' | 'Terbit' | 'Sah'; date: string; start: string; end: string; place: string; address: string; supervisor: string; phone: string; signer: string; position: string; evidence: string }
 export interface Approval { actorNik?:string; scanId?: string; userId?: string; actorName?: string; role: Role; decision: 'Setujui' | 'Kembalikan' | 'Tolak'; note: string; at: string }
-export interface Term { approverUserIds?: Partial<Record<Role,string>>; financeApproval?: Approval; financeHistory?: Approval[]; workflowVersion?: number; pmUserId?: string; managerUserId?: string; scan?: SignedScan; scanHistory?: SignedScan[]; id: string; spkId: string; number: number; type: 'Parsial' | 'Final'; status: 'Draft' | 'Diajukan' | 'Dikembalikan' | 'Ditolak' | 'Disetujui'; actuals: Record<string, { m: number; s: number }>; approvals: Approval[]; history: Approval[]; submitted?: string; apm: string; apmStatus: 'Belum Terbit' | 'Valid' | 'Perlu Koreksi'; paid: number; paymentHistory: { amount: number; ref: string; at: string }[] }
+export interface WorkEvidence {id:string;name:string;mime:string;extension:string;size:number;sha256:string;uploadedBy:string;uploadedAt:string;removedAt?:string;removedBy?:string}
+export interface Term { workEvidence?:WorkEvidence[]; approverUserIds?: Partial<Record<Role,string>>; financeApproval?: Approval; financeHistory?: Approval[]; workflowVersion?: number; pmUserId?: string; managerUserId?: string; scan?: SignedScan; scanHistory?: SignedScan[]; id: string; spkId: string; number: number; type: 'Parsial' | 'Final'; status: 'Draft' | 'Diajukan' | 'Dikembalikan' | 'Ditolak' | 'Disetujui'; actuals: Record<string, { m: number; s: number }>; approvals: Approval[]; history: Approval[]; submitted?: string; apm: string; apmStatus: 'Belum Terbit' | 'Valid' | 'Perlu Koreksi'; paid: number; paymentHistory: { amount: number; ref: string; at: string }[] }
 export interface Bapp { id: string; termId: string; no: string; status: 'Draft' | 'Sah'; evidence: string; released: Record<string, { m: number; s: number }>; releaseHistory: { quantities: Record<string, { m: number; s: number }>; at: string; actor: Role }[] }
 export interface Event { id: string; title: string; detail: string; route: string; actor: Role; at: string }
 export interface User { nik?:string; id: string; name: string; email: string; role: Role; active: boolean; branches?: string[] }
 export interface SignedScan { id: string; name: string; extension: string; mime: string; size: number; sha256: string; status: 'Menunggu Verifikasi' | 'Valid' | 'Perlu Koreksi'; note?: string; uploadedAt: string; verifiedAt?: string; verifiedBy?: string }
-export interface State { actorUserId?: string; settings?: { ppNumberFormat: string; nextPpSequence: number; ppNumberFormatVersion?: number }; branches?: { id: string; code: string; name: string; active: boolean }[]; schema: number; generation: string; role: Role; scenario: string; projects: Project[]; khs: Khs[]; deals: Deal[]; spks: Spk[]; terms: Term[]; bapps: Bapp[]; events: Event[]; users: User[]; profile: { name: string; email: string }; lastSaved: string }
+export interface State { actorUserId?: string; settings?: { ppNumberFormat: string; nextPpSequence: number; ppNumberFormatVersion?: number; issuedPpNumbers?: Record<string,{sequence:number;pattern:string;branch:string;period:string;at:string}> }; branches?: { id: string; code: string; name: string; active: boolean }[]; schema: number; generation: string; role: Role; scenario: string; projects: Project[]; khs: Khs[]; deals: Deal[]; spks: Spk[]; terms: Term[]; bapps: Bapp[]; events: Event[]; users: User[]; profile: { name: string; email: string }; lastSaved: string }
 export const uid = (prefix = 'id') => `${prefix}-${globalThis.crypto.randomUUID()}`;
 export const now = () => new Date().toISOString();
 export const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date());
@@ -115,8 +118,8 @@ export function reviewBoq(s: State, projectId: string, rowId: string, note: stri
 export function finalizeBoq(s: State, projectId: string) {
   recordCommand('finalizeBoq', [projectId]); requireAdmin(s); const p = getProject(s, projectId); if (p.boqStatus !== 'Review' || !p.boq.length) throw new Error('Muat BOQ terlebih dahulu.'); if (p.boq.some(r => { const k = s.khs.find(k => k.id === r.khsId); return !k?.active || !r.reviewed || r.version !== k.version || !Number.isFinite(r.qty) || r.qty <= 0; })) throw new Error('Finalisasi diblokir: selesaikan seluruh review dan revalidasi Master KHS.'); p.boqStatus = 'Final'; log(s, 'BOQ difinalisasi', `${p.no} · ${money(boqTotal(p))}`, `/boq/${p.id}`); }
 export function blankDeal(s: State, projectId: string): Deal {
-  const p = getProject(s, projectId); const root = getProject(s, p.rootId);
-  return { id: uid('bakh'), projectId, no: '', mandor: '', status: 'Draft', rows: root.boq.map(r => ({ rowId: r.id, m: false, s: false, qm: 0, qs: 0, pm: round((r.m ?? 0) * .85), ps: round((r.s ?? 0) * .85), sphM: round((r.m ?? 0) * .8), sphS: round((r.s ?? 0) * .8), offerM: round((r.m ?? 0) * .9), offerS: round((r.s ?? 0) * .9), capM: r.m, capS: r.s })), place: '', location: '', witel: '', date: today(), start: '', end: '', signer: '', fo: '', jointer: '', evidence: '' };
+  const p = getProject(s, projectId); const root = getProject(s, p.rootId); const period=bakhPeriod(p);
+  return { id: uid('bakh'), projectId, no: '', mandor: '', status: 'Draft', rows: root.boq.map(r => ({ rowId: r.id, m: false, s: false, qm: 0, qs: 0, pm: round((r.m ?? 0) * .85), ps: round((r.s ?? 0) * .85), sphM: p.planBudget ? mandorSphThreshold(p,r.id,'m') ?? 0 : round((r.m ?? 0) * .8), sphS: p.planBudget ? mandorSphThreshold(p,r.id,'s') ?? 0 : round((r.s ?? 0) * .8), offerM: round((r.m ?? 0) * .9), offerS: round((r.s ?? 0) * .9), capM: r.m, capS: r.s })), place: '', location: '', witel: '', date: today(), start: period?.start ?? '', end: period?.end ?? '', signer: '', fo: '', jointer: '', evidence: '' };
 }
 export function dealErrors(s: State, d: Deal, formal = false) {
   const e: string[] = [], p = getProject(s, d.projectId);
@@ -129,6 +132,12 @@ export function dealErrors(s: State, d: Deal, formal = false) {
     if (cap === null || !validVolume(q) || q <= 0 || q > capacity(s, p, r.rowId, c, d.id)) e.push(`${r.rowId.split('-row-').at(-1)} · Volume ${c === 'm' ? 'Material' : 'Jasa'} melebihi ketersediaan atau tidak valid.`);
     if (!Number.isFinite(price) || price < 0 || price > (cap ?? 0)) e.push(`Harga ${c === 'm' ? 'Material' : 'Jasa'} harus 0 sampai harga KHS komponen tersebut.`);
     for (const proposal of c === 'm' ? [r.sphM, r.offerM] : [r.sphS, r.offerS]) if (!Number.isFinite(proposal) || proposal < 0) e.push('Harga SPH/penawaran harus angka nonnegatif.');
+    if(sphThresholdApplies(s,d)) {
+      const threshold=mandorSphThreshold(p,r.rowId,c),sph=c==='m'?r.sphM:r.sphS,component=c==='m'?'Material':'Jasa';
+      const root=getProject(s,p.rootId),source=root.boq.find(row=>row.id===r.rowId),code=s.khs.find(k=>k.id===source?.khsId)?.code??r.rowId;
+      if(threshold===null)e.push(`Referensi BOQ TA - Mandor ${component} ${code} belum tersedia.`);
+      else if(sph>threshold)e.push(`SPH ${component} ${code} melebihi threshold BOQ TA - Mandor (maksimal ${money(threshold)} per satuan).`);
+    }
   }
   if (formal) {
     if (!d.place || !d.location || !d.witel || !d.date || !d.start || !d.end || !d.signer || !d.fo || !d.jointer) e.push('Lengkapi informasi dokumen, periode, penandatangan serta tim FO/Jointer.');
@@ -140,7 +149,8 @@ export function dealErrors(s: State, d: Deal, formal = false) {
 }
 export function saveDeal(s: State, input: Deal, action: 'save' | 'generate' | 'attest' = 'save') {
   recordCommand('saveDeal', [input, action]);
-  requireAdmin(s); const d = structuredClone(input), old = s.deals.find(v => v.id === d.id); if (old?.status === 'Sah') throw new Error('Snapshot BA KH sah tidak dapat diedit.');
+  requireAdmin(s); const old = s.deals.find(v => v.id === input.id); if (old?.status === 'Sah') throw new Error('Snapshot BA KH sah tidak dapat diedit.'); const d = syncBakhPeriod(s,structuredClone(input));
+  if(old?.status!=='Terbit'&&!bakhPeriod(getProject(s,d.projectId)))throw new Error('Jadwal PP belum lengkap atau total HK belum valid untuk periode BA KH otomatis.');
   if (old?.status === 'Terbit') { if (action !== 'attest') throw new Error('BA KH terbit terkunci; hanya pengesahan bukti dokumen tersedia.'); Object.assign(d, structuredClone(old), { evidence: input.evidence }); }
   const e = dealErrors(s, d, action !== 'save'); if (e.length) throw new Error(e.join('\n'));
   if (action === 'attest' && !d.evidence.trim()) throw new Error('Masukkan referensi bukti dokumen bertanda tangan. Tanda tangan tidak dibuat otomatis.');
@@ -177,6 +187,15 @@ export function saveTerm(s: State, input: Term, submit = false) {
   const e = termErrors(s, t); if (e.length) throw new Error(e.join('\n'));
   if (submit) { t.status = 'Diajukan'; t.approvals = []; t.submitted = now(); }
   s.terms[s.terms.indexOf(old)] = t; log(s, submit ? 'Termin diajukan ke PM Konstruksi' : 'Draft termin disimpan', `${getSpk(s, t.spkId).no} · Termin ${t.number} · ${money(termTotal(s, t))}`, `/termin/${t.id}`);
+}
+export function removeTermWorkEvidence(s:State,termId:string,fileId:string) {
+  recordCommand('removeTermWorkEvidence',[termId,fileId]); requireAdmin(s);
+  const t=getTerm(s,termId);
+  if(!['Draft','Dikembalikan'].includes(t.status))throw new Error('Lampiran terkunci selama approval atau setelah pengajuan selesai.');
+  const file=t.workEvidence?.find(f=>f.id===fileId&&!f.removedAt);
+  if(!file)throw new Error('Lampiran eviden pekerjaan aktif tidak ditemukan.');
+  file.removedAt=now();file.removedBy=s.actorUserId;
+  log(s,'Eviden pekerjaan dikeluarkan dari pengajuan','Termin '+t.number,'/termin/'+termId);
 }
 export function decide(s: State, termId: string, decision: Approval['decision'], note: string) {
   recordCommand('decide', [termId, decision, note]);
@@ -218,7 +237,7 @@ export function createContinuation(s: State, bappId: string, no: string, allocat
   const parent = projectForSpk(s, getSpk(s, t.spkId)), root = getProject(s, parent.rootId); let budget = 0, qTotal = 0;
   for (const [id, q] of Object.entries(allocations)) { const row = root.boq.find(r => r.id === id); if (!row) throw new Error('Item alokasi tidak dikenal.'); for (const c of ['m', 's'] as Component[]) { if (!validVolume(q[c]) || q[c] > continuationAvailable(s, b, id, c) || q[c] > ledger(s, root.id, id, c).available) throw new Error('Volume lanjutan melebihi volume dilepas yang masih tersedia.'); qTotal += q[c]; budget += q[c] * (row[c] ?? 0); } }
   if (qTotal <= 0) throw new Error('Pilih minimal satu volume untuk PP lanjutan.');
-  const p = blankProject(); Object.assign(p, { no: no.trim(), name: `${parent.name} — Lanjutan`, unit: parent.unit, branch: parent.branch, projectCode: parent.projectCode, budget: round(budget), date: today(), rootId: root.id, parentId: parent.id, sourceBapp: b.id, allocations: structuredClone(allocations), intro: notes, boqStatus: 'Final', boq: [], schedule: structuredClone(parent.schedule) }); if (s.schema >= 2) { const number = previewProjectNumber(s, { ...parent, unit: parent.unit === 'Operation' ? 'Operation' : 'Konstruksi' }); p.no = number.value; p.unit = parent.unit === 'Operation' ? 'Operation' : 'Konstruksi'; p.workflowVersion = s.schema >= 3 ? 3 : 2; if (s.schema >= 3) p.approverUserIds = structuredClone(parent.approverUserIds ?? parent.paymentApproverUserIds ?? {}); p.pmUserId = parent.pmUserId; p.managerUserId = parent.managerUserId; p.approvals = []; p.approvalHistory = []; s.settings!.nextPpSequence = number.nextSequence; } if (s.schema >= 3) { Object.assign(p, applyBudgetPlan(s, applyPlanTemplate({ ...p, schedule: blankProject().schedule, continuationNotes: notes }, true), false, true)); const actor=s.users.find(u=>u.id===s.actorUserId);p.preparedBy={userId:actor?.id??'',name:actor?.name??'',nik:actor?.nik??'',role:s.role,at:now()}; } s.projects.push(p); log(s, 'PP lanjutan dibuat · volume reserved', `${p.no} ← ${parent.no}`, `/project-plan/${p.id}`); return p.id;
+  const p = blankProject(); Object.assign(p, { no: no.trim(), name: `${parent.name} — Lanjutan`, unit: parent.unit, branch: parent.branch, projectCode: parent.projectCode, budget: round(budget), date: today(), rootId: root.id, parentId: parent.id, sourceBapp: b.id, allocations: structuredClone(allocations), intro: notes, boqStatus: 'Final', boq: [], schedule: structuredClone(parent.schedule) }); if (s.schema >= 2) { const number = previewProjectNumber(s, { ...parent, unit: parent.unit === 'Operation' ? 'Operation' : 'Konstruksi' }); p.no = number.value; p.unit = parent.unit === 'Operation' ? 'Operation' : 'Konstruksi'; p.workflowVersion = s.schema >= 3 ? 3 : 2; if (s.schema >= 3) p.approverUserIds = structuredClone(parent.approverUserIds ?? parent.paymentApproverUserIds ?? {}); p.pmUserId = parent.pmUserId; p.managerUserId = parent.managerUserId; p.approvals = []; p.approvalHistory = []; rememberProjectNumber(s,p,number); s.settings!.nextPpSequence = number.nextSequence; } if (s.schema >= 3) { Object.assign(p, applyBudgetPlan(s, applyPlanTemplate({ ...p, schedule: blankProject().schedule, continuationNotes: notes }, true), false, true)); const actor=s.users.find(u=>u.id===s.actorUserId);p.preparedBy={userId:actor?.id??'',name:actor?.name??'',nik:actor?.nik??'',role:s.role,at:now()}; } s.projects.push(p); log(s, 'PP lanjutan dibuat · volume reserved', `${p.no} ← ${parent.no}`, `/project-plan/${p.id}`); return p.id;
 }
 export function updateKhs(s: State, input: Khs, remove = false) {
   recordCommand('updateKhs', [input, remove]);

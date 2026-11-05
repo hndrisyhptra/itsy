@@ -7,6 +7,7 @@ use App\Services\AccountAccess;
 use App\Services\AuthenticatedWorkspace;
 use App\Services\PrototypeDomain;
 use App\Services\PrototypeWorkspaceService;
+use App\Services\RelationalWorkflowStore;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -195,7 +196,7 @@ class PrototypeWorkflowV2Test extends TestCase
         $state = app(AuthenticatedWorkspace::class)->bind($state);
         $state['schema'] = 2;
         $state = app(PrototypeDomain::class)->execute($state, 'createTerm', [$state['spks'][0]['id']])['state'];
-        PrototypeWorkspace::first()->update(['state' => $state]);
+        DB::transaction(fn () => app(RelationalWorkflowStore::class)->write(PrototypeWorkspace::first(), $state));
         $t = $state['terms'][0];
         $row = $state['deals'][0]['rows'][0]['rowId'];
         $t['actuals'] = [$row => ['m' => 100, 's' => 80]];

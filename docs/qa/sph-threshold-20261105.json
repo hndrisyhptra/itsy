@@ -1,0 +1,22 @@
+{
+  "date": "2026-11-05",
+  "backup": {
+    "file": "its-before-sph-threshold-20261105-092002.sql",
+    "bytes": 644783,
+    "sha256": "c1f6fb781dbd968ff774740fb43e1d663e7345f863dac54738cf1d12a171caaa"
+  },
+  "original_sqlite_sha256": "e2c39eba72710da656307627909f32267b6738c861509a3a70c78bddf8bb10bc",
+  "policy": "SPH unit Material/Jasa prices must not exceed the selected PP saved BOQ TA-Mandor component price, per source row. Equality and zero are valid. Missing row fails closed for itemized-budget PP.",
+  "history": "Saved Terbit/Sah deal snapshots retain prior policy; old PP without itemized planBudget keeps existing behavior. Client status does not grant this exemption.",
+  "scope": "SPH only; existing KHS agreement ceilings, volume ledger, approvals and payment rules are unchanged.",
+  "browser": "Automated component alert tests only; no authenticated browser or visual layout test claimed.",
+  "live_data": "Read-only its backup; no live account, workflow, migration or environment change.",
+  "verification": {
+    "php_tests": 99,
+    "php_assertions": 1352,
+    "frontend_tests": 67,
+    "build": "passed",
+    "pint": "passed",
+    "isolation": "SQLite :memory:"
+  }
+}
