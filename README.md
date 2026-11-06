@@ -28,6 +28,8 @@ Pada tambah/ubah akun melalui Kelola akun, kata sandi minimal **6 karakter**, me
 
 **Mgr Project Support** tersedia pada form akun dan menjadi approver keempat PP serta Pembayaran baru. Dokumen lama tetap memakai assignment tersimpannya; lihat [PROJECT_SUPPORT_APPROVAL](docs/PROJECT_SUPPORT_APPROVAL.md).
 
+Pembaruan approval ini memerlukan migration `2026_11_06_000002_allow_project_support_approval_steps` untuk CHECK database tahap keempat. Sudah diterapkan pada its lokal; instalasi lain menjalankan `php artisan migrate`. Tanpa migration ini, pengajuan lengkap dapat gagal Server Error saat menyimpan Project Support.
+
 Buat akun **Admin Konstruksi, PM Konstruksi, Admin Area, Mgr Deployment, Mgr Project Support, Head of PMO, dan Finance** sesuai kebutuhan pengujian. Login memakai **username**, lalu keluar/masuk bergantian sesuai peran. Peran mengikuti `users.role` yang konsisten dengan `roles`/`user_assignments`, bukan pemilih role. Kelima approver dipilih pada PP dan wajib memiliki penugasan Branch yang mencakup PP. Manager Konstruksi tersedia untuk dokumen alur lama saja. Akun tanpa penugasan aktif, akun nonaktif atau akun dengan beberapa peran aktif berbeda ditolak. Pemulihan kata sandi melalui email belum disediakan; hubungi Superadmin.
 
 Login memiliki pembatasan percobaan, regenerasi sesi, CSRF dan opsi Ingat saya. Keluar hanya melalui POST dari menu profil. Endpoint workspace, laporan, cadangan dan scan memerlukan login. Respons pribadi memakai no-store/noindex. Jika data berubah dari pengguna lain, gunakan **Muat ulang data**; konflik revisi 409 tidak menimpa transaksi.

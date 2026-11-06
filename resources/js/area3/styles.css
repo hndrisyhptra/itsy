@@ -38,6 +38,17 @@ body{color:var(--text);background:var(--bg)}[data-theme=dark] .metric-label,[dat
 .pp-form-card .table-scroll input,.pp-form-card .table-scroll select,.plan-budget-section .table-scroll input,.plan-risk-section .table-scroll input,.plan-risk-section .table-scroll select{font-size:11px;padding:5px 7px;min-height:30px}
 .plan-budget-section .table-scroll table{min-width:600px}.plan-budget-section .budget-boq-table table{min-width:1120px}.plan-budget-section .budget-recap-table table{min-width:520px}.plan-budget-section .budget-boq-table th:nth-child(1){width:12%}.plan-budget-section .budget-boq-table th:nth-child(2){width:23%}.plan-budget-section .budget-boq-table th:nth-child(3){width:5%}
 .plan-budget-section input.number-input{min-width:80px;text-align:right;font-variant-numeric:tabular-nums}.plan-budget-section .budget-designator{min-width:110px;max-width:160px;white-space:normal;overflow-wrap:anywhere}.plan-budget-section .budget-description{min-width:180px;max-width:260px;white-space:normal;overflow-wrap:anywhere}.plan-budget-section .budget-volume{min-width:100px;gap:4px}
+.budget-owner-summary{width:360px;max-width:100%;margin:0 0 0 auto;border:1px solid var(--table-border);border-top:0;font-size:11px;line-height:1.5;break-inside:avoid}
+.budget-owner-summary>div{display:grid;grid-template-columns:30% minmax(0,1fr)}
+.budget-owner-summary>div+div{border-top:1px solid var(--table-border)}
+.budget-owner-summary dt,.budget-owner-summary dd{padding:6px 8px}
+.budget-owner-summary dt{font-weight:500}
+.budget-owner-summary dd{margin:0;border-left:1px solid var(--table-border);text-align:right;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.budget-owner-summary .budget-owner-grand-total{background:var(--primary-soft);font-weight:600}
+.budget-owner-summary .budget-owner-grand-total dt{font-weight:600}
+.pp-full-plan .budget-owner-summary{font-size:10px;color:#252b35}
+.pp-full-plan .budget-owner-grand-total{background:#f5f5f5}
+@media print{.pp-full-plan .budget-owner-summary{font-size:7.5pt;width:270px}.pp-full-plan .budget-owner-summary dt,.pp-full-plan .budget-owner-summary dd{padding:4pt}}
 .document table{border-collapse:collapse;border:1px solid #777}.document th,.document td{border:1px solid #777;padding:5px 7px;line-height:1.45}.document .table-scroll th{background:#f5f6f8;color:#252b35}
 .document .plan-budget-section,.document .plan-risk-section{--table-border:#777}.pp-full-plan .plan-budget-section .table-scroll table{min-width:0}.pp-full-plan .plan-budget-section .budget-designator{min-width:0;max-width:none}.pp-full-plan .plan-budget-section .budget-description{min-width:0;max-width:none}.pp-full-plan .plan-budget-section .table-scroll th,.pp-full-plan .plan-budget-section .table-scroll td,.pp-full-plan .plan-risk-section .table-scroll th,.pp-full-plan .plan-risk-section .table-scroll td{font-size:10px;padding:5px 6px;color:#252b35;background:#fff}
 @media print{.document table{border-collapse:collapse}.document .table-scroll th,.document .table-scroll td{border:1px solid #555}.pp-full-plan .plan-budget-section .table-scroll table{table-layout:fixed;min-width:0}.pp-full-plan .plan-budget-section .table-scroll th,.pp-full-plan .plan-budget-section .table-scroll td,.pp-full-plan .plan-risk-section .table-scroll th,.pp-full-plan .plan-risk-section .table-scroll td{font-size:7.5pt;padding:4pt;overflow-wrap:anywhere;white-space:normal}.document tr{break-inside:avoid}.document thead{display:table-header-group}}

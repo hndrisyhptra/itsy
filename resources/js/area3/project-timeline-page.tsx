@@ -41,7 +41,7 @@ function PaymentTimeline({s,t}:{s:State;t:Term}) {
 }
 
 export function ProjectTimeline({s,id}:{s:State;id:string}) {
-  const [filter,setFilter]=useState(''),data=projectTimeline(s,id);
+  const [filter,setFilter]=useState(id),data=projectTimeline(s,id);
   if(!data) return <Empty title="Project Plan tidak ditemukan" description="PP tidak tersedia atau berada di luar Branch penugasan akun Anda."/>;
   const shown=data.projects.filter(p=>!filter||p.id===filter),events=data.events.filter(e=>!filter||e.projectId===filter);
   const settled=data.terms.filter(t=>t.status==='Disetujui'&&t.paid>=termTotal(s,t)&&termTotal(s,t)>0&&((t.workflowVersion??1)<2||t.apmStatus==='Valid')).length;

@@ -26,7 +26,7 @@ class Area3MigrationTest extends TestCase
     public function test_user_extension_backfills_username_and_role_without_changing_password_or_guessing_placement(): void
     {
         $this->migrate();
-        $this->artisan('migrate:rollback', ['--step' => 6, '--force' => true])->assertSuccessful();
+        $this->artisan('migrate:rollback', ['--step' => 7, '--force' => true])->assertSuccessful();
         $password = Hash::make('ChosenPassword123');
         DB::table('users')->insert(['id_user' => 88, 'name' => 'Legacy fixture', 'email' => 'legacy@example.test', 'password' => $password]);
         DB::table('roles')->insert(['id_role' => 91, 'code' => 'SUPERADMIN', 'name' => 'Superadmin']);
@@ -100,7 +100,7 @@ class Area3MigrationTest extends TestCase
         $this->assertSame(1, DB::table('branches')->where('name', 'DENPASAR')->count());
         $this->migrate();
         $this->assertSame(1030, DB::table('designator_package_prices')->count());
-        $this->assertSame(59, DB::table('migrations')->count());
+        $this->assertSame(60, DB::table('migrations')->count());
     }
 
     public function test_users_alignment_preserves_existing_ids_and_passwords_and_the_model_uses_id_user(): void

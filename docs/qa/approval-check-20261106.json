@@ -1,0 +1,63 @@
+{
+  "migration": "2026_11_06_000002_allow_project_support_approval_steps",
+  "database": "its",
+  "data_unchanged": true,
+  "snapshots": {
+    "users": {
+      "rows": 15,
+      "sha256": "33d54b8ab401f79b0087796700f01b270de9cfe9478e6b8a481a1fb99026e2b2"
+    },
+    "projects": {
+      "rows": 1,
+      "sha256": "cc7cb86c4b464bcec5ba6e1c8919a6dfbd08f643a32cbf63bd25ba7f2f2a1f40"
+    },
+    "project_plans": {
+      "rows": 3,
+      "sha256": "db20e0045a8a303616f2f9bec1b51e1b32863a08506a8b351b12cfed84d13ea2"
+    },
+    "approval_runs": {
+      "rows": 3,
+      "sha256": "7a01e7c735495cd78214bd935c0a69ca7a3646403810d871a49747f60ecc79d9"
+    },
+    "approval_steps": {
+      "rows": 15,
+      "sha256": "73e8798d82ddf807b62afb03acb1f682b4239563ad0cf55dd67e457398364178"
+    },
+    "approval_decisions": {
+      "rows": 8,
+      "sha256": "f39507222263df57d33469fa5d96466a7c7fd6c5693450e73d076341e6e3e7a8"
+    },
+    "prototype_workspaces": {
+      "rows": 1,
+      "sha256": "5e1d9147fd87d7bbcaa8a255b3d210d45ac7839a461f6c52fcc002503108b24b"
+    },
+    "prototype_audits": {
+      "rows": 31,
+      "sha256": "3f7d64e025553737e4058eade239a692c028090d947ff1ffdd867f6f9c8b4645"
+    },
+    "command_receipts": {
+      "rows": 18,
+      "sha256": "02f5dc236cfc51dabcda7145359d2dec314525117775dc4296e61175e533394a"
+    }
+  },
+  "check_clause": "`workflow_version` = 2 and (`step_no` = 1 and `expected_role` = 'PM_KONSTRUKSI' or `step_no` = 2 and `expected_role` = 'MANAGER_KONSTRUKSI') or `workflow_version` = 3 and (`step_no` = 1 and `expected_role` = 'PM_KONSTRUKSI' or `step_no` = 2 and `expected_role` = 'ADMIN_AREA' or `step_no` = 3 and `expected_role` = 'MGR_DEPLOYMENT' or `step_no` = 4 and `expected_role` in ('MGR_BUSSINESS_SUPPORT','MGR_PROJECT_SUPPORT') or `step_no` = 5 and `expected_role` = 'HEAD_OF_PMO' or `step_no` = 6 and `expected_role` = 'FINANCE')",
+  "mariadb_temporary_probe": {
+    "accepted": 9,
+    "rejected": 6
+  },
+  "live_workflow_commands_executed": 0,
+  "tests": {
+    "php": 180,
+    "assertions": 3108,
+    "frontend": 124,
+    "build": "passed",
+    "scoped_pint": "passed",
+    "artisan_database": "sqlite :memory:",
+    "browser_manual": false
+  },
+  "backup": {
+    "filename": "its-before-approval-check-20261106-132833.sql",
+    "bytes": 2015272,
+    "sha256": "99e7a7dc04bbdd8376edb3e79eabeb56b7312f5caa3cafe59486839e51c97024"
+  }
+}

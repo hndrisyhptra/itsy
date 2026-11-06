@@ -291,3 +291,17 @@ Historical iteration; superseded by the dashboard restoration below.
 - [x] Form/preview penutup baru empat jabatan baku dari template bersama; Admin Area tetap approval kedua; cap nyata/current-cycle dan area print kosong.
 - [x] 177 PHP tests/3.075 assertions, 124 frontend tests, build/Pint lulus. Query tambahan per role/penandatangan tidak diperlukan; uji budget/performance lama tetap lulus.
 - [x] Sinyal graceful restart worker melalui cache file proyek; tanpa migration, seed atau perubahan massal transaksi live. Browser/print fisik belum diuji manual.
+
+## Subtotal Material dan Jasa BOQ Owner — 6 November 2026
+- [x] Ringkasan BOQ Owner di pojok kanan bawah dengan tiga baris Material, Jasa, Total, angka rata kanan, garis horizontal penuh dan pemisah vertikal sejajar pada form/preview/print PP; menggunakan total dan snapshot yang sudah tersedia tanpa query tambahan.
+- [x] 177 PHP tests/3.075 assertions, 124 frontend tests dan build lulus. Perubahan tampilan saja; QA browser/print fisik belum diulang manual.
+
+## Perbaikan Server Error pengajuan PP — 6 November 2026
+- [x] Log MariaDB 4025 menunjukkan constraint two_approval_steps belum menerima Project Support. Migration 000002 memperbarui CHECK atomik, menjaga Business Support lama/versi 2 dan menolak rollback setelah role baru digunakan.
+- [x] Backup its-before-approval-check-20261106-132833.sql: 2.015.272 byte; SHA-256 99e7a7dc04bbdd8376edb3e79eabeb56b7312f5caa3cafe59486839e51c97024. Migration sudah diterapkan; fingerprint data akun/PP/approval/workspace/audit/receipt identik.
+- [x] 180 PHP tests/3.108 assertions, 124 frontend tests, build/Pint lulus. Probe CHECK MariaDB melalui temporary table menerima 9/menolak 6 kombinasi tanpa data uji di tabel bisnis. Tidak ada query runtime tambahan atau pengajuan PP atas nama pengguna; QA klik browser belum dilakukan.
+
+## Timeline PP sesuai baris yang diklik — 6 November 2026
+- [x] Filter awal timeline memakai ID PP pada URL, sehingga kartu/aktivitas PP terpilih langsung muncul; opsi seluruh PP/sibling dan ringkasan ID Project dipertahankan. Tidak ada perubahan database atau tambahan query.
+- [x] Regresi gagal sebelum perbaikan lalu lulus: PP sibling yang diklik, event terpisah, pembukaan PP lain, state tetap utuh dan ID tidak tersedia tidak jatuh ke PP pertama. Klik browser belum diuji manual.
+- [x] 180 PHP tests/3.108 assertions, 126 frontend tests dan build lulus.

@@ -1,5 +1,21 @@
 # Laravel rebuild QA — 2 November 2026
 
+## Timeline opens the selected PP — 6 November 2026
+
+The table link already used the exact PP ID; the page incorrectly initialized its filter to all PP in the shared Project ID, so the first PP appeared at the top. The initial filter now uses the route PP ID. Cards and events open on that PP; the dropdown retains sibling/all-PP choices and the summary remains Project-wide. Existing route keys reset the filter when navigating to a different PP. No saved data, API request or SQL query change.
+
+Regression failed before the fix and passed after it: clicking a later sibling selects that PP, excludes the first PP's document/events, preserves the all-PP option and state, and unavailable IDs show the existing empty state. **180 PHP tests / 3,108 assertions**, **126 frontend tests** and production build passed. Browser clicks were not manually repeated. See [PROJECT_TIMELINE.md](PROJECT_TIMELINE.md).
+
+## PP submission database constraint correction — 6 November 2026
+
+MariaDB log confirms SQLSTATE 23000/4025: CHECK two_approval_steps rejected MGR_PROJECT_SUPPORT at step 4/version 3. The previous app-only role change missed this engine constraint; complete forms still failed and the transaction rolled back. Additive migration 2026_11_06_000002 replaces the CHECK in one ALTER for MySQL/MariaDB, preserving v2, historical Business Support and all other role positions. Rollback refuses existing Project Support steps. No runtime query change or added request query; existing incremental/performance fixtures pass.
+
+**180 PHP tests / 3,108 assertions**, **124 frontend tests**, production build and scoped Pint passed. Regression reproduces old-rule rejection using an actual memory CHECK, verifies valid and invalid role/version positions, engine-specific atomic ALTER and rollback protection. Tests remain fail-closed SQLite memory. Migration was applied to its after verified backup; account/PP/workspace/approval/audit/receipt fingerprints stayed identical. The installed MariaDB CHECK was exercised on a temporary table: 9 valid combinations accepted, 6 invalid combinations rejected. No live PP submission/approval was executed on the user's behalf; browser retry remains for the user. See [PROJECT_SUPPORT_APPROVAL.md](PROJECT_SUPPORT_APPROVAL.md) and `qa/approval-check-20261106.json`.
+
+## Owner BOQ component totals — 6 November 2026
+
+Anggaran & Margin displays a compact, bordered summary at the bottom right of the Owner BOQ table, with three stacked rows: Material, Jasa, Total. All rows share a 30% label column and one continuous vertical separator; horizontal separators meet the outer border without padding gaps or doubled lines. Amounts align right and the Total row is emphasized. The same layout applies to PP preview/print, with width bounded by its container. Values reuse existing ownerM/ownerS totals and saved approved snapshots; no extra calculation loop, request or SQL query is introduced. **177 PHP tests / 3,075 assertions**, **124 frontend tests** and production build passed. Display-only change; no database/workflow mutation. Browser/physical print QA was not manually repeated.
+
 ## Project Support approval and PP closing — 6 November 2026
 
 **177 PHP tests / 3,075 assertions**, **124 frontend tests**, production build and scoped Pint passed. New PP/payment stage four selects Mgr Project Support. Server-owned approvalScheme disambiguates current and historical v3 Business Support chains; forged client legacy scheme cannot downgrade a new PP. SQL step four uses MGR_PROJECT_SUPPORT and the selected account. Old PP/decisions remain unchanged; new payments on old PP require explicit current future-payment assignments. Existing five-approval/Finance/APM/rejection suites pass with the new current role.

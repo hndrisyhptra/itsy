@@ -35,6 +35,31 @@ test('project timeline joins all PP siblings and exact related-document events w
   assert.equal(projectTimeline(s,'missing'),undefined);s.projects[0].projectCode='';s.projects[1].projectCode='';assert.equal(projectTimeline(s,s.projects[0].id)!.projects.length,1);
 });
 
+test('timeline defaults to the clicked PP rather than the first PP sharing its Project ID',()=>{
+  const s=state(),first=s.projects[0],clicked=s.projects.find(p=>p.id==='pp-sibling')!,before=JSON.stringify(s);
+  const html=renderToStaticMarkup(createElement(ProjectTimeline,{s,id:clicked.id}));
+  assert.ok(html.includes('<option value="'+clicked.id+'" selected="">'));
+  assert.ok(html.includes('<h2>'+clicked.no+'</h2>'));
+  assert.ok(html.includes('href="/project-plan/'+clicked.id+'"'));
+  assert.ok(!html.includes('href="/project-plan/'+first.id+'"'));
+  assert.ok(html.includes('Draft sibling'));
+  assert.ok(!html.includes('PP diperbarui'));
+  assert.ok(!html.includes('SPK disahkan'));
+  assert.ok(html.includes('Seluruh PP pada ID Project ini'));
+  assert.equal(JSON.stringify(s),before);
+  // Direct links and reopening another PP must select that PP independently.
+  const reopened=renderToStaticMarkup(createElement(ProjectTimeline,{s,id:first.id}));
+  assert.ok(reopened.includes('<option value="'+first.id+'" selected="">'));
+  assert.ok(reopened.includes('PP diperbarui'));
+  assert.ok(!reopened.includes('Draft sibling</strong>'));
+});
+
+test('an unavailable timeline PP never falls back to the first accessible PP',()=>{
+  const s=state(),html=renderToStaticMarkup(createElement(ProjectTimeline,{s,id:'missing-pp'}));
+  assert.ok(html.includes('Project Plan tidak ditemukan'));
+  assert.ok(!html.includes('project-timeline-card'));
+});
+
 test('current position distinguishes five approval levels, returned documents, scan, Finance and APM',()=>{
   const t=term();for(const role of APPROVERS_V3){assert.equal(paymentPosition(t),'Menunggu approval '+role);t.approvals.push({role,decision:'Setujui',at:'2026-11-04T01:00:00Z',note:'QA'});}
   t.status='Disetujui';assert.match(paymentPosition(t),/unggah scan/);
