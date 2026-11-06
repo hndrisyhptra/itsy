@@ -3,7 +3,7 @@ import { UploadTasks } from './upload-tasks';
 import { uploadTask, type UploadTask } from './upload-queue';
 import { Upload } from 'lucide-react';
 import { DEFAULT_PP_NUMBER_FORMAT } from './workflow';
-import { type State, type Project, type Approval, type Role, APPROVERS_V3, approvalRoles, selectedApprover, assignPaymentApprovers, uid, money, num, boqTotal, operational, branchOptions, decideProject, canApproveProject, assignProjectApprovers, setNumberFormat } from './domain';
+import { type State, type Project, type Approval, type Role, projectApprovalScheme, usesBusinessSupport, APPROVERS_V3, approvalRoles, selectedApprover, assignPaymentApprovers, uid, money, num, boqTotal, operational, branchOptions, decideProject, canApproveProject, assignProjectApprovers, setNumberFormat } from './domain';
 import { mutate, uploadBoq } from './store';
 import { boot, appUrl } from './laravel';
 import { Link, Card, Field, Input, Button, Table, Notice, Badge, attempt } from './ui';
@@ -32,7 +32,7 @@ export function BoqDraftEditor({ s, p, onChange, disabled, onBusy }: { s:State; 
   const price=(value:number|null|undefined)=>value===null?'N/A':money(value??0);
   return <>
     <Notice>Upload template BOQ dengan sheet BoQ, kolom Designator, Satuan, Material, Jasa dan VOL. Hanya volume positif diimpor; harga Master KHS digunakan untuk BOQ Owner.</Notice>
-    <div className="upload-box"><Upload size={27}/><h3>Upload BOQ Plan</h3><p>Excel .xlsx maksimal 10 MB. Memilih file baru mengganti isi BOQ draft setelah file berhasil divalidasi.</p>
+    <div className="upload-box"><Upload size={27}/><h3>Upload BOQ Plan</h3><p>Excel .xlsx maksimal 10 MB. Memilih file baru mengganti isi BOQ draft setelah file berhasil divalidasi. Harga komponen yang kosong diterima. Jika memakai rumus, hitung ulang dan simpan file sebelum upload.</p>
       <input disabled={disabled||loading||!boot} aria-label="Pilih file template BOQ Excel" type="file" accept=".xlsx" onChange={e=>{const file=e.target.files?.[0];e.target.value='';void selectFile(file);}}/>
       {loading && <p role="status">{progress}</p>}
       {error && <Notice tone="error"><span role="alert">{error}</span></Notice>}
@@ -58,7 +58,7 @@ export function ApproverSelect({ s, label, role, value, onChange, disabled, bran
 
 export function ProjectApproverFields({s,p,onChange,disabled}:{s:State;p:Project;onChange:(p:Project)=>void;disabled:boolean}) {
   const version = (p.workflowVersion ?? 1) >= 2 ? p.workflowVersion! : s.schema >= 3 ? 3 : 2;
-  const document = {...p,workflowVersion:version};
+  const document = {...p,workflowVersion:version,approvalScheme:projectApprovalScheme(p)};
   return <>{approvalRoles(document,true).map((role,i) => <ApproverSelect key={role} s={s} branch={p.branch} label={`Approval ${i+1} · ${role} (wajib saat pengajuan)`} role={role} value={selectedApprover(document,role)} disabled={disabled} onChange={id => onChange(version >= 3 ? {...p,approverUserIds:{...p.approverUserIds,[role]:id},...(role === 'PM Konstruksi' ? {pmUserId:id} : {})} : {...p,...(role === 'PM Konstruksi' ? {pmUserId:id} : {managerUserId:id})})}/>)}</>;
 }
 function FuturePaymentApprovers({s,p}:{s:State;p:Project}) {
@@ -73,7 +73,7 @@ export function ProjectApprovalPanel({ s, p }: { s: State; p: Project }) {
     {!legacy && <><div className="form-grid">{roles.map(role => <ApproverSelect key={role} s={s} branch={p.branch} role={role} label={role} value={selectedApprover(p,role)} onChange={() => {}} disabled/>)}</div><Notice>Status PP: {p.status} · {p.approvals?.length ?? 0}/{roles.length} disetujui. SPK tersedia setelah seluruh approval lengkap.</Notice>{canApproveProject(s, p) && <><Field label="Catatan / alasan pengembalian atau penolakan"><textarea value={note} onChange={e => setNote(e.target.value)}/></Field><div className="actions">{(['Tolak', 'Kembalikan', 'Setujui'] as Approval['decision'][]).map(decision => <Button key={decision} primary={decision === 'Setujui'} onClick={() => attempt(() => mutate(d => decideProject(d, p.id, decision, note)), 'Keputusan PP tersimpan.')}>{decision} PP</Button>)}</div></>}</>}
     {legacy && s.schema < 3 && <><div className="form-grid"><ApproverSelect s={s} branch={p.branch} role="PM Konstruksi" label="PM Konstruksi" value={pm} onChange={setPm} disabled={!operational(s)}/><ApproverSelect s={s} branch={p.branch} role="Manager Konstruksi" label="Manager Konstruksi" value={manager} onChange={setManager} disabled={!operational(s)}/></div>{operational(s) && <Button onClick={() => attempt(() => mutate(d => assignProjectApprovers(d,p.id,pm,manager)), 'Penanggung jawab tersimpan.')}>Simpan Penanggung Jawab</Button>}</>}
     {!!p.approvalHistory?.length && <Table headers={['Approver', 'Keputusan', 'Catatan', 'Waktu']}>{p.approvalHistory.map((a, i) => <tr key={i}><td>{a.actorName ?? a.userId}<small>{a.role}</small></td><td>{a.decision}</td><td>{a.note}</td><td>{new Date(a.at).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}</td></tr>)}</Table>}
-    {s.schema >= 3 && (p.workflowVersion ?? 1) < 3 && p.status === 'Sah' && <FuturePaymentApprovers s={s} p={p}/>}
+    {s.schema >= 3 && ((p.workflowVersion ?? 1) < 3||usesBusinessSupport(p)) && p.status === 'Sah' && <FuturePaymentApprovers s={s} p={p}/>}
   </Card>;
 }
 

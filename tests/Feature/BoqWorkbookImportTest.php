@@ -144,12 +144,74 @@ class BoqWorkbookImportTest extends TestCase
         $this->api($p, true)->assertOk()->assertJsonPath('state.projects.0.boq.0.reviewed', true)->assertJsonPath('state.projects.0.boq.0.excelM', 704701);
     }
 
-    public function test_bad_structure_input_formula_precision_unknown_designator_and_unit_are_rejected_atomically(): void
+    public function test_supplied_paket5_workbook_accepts_empty_opposite_component_prices(): void
+    {
+        $path = base_path('tests/Fixtures/boq/osp-fo-paket5-blank-prices.xlsx');
+        $file = UploadedFile::fake()->createWithContent('3DMO_QERECOVERY_JL NIAS.xlsx', file_get_contents($path));
+        // Reference data currently has Material Paket 5 but Jasa only Paket 10.
+        // A blank price fix must not invent a missing authoritative KHS price.
+        $this->post('/api/prototype/boq/import', ['file' => $file], ['Accept' => 'application/json'])
+            ->assertUnprocessable()->assertJsonPath('errors.file.0', 'Baris 44: designator J-AC-OF-SM-24D belum memiliki harga KHS aktif pada Paket 5. Lengkapi melalui Master Designator > KHS.');
+        $this->assertCount(0, Storage::disk('local')->allFiles());
+        // These workbook prices are test fixtures only, never live master edits.
+        foreach (['J-AC-OF-SM-24D' => 4321, 'J-ODP Solid-PB-16 AS' => 141810] as $code => $price) {
+            DB::table('designator_package_prices')->insert(['designator_id' => DB::table('designators')->where('code', $code)->value('id_designator'),
+                'package_id' => DB::table('packages')->where('name', 'Paket 5')->value('id_package'), 'price' => $price]);
+        }
+        $import = $this->post('/api/prototype/boq/import', ['file' => $file], ['Accept' => 'application/json'])
+            ->assertOk()->assertJsonCount(4, 'rows')->assertJsonPath('source.sourceRows', 4)
+            ->assertJsonPath('source.package', 'Paket 5')->assertJsonPath('source.sourceTotal', 15667200)->json();
+        $this->assertSame([43, 44, 504, 505], array_column($import['rows'], 'sourceRow'));
+        $this->assertSame([500, 500, 6, 6], array_column($import['rows'], 'sourceQty'));
+        $this->assertSame(15506, $import['rows'][0]['excelM']);
+        $this->assertNull($import['rows'][0]['excelS']);
+        $this->assertSame(4321, $import['rows'][1]['excelS']);
+        $this->assertSame(hash_file('sha256', $path), $import['source']['sha256']);
+        $this->assertSame([true, true, true, true], array_column($import['rows'], 'reviewed'));
+        $this->api($this->project($import))->assertOk()->assertJsonCount(4, 'state.projects.0.boq');
+    }
+
+    public function test_cached_formula_inputs_are_read_as_data_and_price_differences_still_need_review(): void
+    {
+        $import = $this->upload(function ($xml) {
+            $xml = preg_replace('/<c\b[^>]*\br="G75"[^>]*>.*?<\/c>/s', '<c r="G75"><f>5+6</f><v>11</v></c>', $xml);
+
+            // Deliberately different from the formula expression: the importer
+            // reads the cache only and must never calculate this expression.
+            return preg_replace('/<c\b[^>]*\br="E75"[^>]*>.*?<\/c>/s', '<c r="E75"><f>1+1</f><v>704701</v></c>', $xml);
+        })->assertOk()->json();
+        $this->assertSame(11, $import['rows'][0]['qty']);
+        $this->assertSame(704701, $import['rows'][0]['excelM']);
+        $this->assertSame(704700, $import['rows'][0]['m']);
+        $this->assertFalse($import['rows'][0]['reviewed']);
+        $p = $this->approvers($this->project($import));
+        $this->api($p, true)->assertUnprocessable();
+    }
+
+    public function test_blank_prices_are_zero_comparisons_but_do_not_bypass_khs_review(): void
+    {
+        foreach (['', '<c r="F75"/>', '<c r="F75" t="str"><f>IF(1=1,&quot;&quot;,0)</f><v/></c>'] as $replacement) {
+            $import = $this->upload(fn ($xml) => preg_replace('/<c\b[^>]*\br="F75"[^>]*>.*?<\/c>/s', $replacement, $xml))
+                ->assertOk()->assertJsonCount(26, 'rows')->json();
+            $service = collect($import['rows'])->first(fn ($r) => $r['sourceRow'] === 75 && $r['s'] !== null);
+            $this->assertSame(0, $service['excelS']);
+            $this->assertGreaterThan(0, $service['s']);
+            $this->assertFalse($service['reviewed']);
+        }
+        $this->upload(fn ($xml) => preg_replace('/<c\b[^>]*\br="G75"[^>]*>.*?<\/c>/s', '<c r="G75" t="str"><f>IF(1=1,&quot;&quot;,0)</f><v/></c>', $xml))
+            ->assertOk()->assertJsonCount(24, 'rows')->assertJsonPath('source.sourceRows', 13);
+    }
+
+    public function test_bad_structure_missing_or_invalid_formula_results_precision_unknown_designator_and_unit_are_rejected_atomically(): void
     {
         $variants = [
             fn ($x) => preg_replace('/(<c\b[^>]*\br="G75"[^>]*>\s*<v>)[^<]+/', '${1}-1', $x),
             fn ($x) => preg_replace('/(<c\b[^>]*\br="G75"[^>]*>\s*<v>)[^<]+/', '${1}0.000000001', $x),
-            fn ($x) => preg_replace('/(<c\b[^>]*\br="G75"[^>]*>)\s*<v>[^<]+<\/v>/', '${1}<f>5+6</f><v>11</v>', $x),
+            fn ($x) => preg_replace('/<c\b[^>]*\br="G75"[^>]*>.*?<\/c>/s', '<c r="G75"><f>5+6</f></c>', $x),
+            fn ($x) => preg_replace('/<c\b[^>]*\br="G75"[^>]*>.*?<\/c>/s', '<c r="G75"><f>5+6</f><v/></c>', $x),
+            fn ($x) => preg_replace('/<c\b[^>]*\br="G75"[^>]*>.*?<\/c>/s', '<c r="G75" t="str"><f>5+6</f><v>11</v></c>', $x),
+            fn ($x) => preg_replace('/<c\b[^>]*\br="F75"[^>]*>.*?<\/c>/s', '<c r="F75" t="e"><f>1/0</f><v>#DIV/0!</v></c>', $x),
+            fn ($x) => preg_replace('/<c\b[^>]*\br="F75"[^>]*>.*?<\/c>/s', '<c r="F75"><f>1+1</f><v/></c>', $x),
             fn ($x) => preg_replace('/<c\b[^>]*\br="B75"[^>]*>.*?<\/c>/s', '<c r="B75" t="inlineStr"><is><t>UNKNOWN-BOQ</t></is></c>', $x),
             fn ($x) => preg_replace('/<c\b[^>]*\br="D75"[^>]*>.*?<\/c>/s', '<c r="D75" t="inlineStr"><is><t>meter</t></is></c>', $x),
             fn ($x) => preg_replace('/<c\b[^>]*\br="B6"[^>]*>.*?<\/c>/s', '<c r="B6" t="inlineStr"><is><t>WRONG HEADER</t></is></c>', $x),

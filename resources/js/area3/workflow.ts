@@ -3,10 +3,13 @@ import { applyPlanTemplate } from './plan-template';
 import { recordCommand } from './commands';
 import { type State, type Project, type Term, type Role, type Approval, getProject, getTerm, requireAdmin, requireFinance, validVolume, projectErrors, now, log } from './domain';
 
-export const APPROVERS_V3: Role[] = ['PM Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Bussiness Support', 'Head of PMO'];
-type AssignedDocument = {workflowVersion?:number; pmUserId?:string; managerUserId?:string; approverUserIds?:Partial<Record<Role,string>>};
+export const APPROVERS_V3: Role[] = ['PM Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Project Support', 'Head of PMO'];
+export const APPROVERS_V3_LEGACY:Role[]=['PM Konstruksi','Admin Area','Mgr Deployment','Mgr Bussiness Support','Head of PMO'];
+export function usesBusinessSupport(document:AssignedDocument){return document.approvalScheme==='business-support'||(!document.approvalScheme&&Object.hasOwn(document.approverUserIds??{},'Mgr Bussiness Support')&&!Object.hasOwn(document.approverUserIds??{},'Mgr Project Support'));}
+export function projectApprovalScheme(document?:Project):'project-support'|'business-support' {return document&&(!canReviseSubmission(document)||(document.approvalHistory?.length??0)>0||(document.approvals?.length??0)>0)&&usesBusinessSupport(document)?'business-support':'project-support';}
+type AssignedDocument = {approvalScheme?:'project-support'|'business-support';workflowVersion?:number; pmUserId?:string; managerUserId?:string; approverUserIds?:Partial<Record<Role,string>>};
 export function canReviseSubmission(document: {status:string;workflowVersion?:number}) { return ['Draft','Dikembalikan'].includes(document.status) || ((document.workflowVersion ?? 1) >= 3 && document.status === 'Ditolak'); }
-export function approvalRoles(document: AssignedDocument, project = false): Role[] { return (document.workflowVersion ?? 1) >= 3 ? APPROVERS_V3 : project || (document.workflowVersion ?? 1) >= 2 ? ['PM Konstruksi','Manager Konstruksi'] : ['PM Konstruksi','Manager Konstruksi','Finance']; }
+export function approvalRoles(document: AssignedDocument, project = false): Role[] { return (document.workflowVersion ?? 1) >= 3 ? (usesBusinessSupport(document)?APPROVERS_V3_LEGACY:APPROVERS_V3) : project || (document.workflowVersion ?? 1) >= 2 ? ['PM Konstruksi','Manager Konstruksi'] : ['PM Konstruksi','Manager Konstruksi','Finance']; }
 export function selectedApprover(document: AssignedDocument, role:Role) { return (document.workflowVersion ?? 1) >= 3 ? document.approverUserIds?.[role] : role === 'PM Konstruksi' ? document.pmUserId : document.managerUserId; }
 export function validateAssignments(s:State, document:AssignedDocument & {branch:string}, required=true) {
   const result:Partial<Record<Role,string>> = {};
@@ -59,6 +62,7 @@ export function saveProjectV2(s: State, input: Project, submit: boolean) {
   const version = (old?.workflowVersion ?? 1) >= 2 ? old!.workflowVersion! : s.schema >= 3 ? 3 : 2;
   if (version >= 3) Object.assign(p, applyPlanTemplate(p, true, submit));
   else { delete p.planTemplateVersion; delete p.teamText; delete p.durationDays; delete p.planBudget; delete p.planBudgetTotals; delete p.signatureRows; delete p.signatureUsers; delete p.closing; delete p.riskLevel; }
+  p.approvalScheme=projectApprovalScheme(old);
   const chain = validateAssignments(s, { ...p, workflowVersion: version }, submit);
   if (!['Konstruksi', 'Operation'].includes(p.unit) || !branchOptions(s).some(b => b.name === p.branch && b.active)) throw new Error('Pilih Unit Kerja dan Branch aktif.');
   if (!old && (p.parentId || p.rootId !== p.id)) throw new Error('PP lanjutan harus dibuat dari pelepasan BA PP.');
@@ -111,7 +115,7 @@ export function verifyTermScan(s: State, id: string, decision: 'Valid' | 'Perlu 
 
 export function assignPaymentApprovers(s:State, id:string, assignments:Partial<Record<Role,string>>) {
   recordCommand('assignPaymentApprovers',[id,assignments]); requireAdmin(s); const p = getProject(s,id);
-  if ((p.workflowVersion ?? 1) >= 3 || p.status !== 'Sah') throw new Error('Penugasan pembayaran berikutnya hanya untuk PP historis yang sudah Sah.');
-  p.paymentApproverUserIds = validateAssignments(s,{...p,workflowVersion:3,approverUserIds:assignments});
+  if (((p.workflowVersion ?? 1) >= 3&&!usesBusinessSupport(p)) || p.status !== 'Sah') throw new Error('Penugasan pembayaran berikutnya hanya untuk PP historis yang sudah Sah.');
+  p.paymentApproverUserIds = validateAssignments(s,{...p,workflowVersion:3,approvalScheme:'project-support',approverUserIds:assignments});
   log(s,'Lima approver pembayaran berikutnya ditetapkan',p.no,'/project-plan/'+id);
 }

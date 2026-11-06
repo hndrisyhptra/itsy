@@ -242,3 +242,52 @@ Historical iteration; superseded by the dashboard restoration below.
 - [x] Penulisan dokumen inkremental, balance/event batch, lookup katalog berindeks di memori, SQL scope Branch PP sendiri dan preview file langsung; lazy route modules.
 - [x] Migration 59 diterapkan pada its, 61 fingerprint tabel lama dipertahankan (kolom proyeksi Branch baru diverifikasi terpisah); task/jobs tetap kosong, autostart aktif dan PHP CLI tersedia. Tidak ada uji transaksi pada its.
 - [x] 156 PHP tests / 2.729 assertions, 116 frontend tests, build dan Pint. Fixture 20 PP: 1.330 → 8 query untuk perubahan pengaturan; main JS sekitar 27% lebih kecil. Browser/Apache autostart dengan file pengguna dan load-test serentak belum dilakukan. Lihat docs/UPLOAD_QUEUE_PERFORMANCE.md.
+
+## Koreksi worker default dan autostart macOS — 6 November 2026
+- [x] Konfirmasi queue default pengguna berbeda dari uploads/area3-uploads; indikator menggunakan heartbeat worker khusus.
+- [x] Konfirmasi log autostart nohup gagal tanpa console Apache; ganti dengan shell SIGHUP-ignore dan redirect seluruh stream, tetap sebagai OS user web dengan lock eksklusif.
+- [x] 159 PHP tests / 2.733 assertions, 116 frontend tests, build dan Pint lulus; tiga test launcher memakai process palsu dan tidak menjalankan worker terpisah. Tidak ada migration atau perubahan live data; startup melalui Apache perlu dicoba kembali lewat Lanjutkan antrean.
+
+
+## BOQ kosong/hasil rumus — 6 November 2026
+- [x] Backup its terverifikasi: its-before-boq-formulas-20261106-091043.sql; 1.066.383 byte; SHA-256 e644b77997bb1b9997b264093b77790e3ff25f7c49df18981b0add01ffac94ea.
+- [x] Konfirmasi F43 kosong, terima harga kosong dan cached numeric formula tanpa evaluasi; cache hilang/error tetap validasi jelas, provenance/KHS/review tetap wajib.
+- [x] Regresi file Paket 5 empat baris dan antrean, penjagaan master yang belum tersedia, 163 PHP tests/2.804 assertions, 116 frontend tests, build/Pint lulus.
+- [x] Baca-saja its mengonfirmasi dua KHS Jasa Paket 5 belum tersedia; tidak menyalin otomatis harga Excel ke master. Sinyal restart worker hanya melalui file cache proyek Area 3.
+- [ ] Superadmin melengkapi harga resmi J-AC-OF-SM-24D dan J-ODP Solid-PB-16 AS untuk Paket 5; upload aktual lewat browser belum diuji ulang.
+
+
+## Bulk Import Designator dan KHS — 6 November 2026
+- [x] Backup its terverifikasi: its-before-master-bulk-20261106-092902.sql; 1.068.816 byte; SHA-256 30d228ed88bc8d36341f2590bd5820b02d495ab3993ef5fea269c0e03f2888fd.
+- [x] Tombol Bulk Import / Download Template khusus Superadmin di dua submenu, XLSX Data kosong/panduan/referensi aktif, preview dan mode create/upsert.
+- [x] Batch 500 baris/5 MB, validasi CRUD/duplikat/arsip/identitas terpakai/harga, seluruh batch atomik, satu revisi/receipt, audit per baris, UUID/hash replay dan rollback SQL.
+- [x] 171 PHP tests/2.957 assertions, 120 frontend tests, build dan Pint lulus. Tidak ada migration, seed atau batch contoh pada database pengguna; worker BOQ/eviden tidak diubah.
+- [ ] QA visual browser dan pembukaan template manual di Excel belum dilakukan; lihat docs/MASTER_BULK_IMPORT.md.
+
+
+## Koreksi download template dan query — 6 November 2026
+- [x] Log Apache: tempnam gagal pada lokasi sementara pengguna macOS; generator diganti ZIP/XLSX di memori tanpa file sementara/ubah izin global.
+- [x] Proyeksi referensi khusus: 2 query Designator / 3 KHS, tanpa tabel harga/workflow dan lock workspace; aturan review query untuk setiap fitur baru dicatat pada AGENTS/QA skill.
+- [x] Regresi unavailable TMPDIR + ZIP consistency/CRC/XML dan HTTP query budgets. 173 PHP tests/3.006 assertions, 120 frontend tests, build dan Pint lulus.
+- [x] Tidak ada perubahan database/schema/workflow atau seed pengguna. Klik browser dan membuka template di Excel manual belum diuji ulang.
+
+
+## Koreksi revisi multipart bulk import — 6 November 2026
+- [x] Reproduksi string revisi FormData menghasilkan 409 palsu; controller menormalisasi hasil validasi menjadi integer dan helper test mengikuti transport browser.
+- [x] Preview memakai revisi master terkini; commit wajib cocok hasil preview. Konflik nyata membatalkan preview, file tetap ada dan harus diperiksa ulang; ketidakpastian jaringan tetap memakai UUID semula.
+- [x] File pengguna 435 baris lolos preview/upsert di memory tanpa mutasi master. 175 PHP tests/3.031 assertions, 121 frontend tests, build/Pint lulus.
+- [x] Tidak ada fetch seluruh katalog/state tambahan untuk pemulihan revisi; query budget template dan uji workflow tetap lulus. Tidak ada migration/import live; QA klik browser belum dilakukan.
+
+
+## Batas impor master 1.000 baris — 6 November 2026
+- [x] Naikkan batas Designator/KHS ke 1.000 baris data, selaraskan konstanta server, form, template dan dokumentasi; batas file tetap 5 MB.
+- [x] Commit 1.000 Designator, preview/commit/replay 1.000 KHS dan penolakan 1.001 baris kedua entitas; satu revisi/receipt per batch, graph workflow dibaca sekali pada commit KHS.
+- [x] 175 PHP tests/3.049 assertions, 121 frontend tests, build/Pint lulus. Tidak ada migration atau uji impor live; klik browser/load test belum dilakukan.
+
+
+## Approval Project Support dan penutup PP — 6 November 2026
+- [x] Backup its: its-before-project-support-20261106-104911.sql, 1.996.112 byte, SHA-256 6ee4902c4a15175e6c0fa3433438d816948df58fb59020cf9f1f44a3b7d2217b.
+- [x] PP/Pembayaran baru mengganti approval keempat menjadi Project Support; server-owned scheme menjaga role/assignment/keputusan Business Support historis. PP lama memerlukan future-payment assignment baru secara eksplisit.
+- [x] Form/preview penutup baru empat jabatan baku dari template bersama; Admin Area tetap approval kedua; cap nyata/current-cycle dan area print kosong.
+- [x] 177 PHP tests/3.075 assertions, 124 frontend tests, build/Pint lulus. Query tambahan per role/penandatangan tidak diperlukan; uji budget/performance lama tetap lulus.
+- [x] Sinyal graceful restart worker melalui cache file proyek; tanpa migration, seed atau perubahan massal transaksi live. Browser/print fisik belum diuji manual.

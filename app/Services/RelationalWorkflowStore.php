@@ -457,7 +457,7 @@ class RelationalWorkflowStore
         if (($document['workflowVersion'] ?? 1) < 2) {
             return; // Legacy identity-less decisions remain verbatim in the document record.
         }
-        $roles = ($document['workflowVersion'] ?? 1) >= 3 ? PrototypeDomain::APPROVERS_V3 : ['PM Konstruksi', 'Manager Konstruksi'];
+        $roles = PrototypeDomain::approvalRoles($document, $project);
         $history = $project ? ($document['approvalHistory'] ?? $document['approvals'] ?? []) : ($document['history'] ?? $document['approvals'] ?? []);
         $cycles = [[]];
         foreach ($history as $decision) {

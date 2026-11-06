@@ -10,7 +10,7 @@ test('master submenus use actual SQL identities, search descriptions/packages an
   assert.deepEqual(MASTER_TABS.map(t=>t.label),['Designator','KHS','Paket KHS']);
   assert.equal(masterId(catalog.designators[0]),1);assert.equal(masterId(catalog.packages[0]),10);assert.equal(masterId(catalog.prices[0]),42);
   assert.equal(masterRows(catalog,'designator',' kabel ').length,1);assert.equal(masterRows(catalog,'khs','paket 10','10').length,1);assert.equal(masterRows(catalog,'khs','','99').length,0);
-  assert.ok(ROLES.includes('Mgr Project Support'));assert.ok(!(APPROVERS_V3 as readonly string[]).includes('Mgr Project Support'));
+  assert.ok(ROLES.includes('Mgr Project Support'));assert.ok((APPROVERS_V3 as readonly string[]).includes('Mgr Project Support'));
 });
 test('each master table supplies real edit/delete callbacks with labeled icon tooltips; viewers have no write buttons',()=>{
   for(const entity of ['designator','khs','paket-khs'] as const){

@@ -69,12 +69,12 @@ class PrototypeReportService
             }
         } elseif ($report === 'Approval Performance') {
             $headers = ['Role', 'Setujui', 'Dikembalikan', 'Ditolak', 'Menunggu', 'Rata-rata Respon (jam)'];
-            foreach (['PM Konstruksi', 'Manager Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Bussiness Support', 'Head of PMO', 'Finance'] as $role) {
+            foreach (['PM Konstruksi', 'Manager Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Bussiness Support', 'Mgr Project Support', 'Head of PMO', 'Finance'] as $role) {
                 $counts = ['Setujui' => 0, 'Kembalikan' => 0, 'Tolak' => 0];
                 $hours = [];
                 $waiting = 0;
                 foreach ($terms as $t) {
-                    $roles = ($t['workflowVersion'] ?? 1) >= 3 ? PrototypeDomain::APPROVERS_V3 : (($t['workflowVersion'] ?? 1) >= 2 ? ['PM Konstruksi', 'Manager Konstruksi'] : ['PM Konstruksi', 'Manager Konstruksi', 'Finance']);
+                    $roles = PrototypeDomain::approvalRoles($t);
                     if (($t['status'] === 'Diajukan' && ($roles[count($t['approvals'])] ?? null) === $role)
                         || ($role === 'Finance' && ($t['workflowVersion'] ?? 1) >= 2 && $t['apmStatus'] !== 'Valid' && in_array($t['scan']['status'] ?? '', ['Menunggu Verifikasi', 'Valid'], true))) {
                         $waiting++;

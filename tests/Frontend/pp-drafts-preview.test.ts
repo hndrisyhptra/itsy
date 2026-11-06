@@ -63,7 +63,7 @@ test('preview stamp follows actual current-cycle approvals only; returned/reject
   assert.doesNotMatch(html(),/>APPROVED</);
   for(const [i,role]of APPROVERS_V3.entries()){
     s.role=role;selectActor(s,s.users.find(u=>u.role===role)!.id);decideProject(s,p.id,'Setujui','QA');saved=getProject(s,p.id);
-    assert.equal((html().match(/>APPROVED</g)??[]).length,i+1);
+    assert.equal((html().match(/>APPROVED</g)??[]).length,i+1-(i>=1?1:0)); // Admin Area is an approval stage, omitted from the closing table.
   }
   assert.equal(saved.status,'Sah');assert.match(html(),/pp-signature-print/);
   const before=JSON.stringify(saved);renderToStaticMarkup(createElement(RiskQualitySection,{s,p:saved,printing:true}));assert.equal(JSON.stringify(saved),before);

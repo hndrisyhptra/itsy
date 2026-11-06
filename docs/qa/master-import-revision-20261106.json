@@ -1,0 +1,35 @@
+{
+  "date": "2026-11-06",
+  "root_cause": "Browser multipart revision is a string. Laravel integer validation did not cast it; strict comparison with integer workspace revision always rejected equal values. Original PHP helper hid transport difference.",
+  "reproduction_before_fix": "Realistic string multipart preview returned 409 at revision 0 in regression test",
+  "fix": [
+    "Normalize validated multipart revision to integer",
+    "Preview current locked master and return current revision",
+    "Commit must match inspected revision; no automatic write retry over a conflict",
+    "Confirmed 409 clears preview, retains selected file and requests inspection again",
+    "Network uncertainty preserves hash/file/UUID retry identity"
+  ],
+  "supplied_workbook": {
+    "filename": "template-designator.xlsx",
+    "rows": 435,
+    "source_sha256": "9b1fb1c9e3257aed5e7a5a731deee555bd3da36ff263e82311141ae70990395f",
+    "fixture_sha256": "9b1fb1c9e3257aed5e7a5a731deee555bd3da36ff263e82311141ae70990395f",
+    "verification": "Parsed and upsert-previewed in isolated SQLite memory, no live import"
+  },
+  "query_review": "Recover revision through the existing preview response; no extra catalog/state request. Existing 2/3 template query budgets still pass.",
+  "verification": {
+    "php_tests": 175,
+    "php_assertions": 3031,
+    "frontend_tests": 121,
+    "build": "passed",
+    "pint": "passed",
+    "test_database": "fail-closed sqlite :memory:"
+  },
+  "live_database_changes": false,
+  "source_workbook_modified": false,
+  "new_migration": false,
+  "limitations": [
+    "No manual browser click verification",
+    "No live batch import or concurrent load test"
+  ]
+}

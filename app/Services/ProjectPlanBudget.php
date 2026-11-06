@@ -8,7 +8,7 @@ final class ProjectPlanBudget
 {
     public const CATEGORIES = ['mandor' => 'Jasa Mandor', 'material' => 'Material Non Stock', 'bop' => 'BOP', 'permit' => 'Perizinan (Preliminary) Reimburse'];
 
-    public const PRINT_ROLES = ['Admin Konstruksi', 'PM Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Bussiness Support', 'Head of PMO'];
+    public const PRINT_ROLES = ['Admin Konstruksi', 'PM Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Bussiness Support', 'Mgr Project Support', 'Head of PMO'];
 
     public static function apply(array $p, array $owners, bool $submit): array
     {
@@ -107,7 +107,9 @@ final class ProjectPlanBudget
 
     public static function defaultSignatures(): array
     {
-        return array_map(fn ($role, $i) => ['id' => 'signature-'.$i, 'label' => $i === 0 ? 'Dibuat Oleh' : ($i < 3 ? 'Diperiksa Oleh' : 'Disetujui Oleh'), 'role' => $role, 'job' => $role], self::PRINT_ROLES, array_keys(self::PRINT_ROLES));
+        $rows = json_decode(file_get_contents(resource_path('data/project-plan-template.json')), true, flags: JSON_THROW_ON_ERROR)['signatures'];
+
+        return array_map(fn ($row, $i) => ['id' => 'signature-'.$i] + $row, $rows, array_keys($rows));
     }
 
     private static function rows(mixed $rows, int $max = 200): array

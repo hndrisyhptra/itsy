@@ -1,0 +1,32 @@
+{
+  "date": "2026-11-06",
+  "root_cause": "Apache tempnam inherited inaccessible macOS user TMPDIR; warning converted to ErrorException at MasterImportWorkbook.php:186",
+  "observed_log": "storage/logs/laravel.log; both designator and khs template endpoints",
+  "fix": "Build standard deflated ZIP/XLSX entirely in memory; no temp files or global permission/config changes",
+  "regression": {
+    "unavailable_sys_temp_dir_subprocess": "passed with warnings as exceptions",
+    "ziparchive_checkcons": "passed",
+    "crc_and_dom_xml_entries": 10,
+    "authenticated_downloads": "passed",
+    "template_reference_query_budget": {
+      "designator": 2,
+      "khs": 3
+    },
+    "query_scope": "Reference queries only; excludes auth/session middleware. No price/workflow reads or workspace locks."
+  },
+  "verification": {
+    "php_tests": 173,
+    "php_assertions": 3006,
+    "frontend_tests": 120,
+    "database": "isolated sqlite :memory:",
+    "build": "passed",
+    "pint": "passed"
+  },
+  "live_data_changes": false,
+  "new_migration": false,
+  "future_feature_policy": "Review database access, minimal projections/batched references/bounded operations, add suitable measured query/regression evidence",
+  "limits": [
+    "No manual browser/Excel UI verification",
+    "No concurrent load test or universal latency claim"
+  ]
+}

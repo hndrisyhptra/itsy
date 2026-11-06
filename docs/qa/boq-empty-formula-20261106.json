@@ -1,0 +1,41 @@
+{
+  "date": "2026-11-06",
+  "source_file": "3DMO_QERECOVERY_JL NIAS.xlsx",
+  "source_sha256": "da65570bbddb0a7abdab4f64f8b5e8753c60b33b165086dbb0a4938bee5c014b",
+  "fixture_sha256": "da65570bbddb0a7abdab4f64f8b5e8753c60b33b165086dbb0a4938bee5c014b",
+  "F43": "empty styled OOXML cell, no formula",
+  "positive_source_rows": [
+    43,
+    44,
+    504,
+    505
+  ],
+  "source_total": 15667200,
+  "php": {
+    "tests": 163,
+    "assertions": 2804,
+    "database": "sqlite :memory:"
+  },
+  "frontend_tests": 116,
+  "build": "passed",
+  "pint": "passed",
+  "formula_execution": false,
+  "live_master_changes": false,
+  "live_workflow_test_transactions": false,
+  "missing_active_paket5_khs": [
+    "J-AC-OF-SM-24D",
+    "J-ODP Solid-PB-16 AS"
+  ],
+  "full_import_test": "Passed with memory-only KHS fixtures; live catalogue still rejects absent Paket 5 Jasa prices",
+  "worker_reload": "Graceful queue restart signal in this project file cache; no detached CLI worker launched",
+  "backup": {
+    "file": "storage/app/private/backups/its-before-boq-formulas-20261106-091043.sql",
+    "bytes": 1066383,
+    "sha256": "e644b77997bb1b9997b264093b77790e3ff25f7c49df18981b0add01ffac94ea"
+  },
+  "limits": [
+    "No Excel recalculation performed; cached results must be saved by spreadsheet software",
+    "No live browser upload manually exercised",
+    "Live Paket 5 Jasa KHS entries must be configured by Superadmin from official references"
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "date": "2026-11-06",
+  "feature": "Increase Designator/KHS master import limit",
+  "limits": {
+    "data_rows": 1000,
+    "header_counted": false,
+    "file_bytes": 5242880,
+    "sheet_cells": 20000,
+    "max_row_address": 2000
+  },
+  "verified": [
+    "1000 Designator rows committed with generated unique IDs",
+    "1000 KHS rows previewed and committed with zero prices",
+    "1000 KHS replay returned without duplicate rows",
+    "1001 rows rejected for both entities before master writes",
+    "One workspace revision and receipt per batch",
+    "One workflow/project document read during 1000-row KHS commit",
+    "Template reference queries remain 2 Designator / 3 KHS"
+  ],
+  "verification": {
+    "php_tests": 175,
+    "php_assertions": 3049,
+    "frontend_tests": 121,
+    "build": "passed",
+    "pint": "passed",
+    "database": "isolated SQLite :memory:"
+  },
+  "live_data_changes": false,
+  "migration_required": false,
+  "limits_of_evidence": [
+    "No manual browser click verification",
+    "No concurrent load test"
+  ]
+}

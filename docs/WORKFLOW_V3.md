@@ -1,5 +1,7 @@
 # Alur approval dan akun versi 3 — 4 November 2026
 
+Pembaruan 6 November: approver keempat PP/Pembayaran baru menjadi **Mgr Project Support**; penutup PP baru memakai empat jabatan baku. Assignment/keputusan Business Support historis tetap berlaku. Aturan terkini: [PROJECT_SUPPORT_APPROVAL](PROJECT_SUPPORT_APPROVAL.md). Penjelasan sebelumnya di bawah bersifat historis bila berbeda.
+
 Permintaan terbaru menggantikan alur dua approver untuk **PP baru dan termin baru**. Dokumen yang sudah tersimpan mempertahankan workflowVersion dan riwayatnya; tidak ada keputusan, tanda tangan atau bukti yang dibuat otomatis.
 
 ## Akun dan login

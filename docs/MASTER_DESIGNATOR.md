@@ -1,5 +1,7 @@
 # Master Designator dan Mgr Project Support — 6 November 2026
 
+Pembaruan 6 November: approver keempat PP/Pembayaran baru menjadi **Mgr Project Support**; penutup PP baru memakai empat jabatan baku. Assignment/keputusan Business Support historis tetap berlaku. Aturan terkini: [PROJECT_SUPPORT_APPROVAL](PROJECT_SUPPORT_APPROVAL.md). Penjelasan sebelumnya di bawah bersifat historis bila berbeda.
+
 Menu induk **Master Designator** menggantikan Master KHS, dengan tiga submenu:
 
 | Submenu | Data MySQL aktif | Isi |
@@ -9,6 +11,10 @@ Menu induk **Master Designator** menggantikan Master KHS, dengan tiga submenu:
 | Paket KHS | `packages` | Kode, nama dan keterangan paket |
 
 Semua akun aktif dapat melihat master. **Superadmin** dapat tambah, edit dan hapus, dengan ikon dan tooltip pada tombol aksi. Tersedia pencarian, filter paket di KHS, halaman 30 baris dan tombol muat ulang. Tiga submenu mempunyai tautan langsung `/master-designator/designator`, `/master-designator/khs`, `/master-designator/paket-khs`; URL lama `/master-khs` tetap membuka daftar harga KHS. Jumlah menu induk tetap sembilan; warna dan komponen aplikasi tetap digunakan.
+
+## Bulk Import
+
+Submenu Designator dan KHS menyediakan **Download Template** Excel serta **Bulk Import** khusus Superadmin. Template terpisah memiliki sheet Data kosong, panduan dan referensi aktif. Preview wajib di layar sebelum Simpan impor; mode bawaan tambah baru, pilihan update eksplisit, 1000 baris/5 MB, satu transaksi dengan penolakan seluruh batch bila salah. Guard identitas terpakai/arsip/harga/role dan audit tetap berlaku. Tidak ada perubahan schema atau impor contoh ke database pengguna. Panduan lengkap: [MASTER_BULK_IMPORT](MASTER_BULK_IMPORT.md).
 
 ## Peran pengguna
 

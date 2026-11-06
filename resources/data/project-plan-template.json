@@ -100,5 +100,27 @@
     "Material yang digunakan sesuai dengan Lampiran List of Material dalam kontrak serta spesifikasi teknis yang ditetapkan oleh Pemberi Kerja.",
     "Commissioning Test dan Uji Terima dilaksanakan sesuai dengan SOP pemberi kerja."
   ],
-  "closing": "Project Plan ini disusun dengan sebenar-benarnya sebagai acuan pelaksanaan proyek agar berjalan sesuai dengan ruang lingkup, waktu, dan kualitas yang telah disepakati."
+  "closing": "Project Plan ini disusun dengan sebenar-benarnya sebagai acuan pelaksanaan proyek agar berjalan sesuai dengan ruang lingkup, waktu, dan kualitas yang telah disepakati.",
+  "signatures": [
+    {
+      "role": "PM Konstruksi",
+      "label": "Dibuat Oleh",
+      "job": "Officer 1 Project Deployment Area Jawa Bali"
+    },
+    {
+      "role": "Mgr Project Support",
+      "label": "Diperiksa Oleh",
+      "job": "Mgr Project Support Area Jawa Bali"
+    },
+    {
+      "role": "Mgr Deployment",
+      "label": "Diperiksa Oleh",
+      "job": "Mgr Deployment Area Jawa Bali"
+    },
+    {
+      "role": "Head of PMO",
+      "label": "Disetujui Oleh",
+      "job": "Head of PMO Area Jawa Bali"
+    }
+  ]
 }

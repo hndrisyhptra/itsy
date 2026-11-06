@@ -1,0 +1,40 @@
+{
+  "date": "2026-11-06",
+  "feature": "Bulk Import Designator/KHS with XLSX templates",
+  "permissions": "Superadmin only; active authenticated session and CSRF",
+  "batch_limits": {
+    "rows": 500,
+    "file_bytes": 5242880
+  },
+  "modes": [
+    "create",
+    "upsert"
+  ],
+  "preview": "Read-only; source row numbers and created/updated/unchanged summary",
+  "commit": "Shared workspace lock; revalidation; atomic batch; one revision and receipt; per-changed-row before/after audit",
+  "replay": "Actor/entity/mode/full SHA-256 bound to UUID; stable client retry",
+  "source_file_storage": "Request temporary upload only; original master import file not permanently retained",
+  "new_migrations": false,
+  "live_seed_or_master_test_import": false,
+  "backup": {
+    "file": "storage/app/private/backups/its-before-master-bulk-20261106-092902.sql",
+    "bytes": 1068816,
+    "sha256": "30d228ed88bc8d36341f2590bd5820b02d495ab3993ef5fea269c0e03f2888fd"
+  },
+  "verification": {
+    "php_tests": 171,
+    "php_assertions": 2957,
+    "php_database": "sqlite :memory: fail-closed",
+    "frontend_tests": 120,
+    "max_batch_500": "passed",
+    "over_limit_501": "rejected",
+    "build": "passed",
+    "pint": "passed"
+  },
+  "limitations": [
+    "No manual browser visual QA",
+    "No manual opening of template in Excel",
+    "Master import is bounded synchronous processing, separate from BOQ/evidence queue",
+    "No concurrent user load test"
+  ]
+}

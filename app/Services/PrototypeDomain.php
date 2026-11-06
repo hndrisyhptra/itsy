@@ -678,11 +678,12 @@ class PrototypeDomain
             }
             $t = $this->record('terms', $id);
             $version = ($this->state['schema'] ?? 1) >= 3 ? 3 : 2;
-            $source = $version >= 3 && ($p['workflowVersion'] ?? 1) < 3 ? ['approverUserIds' => $p['paymentApproverUserIds'] ?? []] : $p;
+            $source = $version >= 3 && (($p['workflowVersion'] ?? 1) < 3 || self::usesBusinessSupport($p)) ? ['approverUserIds' => $p['paymentApproverUserIds'] ?? []] : $p;
             $chain = $this->validateAssignments($source, $version, $p['branch']);
             $t['workflowVersion'] = $version;
             $t['pmUserId'] = $chain['PM Konstruksi'];
             if ($version >= 3) {
+                $t['approvalScheme'] = 'project-support';
                 $t['approverUserIds'] = $chain;
                 $t['financeHistory'] = [];
             } else {
@@ -958,6 +959,7 @@ class PrototypeDomain
             $p = array_merge($p, ['workflowVersion' => 2, 'unit' => $parent['unit'] === 'Operation' ? 'Operation' : 'Konstruksi', 'pmUserId' => $parent['pmUserId'] ?? '', 'managerUserId' => $parent['managerUserId'] ?? '', 'approvals' => [], 'approvalHistory' => []]);
             if (($this->state['schema'] ?? 1) >= 3) {
                 $p['workflowVersion'] = 3;
+                $p['approvalScheme'] = 'project-support';
                 $p['approverUserIds'] = $parent['approverUserIds'] ?? $parent['paymentApproverUserIds'] ?? [];
                 $p['continuationNotes'] = $notes;
                 $p['schedule'] = array_fill(0, 5, ['days' => 1]);

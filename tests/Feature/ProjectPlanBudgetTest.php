@@ -42,7 +42,7 @@ class ProjectPlanBudgetTest extends TestCase
         $this->assertEquals(0, $result['planBudgetTotals']['revenue']);
         $this->assertEquals(0, $result['planBudget']['mandor'][0]['qtyS']);
         $this->assertEquals(0, $result['planBudget']['mandor'][0]['priceS']);
-        $this->assertCount(6, $result['signatureRows']);
+        $this->assertCount(4, $result['signatureRows']);
         $this->assertSame([], $result['planBudget']['usage']);
     }
 

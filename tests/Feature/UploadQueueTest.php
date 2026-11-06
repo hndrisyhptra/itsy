@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Tests\Concerns\AuthenticatesArea3;
 use Tests\TestCase;
+use ZipArchive;
 
 class UploadQueueTest extends TestCase
 {
@@ -77,6 +78,32 @@ class UploadQueueTest extends TestCase
         $this->getJson('/api/uploads/'.$id.'?result=1')->assertOk()->assertJsonPath('task.status', 'failed')->assertJsonMissingPath('result');
         $this->assertCount(0, Storage::disk('local')->allFiles());
         $this->assertDatabaseCount('prototype_audits', 0);
+    }
+
+    public function test_queued_boq_accepts_blank_prices_and_saved_numeric_formula_results(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'area3-boq-queue-');
+        try {
+            copy(base_path('tests/Fixtures/boq/osp-fo-paket10.xlsx'), $path);
+            $zip = new ZipArchive;
+            $zip->open($path);
+            $xml = $zip->getFromName('xl/worksheets/sheet1.xml');
+            $xml = preg_replace('/<c\b[^>]*\br="F75"[^>]*>.*?<\/c>/s', '<c r="F75"/>', $xml);
+            $xml = preg_replace('/<c\b[^>]*\br="G75"[^>]*>.*?<\/c>/s', '<c r="G75"><f>5+6</f><v>11</v></c>', $xml);
+            $zip->addFromString('xl/worksheets/sheet1.xml', $xml);
+            $zip->close();
+            $id = $this->boq(null, file_get_contents($path))->assertStatus(202)->json('task.id');
+            app(UploadQueue::class)->process($id);
+            $result = $this->getJson('/api/uploads/'.$id.'?result=1')->assertOk()
+                ->assertJsonPath('task.status', 'completed')->assertJsonCount(26, 'result.rows')->json('result');
+            $this->assertSame(11, $result['rows'][0]['qty']);
+            $service = collect($result['rows'])->first(fn ($r) => $r['sourceRow'] === 75 && $r['s'] !== null);
+            $this->assertSame(0, $service['excelS']);
+            $this->assertFalse($service['reviewed']);
+            $this->assertDatabaseCount('project_plans', 0);
+        } finally {
+            unlink($path);
+        }
     }
 
     public function test_evidence_queue_preserves_intervening_edits_appends_once_and_previews_by_branch(): void

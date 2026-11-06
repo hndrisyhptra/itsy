@@ -1,10 +1,60 @@
 # Laravel rebuild QA — 2 November 2026
 
+## Project Support approval and PP closing — 6 November 2026
+
+**177 PHP tests / 3,075 assertions**, **124 frontend tests**, production build and scoped Pint passed. New PP/payment stage four selects Mgr Project Support. Server-owned approvalScheme disambiguates current and historical v3 Business Support chains; forged client legacy scheme cannot downgrade a new PP. SQL step four uses MGR_PROJECT_SUPPORT and the selected account. Old PP/decisions remain unchanged; new payments on old PP require explicit current future-payment assignments. Existing five-approval/Finance/APM/rejection suites pass with the new current role.
+
+The shared JSON template defines four fixed closing jobs/order: PM (Officer 1 Project Deployment Area Jawa Bali), Project Support, Deployment, Head of PMO. Admin Area remains mandatory stage two but is excluded from the current closing. Genuine current-cycle stamps follow these four accounts; print cells remain empty. Current form/preview uses the fixed rows; old Business Support snapshots retain their historical closing.
+
+A fresh verified its backup precedes edits; no live workflow, identity or assignment mutation and no schema/migration change. Role policy reads existing metadata only and query/performance fixtures retain their previous budgets; no per-signer SQL was added. A graceful restart signal was written only to this project's file cache; no detached CLI worker launched. Browser/physical print QA not manually repeated. See [PROJECT_SUPPORT_APPROVAL.md](PROJECT_SUPPORT_APPROVAL.md) and `qa/project-support-approval-20261106.json`.
+
+
+## Master import limit 1,000 rows — 6 November 2026
+
+**175 PHP tests / 3,049 assertions**, **121 frontend tests**, production build and scoped Pint passed. Server MAX_ROWS, form help and downloaded template instructions now agree on 1,000 data rows (header excluded), for both Designator and KHS; file size remains 5 MB. Existing 20,000-cell and row-address-2,000 guards accommodate 1,000 inputs.
+
+Isolated memory tests commit 1,000 Designators and preview/commit 1,000 KHS with one revision/receipt per batch and preserved unique audit IDs. Replaying the full KHS batch does not duplicate records. Both entities reject 1,001 rows before writing. The 1,000-row KHS commit reads project/workflow documents once, not per imported row; template query budgets remain 2/3 references. No schema/live data change; no manual browser/load test. Evidence: `qa/master-import-1000-20261106.json`.
+
+
+## Bulk import multipart revision correction — 6 November 2026
+
+**175 PHP tests / 3,031 assertions**, **121 frontend tests**, production build and scoped Pint passed. Reproduced the reported false 409 by sending revision as a browser multipart string; the previous PHP test helper sent an integer and masked the mismatch with the integer-cast workspace revision. The controller now normalizes validated revision values before comparison. Preview reads the current locked master/revision; commit must match that preview revision, retaining conflict rejection, atomic writes and UUID/hash replay.
+
+A genuine post-preview change rejects the commit without mutations; the existing selected file can be inspected again without closing/reloading the screen. Network uncertainty retains the same UUID for safe retry. The actual supplied template-designator.xlsx (435 rows, no input formulas) passes isolated memory upsert preview; source workbook/live database are unchanged. Current/new values still require explicit confirmation and used identity guards. No migration or live batch execution.
+
+Recovery uses the preview response revision, without an additional full catalog/state request. Existing template query budgets and workflow performance fixtures pass. Browser clicks were not manually exercised. Evidence: `qa/master-import-revision-20261106.json`; protocol: [MASTER_BULK_IMPORT.md](MASTER_BULK_IMPORT.md).
+
+
+## Template download Apache/temp-directory fix — 6 November 2026
+
+Log confirms both downloads failed at MasterImportWorkbook.tempnam when Apache could not use the inherited macOS user temporary path. Earlier CLI-only tests missed this runtime difference. XLSX generation is now entirely in memory; no disk/temp files, global permission changes or fallback warning suppression. A new PHP subprocess regression sets sys_temp_dir/TMPDIR to a missing path with warnings converted to exceptions; generation succeeds and ZipArchive CHECKCONS, CRC checks and DOM parsing validate all ten KHS workbook entries. Both authenticated download routes remain covered.
+
+Template references now use minimal projections: **2 Designator / 3 KHS reference queries**, excluding authentication/session middleware. HTTP query budgets prohibit reading prices/workflow/workspace tables and workspace locks on these downloads. New-feature query review is recorded in AGENTS.md and the QA skill. No live database changes, migration, test data, archive rewrite or new deployment command is needed.
+
+**173 PHP tests / 3,006 assertions**, **120 frontend tests**, production build and scoped Pint passed. Tests remain fail-closed SQLite memory. Browser clicks/manual Excel opening were not repeated; this evidence covers isolated HTTP downloads and the unavailable-temp-path reproduction. See [MASTER_BULK_IMPORT.md](MASTER_BULK_IMPORT.md) and `qa/master-template-download-fix-20261106.json`.
+
+
+## Master bulk import — 6 November 2026
+
+**171 PHP tests / 2,957 assertions**, **120 frontend tests**, TypeScript/Vite build and scoped Pint passed. Designator and KHS now have Superadmin-only XLSX templates, read-only preview and atomic create/upsert import (500 rows / 5 MB). Reference codes/ID generation, row errors, decimal/zero/cached price guards, archived/used identity preservation, CSRF/role checks, stale revision/hash/replay, SQL rollback and actual 500-row commits are covered using fail-closed SQLite memory. Per-row audit and one batch revision/receipt are verified; template downloads contain no importable sample data.
+
+No schema change, live sample imports or workflow rewrites. Fresh its backup verified before edits. Frontend tests cover URL/tooltip/permissions, add-only default, preview/source-row/zero/escaping, multipart/CSRF, stable request retry and state publication after confirmation. Browser visual checks and manual opening in Excel have not been performed. See [MASTER_BULK_IMPORT.md](MASTER_BULK_IMPORT.md) and `qa/master-bulk-import-20261106.json`.
+
+
+## BOQ empty prices and saved formula values — 6 November 2026
+
+**163 PHP tests / 2,804 assertions**, **116 frontend tests**, production build and scoped Pint passed. Tests remain fail-closed SQLite memory; no live test transactions/master edits or migrations. F43 in the supplied Paket 5 workbook is an empty styled cell, not a formula. Optional E/F blanks now compare as zero; valid numeric cached formulas in E/F/G are read without execution. Empty string caches are explicitly distinguished from missing results; unknown/error/text/negative/precision violations still fail closed. KHS remains authoritative and mismatches still require review. The same parser is verified through the upload queue.
+
+Read-only live its catalogue check found J-AC-OF-SM-24D and J-ODP Solid-PB-16 AS have no Paket 5 prices; Paket 10 prices cannot substitute. Full four-row import/draft storage is verified only after adding those prices in isolated test fixtures. Live master prices were not created. Source workbook is unchanged. A verified private its backup precedes edits; the long-running workers received a graceful restart signal through this project's file cache so the next web-launched worker loads current code. No detached CLI worker was started. Browser upload/recalculation in Excel was not manually exercised. See [BOQ_IMPORT.md](BOQ_IMPORT.md) and `qa/boq-empty-formula-20261106.json`.
+
+
 Target: `/Applications/XAMPP/xamppfiles/htdocs/its/area3-prototype`.
 
 **Historical status (4 November): real BOQ import for the supplied OSP FO layout, draft without mandatory approvers, username login, validated account placement, five selected PP/payment approvers and post-scan Finance approval are implemented. The final entries supersede earlier pending-import/account counts/two-stage descriptions; dated entries remain historical evidence.**
 
 ## Current status — 5 November 2026: MySQL runtime
+
+Latest worker correction (6 November): user default-queue worker does not consume uploads/area3-uploads. Apache worker logs prove nohup failed without a terminal; launcher now uses HUP-ignore plus fully redirected streams without nohup. **159 PHP tests / 2,733 assertions**, **116 frontend tests**, build and Pint pass; launcher regressions fake processes and never spawn detached workers. No migration/live state mutation; corrected Apache launch still needs observation through the existing Resume UI. See [UPLOAD_QUEUE_PERFORMANCE](UPLOAD_QUEUE_PERFORMANCE.md).
 
 Latest upload/performance update (6 November): the active BOQ and evidence UI uses durable SQL upload tasks/jobs with HTTP 202, recoverable status/results, three-attempt retries, current-role/Branch/status revalidation and local web-user worker autostart/resume. Related pending jobs block submission. Workflow writes are incremental, balances/events batched, screen reads use per-PP Branch SQL scope, file preview avoids loading the full graph, and route modules load lazily. **156 PHP tests / 2,729 assertions**, **116 frontend tests**, TypeScript/Vite build and scoped Pint pass. The 20-PP metadata-write fixture measures 1,330 full-write vs 8 incremental queries; the main JS entry is about 27% smaller. These are scoped measurements, not load-test results. Migration is deployed on its (59 total); 61 pre-existing table fingerprints and PP branch projections verified. Queue is empty; autostart is enabled and PHP executable exists. No live synthetic uploads/accounts/PP; browser, Apache autostart with user files and concurrent-user load QA are not claimed. See [UPLOAD_QUEUE_PERFORMANCE](UPLOAD_QUEUE_PERFORMANCE.md).
 

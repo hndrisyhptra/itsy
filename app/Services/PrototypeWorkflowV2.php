@@ -96,7 +96,8 @@ trait PrototypeWorkflowV2
         if ($version >= 3) {
             $p = ProjectPlanTemplate::apply($p, $submit);
         }
-        $assignments = $this->validateAssignments($input, $version, $p['branch'], $submit);
+        $scheme = $old && (! empty($old['approvalHistory']) || ! empty($old['approvals'])) && self::usesBusinessSupport($old) ? 'business-support' : 'project-support';
+        $assignments = $this->validateAssignments($input, $version, $p['branch'], $submit, $scheme);
         $import = $input['_boqImport'] ?? null;
         if (! empty($old['boqUpload']) && ! $import) {
             $this->fail('Referensi file BOQ tersimpan harus dipertahankan atau diganti melalui upload.');
@@ -172,6 +173,9 @@ trait PrototypeWorkflowV2
             $p['boqStatus'] = $submit ? 'Final' : ($rows ? 'Review' : 'Belum diimpor');
         }
         $p['workflowVersion'] = $version;
+        if ($version >= 3) {
+            $p['approvalScheme'] = $scheme;
+        }
         if ($import) {
             $p['boqUpload'] = $import['source'];
         }

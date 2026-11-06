@@ -54,21 +54,45 @@ async function commit(command: Command, resultId?: string, scan?: { termId: stri
 }
 function send(command: Command, resultId?: string) { active = commit(command,resultId); void active.catch(() => {}); }
 export function waitForPersistence() { return active ?? Promise.resolve(); }
-export async function saveMaster(entity:MasterEntity,input:{action:'save'|'delete';id?:number;data?:Record<string,unknown>;revision:number}):Promise<{catalog:MasterCatalog;revision:number}> {
+type MasterWriteResult={catalog:MasterCatalog;revision:number;summary?:MasterImportSummary;replayed?:boolean};
+export type MasterImportSummary={created:number;updated:number;unchanged:number};
+export type MasterImportPreview={summary:MasterImportSummary;rows:{row:number;code:string;package:string|null;action:'created'|'updated'|'unchanged';data:Record<string,string|number>}[];revision:number;sha256:string};
+export class MasterRequestError extends Error {
+  constructor(message:string,public status:number){super(message);}
+}
+async function masterWrite(path:string,body:BodyInit,json=false):Promise<MasterWriteResult> {
   if(!boot?.account||persistencePending)throw new Error('Gunakan sesi login aktif dan tunggu penyimpanan sebelumnya.');
   persistencePending=true; persistenceError=''; state=structuredClone(state); emit();
   const operation=(async()=>{
     try {
-      const response=await fetch(appUrl('/api/masters/'+entity),{method:'POST',credentials:'same-origin',headers:{Accept:'application/json','Content-Type':'application/json','X-CSRF-TOKEN':csrf},body:JSON.stringify({...input,request_id:crypto.randomUUID()}),signal:AbortSignal.timeout(20000)});
+      const response=await fetch(appUrl(path),{method:'POST',credentials:'same-origin',headers:{Accept:'application/json','X-CSRF-TOKEN':csrf,...(json?{'Content-Type':'application/json'}:{})},body,signal:AbortSignal.timeout(60000)});
       if(response.status===401||response.status===419){if(boot.accountUrls)window.location.assign(boot.accountUrls.login);}
       const data=await response.json();
-      if(!response.ok)throw new Error((Object.values(data.errors??{}).flat() as string[]).join('\n')||data.message||'Master gagal disimpan.');
+      if(!response.ok)throw new MasterRequestError((Object.values(data.errors??{}).flat() as string[]).join('\n')||data.message||'Master gagal disimpan.',response.status);
       confirmed=data.state; state=structuredClone(confirmed); revision=data.revision; csrf=data.csrf??csrf;
-      return {catalog:data.catalog as MasterCatalog,revision:data.revision as number};
+      return {catalog:data.catalog as MasterCatalog,revision:data.revision as number,summary:data.summary as MasterImportSummary|undefined,replayed:data.replayed as boolean|undefined};
     } finally {persistencePending=false; state=structuredClone(state); emit();}
   })();
   active=operation.then(()=>{}); void active.catch(()=>{});
   return operation;
+}
+export async function saveMaster(entity:MasterEntity,input:{action:'save'|'delete';id?:number;data?:Record<string,unknown>;revision:number}):Promise<MasterWriteResult> {
+  return masterWrite('/api/masters/'+entity,JSON.stringify({...input,request_id:crypto.randomUUID()}),true);
+}
+function masterImportForm(file:File,mode:string,expectedRevision:number,stage:string):FormData {
+  const form=new FormData();form.set('file',file);form.set('mode',mode);form.set('revision',String(expectedRevision));form.set('stage',stage);return form;
+}
+export async function previewMasterImport(entity:'designator'|'khs',file:File,mode:string,expectedRevision:number):Promise<MasterImportPreview> {
+  if(!boot?.account||persistencePending)throw new Error('Tunggu penyimpanan sebelumnya selesai.');
+  const response=await fetch(appUrl('/api/masters/'+entity+'/import'),{method:'POST',credentials:'same-origin',headers:{Accept:'application/json','X-CSRF-TOKEN':csrf},body:masterImportForm(file,mode,expectedRevision,'preview'),signal:AbortSignal.timeout(60000)});
+  if(response.status===401||response.status===419){if(boot.accountUrls)window.location.assign(boot.accountUrls.login);}
+  const data=await response.json();
+  if(!response.ok)throw new MasterRequestError((Object.values(data.errors??{}).flat() as string[]).join('\n')||data.message||'File gagal diperiksa.',response.status);
+  return data as MasterImportPreview;
+}
+export async function commitMasterImport(entity:'designator'|'khs',file:File,mode:string,preview:MasterImportPreview,requestId:string):Promise<MasterWriteResult> {
+  const form=masterImportForm(file,mode,preview.revision,'commit');form.set('sha256',preview.sha256);form.set('request_id',requestId);
+  return masterWrite('/api/masters/'+entity+'/import',form);
 }
 export async function uploadBoq(file:File,documentId:string,onProgress?:(message:string)=>void,signal?:AbortSignal):Promise<{rows:BoqRow[];source:BoqUpload}> {
   if (!boot || persistencePending) throw new Error('Upload BOQ memerlukan sesi login aktif; tunggu transaksi sebelumnya selesai.');

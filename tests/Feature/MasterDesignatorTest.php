@@ -30,7 +30,7 @@ class MasterDesignatorTest extends TestCase
             'revision' => $revision ?? PrototypeWorkspace::firstOrFail()->revision, 'request_id' => $uuid ?? (string) Str::uuid()] + ($id ? ['id' => $id] : []));
     }
 
-    public function test_project_support_can_be_provisioned_and_login_with_username_without_gaining_approval_or_master_rights(): void
+    public function test_project_support_can_be_provisioned_and_login_with_username_without_gaining_master_rights(): void
     {
         $this->asRole();
         $this->get('/akun/baru')->assertOk()->assertSee('Mgr Project Support');
@@ -39,7 +39,7 @@ class MasterDesignatorTest extends TestCase
         $user = User::where('username', 'support.qa')->firstOrFail();
         $this->assertSame('Mgr Project Support', app(AccountAccess::class)->context($user)['role']);
         $this->assertContains('Mgr Project Support', PrototypeDomain::ROLES);
-        $this->assertNotContains('Mgr Project Support', PrototypeDomain::APPROVERS_V3);
+        $this->assertContains('Mgr Project Support', PrototypeDomain::APPROVERS_V3);
         $this->post('/logout');
         $this->post('/login', ['username' => 'support.qa', 'password' => 'Test12'])->assertRedirect('/dashboard');
         $this->getJson('/api/prototype/state')->assertOk()->assertJsonPath('state.role', 'Mgr Project Support');

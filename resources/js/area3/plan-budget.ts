@@ -11,8 +11,8 @@ export interface SignaturePlanRow { id:string; label:'Dibuat Oleh'|'Diperiksa Ol
 export interface PlanBudget { version:1|2; mandor:MandorPlanRow[]; materials:MaterialPlanRow[]; bop:BopPlanRow[]; permit:number; bopLimit?:number|null; bopReference?:string; usage:UsagePlanRow[] }
 export interface OwnerPlanRow { rowId:string; code:string; name:string; unit:string; m:number|null; s:number|null; qm:number; qs:number }
 export const categories: Record<BudgetCategory,string> = {mandor:'Jasa Mandor',material:'Material Non Stock',bop:'BOP',permit:'Perizinan (Preliminary) Reimburse'};
-export const printRoles:Role[]=['Admin Konstruksi','PM Konstruksi','Admin Area','Mgr Deployment','Mgr Bussiness Support','Head of PMO'];
-export const defaultSignatureRows = ():SignaturePlanRow[] => printRoles.map((role,i)=>({id:`signature-${i}`,label:i===0?'Dibuat Oleh':i<3?'Diperiksa Oleh':'Disetujui Oleh',role,job:role}));
+export const printRoles:Role[]=['Admin Konstruksi','PM Konstruksi','Admin Area','Mgr Deployment','Mgr Bussiness Support','Mgr Project Support','Head of PMO'];
+export const defaultSignatureRows = ():SignaturePlanRow[] => ppTemplate.signatures.map((row,i)=>({id:`signature-${i}`,label:row.label as SignaturePlanRow['label'],role:row.role as Role,job:row.job}));
 export function ownerPlanRows(s:State,p:Project):OwnerPlanRow[] {
   const root=p.parentId?s.projects.find(x=>x.id===p.rootId):p;
   return (root?.boq??[]).filter(row=>!p.parentId||p.allocations[row.id]).map(row=>{

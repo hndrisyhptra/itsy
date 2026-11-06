@@ -1,0 +1,56 @@
+{
+  "date": "2026-11-06",
+  "current_chain": [
+    "PM Konstruksi",
+    "Admin Area",
+    "Mgr Deployment",
+    "Mgr Project Support",
+    "Head of PMO"
+  ],
+  "scope": "New PP and new payments (user explicitly confirmed both)",
+  "historical_policy": "approvalScheme business-support or inference from historical stored assignments; preserve old submitted/returned/rejected decisions; future new payments on old PP require explicit current assignments",
+  "closing_rows": [
+    {
+      "role": "PM Konstruksi",
+      "job": "Officer 1 Project Deployment Area Jawa Bali"
+    },
+    {
+      "role": "Mgr Project Support",
+      "job": "Mgr Project Support Area Jawa Bali"
+    },
+    {
+      "role": "Mgr Deployment",
+      "job": "Mgr Deployment Area Jawa Bali"
+    },
+    {
+      "role": "Head of PMO",
+      "job": "Head of PMO Area Jawa Bali"
+    }
+  ],
+  "approval_count": 5,
+  "closing_signer_count": 4,
+  "admin_area_approval_still_required": true,
+  "shared_template": "resources/data/project-plan-template.json",
+  "print_signatures": "Empty wet-signature cells; actual preview stamps only",
+  "backup": {
+    "file": "storage/app/private/backups/its-before-project-support-20261106-104911.sql",
+    "bytes": 1996112,
+    "sha256": "6ee4902c4a15175e6c0fa3433438d816948df58fb59020cf9f1f44a3b7d2217b"
+  },
+  "verification": {
+    "php_tests": 177,
+    "php_assertions": 3075,
+    "frontend_tests": 124,
+    "build": "passed",
+    "pint": "passed",
+    "database": "fail-closed SQLite :memory:"
+  },
+  "query_review": "Chain policy computed from loaded metadata; no additional per-role/signer query. Existing template budgets/performance fixture still pass.",
+  "worker": "Graceful restart via this project file cache; next web launch loads new policy",
+  "live_workflow_or_account_changes": false,
+  "migration_required": false,
+  "limitations": [
+    "No manual browser or physical print QA",
+    "No concurrent load test"
+  ]
+}

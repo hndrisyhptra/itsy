@@ -1,5 +1,7 @@
 # Draft PP, cap preview dan penghapusan batas BOP — 5 November 2026
 
+Pembaruan 6 November: approver keempat PP/Pembayaran baru menjadi **Mgr Project Support**; penutup PP baru memakai empat jabatan baku. Assignment/keputusan Business Support historis tetap berlaku. Aturan terkini: [PROJECT_SUPPORT_APPROVAL](PROJECT_SUPPORT_APPROVAL.md). Penjelasan sebelumnya di bawah bersifat historis bila berbeda.
+
 ## Simpan Draft dengan Header lengkap
 
 PP baru mempunyai form bersih setiap kali dibuka. Isilah ID Project, Branch aktif sesuai akses akun, Unit Kerja, Nama Kegiatan, Total Nilai positif dan Saat Penggunaan yang valid. No PP diberikan server saat simpan pertama. Pilihan **Isi Header PP** tersedia dari langkah BOQ kosong; Header dapat dibuka tanpa BOQ.

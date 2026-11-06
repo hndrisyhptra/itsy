@@ -61,3 +61,5 @@ body{color:var(--text);background:var(--bg)}[data-theme=dark] .metric-label,[dat
 .master-table td:nth-child(2){min-width:210px;white-space:normal}.master-form textarea{width:100%}
 @media(max-width:767px){.master-pagination{flex-wrap:wrap}.master-table td:nth-child(2){min-width:175px}}
 .upload-task-list{border:1px solid var(--border);border-radius:6px;padding:14px;font-size:12px}.upload-task-list .section-heading{align-items:center;justify-content:space-between}.upload-task-list ul{list-style:none;padding:0;margin:0}.upload-task-list li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--border)}.upload-task-list li>div{min-width:0;overflow-wrap:anywhere}.upload-task-list small{display:block;color:var(--muted);margin-top:5px}.upload-task-list .error-text{color:var(--danger)}
+
+.master-import-preview{max-height:340px;overflow:auto}.master-import-errors{max-height:220px;overflow:auto}.master-import-errors .notice{white-space:normal;overflow-wrap:anywhere}

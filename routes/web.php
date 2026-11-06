@@ -28,6 +28,8 @@ Route::middleware(PrivatePrototype::class)->group(function () {
         Route::put('/akun/{user}', [AccountController::class, 'save'])->name('accounts.update');
         Route::get('/api/prototype/state', [PrototypeController::class, 'state'])->name('prototype.state');
         Route::get('/api/masters', [MasterDesignatorController::class, 'index']);
+        Route::get('/api/masters/{entity}/template', [MasterDesignatorController::class, 'template'])->where('entity', 'designator|khs')->middleware('throttle:20,1');
+        Route::post('/api/masters/{entity}/import', [MasterDesignatorController::class, 'import'])->where('entity', 'designator|khs')->middleware('throttle:20,1');
         Route::post('/api/uploads/boq', [UploadQueueController::class, 'store'])->middleware('throttle:prototype-scans');
         Route::post('/api/uploads/payments/{term}/evidence', [UploadQueueController::class, 'store'])->where('term', '[a-zA-Z0-9-]{3,100}')->middleware('throttle:prototype-scans');
         Route::get('/api/uploads', [UploadQueueController::class, 'index']);

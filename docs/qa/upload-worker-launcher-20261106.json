@@ -1,0 +1,16 @@
+{
+  "date": "2026-11-06",
+  "reported_queue": "default",
+  "expected_connection": "uploads",
+  "expected_queue": "area3-uploads",
+  "confirmed_autostart_log_error": "nohup: can't detach from console: Inappropriate ioctl for device",
+  "fix": "ignore HUP in shell; redirect all streams; preserve web OS identity and worker lock; use Laravel Process facade for fakeable regression tests",
+  "php_tests": 159,
+  "php_assertions": 2733,
+  "frontend_tests": 116,
+  "build": "passed",
+  "pint": "passed",
+  "detached_workers_in_tests": 0,
+  "live_database_changes": false,
+  "live_apache_launch_after_fix": "not exercised; user should select Lanjutkan antrean"
+}

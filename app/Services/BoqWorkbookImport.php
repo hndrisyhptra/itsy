@@ -45,11 +45,33 @@ class BoqWorkbookImport
         return $bytes;
     }
 
-    private function decimal(array $cell, int $row, string $column, int $scale): float
+    private function blank(array $cell): bool
     {
+        if (trim($cell['value'] ?? '') !== '') {
+            return false;
+        }
+
+        // A formula without a saved result is unknown, not a zero. Excel stores
+        // an explicitly empty string result as t="str" with an empty <v>.
+        if ($cell['formula'] ?? false) {
+            return ($cell['type'] ?? '') === 'str' && ($cell['hasValue'] ?? false);
+        }
+
+        return in_array($cell['type'] ?? '', ['', 'n', 's', 'inlineStr', 'str'], true);
+    }
+
+    private function decimal(array $cell, int $row, string $column, int $scale, bool $allowBlank = false): float
+    {
+        if ($allowBlank && $this->blank($cell)) {
+            return 0.0;
+        }
         $raw = trim($cell['value'] ?? '');
-        if (strlen($raw) > 24 || ($cell['formula'] ?? false) || ! in_array($cell['type'] ?? '', ['', 'n'], true) || ! preg_match('/^\d+(?:\.\d+)?$/D', $raw)) {
-            $this->invalid("Sel {$column}{$row} harus angka tetap, bukan rumus/teks. Simpan nilai hasil perhitungan sebagai angka sebelum upload.");
+        // Read only the saved numeric value. Never evaluate the formula, fetch
+        // external links, or use Excel's calculated row/footer totals.
+        if (strlen($raw) > 24 || ! in_array($cell['type'] ?? '', ['', 'n'], true) || ! preg_match('/^\d+(?:\.\d+)?$/D', $raw)) {
+            $this->invalid(($cell['formula'] ?? false)
+                ? "Hasil rumus sel {$column}{$row} belum tersimpan sebagai angka valid. Hitung ulang lalu simpan file di Excel/LibreOffice dan upload kembali."
+                : "Sel {$column}{$row} harus angka tidak negatif, bukan teks atau error Excel.");
         }
         $fraction = str_contains($raw, '.') ? rtrim(explode('.', $raw, 2)[1], '0') : '';
         if (bccomp($raw, '999999999999', max($scale, strlen($fraction))) > 0 || strlen($fraction) > $scale) {
@@ -135,7 +157,7 @@ class BoqWorkbookImport
                 if (isset($table[(int) $row][$column])) {
                     $this->invalid('Alamat sel duplikat: '.$address.'.');
                 }
-                $table[(int) $row][$column] = ['value' => trim($value), 'type' => $type, 'formula' => $sheetXml->query('./*[local-name()="f"]', $cell)->length > 0];
+                $table[(int) $row][$column] = ['value' => trim($value), 'type' => $type, 'formula' => $sheetXml->query('./*[local-name()="f"]', $cell)->length > 0, 'hasValue' => $sheetXml->query('./*[local-name()="v"]', $cell)->length > 0];
             }
             $text = fn ($r, $c) => mb_strtoupper(preg_replace('/\s+/', ' ', $table[$r][$c]['value'] ?? ''));
             if ($text(6, 'B') !== 'DESIGNATOR' || $text(6, 'D') !== 'SATUAN' || $text(6, 'G') !== 'VOL' || $text(7, 'E') !== 'MATERIAL' || $text(7, 'F') !== 'JASA' || ! preg_match('/PAKET[ -]?(\d+)/', $text(6, 'E'), $package)) {
@@ -156,8 +178,7 @@ class BoqWorkbookImport
                 if ($row < 8) {
                     continue;
                 }
-                $rawQty = $columns['G']['value'] ?? '';
-                if ($rawQty === '' && ! ($columns['G']['formula'] ?? false)) {
+                if ($this->blank($columns['G'] ?? [])) {
                     continue;
                 }
                 $code = $text($row, 'B');
@@ -174,7 +195,7 @@ class BoqWorkbookImport
                 if ($code === '' || ($columns['B']['formula'] ?? false) || ($columns['D']['formula'] ?? false)) {
                     $this->invalid("Designator/satuan baris {$row} tidak valid.");
                 }
-                $prices = ['m' => $this->decimal($columns['E'] ?? [], $row, 'E', 2), 's' => $this->decimal($columns['F'] ?? [], $row, 'F', 2)];
+                $prices = ['m' => $this->decimal($columns['E'] ?? [], $row, 'E', 2, true), 's' => $this->decimal($columns['F'] ?? [], $row, 'F', 2, true)];
                 $prefixed = preg_match('/^([MJ])-/', $code, $component);
                 $matched = false;
                 foreach (['m' => 'M-', 's' => 'J-'] as $c => $prefix) {
@@ -189,8 +210,11 @@ class BoqWorkbookImport
                     if ($matches->isEmpty() && ! $prefixed && $prices[$c] === 0.0) {
                         continue; // Missing component is N/A; never fabricate a zero-priced row.
                     }
+                    if ($matches->isEmpty()) {
+                        $this->invalid("Baris {$row}: designator ".($prefixed ? $code : $prefix.$code).' belum memiliki harga KHS aktif pada Paket '.$package[1].'. Lengkapi melalui Master Designator > KHS.');
+                    }
                     if ($matches->count() !== 1) {
-                        $this->invalid("Baris {$row}: designator ".($prefixed ? $code : $prefix.$code).' tidak ditemukan/ambigu pada Paket '.$package[1].'.');
+                        $this->invalid("Baris {$row}: designator ".($prefixed ? $code : $prefix.$code).' memiliki lebih dari satu harga KHS pada Paket '.$package[1].'. Periksa Master Designator > KHS.');
                     }
                     $k = $matches->first();
                     if (mb_strtolower(trim($k['unit'])) !== mb_strtolower(trim($columns['D']['value'] ?? ''))) {

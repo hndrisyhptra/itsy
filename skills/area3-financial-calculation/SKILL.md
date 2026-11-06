@@ -5,6 +5,9 @@ description: Implement and verify official KHS component prices, agreed BA KH/SP
 
 # area3-financial-calculation
 
+## Current Project Support authority — 6 November 2026
+Follow docs/PROJECT_SUPPORT_APPROVAL.md, superseding earlier Business Support/read-only Project Support guidance. New PP and payments select PM, Admin Area, Deployment, Project Support, Head of PMO. Preserve historical Business Support decisions/assignments using server-owned approvalScheme and legacy assignment inference; old approved PP require explicit future-payment assignments. Current closing form/preview uses four fixed shared-template jobs/order (PM, Project Support, Deployment, Head); Admin Area stays mandatory in workflow. Keep genuine current-cycle stamps and blank wet-signature print cells. No new per-role SQL lookup, migration or live test data.
+
 ## Removed BOP cap/reference — 5 November 2026
 The user removed the BOP limit and Cost Structure reference inputs and backend requirements. Ignore stale fields on editable saves and preserve locked snapshots. Keep valid nonnegative BOP details, precision, submission completeness, COGS/recap calculations and technical amount limits. No official BOP ceiling is implied. Header-only v3 Drafts may have no BOQ/budget yet; submission still requires complete valid planning. See docs/PP_DRAFTS_PREVIEW.md.
 
@@ -13,6 +16,9 @@ Point IV.5 now derives positive category rows from source Mandor Material/Jasa, 
 
 ## Current storage authority — 5 November 2026
 The user explicitly authorized active MySQL persistence. docs/MYSQL_RUNTIME.md supersedes older aggregate/demo storage descriptions below. Runtime transactions read/write business-table rows with per-document snapshots; prototype_workspaces.state is a preserved archive, never a fallback. Preserve atomic SQL records/revision/receipts/audit, actual five-approver decisions and exact ledger. Live sample BOQ, role switch and reset are unavailable. Tests remain fail-closed SQLite memory; disposable MySQL QA is separate from artisan test. Do not import the archive again after activation or invent historical identities/KHS contracts.
+
+## BOQ blank/formula results authority — 6 November 2026
+Follow docs/BOQ_IMPORT.md: blank E/F prices compare as zero; never fabricate a missing KHS component. Read only saved numeric formula results in E/F/G with existing range/precision checks; never evaluate formulas or external links. An explicit saved empty-string result may be blank; missing caches/errors/text fail closed with a recalculation/save instruction. KHS prices, explicit mismatch review and private source provenance remain authoritative. The supplied Paket 5 workbook also needs two currently absent Jasa KHS entries; do not create live prices from Excel automatically. Test both rejected missing masters and successful four-row import using memory-only fixtures, plus queued import.
 
 ## Current BOQ/draft authority — 4 November 2026
 The supplied OSP FO workbook now defines a real private .xlsx import (docs/BOQ_IMPORT.md). Laravel parses sheet BoQ/header rows 6–7, positive quantities, exact package/code/unit matches and separate M-/J- components. Preserve source prices/row provenance; KHS prices own totals. Require explicit mismatch review at the current KHS version. Never evaluate input formulas or accept client manifests. Only the separate sample button remains simulated. Drafts may omit approvers; submitted PP must have all five selected active Branch-assigned accounts. Older pending-import descriptions below are historical.
