@@ -21,13 +21,15 @@ Username diwajibkan pada form, dinormalisasi ke huruf kecil, 3–50 karakter (hu
 
 Validasi server memeriksa Branch berada dalam Region, Service Area berada dalam Branch, dan Branch utama termasuk Branch penugasan. Kolom penempatan adalah data identitas utama; akses tetap berasal dari daftar penugasan Branch yang dikelola Superadmin. Memilih Region/Branch utama tidak otomatis menambah akses. users.role yang tidak cocok dengan penugasan aktif ditolak; tidak ada role switch di jalur login.
 
+Urutan terbaru juga berlaku pada pengajuan berjalan; approval yang sudah diberikan tetap dihitung melalui pencarian role yang belum menyetujui. Lihat [PROJECT_SUPPORT_APPROVAL](PROJECT_SUPPORT_APPROVAL.md) untuk kompatibilitas run SQL dan penyesuaian Business Support yang sudah diotorisasi.
+
 ## Project Plan Baru
 
 1. **Admin Konstruksi** membuat PP (Superadmin tetap dapat membantu tindakan operasional), dimulai dengan BOQ, kemudian Header dan seluruh rencana.
 2. **PM Konstruksi** yang dipilih memberikan approval pertama.
 3. **Admin Area** yang dipilih memberikan approval kedua.
-4. **Mgr Deployment** yang dipilih memberikan approval ketiga.
-5. **Mgr Bussiness Support** yang dipilih memberikan approval keempat.
+4. **Mgr Project Support** yang dipilih memberikan approval ketiga.
+5. **Mgr Deployment** yang dipilih memberikan approval keempat.
 6. **Head of PMO** yang dipilih memberikan approval kelima.
 
 Kelima akun dipilih pada Header PP dan wajib lengkap/aktif saat pengajuan, dengan penugasan Branch yang mencakup PP. Draf boleh disimpan sebelum seluruh approver dipilih; pilihan yang sudah diisi tetap harus valid. Server mengambil role/identitas dari sesi login. Superadmin, akun lain dengan role sama, atau approver tahap berikutnya tidak dapat menggantikan approver yang sedang ditunggu. PP menjadi Sah dan membuka BA KH/SPK setelah **5/5**, bukan setelah PM saja atau PM + Admin Area.
@@ -38,7 +40,7 @@ Pengembalian/penolakan membutuhkan alasan. Pada alur versi 3, **Dikembalikan mau
 
 Termin baru menyalin kelima approver PP sebagai snapshot penugasan:
 
-Admin membuat pengajuan → PM → Admin Area → Mgr Deployment → Mgr Bussiness Support → Head of PMO → cetak → TTD fisik di luar aplikasi → Admin mengunggah scan nyata → **Finance menyetujui/memverifikasi scan** → Finance mencatat APM → tagihan lunas.
+Admin membuat pengajuan → PM → Admin Area → Mgr Project Support → Mgr Deployment → Head of PMO → cetak → TTD fisik di luar aplikasi → Admin mengunggah scan nyata → **Finance menyetujui/memverifikasi scan** → Finance mencatat APM → tagihan lunas.
 
 Lima approval sebelum TTD dicatat pada approvals/history. Setelah 5/5, status Disetujui berarti persetujuan pekerjaan/dokumen lengkap dan kuantitas terkunci; Finance masih dapat menunggu scan. Daftar pembayaran/tracker menampilkan tahap Finance terpisah. Berkas siap cetak memuat lima nama approver serta ruang TTD kosong; tidak menggambar tanda tangan.
 

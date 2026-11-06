@@ -3,13 +3,15 @@ import { applyPlanTemplate } from './plan-template';
 import { recordCommand } from './commands';
 import { type State, type Project, type Term, type Role, type Approval, getProject, getTerm, requireAdmin, requireFinance, validVolume, projectErrors, now, log } from './domain';
 
-export const APPROVERS_V3: Role[] = ['PM Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Project Support', 'Head of PMO'];
+export const APPROVERS_V3: Role[] = ['PM Konstruksi', 'Admin Area', 'Mgr Project Support', 'Mgr Deployment', 'Head of PMO'];
+export const APPROVERS_V3_PREVIOUS: Role[] = ['PM Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Project Support', 'Head of PMO'];
 export const APPROVERS_V3_LEGACY:Role[]=['PM Konstruksi','Admin Area','Mgr Deployment','Mgr Bussiness Support','Head of PMO'];
 export function usesBusinessSupport(document:AssignedDocument){return document.approvalScheme==='business-support'||(!document.approvalScheme&&Object.hasOwn(document.approverUserIds??{},'Mgr Bussiness Support')&&!Object.hasOwn(document.approverUserIds??{},'Mgr Project Support'));}
-export function projectApprovalScheme(document?:Project):'project-support'|'business-support' {return document&&(!canReviseSubmission(document)||(document.approvalHistory?.length??0)>0||(document.approvals?.length??0)>0)&&usesBusinessSupport(document)?'business-support':'project-support';}
-type AssignedDocument = {approvalScheme?:'project-support'|'business-support';workflowVersion?:number; pmUserId?:string; managerUserId?:string; approverUserIds?:Partial<Record<Role,string>>};
+export function projectApprovalScheme(document?:Project):'project-support-first'|'project-support'|'business-support' {return document&&(!canReviseSubmission(document)||(document.approvalHistory?.length??0)>0||(document.approvals?.length??0)>0)?(usesBusinessSupport(document)?'business-support':document.approvalScheme??'project-support'):'project-support-first';}
+type AssignedDocument = {approvalScheme?:'project-support-first'|'project-support'|'business-support';workflowVersion?:number; pmUserId?:string; managerUserId?:string; approverUserIds?:Partial<Record<Role,string>>};
 export function canReviseSubmission(document: {status:string;workflowVersion?:number}) { return ['Draft','Dikembalikan'].includes(document.status) || ((document.workflowVersion ?? 1) >= 3 && document.status === 'Ditolak'); }
 export function approvalRoles(document: AssignedDocument, project = false): Role[] { return (document.workflowVersion ?? 1) >= 3 ? (usesBusinessSupport(document)?APPROVERS_V3_LEGACY:APPROVERS_V3) : project || (document.workflowVersion ?? 1) >= 2 ? ['PM Konstruksi','Manager Konstruksi'] : ['PM Konstruksi','Manager Konstruksi','Finance']; }
+export function nextApprovalRole(document:AssignedDocument & {approvals?:Approval[]},project=false):Role|undefined {const approved=new Set((document.approvals??[]).filter(a=>a.decision==='Setujui').map(a=>a.role));return approvalRoles(document,project).find(role=>!approved.has(role));}
 export function selectedApprover(document: AssignedDocument, role:Role) { return (document.workflowVersion ?? 1) >= 3 ? document.approverUserIds?.[role] : role === 'PM Konstruksi' ? document.pmUserId : document.managerUserId; }
 export function validateAssignments(s:State, document:AssignedDocument & {branch:string}, required=true) {
   const result:Partial<Record<Role,string>> = {};
@@ -53,9 +55,9 @@ export function assertAssigned(s: State, document: AssignedDocument, role: Role)
   const u = approver(s, selectedApprover(document, role), role);
   if (s.role !== role || s.actorUserId !== u.id) throw new Error('Hanya approver yang dipilih pada PP dapat menyetujui dokumen ini.');
 }
-export function projectApprovalRole(p: Project): Role | undefined { return p.status === 'Diajukan' ? approvalRoles(p,true)[p.approvals?.length ?? 0] : undefined; }
+export function projectApprovalRole(p: Project): Role | undefined { return p.status === 'Diajukan' ? nextApprovalRole(p,true) : undefined; }
 export function canApproveProject(s: State, p: Project) { const role = projectApprovalRole(p); return !!role && role === s.role && s.actorUserId === selectedApprover(p,role) && s.users.some(u => u.id === s.actorUserId && u.active && u.role === role); }
-export function canApproveTerm(s: State, t: Term) { const role = t.status === 'Diajukan' ? approvalRoles(t)[t.approvals.length] : undefined; return !!role && role === s.role && ((t.workflowVersion ?? 1) < 2 || (s.actorUserId === selectedApprover(t,role) && s.users.some(u => u.id === s.actorUserId && u.active && u.role === role))); }
+export function canApproveTerm(s: State, t: Term) { const role = t.status === 'Diajukan' ? nextApprovalRole(t) : undefined; return !!role && role === s.role && ((t.workflowVersion ?? 1) < 2 || (s.actorUserId === selectedApprover(t,role) && s.users.some(u => u.id === s.actorUserId && u.active && u.role === role))); }
 export function saveProjectV2(s: State, input: Project, submit: boolean) {
   requireAdmin(s); const p = structuredClone(input), old = s.projects.find(x => x.id === p.id);
   if (old && !canReviseSubmission(old)) throw new Error('PP terkunci pada status ini.');
@@ -63,6 +65,7 @@ export function saveProjectV2(s: State, input: Project, submit: boolean) {
   if (version >= 3) Object.assign(p, applyPlanTemplate(p, true, submit));
   else { delete p.planTemplateVersion; delete p.teamText; delete p.durationDays; delete p.planBudget; delete p.planBudgetTotals; delete p.signatureRows; delete p.signatureUsers; delete p.closing; delete p.riskLevel; }
   p.approvalScheme=projectApprovalScheme(old);
+  p.approvalOrderChange=old?.approvalOrderChange;
   const chain = validateAssignments(s, { ...p, workflowVersion: version }, submit);
   if (!['Konstruksi', 'Operation'].includes(p.unit) || !branchOptions(s).some(b => b.name === p.branch && b.active)) throw new Error('Pilih Unit Kerja dan Branch aktif.');
   if (!old && (p.parentId || p.rootId !== p.id)) throw new Error('PP lanjutan harus dibuat dari pelepasan BA PP.');
@@ -116,6 +119,19 @@ export function verifyTermScan(s: State, id: string, decision: 'Valid' | 'Perlu 
 export function assignPaymentApprovers(s:State, id:string, assignments:Partial<Record<Role,string>>) {
   recordCommand('assignPaymentApprovers',[id,assignments]); requireAdmin(s); const p = getProject(s,id);
   if (((p.workflowVersion ?? 1) >= 3&&!usesBusinessSupport(p)) || p.status !== 'Sah') throw new Error('Penugasan pembayaran berikutnya hanya untuk PP historis yang sudah Sah.');
-  p.paymentApproverUserIds = validateAssignments(s,{...p,workflowVersion:3,approvalScheme:'project-support',approverUserIds:assignments});
+  p.paymentApproverUserIds = validateAssignments(s,{...p,workflowVersion:3,approvalScheme:'project-support-first',approverUserIds:assignments});
   log(s,'Lima approver pembayaran berikutnya ditetapkan',p.no,'/project-plan/'+id);
+}
+
+export function adoptApprovalOrder(s:State,kind:'projects'|'terms',id:string,supportUserId:string) {
+  recordCommand('adoptApprovalOrder',[kind,id,supportUserId]);requireAdmin(s);
+  const document=kind==='projects'?getProject(s,id):getTerm(s,id),history=kind==='projects'?(document as Project).approvalHistory??[]:(document as Term).history;
+  if(document.workflowVersion!==3||document.status!=='Diajukan'||!usesBusinessSupport(document))throw new Error('Penyesuaian ini hanya untuk pengajuan berjalan yang masih memakai Business Support.');
+  if(history.length!==(document.approvals?.length??0)||history.some(a=>a.role==='Mgr Bussiness Support'))throw new Error('Pengajuan memiliki siklus/keputusan Business Support terdahulu; penyesuaian otomatis ditolak agar riwayat tetap utuh.');
+  const project=kind==='projects'?document as Project:getProject(s,s.deals.find(d=>d.id===s.spks.find(v=>v.id===(document as Term).spkId)!.dealId)!.projectId);
+  const assignments={...document.approverUserIds},previous=assignments['Mgr Bussiness Support'];delete assignments['Mgr Bussiness Support'];assignments['Mgr Project Support']=supportUserId;
+  const selected=validateAssignments(s,{workflowVersion:3,approvalScheme:'project-support-first',approverUserIds:assignments,branch:project.branch});
+  document.approverUserIds=selected;document.approvalScheme='project-support';document.approvalOrderChange={previousBusinessSupportUserId:previous,projectSupportUserId:supportUserId,actorUserId:s.actorUserId,at:now()};
+  if(kind==='projects'){const p=document as Project,u=s.users.find(u=>u.id===supportUserId)!;p.signatureUsers={...p.signatureUsers,'Mgr Project Support':{userId:u.id,name:u.name,nik:u.nik??''}};}
+  log(s,'Urutan approval diperbarui · Project Support sebelum Deployment',kind==='projects'?(document as Project).no:'Termin '+(document as Term).number,kind==='projects'?'/project-plan/'+id:'/termin/'+id);
 }

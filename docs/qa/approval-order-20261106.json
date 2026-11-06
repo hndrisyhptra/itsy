@@ -1,0 +1,124 @@
+{
+  "migration": "2026_11_06_000003_version_support_first_approval_order",
+  "database": "its",
+  "snapshots": {
+    "users": {
+      "rows": 15,
+      "sha256": "f8052a4f09525f862e79e6af7786cf7d97e8e8eade0d46f34410967b7be3ff71"
+    },
+    "projects": {
+      "rows": 1,
+      "sha256": "cc7cb86c4b464bcec5ba6e1c8919a6dfbd08f643a32cbf63bd25ba7f2f2a1f40"
+    },
+    "project_plans": {
+      "rows": 3,
+      "sha256": "c9baf2c9329af642cf413bdd3aed39ed1d49d17ee00eaf51b5b9f36f45dacbf0"
+    },
+    "approval_runs": {
+      "rows": 4,
+      "sha256": "09d43962ed06c0b42f24430636f0c10d0c1e160e051ccf8ca9045f6b6014fecb"
+    },
+    "approval_steps": {
+      "rows": 20,
+      "sha256": "a11005669103823d4ab5b1d1eb5bd7629514c144eb4c1696da475d4e653ba2b0"
+    },
+    "approval_decisions": {
+      "rows": 10,
+      "sha256": "e133953af516d584c889b2ace8a3eb2e569cb77bc6bfb198c6a8b26bcbaacc77"
+    },
+    "prototype_workspaces": {
+      "rows": 1,
+      "sha256": "7826e08cbcd14f116f22758c05955f07d078de8c96a8f539abc41053d42e86e9"
+    },
+    "prototype_audits": {
+      "rows": 34,
+      "sha256": "dde19540aff332ca00036ba413177d2c47f4ecd51df7123d9ec08fb0fef8c4b1"
+    },
+    "command_receipts": {
+      "rows": 21,
+      "sha256": "07948d5574b3e6e833a62d542f69bb54dc0cbede57e211cc70de845cfff4eb10"
+    }
+  },
+  "check_clause": "`approval_order_version` = 1 and (`workflow_version` = 2 and (`step_no` = 1 and `expected_role` = 'PM_KONSTRUKSI' or `step_no` = 2 and `expected_role` = 'MANAGER_KONSTRUKSI') or `workflow_version` = 3 and (`step_no` = 1 and `expected_role` = 'PM_KONSTRUKSI' or `step_no` = 2 and `expected_role` = 'ADMIN_AREA' or `step_no` = 3 and `expected_role` = 'MGR_DEPLOYMENT' or `step_no` = 4 and `expected_role` in ('MGR_BUSSINESS_SUPPORT','MGR_PROJECT_SUPPORT') or `step_no` = 5 and `expected_role` = 'HEAD_OF_PMO' or `step_no` = 6 and `expected_role` = 'FINANCE')) or `approval_order_version` = 2 and `workflow_version` = 3 and (`step_no` = 1 and `expected_role` = 'PM_KONSTRUKSI' or `step_no` = 2 and `expected_role` = 'ADMIN_AREA' or `step_no` = 3 and `expected_role` = 'MGR_PROJECT_SUPPORT' or `step_no` = 4 and `expected_role` = 'MGR_DEPLOYMENT' or `step_no` = 5 and `expected_role` = 'HEAD_OF_PMO' or `step_no` = 6 and `expected_role` = 'FINANCE')",
+  "mariadb_temporary_probe": {
+    "accepted": 15,
+    "rejected": 6
+  },
+  "live_workflow_commands_executed": 0,
+  "running_submissions": {
+    "retargeted": {
+      "projects": 1,
+      "terms": 1
+    },
+    "selected_support_user_id": "db-user-15",
+    "audit_actor_user_id": 1,
+    "approval_decisions_unchanged": true,
+    "approved_pp_unchanged": true,
+    "automatic_approval_commands": 0,
+    "positions": [
+      {
+        "kind": "projects",
+        "id": "pp-37978b7c-4dc2-4fe4-8598-7a8d69bf95b6",
+        "next_role": "Mgr Project Support",
+        "roles": [
+          "PM Konstruksi",
+          "Admin Area",
+          "Mgr Project Support",
+          "Mgr Deployment",
+          "Head of PMO"
+        ]
+      },
+      {
+        "kind": "projects",
+        "id": "pp-5ad22857-081e-4691-96df-e5c15b607b9c",
+        "next_role": "Mgr Project Support",
+        "roles": [
+          "PM Konstruksi",
+          "Admin Area",
+          "Mgr Project Support",
+          "Mgr Deployment",
+          "Head of PMO"
+        ]
+      },
+      {
+        "kind": "terms",
+        "id": "termin-4dc6129a-e9f9-4d60-aa32-915a91021761",
+        "next_role": "Admin Area",
+        "roles": [
+          "PM Konstruksi",
+          "Admin Area",
+          "Mgr Project Support",
+          "Mgr Deployment",
+          "Head of PMO"
+        ]
+      }
+    ]
+  },
+  "migration_data_unchanged": true,
+  "migration_fingerprint_scope": "Original values before/after schema migration, excluding the new default approval_order_version column. Later authorized assignment changes are recorded separately under running_submissions.",
+  "tests": {
+    "php": 185,
+    "assertions": 3161,
+    "frontend": 129,
+    "build": "passed",
+    "scoped_pint": "passed",
+    "artisan_database": "sqlite :memory:",
+    "browser_manual": false,
+    "physical_print_manual": false
+  },
+  "backup": {
+    "filename": "its-before-approval-order-20261106-141354.sql",
+    "bytes": 2020568,
+    "sha256": "c3feadbc839a0f4ed7c7ad266d6d7cb424afbc76bc04fdec1d0f32b7adf578f1"
+  },
+  "performance": {
+    "routing_additional_queries": 0,
+    "existing_fixture": {
+      "projects": 20,
+      "metadata_full_queries": 1330,
+      "metadata_incremental_queries": 8
+    },
+    "load_test": false
+  },
+  "worker_graceful_restart": true
+}

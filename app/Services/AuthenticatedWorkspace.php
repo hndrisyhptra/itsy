@@ -136,6 +136,7 @@ class AuthenticatedWorkspace
         $input = $args[0] ?? null;
         $p = match ($command) {
             'saveProject' => $input,
+            'adoptApprovalOrder' => ($input === 'projects' ? $project($args[1] ?? '') : ($input === 'terms' ? $term($args[1] ?? '') : null)),
             'decideProject', 'assignProjectApprovers', 'assignPaymentApprovers', 'reviewBoq', 'finalizeBoq' => $project($input),
             'saveDeal' => $project($input['projectId'] ?? ''),
             'saveSpk' => $deal($input['dealId'] ?? ''),

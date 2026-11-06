@@ -30,6 +30,18 @@ body{color:var(--text);background:var(--bg)}[data-theme=dark] .metric-label,[dat
 .sph-price-field{min-width:135px;max-width:220px}.sph-price-field small{display:block;white-space:normal;line-height:1.5;margin-top:6px}.sph-price-field input[aria-invalid=true]{border-color:var(--danger,#c43a46)}
 
 /* Compact PP tables with a visible grid in forms and document previews. */
+/* SPK tables use a complete grid; the BA KH negotiation list retains its original style. */
+.spk-workspace{--spk-table-border:#c7cdd8;--spk-table-header:var(--primary-soft);--spk-table-text:var(--text)}
+[data-theme=dark] .spk-workspace{--spk-table-border:#485064}
+.spk-workspace .document{--spk-table-border:#777;--spk-table-header:#f5f6f8;--spk-table-text:#252b35}
+.spk-workspace .table-scroll:not(.contract-list-plain) table{border-collapse:collapse;border:1px solid var(--spk-table-border)}
+.spk-workspace .table-scroll:not(.contract-list-plain) th,.spk-workspace .table-scroll:not(.contract-list-plain) td{border:1px solid var(--spk-table-border);padding:8px 10px;line-height:1.5}
+.spk-workspace .table-scroll:not(.contract-list-plain) th{background:var(--spk-table-header);color:var(--spk-table-text);font-size:10px;font-weight:600;letter-spacing:0;white-space:normal}
+.spk-workspace .table-scroll:not(.contract-list-plain) td{font-size:11px}
+.spk-workspace .table-scroll:not(.contract-list-plain) .numeric{font-variant-numeric:tabular-nums}
+.spk-workspace .document td small{color:#667085}
+@media print{.spk-workspace .document{--spk-table-border:#555}.spk-workspace .document .table-scroll:not(.contract-list-plain) th,.spk-workspace .document .table-scroll:not(.contract-list-plain) td{font-size:8pt;padding:5pt}}
+
 .pp-form-card,.plan-budget-section,.plan-risk-section{--table-border:#c7cdd8}
 [data-theme=dark] .pp-form-card,[data-theme=dark] .plan-budget-section,[data-theme=dark] .plan-risk-section{--table-border:#485064}
 .pp-form-card .table-scroll table,.plan-budget-section table,.plan-risk-section table{border-collapse:collapse;border:1px solid var(--table-border)}
@@ -74,3 +86,39 @@ body{color:var(--text);background:var(--bg)}[data-theme=dark] .metric-label,[dat
 .upload-task-list{border:1px solid var(--border);border-radius:6px;padding:14px;font-size:12px}.upload-task-list .section-heading{align-items:center;justify-content:space-between}.upload-task-list ul{list-style:none;padding:0;margin:0}.upload-task-list li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--border)}.upload-task-list li>div{min-width:0;overflow-wrap:anywhere}.upload-task-list small{display:block;color:var(--muted);margin-top:5px}.upload-task-list .error-text{color:var(--danger)}
 
 .master-import-preview{max-height:340px;overflow:auto}.master-import-errors{max-height:220px;overflow:auto}.master-import-errors .notice{white-space:normal;overflow-wrap:anywhere}
+
+/* BA KH attachment follows the supplied three-tier negotiation table. */
+.document.bakh-appendix{min-width:0;width:100%;max-width:1000px;margin-inline:auto;color:#111;background:#fff;padding:20px 16px;font-family:Arial,sans-serif}
+.bakh-appendix-heading{margin-bottom:8px;text-align:left;overflow-wrap:anywhere;break-inside:avoid}
+.document.bakh-appendix .bakh-appendix-heading h2,.document.bakh-appendix .bakh-appendix-heading p{font-size:10px;line-height:1.5;text-align:left;margin:0}
+.bakh-appendix-scroll:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+.document.bakh-appendix table{table-layout:fixed;min-width:760px;width:100%;border:1px solid #444}
+.bakh-appendix caption{text-align:right;color:#444;font-size:10px;padding:8px 0}
+.bakh-col-no{width:4%}.bakh-col-code{width:14%}.bakh-col-description{width:27%}.bakh-col-unit{width:7%}.bakh-col-price{width:8%}
+.document.bakh-appendix .bakh-appendix-table th,.document.bakh-appendix .bakh-appendix-table td{border:1px solid #444;padding:4px 3px;font-size:9px;line-height:1.35;white-space:normal;overflow-wrap:anywhere;color:#111;background:#fff}
+.document.bakh-appendix .bakh-appendix-table th{position:static;text-align:center;vertical-align:middle;font-weight:600}
+.bakh-appendix td{vertical-align:top}.bakh-appendix .numeric{font-variant-numeric:tabular-nums}.bakh-cell-center{text-align:center}
+.bakh-appendix tbody tr:hover{background:#fff}
+.bakh-appendix-signatures{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:20px;text-align:center;font-size:10px;break-inside:avoid}
+.bakh-appendix-signatures section{min-width:0;overflow-wrap:anywhere}.bakh-appendix-signatures h3{font-size:11px;font-weight:400}.bakh-appendix-signatures strong{display:block;text-decoration:underline}.bakh-appendix-signatures p{font-size:10px;line-height:1.6}
+.bakh-wet-signature{height:76px}
+@media(max-width:767px){.document.bakh-appendix{padding:20px 12px}.modal-body:has(.bakh-appendix) .preview-toolbar{min-width:0;flex-wrap:wrap}.bakh-appendix-signatures{gap:14px}}
+@page bakh-appendix-landscape{size:A4 landscape;margin:10mm}
+/* Main BA KH follows the portrait Word narrative; prices remain in its attachment. */
+.document.bakh-document{min-width:0;max-width:794px;width:100%;margin-inline:auto;padding:38px 44px;background:#fff;color:#111;font-family:'Times New Roman',serif;font-size:14px;line-height:1.45}
+.document.bakh-document p{line-height:1.45;margin:0 0 14px;text-align:justify;overflow-wrap:anywhere}
+.bakh-document-heading{margin-bottom:26px;text-align:center;break-inside:avoid}
+.document.bakh-document .bakh-document-heading h2{font-family:Calibri,Arial,sans-serif;font-size:17px;line-height:1.4;text-align:center;margin:0 0 3px;color:#111}
+.bakh-document-heading h2 span{text-decoration:underline;text-underline-offset:3px}
+.document.bakh-document .bakh-document-heading p{text-align:center;margin:0;font-weight:700}
+.bakh-document-meta,.bakh-document-prices{display:grid;grid-template-columns:130px minmax(0,1fr);column-gap:10px;margin:0 0 24px;line-height:1.45}
+.bakh-document-meta{font-weight:700}.bakh-document-meta dt,.bakh-document-meta dd,.bakh-document-prices dt,.bakh-document-prices dd{margin:0;overflow-wrap:anywhere}
+.bakh-document-meta dd,.bakh-document-prices dd{display:grid;grid-template-columns:9px minmax(0,1fr);gap:5px}.bakh-document-meta dd::before,.bakh-document-prices dd::before{content:':'}
+.bakh-document-prices{grid-template-columns:145px minmax(0,1fr);row-gap:18px;margin:0 0 18px}.bakh-document-prices dd{display:block;position:relative;padding-left:14px}.bakh-document-prices dd::before{position:absolute;left:0}
+.bakh-document-clauses{margin:22px 0;padding-left:24px}.bakh-document-clauses>li{padding-left:8px;margin-bottom:9px;text-align:justify;overflow-wrap:anywhere}.document.bakh-document .bakh-document-clauses p{margin-bottom:0}
+.document.bakh-document .bakh-document-place{text-align:right;margin:22px 0 28px}
+.bakh-document-signatures{display:grid;grid-template-columns:1fr 1fr;gap:25px;text-align:center;break-inside:avoid}.bakh-document-signatures section{min-width:0;overflow-wrap:anywhere}.document.bakh-document .bakh-document-signatures h3{font-family:inherit;font-size:14px;color:#111;margin:0;font-weight:700}.bakh-document-signature-space{height:92px}.bakh-document-signatures strong{display:block;text-decoration:underline}.document.bakh-document .bakh-document-signatures p{text-align:center;margin:0;font-weight:700}.document.bakh-document .bakh-document-signatures p:last-child{font-size:12px}
+@media(max-width:767px){.document.bakh-document{padding:25px 18px}.modal-body:has(.bakh-document) .preview-toolbar{min-width:0;flex-wrap:wrap}.bakh-document-meta{grid-template-columns:85px minmax(0,1fr)}.bakh-document-prices{grid-template-columns:105px minmax(0,1fr)}.bakh-document-signatures{gap:14px}}
+@page bakh-document-portrait{size:A4 portrait;margin:25.4mm 15mm 22.6mm 28.7mm}
+@media print{.document.bakh-document{page:bakh-document-portrait;max-width:none;padding:0;font-size:11pt;line-height:1.2}.document.bakh-document p{line-height:1.2;margin-bottom:10pt}.document.bakh-document .bakh-document-heading h2{font-size:14pt}.bakh-document-heading{margin-bottom:16pt}.bakh-document-meta,.bakh-document-prices{line-height:1.2;margin-bottom:14pt}.bakh-document-clauses{margin:14pt 0}.bakh-document-clauses>li{margin-bottom:6pt}.bakh-document-prices{row-gap:14pt}.document.bakh-document .bakh-document-place{margin:14pt 0 22pt}.bakh-document-signature-space{height:24mm}.document.bakh-document .bakh-document-signatures h3{font-size:11pt}.document.bakh-document .bakh-document-signatures p:last-child{font-size:10pt}.modal-body:has(.bakh-document){overflow:visible}}
+@media print{.document.bakh-appendix{page:bakh-appendix-landscape;padding:0;min-width:0;max-width:none;width:100%}.document.bakh-appendix table{min-width:0;width:100%}.document.bakh-appendix .bakh-appendix-table th,.document.bakh-appendix .bakh-appendix-table td{font-size:7pt;padding:2.5pt}.document.bakh-appendix .bakh-appendix-heading h2,.document.bakh-appendix .bakh-appendix-heading p{font-size:8pt}.bakh-appendix thead{display:table-header-group}.bakh-appendix-signatures{break-inside:avoid}.bakh-wet-signature{height:24mm}.modal-body:has(.bakh-appendix){overflow:visible}}

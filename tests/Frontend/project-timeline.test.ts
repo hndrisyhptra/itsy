@@ -20,7 +20,7 @@ function state():State {
     {id:'event-prefix',title:'Prefix collision',detail:'QA',route:'/project-plan/'+s.projects[0].id+'0',actor:'Admin Konstruksi',at:'2026-11-04T05:00:00Z'}];
   return s;
 }
-function term():Term {return {id:'qa-term',spkId:'spk-1',number:1,type:'Parsial',workflowVersion:3,status:'Diajukan',actuals:{},approvals:[],history:[],apm:'',apmStatus:'Belum Terbit',paid:0,paymentHistory:[]};}
+function term():Term {return {id:'qa-term',spkId:'spk-1',number:1,type:'Parsial',workflowVersion:3,approvalScheme:'project-support-first',status:'Diajukan',actuals:{},approvals:[],history:[],apm:'',apmStatus:'Belum Terbit',paid:0,paymentHistory:[]};}
 
 test('one business Project ID admits independent PP numbers, BOQs and roots in the client preview',()=>{
   const s=state(),input=structuredClone(s.projects[0]);input.id=input.rootId='pp-shared-a';input.unit='Konstruksi';input.status='Draft';delete input.pmUserId;delete input.managerUserId;delete input.approverUserIds;
@@ -76,9 +76,9 @@ test('PP table removes Jenis PP and provides accessible timeline links for each 
 });
 
 test('timeline renders current approval progress and preserves historical decisions without inventing approvals',()=>{
-  const s=state(),p=s.projects[0];p.workflowVersion=3;p.status='Diajukan';p.approvals=APPROVERS_V3.slice(0,2).map(role=>({role,actorName:'QA '+role,decision:'Setujui',note:'QA',at:'2026-11-04T02:00:00Z'}));p.approvalHistory=[...p.approvals];
-  assert.equal(projectPosition(p),'Menunggu approval Mgr Deployment');const before=JSON.stringify(s),html=renderToStaticMarkup(createElement(ProjectTimeline,{s,id:p.id}));
-  assert.ok(html.includes('Menunggu approval Mgr Deployment'));assert.ok(html.includes('2/5 approval PP'));assert.ok(html.includes('PP/QA/SIBLING'));assert.ok(!html.includes('Prefix collision'));assert.ok(!html.includes('Unrelated'));assert.equal(JSON.stringify(s),before);
+  const s=state(),p=s.projects[0];p.workflowVersion=3;p.approvalScheme='project-support-first';p.status='Diajukan';p.approvals=APPROVERS_V3.slice(0,2).map(role=>({role,actorName:'QA '+role,decision:'Setujui',note:'QA',at:'2026-11-04T02:00:00Z'}));p.approvalHistory=[...p.approvals];
+  assert.equal(projectPosition(p),'Menunggu approval Mgr Project Support');const before=JSON.stringify(s),html=renderToStaticMarkup(createElement(ProjectTimeline,{s,id:p.id}));
+  assert.ok(html.includes('Menunggu approval Mgr Project Support'));assert.ok(html.includes('2/5 approval PP'));assert.ok(html.includes('PP/QA/SIBLING'));assert.ok(!html.includes('Prefix collision'));assert.ok(!html.includes('Unrelated'));assert.equal(JSON.stringify(s),before);
   p.status='Dikembalikan';p.approvals=[];p.approvalHistory.push({role:'Mgr Deployment',actorName:'QA Return',decision:'Kembalikan',note:'Lengkapi dokumen QA',at:'2026-11-04T03:00:00Z'});
   const returned=renderToStaticMarkup(createElement(ProjectTimeline,{s,id:p.id}));assert.ok(returned.includes('0/5 approval PP'));assert.ok(returned.includes('Lengkapi dokumen QA'));assert.ok(returned.includes('QA Return'));
 });

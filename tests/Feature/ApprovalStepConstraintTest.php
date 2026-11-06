@@ -70,4 +70,35 @@ class ApprovalStepConstraintTest extends TestCase
         $this->expectExceptionMessage('rollback ditolak');
         $this->migration()->down();
     }
+
+    public function test_support_first_check_accepts_both_frozen_old_runs_and_the_exact_new_order(): void
+    {
+        $migration = require database_path('migrations/2026_11_06_000003_version_support_first_approval_order.php');
+        DB::statement('CREATE TABLE ordered_steps (workflow_version INTEGER NOT NULL, approval_order_version INTEGER NOT NULL, step_no INTEGER NOT NULL, expected_role TEXT NOT NULL, CHECK ('.$migration->checkCondition().'))');
+        foreach ([1 => ['PM_KONSTRUKSI', 'ADMIN_AREA', 'MGR_DEPLOYMENT', 'MGR_PROJECT_SUPPORT', 'HEAD_OF_PMO', 'FINANCE'], 2 => ['PM_KONSTRUKSI', 'ADMIN_AREA', 'MGR_PROJECT_SUPPORT', 'MGR_DEPLOYMENT', 'HEAD_OF_PMO', 'FINANCE']] as $order => $roles) {
+            foreach ($roles as $step => $role) {
+                $this->assertTrue(DB::table('ordered_steps')->insert(['workflow_version' => 3, 'approval_order_version' => $order, 'step_no' => $step + 1, 'expected_role' => $role]));
+            }
+        }
+        $this->assertTrue(DB::table('ordered_steps')->insert(['workflow_version' => 3, 'approval_order_version' => 1, 'step_no' => 4, 'expected_role' => 'MGR_BUSSINESS_SUPPORT']));
+        $this->assertTrue(DB::table('ordered_steps')->insert(['workflow_version' => 2, 'approval_order_version' => 1, 'step_no' => 2, 'expected_role' => 'MANAGER_KONSTRUKSI']));
+        foreach ([[3, 2, 3, 'MGR_DEPLOYMENT'], [3, 2, 4, 'MGR_PROJECT_SUPPORT'], [3, 2, 4, 'MGR_BUSSINESS_SUPPORT'], [3, 2, 7, 'FINANCE'], [2, 2, 1, 'PM_KONSTRUKSI'], [3, 3, 3, 'MGR_PROJECT_SUPPORT']] as [$version, $order, $step, $role]) {
+            try {
+                DB::table('ordered_steps')->insert(['workflow_version' => $version, 'approval_order_version' => $order, 'step_no' => $step, 'expected_role' => $role]);
+                $this->fail('The new CHECK must not permit an invalid order or role.');
+            } catch (QueryException $e) {
+                $this->assertStringContainsString('CHECK constraint failed', $e->getMessage());
+            }
+        }
+    }
+
+    public function test_support_first_migration_refuses_rollback_after_the_new_order_is_used(): void
+    {
+        DB::statement('CREATE TABLE approval_steps (approval_order_version INTEGER)');
+        DB::table('approval_steps')->insert(['approval_order_version' => 2]);
+        $migration = require database_path('migrations/2026_11_06_000003_version_support_first_approval_order.php');
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('rollback ditolak');
+        $migration->down();
+    }
 }

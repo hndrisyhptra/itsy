@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Check, Clock3, ArrowUpRight } from 'lucide-react';
-import { type State, type Project, type Term, type Approval, approvalRoles, selectedApprover, money, termTotal } from './domain';
+import { type State, type Project, type Term, type Approval, nextApprovalRole, approvalRoles, selectedApprover, money, termTotal } from './domain';
 import { projectTimeline, projectPosition, paymentPosition } from './project-timeline';
 import { PageTitle, Card, Badge, Link, Notice, Table, Empty, Field } from './ui';
 import { appUrl } from './laravel';
@@ -8,7 +8,7 @@ import { appUrl } from './laravel';
 const stamp=(value?:string)=>value&&Number.isFinite(Date.parse(value))?new Intl.DateTimeFormat('id-ID',{dateStyle:'medium',...(value.includes('T')?{timeStyle:'short' as const}:{}),timeZone:'Asia/Jakarta'}).format(new Date(value)):'Waktu tidak tercatat';
 
 export function ApprovalTrack({s,document,project=false}:{s:State;document:Project|Term;project?:boolean}) {
-  const roles=approvalRoles(document,project), approvals=document.approvals??[],waiting=document.status==='Diajukan'?roles[approvals.length]:undefined;
+  const roles=approvalRoles(document,project), approvals=document.approvals??[],waiting=document.status==='Diajukan'?nextApprovalRole(document,project):undefined;
   return <ol className="project-approval-track" aria-label={project?'Tahap approval PP':'Tahap approval pembayaran'}>{roles.map((role,i)=>{
     const decision=approvals.find(a=>a.role===role&&a.decision==='Setujui'),current=role===waiting;
     const name=decision?.actorName??s.users.find(u=>u.id===(decision?.userId??selectedApprover(document,role)))?.name;

@@ -23,6 +23,7 @@ class PrototypeDomain
             'decideProject' => $this->decideProject($args[0] ?? '', $args[1] ?? '', $args[2] ?? ''),
             'assignProjectApprovers' => $this->assignProjectApprovers($args[0] ?? '', $args[1] ?? '', $args[2] ?? ''),
             'assignPaymentApprovers' => $this->assignPaymentApprovers($args[0] ?? '', $this->object($args[1] ?? null)),
+            'adoptApprovalOrder' => $this->adoptApprovalOrder($args[0] ?? '', $args[1] ?? '', $args[2] ?? ''),
             'setNumberFormat' => $this->setNumberFormat($args[0] ?? ''),
             'selectActor' => $this->selectActor($args[0] ?? ''),
             '_attachTermScan' => $this->attachTermScan($args[0] ?? '', $this->object($args[1] ?? null)),
@@ -497,9 +498,12 @@ class PrototypeDomain
         $selected = false;
         $seen = [];
         $saved = $this->existing('deals', $d['id'] ?? '');
-        $checkSph = isset($p['planBudget']) && ! ($saved && $saved['projectId'] === $p['id'] && in_array($saved['status'], ['Terbit', 'Sah'], true));
+        $checkMandorPrices = isset($p['planBudget']) && ! ($saved && $saved['projectId'] === $p['id'] && in_array($saved['status'], ['Terbit', 'Sah'], true));
+        $sources = array_column($root['boq'], null, 'id');
+        $mandorPrices = array_column($p['planBudget']['mandor'] ?? [], null, 'rowId');
+        $khsById = $checkMandorPrices ? array_column($this->state['khs'], null, 'id') : [];
         foreach ($d['rows'] ?? [] as $r) {
-            $source = collect($root['boq'])->firstWhere('id', $r['rowId'] ?? '');
+            $source = $sources[$r['rowId'] ?? ''] ?? null;
             if (! $source || isset($seen[$r['rowId']])) {
                 $this->fail('Baris kesepakatan tidak dikenal/duplikat.');
             }
@@ -525,16 +529,19 @@ class PrototypeDomain
                     $this->fail('Harga '.($c === 'm' ? 'Material' : 'Jasa').' melebihi KHS komponen.');
                 }
                 $sph = $this->number($r[$c === 'm' ? 'sphM' : 'sphS'] ?? -1);
-                if ($checkSph) {
-                    $plan = collect($p['planBudget']['mandor'] ?? [])->firstWhere('rowId', $r['rowId']);
+                if ($checkMandorPrices) {
+                    $plan = $mandorPrices[$r['rowId']] ?? [];
                     $threshold = $plan[$c === 'm' ? 'priceM' : 'priceS'] ?? null;
                     $component = $c === 'm' ? 'Material' : 'Jasa';
-                    $code = $this->existing('khs', $source['khsId'])['code'] ?? $source['khsId'];
+                    $code = $khsById[$source['khsId']]['code'] ?? $source['khsId'];
                     if ((! is_int($threshold) && ! is_float($threshold)) || ! is_finite((float) $threshold) || $threshold < 0) {
                         $this->fail('Referensi BOQ TA - Mandor '.$component.' '.$code.' belum tersedia.');
                     }
                     if ($sph > $threshold) {
                         $this->fail('SPH '.$component.' '.$code.' melebihi threshold BOQ TA - Mandor (maksimal Rp'.number_format($threshold, 2, ',', '.').' per satuan).');
+                    }
+                    if ($price > $threshold) {
+                        $this->fail('Harga kesepakatan '.$component.' '.$code.' melebihi threshold BOQ TA - Mandor (maksimal Rp'.number_format($threshold, 2, ',', '.').' per satuan).');
                     }
                 }
                 $this->number($r[$c === 'm' ? 'offerM' : 'offerS'] ?? -1);
@@ -591,6 +598,7 @@ class PrototypeDomain
             $d['start'] = $period['start'];
             $d['end'] = $period['end'];
         }
+        $d = BakhSigner::sync($this->state, $d, $action !== 'save');
         $this->validateDeal($d, $action !== 'save');
         if ($action === 'attest') {
             $this->required($d, ['evidence']);
@@ -683,7 +691,7 @@ class PrototypeDomain
             $t['workflowVersion'] = $version;
             $t['pmUserId'] = $chain['PM Konstruksi'];
             if ($version >= 3) {
-                $t['approvalScheme'] = 'project-support';
+                $t['approvalScheme'] = 'project-support-first';
                 $t['approverUserIds'] = $chain;
                 $t['financeHistory'] = [];
             } else {
@@ -744,7 +752,7 @@ class PrototypeDomain
     {
         $t = $this->record('terms', $id);
         $roles = $this->approvalRoles($t);
-        abort_unless($t['status'] === 'Diajukan' && ($roles[count($t['approvals'])] ?? null) === $this->state['role'], 403, 'Approval harus berurutan oleh role yang ditugaskan.');
+        abort_unless($t['status'] === 'Diajukan' && self::nextApprovalRole($t) === $this->state['role'], 403, 'Approval harus berurutan oleh role yang ditugaskan.');
         if (($t['workflowVersion'] ?? 1) >= 2) {
             $this->assigned($t, $this->state['role']);
         }
@@ -959,7 +967,7 @@ class PrototypeDomain
             $p = array_merge($p, ['workflowVersion' => 2, 'unit' => $parent['unit'] === 'Operation' ? 'Operation' : 'Konstruksi', 'pmUserId' => $parent['pmUserId'] ?? '', 'managerUserId' => $parent['managerUserId'] ?? '', 'approvals' => [], 'approvalHistory' => []]);
             if (($this->state['schema'] ?? 1) >= 3) {
                 $p['workflowVersion'] = 3;
-                $p['approvalScheme'] = 'project-support';
+                $p['approvalScheme'] = 'project-support-first';
                 $p['approverUserIds'] = $parent['approverUserIds'] ?? $parent['paymentApproverUserIds'] ?? [];
                 $p['continuationNotes'] = $notes;
                 $p['schedule'] = array_fill(0, 5, ['days' => 1]);

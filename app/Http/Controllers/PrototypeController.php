@@ -30,13 +30,14 @@ class PrototypeController extends Controller
         abort_if(strlen($request->getContent()) > 2 * 1024 * 1024, 413, 'Data transaksi terlalu besar.');
         $input = $request->validate([
             'request_id' => ['required', 'uuid'], 'revision' => ['required', 'integer', 'min:0'],
-            'command' => ['required', 'string', 'in:removeTermWorkEvidence,saveProject,decideProject,assignProjectApprovers,assignPaymentApprovers,setNumberFormat,selectActor,verifyTermScan,importDemo,reviewBoq,finalizeBoq,saveDeal,saveSpk,createTerm,saveTerm,decide,recordApm,recordPayment,attestBapp,releaseVolume,createContinuation,updateKhs,saveUser,saveProfile,role,reset'],
+            'command' => ['required', 'string', 'in:adoptApprovalOrder,removeTermWorkEvidence,saveProject,decideProject,assignProjectApprovers,assignPaymentApprovers,setNumberFormat,selectActor,verifyTermScan,importDemo,reviewBoq,finalizeBoq,saveDeal,saveSpk,createTerm,saveTerm,decide,recordApm,recordPayment,attestBapp,releaseVolume,createContinuation,updateKhs,saveUser,saveProfile,role,reset'],
             'args' => ['present', 'array', 'max:5'], 'result_id' => ['nullable', 'string', 'regex:/^[a-zA-Z0-9-]{3,100}$/D'],
         ]);
         $types = [
             'decideProject' => ['string', 'string', 'string'], 'assignProjectApprovers' => ['string', 'string', 'string'],
             'setNumberFormat' => ['string'], 'selectActor' => ['string'], 'verifyTermScan' => ['string', 'string', 'string'],
             'assignPaymentApprovers' => ['string', 'array'],
+            'adoptApprovalOrder' => ['string', 'string', 'string'],
             'removeTermWorkEvidence' => ['string', 'string'], 'saveProject' => ['array', 'boolean'], 'importDemo' => ['string'], 'reviewBoq' => ['string', 'string', 'string'], 'finalizeBoq' => ['string'],
             'saveDeal' => ['array', 'string'], 'saveSpk' => ['array', 'string'], 'createTerm' => ['string'], 'saveTerm' => ['array', 'boolean'],
             'decide' => ['string', 'string', 'string'], 'recordApm' => ['string', 'string', 'boolean'], 'recordPayment' => ['string', 'numeric', 'string'],

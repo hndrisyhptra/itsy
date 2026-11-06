@@ -1,0 +1,23 @@
+# Preview Lampiran BA KH — 6 November 2026
+
+Tombol **Lihat Lampiran** pada langkah terakhir BA KH membuka preview khusus mengikuti referensi `Lampiran-BA KH.xlsx`, Sheet1 A1:J18. Referensi hanya dipakai untuk tata letak, bukan data harga/nama contoh.
+
+Tombol **Unduh Word (.docx)** menghasilkan lampiran A4 horizontal dengan tabel native editable, header tiga tingkat berulang dan ruang TTD kosong. Data sama dengan preview/draf yang terbuka, dari model bakh-content.ts bersama, tanpa menulis database atau memakai layanan luar. Rincian format, performa dan QA: [BAKH_WORD_EXPORT.md](BAKH_WORD_EXPORT.md).
+
+Sesuai revisi pengguna, bagian atas kini hanya dua baris kecil rata kiri: **LAMPIRAN BERITA ACARA KESEPEKATAN HARGA** dan **PEKERJAAN: {nama kegiatan PP terpilih}**. Ejaan judul mengikuti teks permintaan. Nomor PP dan nomor BA KH tidak ditampilkan pada lampiran ini; nomor transaksi tersimpan dan tampilan dokumen utamanya tetap sama. Header memakai 10px pada preview dan 8pt saat cetak, termasuk saat nama kegiatan membungkus ke baris berikutnya.
+
+Tabel memiliki sepuluh kolom dan tiga baris header: No, Designator, Uraian, Satuan, Negosiasi (Mandor Material/Jasa dan Telkom Akses Material/Jasa), serta Kesepakatan Material/Jasa. Semua harga adalah harga satuan rupiah: `offerM/offerS` untuk Mandor, `sphM/sphS` untuk Telkom Akses, dan `pm/ps` untuk kesepakatan. Tidak mengalikan volume atau menambahkan total yang tidak ada pada contoh. Komponen tidak dipilih ditampilkan sebagai sel kosong sesuai revisi pengguna; harga nol tetap 0. Hanya baris dengan komponen terpilih ditampilkan.
+
+Designator, uraian dan satuan mengikuti referensi BOQ induk yang sudah dimuat, termasuk PP lanjutan. Nama/NIK Head memakai identitas BA KH yang telah diselaraskan menurut [BAKH_SIGNER.md](BAKH_SIGNER.md); preview tidak mengganti snapshot Terbit/Sah dengan akun terbaru. Blok kiri Telkom Akses memuat Head of PMO Area Jawa Bali untuk dokumen dengan role tersebut; blok kanan memuat Mandor dan jabatan Ketua Mandor. Identitas historis tanpa role Head tetap ditampilkan sesuai BA KH, tanpa mengklaim jabatan baru. Kedua ruang tanda tangan kosong untuk TTD basah, tanpa gambar/stempel rekaan.
+
+Tabel mempunyai garis horizontal/vertikal, ukuran huruf layar 9px dan padding 4px × 3px. Minimum lebar tabel diperkecil dari 1040px menjadi 760px, sehingga sesuai ruang modal desktop; scroll lokal tetap tersedia pada layar kecil. Dokumen layar dibatasi 1000px dengan padding lebih kecil. Cetak/PDF memakai fasilitas browser dengan named page `bakh-appendix-landscape`: A4 horizontal dan margin 10mm, tabel lebar penuh/huruf 7pt, header diulang dan blok TTD diusahakan utuh. Pengaturan ini hanya berlaku pada lampiran BA KH, tidak mengubah orientasi PP/SPK/Pembayaran lain. Dialog browser/printer tetap dapat mengubah pengaturan cetak. Tabel daftar SPK · BA KH & Negosiasi tetap memakai gaya awal.
+
+## Sel kosong pada seluruh tabel — revisi 6 November 2026
+
+Penanda N/A untuk komponen yang tidak tersedia/tidak dipilih dihapus dari keluaran React pada BOQ/review, PP/lampiran, penugasan dan negosiasi BA KH, SPK, preview pembayaran/BA PP, serta master KHS/riwayat lama. Label pembanding KHS juga disembunyikan jika komponennya tidak tersedia agar sel tetap kosong. Sel/kolom tidak dihapus dan angka nol tetap ditampilkan. Nilai null/status pemilihan, perhitungan, validasi server, data historis dan ekspor tidak diubah. Ini hanya kebijakan tampilan, bukan penggantian nilai null menjadi nol atau string kosong di database.
+
+## Data, performa dan batas pengujian
+
+Perubahan hanya React/CSS, tanpa endpoint, migration, penulisan database, perubahan harga atau approval. Lookup BOQ/KHS diindeks sekali per render melalui Map: O(BOQ + KHS + baris lampiran), tanpa pencarian katalog berulang per sel atau permintaan SQL/jaringan baru. Formatter rupiah dipakai ulang. Preview memakai data transaksi yang sedang dibuka; bukan simulasi harga dari workbook.
+
+Lima regresi lampiran memeriksa struktur/pemetaan enam harga, harga satuan bukan volume-total, nol/sel kosong/baris tidak dipilih, referensi PP lanjutan, snapshot Head/ruang TTD kosong, jalur tombol preview dan referensi/identitas kosong. Dua regresi tambahan merender sepuluh keluaran form/list/preview dengan komponen null/tidak dipilih dan harga nol, memastikan tidak ada N/A, sel kosong, nol tetap terlihat, serta state sumber tidak berubah. Pengujian SSR memeriksa markup/data; tidak membuktikan hasil visual atau pemenggalan halaman pada browser/printer. Pemeriksaan browser terautentikasi, viewport dan cetak fisik belum diulang manual. Riwayat revisi dan hasil pengujian dicatat di [CHANGELOG.md](CHANGELOG.md).

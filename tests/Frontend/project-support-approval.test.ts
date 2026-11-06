@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { seed } from '../../resources/js/area3/seed';
-import { normalizeWorkflow, APPROVERS_V3, APPROVERS_V3_LEGACY, approvalRoles, canApproveProject, decideProject, selectActor, assignPaymentApprovers, createTerm, nextTermReason, type Role } from '../../resources/js/area3/domain';
+import { normalizeWorkflow, APPROVERS_V3_PREVIOUS, adoptApprovalOrder, nextApprovalRole, canApproveTerm, decide, APPROVERS_V3, APPROVERS_V3_LEGACY, approvalRoles, canApproveProject, decideProject, selectActor, assignPaymentApprovers, createTerm, nextTermReason, type Role } from '../../resources/js/area3/domain';
 import { RiskQualitySection } from '../../resources/js/area3/plan-budget-ui';
 import { defaultSignatureRows } from '../../resources/js/area3/plan-budget';
 import { ProjectApproverFields } from '../../resources/js/area3/workflow-ui';
@@ -16,10 +16,10 @@ function fixture(){
 }
 function actor(s:ReturnType<typeof fixture>['s'],role:Role){s.role=role;selectActor(s,s.users.find(u=>u.role===role)!.id);}
 
-test('new PP field has Project Support at stage four while a pending legacy PP still expects Business Support',()=>{
+test('new PP field has Project Support at stage three while a pending legacy PP still expects Business Support',()=>{
   const {s,p,chain}=fixture();p.workflowVersion=3;p.status='Draft';p.approvals=[];p.approvalHistory=[];p.approverUserIds=chain(APPROVERS_V3_LEGACY);
   const fields=renderToStaticMarkup(createElement(ProjectApproverFields,{s,p,onChange:()=>{},disabled:false}));
-  assert.match(fields,/Approval 4 · Mgr Project Support \(wajib saat pengajuan\)/);assert.doesNotMatch(fields,/Approval 4 · Mgr Bussiness Support/);
+  assert.match(fields,/Approval 3 · Mgr Project Support \(wajib saat pengajuan\)/);assert.doesNotMatch(fields,/Approval 4 · Mgr Bussiness Support/);
   p.status='Diajukan';p.approvals=APPROVERS_V3_LEGACY.slice(0,3).map(role=>({role,userId:p.approverUserIds![role],decision:'Setujui',note:'Historical QA',at:'2026-11-06T01:00:00Z'}));p.approvalHistory=structuredClone(p.approvals);
   assert.deepEqual(approvalRoles(p,true),APPROVERS_V3_LEGACY);
   actor(s,'Mgr Project Support');assert.equal(canApproveProject(s,p),false);assert.throws(()=>decideProject(s,p.id,'Setujui','Denied'));
@@ -32,7 +32,7 @@ test('old approved PP requires explicit future assignments and new payment selec
   const before=JSON.stringify(p.approvalHistory);actor(s,'Admin Konstruksi');
   assert.match(nextTermReason(s,s.spks[0].id),/Tetapkan lima approver/);assignPaymentApprovers(s,p.id,chain(APPROVERS_V3));
   const id=createTerm(s,s.spks[0].id),term=s.terms.find(t=>t.id===id)!;
-  assert.equal(term.approvalScheme,'project-support');assert.deepEqual(approvalRoles(term),APPROVERS_V3);assert.equal(JSON.stringify(p.approvalHistory),before);
+  assert.equal(term.approvalScheme,'project-support-first');assert.deepEqual(approvalRoles(term),APPROVERS_V3);assert.equal(JSON.stringify(p.approvalHistory),before);
 });
 
 test('new closing preview has exactly four requested positions in order, genuine stamps and empty print cells',()=>{
@@ -46,4 +46,33 @@ test('new closing preview has exactly four requested positions in order, genuine
   assert.equal((closing.match(/>APPROVED</g)??[]).length,4);assert.equal((closing.match(/class="pp-signature-print" aria-hidden="true"><\/div>/g)??[]).length,4);
   assert.doesNotMatch(closing,/Admin Area|Mgr Bussiness Support|CLIENT OVERRIDE/);
   p.status='Ditolak';const rejected=renderToStaticMarkup(createElement(RiskQualitySection,{s,p,printing:true}));assert.doesNotMatch(rejected,/>APPROVED</);
+});
+
+
+test('running PP keeps Deployment decision and waits for the first unapproved role in the new order',()=>{
+  const {s,p,chain}=fixture();p.workflowVersion=3;p.approvalScheme='project-support';p.status='Diajukan';p.approverUserIds=chain(APPROVERS_V3);
+  p.approvals=APPROVERS_V3_PREVIOUS.slice(0,3).map(role=>({role,userId:p.approverUserIds![role],decision:'Setujui',note:'Existing decision',at:'2026-11-06T01:00:00Z'}));p.approvalHistory=structuredClone(p.approvals);
+  const before=structuredClone(p.approvalHistory);assert.equal(nextApprovalRole(p,true),'Mgr Project Support');
+  actor(s,'Mgr Deployment');assert.equal(canApproveProject(s,p),false);assert.throws(()=>decideProject(s,p.id,'Setujui','No duplicate'));
+  actor(s,'Mgr Project Support');decideProject(s,p.id,'Setujui','QA');assert.equal(nextApprovalRole(p,true),'Head of PMO');
+  actor(s,'Head of PMO');decideProject(s,p.id,'Setujui','QA');assert.equal(p.status,'Sah');assert.deepEqual(p.approvalHistory!.slice(0,3),before);
+});
+
+test('adopting a running legacy approval validates the selected Support account and preserves PM history',()=>{
+  const {s,p,chain}=fixture();p.workflowVersion=3;p.status='Diajukan';p.approverUserIds=chain(APPROVERS_V3_LEGACY);delete p.approvalScheme;
+  p.approvals=APPROVERS_V3_LEGACY.slice(0,1).map(role=>({role,userId:p.approverUserIds![role],decision:'Setujui',note:'Existing decision',at:'2026-11-06T01:00:00Z'}));p.approvalHistory=structuredClone(p.approvals);
+  const before=JSON.stringify(p.approvalHistory),support=s.users.find(u=>u.role==='Mgr Project Support')!;actor(s,'Admin Konstruksi');
+  assert.throws(()=>adoptApprovalOrder(s,'projects',p.id,s.users.find(u=>u.role==='PM Konstruksi')!.id));
+  adoptApprovalOrder(s,'projects',p.id,support.id);assert.equal(JSON.stringify(p.approvalHistory),before);assert.deepEqual(approvalRoles(p,true),APPROVERS_V3);assert.equal(p.approverUserIds['Mgr Project Support'],support.id);
+  actor(s,'Admin Area');decideProject(s,p.id,'Setujui','QA');assert.equal(nextApprovalRole(p,true),'Mgr Project Support');
+});
+
+
+test('a running payment with Deployment already approved advances through Support to Head without duplicate approval',()=>{
+  const {s,p,chain}=fixture();p.workflowVersion=3;p.status='Sah';p.approvalScheme='project-support';p.approverUserIds=chain(APPROVERS_V3);s.terms=[];actor(s,'Admin Konstruksi');
+  const id=createTerm(s,s.spks[0].id),t=s.terms.find(t=>t.id===id)!;t.approvalScheme='project-support';t.status='Diajukan';
+  t.approvals=APPROVERS_V3_PREVIOUS.slice(0,3).map(role=>({role,userId:t.approverUserIds![role],decision:'Setujui',note:'Existing decision',at:'2026-11-06T01:00:00Z'}));t.history=structuredClone(t.approvals);
+  const before=structuredClone(t.history);actor(s,'Mgr Deployment');assert.equal(canApproveTerm(s,t),false);assert.throws(()=>decide(s,id,'Setujui','No duplicate'));
+  actor(s,'Mgr Project Support');assert.equal(canApproveTerm(s,t),true);decide(s,id,'Setujui','QA');assert.equal(nextApprovalRole(t),'Head of PMO');
+  actor(s,'Head of PMO');decide(s,id,'Setujui','QA');assert.equal(t.status,'Disetujui');assert.deepEqual(t.history.slice(0,3),before);assert.equal(t.history.length,5);
 });

@@ -1,0 +1,64 @@
+{
+  "date": "2026-11-06",
+  "feature": "BA KH and appendix native DOCX downloads",
+  "tests": {
+    "php_passed": 194,
+    "php_assertions": 3260,
+    "frontend_passed": 156,
+    "typescript_vite": "passed",
+    "new_docx_tests": 7
+  },
+  "artifacts": {
+    "bakh": {
+      "bytes": 12004,
+      "sha256": "7477403f53fc9baa6936a766131e681b1a9df8004e69eca6d18277454bc9d593",
+      "zip_crc_xml": "valid",
+      "package_entries": 6,
+      "page_size_mm": [
+        210.009,
+        297.004
+      ],
+      "rendered_pages": 1,
+      "native_tables": 1
+    },
+    "appendix": {
+      "bytes": 118380,
+      "sha256": "a3b4ee91f9298964405ac93ee05a88895876d1143cc71f0fd099028afd45fe6e",
+      "zip_crc_xml": "valid",
+      "package_entries": 6,
+      "page_size_mm": [
+        297.004,
+        210.009
+      ],
+      "rendered_pages": 3,
+      "native_tables": 2
+    }
+  },
+  "visual_review": {
+    "tool": "bundled LibreOffice via render_docx.py",
+    "all_final_pages_reviewed": true,
+    "main_pages": 1,
+    "appendix_pages": 3,
+    "appendix_item_rows": 32,
+    "corrections": [
+      "hanging indent for wrapped metadata and price explanation",
+      "top-aligned signature blocks"
+    ]
+  },
+  "limits": [
+    "Authenticated browser download not manually clicked",
+    "Microsoft Word desktop not manually opened",
+    "Physical printing not manually checked",
+    "No load or universal latency claim"
+  ],
+  "live_database_mutated": false,
+  "additional_sql_queries": 0,
+  "additional_data_requests": 0,
+  "new_runtime_dependencies": 0,
+  "lazy_chunk": {
+    "file": "assets/bakh-docx-njkOrOVJ.js",
+    "bytes": 8761,
+    "gzip_bytes": 3501,
+    "gzip_level": 6
+  }
+}

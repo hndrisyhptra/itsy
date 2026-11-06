@@ -5,7 +5,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { seed } from '../../resources/js/area3/seed';
 import { blankDeal, saveDeal, dealErrors, getDeal, type Deal } from '../../resources/js/area3/domain';
 import { mandorSphThreshold } from '../../resources/js/area3/sph';
-import { SphPriceField } from '../../resources/js/area3/contracts';
+import { AgreementPriceField, SphPriceField } from '../../resources/js/area3/contracts';
 
 function fixture() {
   const s=seed('B'),p=s.projects[0];
@@ -30,7 +30,7 @@ test('SPH Material and Jasa cannot offset each other or bypass saved PP threshol
     const bad=structuredClone(d);bad.rows[0][key]+=.01;bad.rows[0][key==='sphM'?'sphS':'sphM']=0;bad.status='Sah';
     assert.throws(()=>saveDeal(s,bad,action),new RegExp(`SPH ${key==='sphM'?'Material':'Jasa'}.*melebihi threshold`));assert.equal(JSON.stringify(s),baseline);
   }
-  const {s:zero,p,d:dz,r}=fixture();p.planBudget!.mandor[0].priceM=0;r.sphM=.01;assert.throws(()=>saveDeal(zero,dz),/threshold/);r.sphM=0;saveDeal(zero,dz);
+  const {s:zero,p,d:dz,r}=fixture();p.planBudget!.mandor[0].priceM=0;r.pm=0;r.sphM=.01;assert.throws(()=>saveDeal(zero,dz),/threshold/);r.sphM=0;saveDeal(zero,dz);
   const {s:missing,p:pm,d:dm}=fixture();pm.planBudget!.mandor.shift();assert.throws(()=>saveDeal(missing,dm),/belum tersedia/);
 });
 
@@ -44,10 +44,36 @@ test('thresholds follow the selected continuation, preserve issued snapshots and
 });
 
 test('SPH price fields show accessible immediate threshold alerts, zero caps and per-unit hints',()=>{
-  const props={value:100.01,threshold:100,required:true,component:'Jasa' as const,code:'QA',disabled:false,onChange:()=>{}};
+  const props={value:100.01,threshold:100 as number|null,required:true,component:'Jasa' as const,code:'QA',disabled:false,onChange:()=>{}};
   const render=(patch:Partial<typeof props>={})=>renderToStaticMarkup(createElement(SphPriceField,{...props,...patch}));
   assert.match(render(),/aria-invalid="true"/);assert.match(render(),/max="100"/);assert.match(render(),/role="alert"/);assert.match(render(),/melebihi threshold/);assert.match(render(),/per satuan/);
   assert.doesNotMatch(render({value:100}),/role="alert"|aria-invalid="true"/);
   assert.match(render({value:.01,threshold:0}),/max="0"/);
   const missing=renderToStaticMarkup(createElement(SphPriceField,{...props,threshold:null}));assert.match(missing,/belum tersedia/);
+});
+
+
+test('agreement defaults and exact ceilings follow the saved Mandor Material and Jasa unit prices',()=>{
+  const {s,p,d,r}=fixture(),plan=p.planBudget!.mandor[0];assert.equal(r.pm,plan.priceM);assert.equal(r.ps,plan.priceS);
+  for(const action of ['save','generate','attest']as const){const copy=structuredClone(s);saveDeal(copy,d,action);assert.equal(getDeal(copy,d.id).rows[0].pm,plan.priceM);assert.equal(getDeal(copy,d.id).rows[0].ps,plan.priceS);}
+  const before=JSON.stringify(s);
+  for(const key of ['pm','ps']as const)for(const action of ['save','generate','attest']as const){const bad=structuredClone(d);bad.rows[0][key]+=.01;bad.rows[0][key==='pm'?'ps':'pm']=0;bad.status='Sah';assert.throws(()=>saveDeal(s,bad,action),new RegExp('Harga kesepakatan '+(key==='pm'?'Material':'Jasa')+'.*melebihi threshold'));assert.equal(JSON.stringify(s),before);}
+});
+
+test('agreement limits honor zero, missing references, excluded components and the selected continuation',()=>{
+  const {s,p,d,r}=fixture();p.planBudget!.mandor[0].priceM=0;r.sphM=0;r.pm=.01;assert.throws(()=>saveDeal(s,d),/Harga kesepakatan Material/);r.pm=0;saveDeal(s,d);
+  const {s:childState,p:root,d:childDeal}=fixture(),child=structuredClone(root);child.id='child-agreement';child.parentId=root.id;child.rootId=root.id;child.allocations={[root.boq[0].id]:{m:5,s:5}};child.planBudget!.mandor[0].priceS=20;childState.projects.push(child);childDeal.projectId=child.id;childDeal.rows[0].sphS=20;childDeal.rows[0].ps=20.01;assert.ok(dealErrors(childState,childDeal).some(e=>e.includes('Harga kesepakatan Jasa')));
+  const {s:excluded,d:ed,r:er}=fixture();er.m=false;er.qm=0;er.pm=999999;saveDeal(excluded,ed);
+  const {s:missing,p:mp,d:md}=fixture();mp.planBudget!.mandor.shift();assert.throws(()=>saveDeal(missing,md),/belum tersedia/);
+});
+
+test('issued agreement snapshots retain pre-policy prices and ignore attempted changes at attestation',()=>{
+  const {s,d,r}=fixture();r.pm=r.capM!;r.ps=r.capS!;d.status='Terbit';s.deals.push(structuredClone(d));const input=structuredClone(d);input.rows[0].pm=input.rows[0].ps=999999;saveDeal(s,input,'attest');assert.deepEqual(getDeal(s,d.id).rows,d.rows);
+});
+
+test('agreement inputs expose per-component max values and immediate accessible threshold alerts',()=>{
+  const props={value:100.01,threshold:100 as number|null,required:true,component:'Material' as const,code:'QA',disabled:false,onChange:()=>{}};
+  const render=(patch:Partial<typeof props>={})=>renderToStaticMarkup(createElement(AgreementPriceField,{...props,...patch}));
+  assert.match(render(),/aria-label="Harga kesepakatan Material QA"/);assert.match(render(),/aria-invalid="true"/);assert.match(render(),/max="100"/);assert.match(render(),/role="alert"/);assert.match(render(),/Harga kesepakatan Material melebihi threshold/);
+  assert.doesNotMatch(render({value:100}),/role="alert"|aria-invalid="true"/);assert.match(render({value:.01,threshold:0}),/max="0"/);assert.match(render({threshold:null}),/belum tersedia/);
 });

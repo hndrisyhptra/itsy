@@ -305,3 +305,53 @@ Historical iteration; superseded by the dashboard restoration below.
 - [x] Filter awal timeline memakai ID PP pada URL, sehingga kartu/aktivitas PP terpilih langsung muncul; opsi seluruh PP/sibling dan ringkasan ID Project dipertahankan. Tidak ada perubahan database atau tambahan query.
 - [x] Regresi gagal sebelum perbaikan lalu lulus: PP sibling yang diklik, event terpisah, pembukaan PP lain, state tetap utuh dan ID tidak tersedia tidak jatuh ke PP pertama. Klik browser belum diuji manual.
 - [x] 180 PHP tests/3.108 assertions, 126 frontend tests dan build lulus.
+
+## Urutan Project Support sebelum Deployment — 6 November 2026
+- [x] Urutan PP/Pembayaran menjadi PM, Admin Area, Project Support, Deployment, Head, termasuk pengajuan berjalan sesuai jawaban pengguna. Giliran mencari role yang belum menyetujui; keputusan Deployment terdahulu tetap dihitung.
+- [x] Backup its-before-approval-order-20261106-141354.sql: 2.020.568 byte; SHA-256 c3feadbc839a0f4ed7c7ad266d6d7cb424afbc76bc04fdec1d0f32b7adf578f1. Migration 000003 diterapkan: versi urutan SQL baru 2, posisi/ID run lama tetap versi 1; CHECK MariaDB menerima 15/menolak 6 probe temporary.
+- [x] Pengguna memilih akun Support pada PP terbaru untuk legacy berjalan: 1 PP dan 1 Pembayaran diperbarui melalui command Admin tervalidasi dengan audit/receipt, keputusan lama dan PP Sah utuh. Dua PP menunggu Support; pembayaran menunggu Admin Area. Tidak ada approval otomatis.
+- [x] 185 PHP tests/3.161 assertions, 129 frontend tests, build/Pint lulus. Query routing tambahan nol, fixture incremental tetap 8 query; restart worker graceful. Browser/cetak fisik belum diulang manual. Bukti docs/qa/approval-order-20261106.json.
+
+## Garis tabel menu SPK — 6 November 2026
+- [x] Scope tampilan SPK/BA KH mencakup tabel daftar, penugasan, SPH, penawaran, kesepakatan, lampiran SPK dan preview; garis horizontal/vertikal lengkap, header jelas dan sel lebih ringkas.
+- [x] Warna garis mengikuti tema terang/gelap dan dokumen putih/cetak, scroll tabel tetap tersedia. Tanpa perubahan data, alur atau query; browser/cetak fisik belum diperiksa manual.
+- [x] 185 PHP tests/3.161 assertions, 129 frontend tests dan build lulus.
+- [x] Penyesuaian pengguna: khusus list SPK · BA KH & Negosiasi kembali ke gaya tabel awal melalui pengecualian class; list SPK lain, detail, lampiran dan preview tetap bergaris.
+
+## Batas Harga Kesepakatan dari BOQ TA–Mandor — 6 November 2026
+- [x] Material/Jasa pada kesepakatan baru/draf masing-masing dibatasi harga satuan Mandor PP tersimpan, termasuk PP lanjutan; input batas/alert dan badge Invalid, nilai tepat batas/nol valid, KHS tetap dibatasi, snapshot terbit/historis tetap utuh.
+- [x] Backup its-before-agreement-threshold-20261106-151435.sql: 2.032.468 byte; SHA-256 291301806fc246fc12de83914667c5b322f4b4f0cd91471f6c2732b23b859086. Tidak ada migration atau perubahan transaksi live.
+- [x] 189 PHP tests/3.216 assertions, 133 frontend tests, build/Pint lulus. HTTP penolakan tanpa write SQL/revisi/audit; referensi dipetakan sekali tanpa query baru, fixture incremental tetap 8 query. Browser/cetak manual belum diulang.
+
+## Penandatangan BA KH Head of PMO otomatis — 6 November 2026
+- [x] Form BA KH baru/draf PP v3 menampilkan nama/NIK Head terpilih secara read-only; PHP mengabaikan identitas client, preview/cetak memuat nama/NIK dan ruang TTD kosong. Snapshot terbit/Sah dan dokumen historis tetap utuh; NIK hilang tidak dikarang.
+- [x] Nama/jabatan memakai proyeksi contracts yang ada; NIK/ID disimpan di document_data tanpa migration/query baru. Backup its-before-bakh-signer-20261106-153102.sql: 2.032.468 byte, SHA-256 6e655019f5186b02969fbdcb4fca2ace345412e289c9d361f13967d04968c68a.
+- [x] 194 PHP tests/3.260 assertions, 137 frontend tests, build/Pint lulus; helper 0 query, HTTP tiga aksi membuktikan identitas SQL canonical. Tidak ada mutasi live atau uji browser/cetak manual.
+
+## Preview Lampiran BA KH sesuai Excel — 6 November 2026
+- [x] Lampiran khusus dengan 10 kolom/header tiga tingkat Negosiasi Mandor/Telkom Akses dan Kesepakatan, masing-masing Material/Jasa; harga satuan aktual, nol/N/A terpisah, designator/uraian/satuan terpisah dan seluruh sel bergaris.
+- [x] Nama/NIK Head dari identitas BA KH, jabatan Head of PMO Area Jawa Bali dan Mandor di dua blok TTD kosong. Snapshot historis utuh; tanpa menyalin data contoh atau mengarang tanda tangan.
+- [x] Lookup referensi dipetakan sekali tanpa query/jaringan/mutasi baru; scroll lokal dan CSS cetak tersedia. Detail dan batas verifikasi: docs/BAKH_APPENDIX.md.
+- [x] 194 PHP tests/3.260 assertions, 142 frontend tests dan build produksi lulus. Browser/cetak fisik belum diulang manual; tidak ada migration atau perubahan data live.
+
+## Lampiran BA KH horizontal, sel kosong dan audit perubahan — 6 November 2026
+- [x] Tabel lampiran diperkecil: minimum 760px, font layar 9px, padding ringkas; named page A4 horizontal/margin 10mm khusus lampiran. Head/Mandor dan ruang TTD basah tetap tersedia; orientasi dokumen lain tetap.
+- [x] Semua penanda komponen N/A bawaan pada tabel React menjadi sel kosong; label KHS tanpa komponen dihilangkan. Angka 0 tetap terlihat, null/pemilihan komponen/perhitungan/validasi/snapshot/ekspor tidak berubah.
+- [x] docs/CHANGELOG.md menjadi catatan audit terpusat; AGENTS.md mewajibkan pencatatan setiap perubahan termasuk tampilan, README menautkan panduan melanjutkan percakapan. docs/BAKH_APPENDIX.md dan docs/LARAVEL_QA.md diperbarui tanpa menghapus entri audit terdahulu.
+- [x] 194 PHP tests/3.260 assertions, 144 frontend tests dan build lulus. Dua regresi tambahan memeriksa sepuluh keluaran serta state tidak berubah; tidak ada penanda N/A bawaan tersisa di resources. Tanpa query/jaringan baru, migration atau perubahan live its. Browser/responsif/cetak fisik belum diverifikasi manual.
+
+## Header kecil Lampiran BA KH di kiri atas — 6 November 2026
+- [x] Header menjadi dua baris sesuai teks pengguna: LAMPIRAN BERITA ACARA KESEPEKATAN HARGA dan PEKERJAAN: nama kegiatan PP terpilih. Rata kiri, 10px pada preview/8pt cetak; nomor PP dan BA KH dihilangkan khusus dari lampiran.
+- [x] Catatan audit ditambahkan pada docs/CHANGELOG.md dan docs/LARAVEL_QA.md; perilaku aktif docs/BAKH_APPENDIX.md diperbarui. Tanpa query/migration/mutasi data atau perubahan penomoran transaksi.
+- [x] 194 PHP tests/3.260 assertions, 144 frontend tests dan build lulus; regresi memeriksa judul/nama kegiatan dan kedua nomor tidak dirender. Browser/cetak fisik belum diverifikasi manual.
+
+## Preview BA KH mengikuti template Word — 6 November 2026
+- [x] Source BA KH.docx satu halaman A4 portrait dirender/diperiksa. Preview utama mengikuti judul/nomor, pekerjaan/lokasi/Witel, tanggal terbilang, tiga poin kesepakatan, FO/jointer/periode, tempat/tanggal dan TTD Head/Mandor; isian berasal dari Informasi Dokumen BA KH/PP terpilih.
+- [x] Harga tetap di lampiran horizontal, identitas tersimpan dan ruang TTD basah utuh. Data contoh/jumlah orang tidak ditebak; field tim tetap teks bebas. Tidak ada query/jaringan/migration/mutasi live; jalur utama melewati lookup BOQ dan total yang tidak digunakan.
+- [x] 194 PHP tests/3.260 assertions, 149 frontend tests dan build lulus. Lima regresi baru memeriksa pemetaan/tanggal/kosong/riwayat/escaping/routing serta render hanya dengan form tanpa katalog/root BOQ. Browser aplikasi/cetak fisik belum diuji manual. Audit dan pemetaan: docs/CHANGELOG.md, docs/LARAVEL_QA.md, docs/BAKH_TEMPLATE.md; README/AGENTS diperbarui.
+
+## Unduh Word BA KH dan Lampiran — 6 November 2026
+- [x] Tombol Unduh Word (.docx) pada kedua preview menghasilkan paragraf/tabel native editable dari isian preview/draf yang sama: BA KH portrait, lampiran landscape dengan header tiga tingkat berulang dan sel kosong/nol terpisah. Identitas Head/Mandor tersimpan dan ruang TTD basah tetap utuh.
+- [x] Model isi/tanggal/identitas/baris dipusatkan di bakh-content.ts. Generator dimuat saat klik (8,76 kB/gzip 3,53 kB), ZIP UTF-8/CRC32 tanpa dependency baru; referensi diindeks sekali, tanpa SQL/network data request atau mutasi live/schema/.env/arsip/alur/approval. Tombol punya busy/error/klik-ganda guard; unduh tidak menyimpan/mengesahkan dokumen.
+- [x] 194 PHP tests/3.260 assertions, 156 frontend tests dan build lulus. Tujuh regresi baru termasuk 1000 item tanpa lookup master per baris/pemotongan, XML/Unicode dan kesesuaian model. CRC/XML/python-docx independen valid; output generator yang sama dirender 1+3 halaman, seluruh 4 PNG akhir diperiksa setelah perbaikan indent panjang/TTD sejajar.
+- [x] Audit lengkap: docs/BAKH_WORD_EXPORT.md, docs/CHANGELOG.md, docs/LARAVEL_QA.md, docs/qa/bakh-word-export-20261106.json, README/AGENTS dan panduan preview diperbarui. Klik unduh browser terautentikasi, Microsoft Word desktop dan cetak fisik belum diperiksa manual; berkas QA tetap di temporary lokal dan tidak masuk its.

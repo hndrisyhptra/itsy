@@ -96,7 +96,8 @@ trait PrototypeWorkflowV2
         if ($version >= 3) {
             $p = ProjectPlanTemplate::apply($p, $submit);
         }
-        $scheme = $old && (! empty($old['approvalHistory']) || ! empty($old['approvals'])) && self::usesBusinessSupport($old) ? 'business-support' : 'project-support';
+        $scheme = $old && (! empty($old['approvalHistory']) || ! empty($old['approvals']))
+            ? (self::usesBusinessSupport($old) ? 'business-support' : ($old['approvalScheme'] ?? 'project-support')) : 'project-support-first';
         $assignments = $this->validateAssignments($input, $version, $p['branch'], $submit, $scheme);
         $import = $input['_boqImport'] ?? null;
         if (! empty($old['boqUpload']) && ! $import) {
@@ -176,6 +177,9 @@ trait PrototypeWorkflowV2
         if ($version >= 3) {
             $p['approvalScheme'] = $scheme;
         }
+        if (isset($old['approvalOrderChange'])) {
+            $p['approvalOrderChange'] = $old['approvalOrderChange'];
+        }
         if ($import) {
             $p['boqUpload'] = $import['source'];
         }
@@ -201,7 +205,7 @@ trait PrototypeWorkflowV2
             $this->fail('PP belum diajukan untuk approval.');
         }
         $roles = $this->approvalRoles($p, true);
-        $role = $roles[count($p['approvals'])] ?? '';
+        $role = self::nextApprovalRole($p, true) ?? '';
         $this->assigned($p, $role);
         $this->enum($decision, ['Setujui', 'Kembalikan', 'Tolak']);
         $note = $this->text($note);

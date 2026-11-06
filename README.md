@@ -4,6 +4,12 @@ Aplikasi mandiri Laravel 12/PHP 8.2 + React/TypeScript untuk administrasi konstr
 
 Panduan struktur tersedia pada [buku saku relasi database](docs/DATABASE_RELATIONS.md): PDF/Word ukuran A5, visual relasi dan katalog seluruh tabel dengan pencarian.
 
+Untuk audit dan melanjutkan pekerjaan pada percakapan baru, baca [catatan perubahan](docs/CHANGELOG.md), WORKPLAN.md, serta [bukti pengujian](docs/LARAVEL_QA.md). Setiap perubahan, termasuk tampilan, wajib dicatat beserta cakupan, file terkait dan batas verifikasinya. Lampiran BA KH memakai tabel ringkas dan cetak A4 horizontal; sel komponen yang tidak digunakan pada seluruh tabel tampil kosong, sedangkan nilai nol tetap terlihat. Rincian: [preview Lampiran BA KH](docs/BAKH_APPENDIX.md).
+
+**Preview BA KH** utama mengikuti [template berita acara Word](docs/BAKH_TEMPLATE.md), memakai nilai dari Informasi Dokumen BA KH, tanggal terbilang dan identitas Head/Mandor tersimpan. Dokumen utama A4 vertikal, lampiran harga tetap terpisah/horizontal dan ruang TTD kosong untuk tanda tangan basah.
+
+Pada **Preview BA KH** dan **Lihat Lampiran**, tombol **Unduh Word (.docx)** membuat file editable dari isi preview yang sama, termasuk draf, langsung di browser tanpa menyimpan/mengesahkan transaksi atau menambah query database. Rincian dan hasil verifikasi: [BAKH_WORD_EXPORT](docs/BAKH_WORD_EXPORT.md).
+
 Dashboard memakai [tampilan ringkasan awal](docs/DASHBOARD_SUMMARY.md): tiga kartu utama dan enam ringkasan kecil, tanpa kartu Progress Pekerjaan per PP, Aktivitas Terbaru, Monitoring Volume dan Inbox Approval. Dropdown **Semua Branch** mencakup seluruh Branch sesuai akses akun, termasuk yang belum mempunyai PP, dan menyaring seluruh angka dari data tersimpan Laravel.
 
 ## Menjalankan dan login
@@ -26,15 +32,17 @@ Akun pertama menjadi **Superadmin**, ditugaskan ke seluruh Branch aktif. Setelah
 
 Pada tambah/ubah akun melalui Kelola akun, kata sandi minimal **6 karakter**, mengandung huruf dan angka, maksimal 72 byte dan harus cocok dengan konfirmasi. Saat mengubah akun, kosongkan kedua kolom untuk mempertahankan kata sandi. Penyiapan Superadmin pertama tetap mengikuti aturan 12 karakter di atas.
 
-**Mgr Project Support** tersedia pada form akun dan menjadi approver keempat PP serta Pembayaran baru. Dokumen lama tetap memakai assignment tersimpannya; lihat [PROJECT_SUPPORT_APPROVAL](docs/PROJECT_SUPPORT_APPROVAL.md).
+**Mgr Project Support** tersedia pada form akun dan menjadi approver ketiga PP serta Pembayaran, sebelum Mgr Deployment. Dokumen lama tetap memakai assignment tersimpannya; lihat [PROJECT_SUPPORT_APPROVAL](docs/PROJECT_SUPPORT_APPROVAL.md).
 
-Pembaruan approval ini memerlukan migration `2026_11_06_000002_allow_project_support_approval_steps` untuk CHECK database tahap keempat. Sudah diterapkan pada its lokal; instalasi lain menjalankan `php artisan migrate`. Tanpa migration ini, pengajuan lengkap dapat gagal Server Error saat menyimpan Project Support.
+Urutan PP/Pembayaran adalah PM → Admin Area → Mgr Project Support → Mgr Deployment → Head of PMO, termasuk pengajuan berjalan. Keputusan terdahulu tetap dihitung dan tidak ditimpa. Migration `2026_11_06_000003_version_support_first_approval_order` memperbarui CHECK untuk run baru sambil menjaga identitas langkah historis; sudah diterapkan pada its lokal. Instalasi lain menjalankan `php artisan migrate`.
 
 Buat akun **Admin Konstruksi, PM Konstruksi, Admin Area, Mgr Deployment, Mgr Project Support, Head of PMO, dan Finance** sesuai kebutuhan pengujian. Login memakai **username**, lalu keluar/masuk bergantian sesuai peran. Peran mengikuti `users.role` yang konsisten dengan `roles`/`user_assignments`, bukan pemilih role. Kelima approver dipilih pada PP dan wajib memiliki penugasan Branch yang mencakup PP. Manager Konstruksi tersedia untuk dokumen alur lama saja. Akun tanpa penugasan aktif, akun nonaktif atau akun dengan beberapa peran aktif berbeda ditolak. Pemulihan kata sandi melalui email belum disediakan; hubungi Superadmin.
 
 Login memiliki pembatasan percobaan, regenerasi sesi, CSRF dan opsi Ingat saya. Keluar hanya melalui POST dari menu profil. Endpoint workspace, laporan, cadangan dan scan memerlukan login. Respons pribadi memakai no-store/noindex. Jika data berubah dari pengguna lain, gunakan **Muat ulang data**; konflik revisi 409 tidak menimpa transaksi.
 
 Dependensi dikunci dengan `composer.lock`/`package-lock.json`. Untuk mengubah React/CSS/logo sidebar di `resources/js/area3/App.tsx`, jalankan `npm run build` lalu muat ulang halaman. Saat pengembangan dapat memakai `npm run dev`. Login memakai Blade serta entry Vite `resources/js/area3/auth.ts` dan `auth.css`.
+
+BA KH baru/draf dari PP versi 3 otomatis menampilkan nama dan NIK **Head of PMO terpilih pada PP** pada form dan preview. Identitas tidak diedit manual; NIK yang belum tersedia perlu dilengkapi pada akun. Dokumen Terbit/Sah mempertahankan identitas aslinya. Rincian: [BAKH_SIGNER](docs/BAKH_SIGNER.md).
 
 ## Antrean upload dan optimasi
 
@@ -74,7 +82,7 @@ Header PP berurutan ID Project, Branch, Unit Kerja (Konstruksi/Operation), No PP
 
 Pendahuluan & Tim serta Jadwal Proyek pada PP versi 3 kini mengikuti template Word kiriman: redaksi dan aktivitas terkunci, hanya HK jadwal yang dapat diubah. Total durasi dan tanggal tahap dihitung otomatis dari Saat Penggunaan. Kurva S dihilangkan dari form dan preview. Anggaran & Margin kini memuat tabel Owner dari BOQ Plan, BOQ Mandor per designator, baris Material Non Stock/BOP yang dapat ditambah atau dihapus, perizinan dan margin otomatis. Form serta validasi Batas maksimal BOP/Referensi Cost Structure sudah dihapus; rincian dan total BOP tetap divalidasi serta masuk COGS. Poin 5 otomatis merekap nilai Jasa Mandor, Material BOQ Mandor bila ada, Material Non Stock, BOP dan perizinan, tanpa memilih termin/tanggal atau membagi nilai manual. Kategori nol disembunyikan; reimbursement perizinan tetap terpisah dari COGS. Kolom designator, uraian pekerjaan dan satuan dipisahkan pada kedua BOQ, dengan tabel rapat bergaris pada form dan preview. Risiko dipilih melalui checklist; komunikasi, kualitas dan penutup mengikuti teks tetap. Tabel penutup PP baru memakai empat jabatan baku (PM, Mgr Project Support, Mgr Deployment, Head of PMO); lima approval tetap wajib termasuk Admin Area. Dokumen Business Support historis mempertahankan snapshot sebelumnya. Rincian anggaran: [PP_BUDGET_TEMPLATE](docs/PP_BUDGET_TEMPLATE.md). PP historis tetap dipertahankan. Rincian dan batas output: [PP_TEMPLATE](docs/PP_TEMPLATE.md).
 
-Pada SPH Telkom Akses, harga Material/Jasa masing-masing dibatasi harga per satuan BOQ TA–Mandor pada PP yang dipilih. SPH baru diawali dari harga tersebut; kelebihan memunculkan peringatan langsung dan ditolak Laravel saat simpan/terbit/pengesahan. Dokumen terbit serta PP historis tanpa rincian BOQ Mandor mempertahankan aturan lamanya. Rincian: [SPH_THRESHOLD](docs/SPH_THRESHOLD.md).
+Pada SPH Telkom Akses dan tab Harga Kesepakatan, harga Material/Jasa masing-masing dibatasi harga per satuan BOQ TA–Mandor pada PP yang dipilih; harga kesepakatan juga tetap dibatasi KHS. Nilai awal mengikuti harga Mandor; kelebihan memunculkan peringatan langsung dan ditolak Laravel saat simpan/terbit/pengesahan. Dokumen terbit serta PP historis tanpa rincian BOQ Mandor mempertahankan aturan lamanya. Rincian: [SPH_THRESHOLD](docs/SPH_THRESHOLD.md).
 
 **Simpan Draft PP dan Preview:** setelah Header lengkap, **Simpan Draft** menunggu konfirmasi Laravel lalu kembali ke daftar Project Plan dengan status Draft. PP baru selalu membuka isian bersih; cache edit tetap per-ID PP. Pada Preview PP, kolom TTD menampilkan cap **APPROVED** hanya untuk keputusan approver pada siklus aktif; saat cetak/Simpan PDF browser cap dan status disembunyikan sehingga ruang TTD basah kosong. Lihat [PP_DRAFTS_PREVIEW](docs/PP_DRAFTS_PREVIEW.md).
 

@@ -18,6 +18,8 @@ class SphThresholdTest extends TestCase
             $plans[] = ['rowId' => $source['id'], 'priceM' => ($source['m'] ?? 0) / 2, 'priceS' => ($source['s'] ?? 0) / 2];
             $deal['rows'][$i]['sphM'] = $plans[$i]['priceM'];
             $deal['rows'][$i]['sphS'] = $plans[$i]['priceS'];
+            $deal['rows'][$i]['pm'] = $plans[$i]['priceM'];
+            $deal['rows'][$i]['ps'] = $plans[$i]['priceS'];
         }
         $state['projects'][0]['planBudget'] = ['version' => 1, 'mandor' => $plans];
         $deal['status'] = 'Draft';
@@ -61,6 +63,7 @@ class SphThresholdTest extends TestCase
     {
         [$state, $deal] = $this->fixture();
         $state['projects'][0]['planBudget']['mandor'][0]['priceM'] = 0;
+        $deal['rows'][0]['pm'] = 0;
         $deal['rows'][0]['sphM'] = 0.01;
         $this->reject($state, $deal, 'save', 'melebihi threshold');
         $deal['rows'][0]['sphM'] = 0;

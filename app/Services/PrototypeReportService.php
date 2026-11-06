@@ -74,8 +74,7 @@ class PrototypeReportService
                 $hours = [];
                 $waiting = 0;
                 foreach ($terms as $t) {
-                    $roles = PrototypeDomain::approvalRoles($t);
-                    if (($t['status'] === 'Diajukan' && ($roles[count($t['approvals'])] ?? null) === $role)
+                    if (($t['status'] === 'Diajukan' && PrototypeDomain::nextApprovalRole($t) === $role)
                         || ($role === 'Finance' && ($t['workflowVersion'] ?? 1) >= 2 && $t['apmStatus'] !== 'Valid' && in_array($t['scan']['status'] ?? '', ['Menunggu Verifikasi', 'Valid'], true))) {
                         $waiting++;
                     }

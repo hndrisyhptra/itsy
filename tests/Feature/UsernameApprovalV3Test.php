@@ -231,19 +231,34 @@ class UsernameApprovalV3Test extends TestCase
         $bad['status'] = 'Sah';
         $bad['sphThresholdS'] = 999999;
         $bad['planBudget'] = ['mandor' => [['priceS' => 999999]]];
-        foreach (['save', 'generate', 'attest'] as $action) {
-            $this->api('saveDeal', [$bad, $action])->assertUnprocessable()->assertJsonValidationErrors('prototype');
-            $after = $this->getJson('/api/prototype/state')->json();
-            $this->assertSame($before['revision'], $after['revision']);
-            $this->assertSame($before['state']['deals'], $after['state']['deals']);
-            $this->assertSame($before['state']['projects'], $after['state']['projects']);
-            $this->assertDatabaseCount('prototype_audits', 6);
+        $badAgreement = $deal;
+        $badAgreement['rows'][0]['ps'] = 100.01;
+        $badAgreement['status'] = 'Sah';
+        $badAgreement['agreementThresholdS'] = 999999;
+        $badAgreement['planBudget'] = ['mandor' => [['priceS' => 999999]]];
+        foreach (['SPH Jasa' => $bad, 'Harga kesepakatan Jasa' => $badAgreement] as $message => $invalid) {
+            foreach (['save', 'generate', 'attest'] as $action) {
+                DB::flushQueryLog();
+                DB::enableQueryLog();
+                $response = $this->api('saveDeal', [$invalid, $action])->assertUnprocessable()->assertJsonValidationErrors('prototype');
+                $queries = DB::getQueryLog();
+                DB::disableQueryLog();
+                $this->assertStringContainsString($message, implode(' ', $response->json('errors.prototype')));
+                $this->assertEmpty(array_filter($queries, fn ($q) => preg_match('/^\s*(insert|update|delete|replace)\b/i', $q['query'])));
+                $after = $this->getJson('/api/prototype/state')->json();
+                $this->assertSame($before['revision'], $after['revision']);
+                $this->assertSame($before['state']['deals'], $after['state']['deals']);
+                $this->assertSame($before['state']['projects'], $after['state']['projects']);
+                $this->assertDatabaseCount('prototype_audits', 6);
+            }
         }
         $this->api('saveDeal', [$deal, 'save'])->assertOk();
         $this->api('saveDeal', [$deal, 'generate'])->assertOk();
+        $bad['rows'][0]['ps'] = 999999;
         $this->api('saveDeal', [$bad, 'attest'])->assertOk();
         $record = collect($this->getJson('/api/prototype/state')->json('state.deals'))->firstWhere('id', $deal['id']);
         $this->assertEquals(100, $record['rows'][0]['sphS']);
+        $this->assertEquals(100, $record['rows'][0]['ps']);
         $this->assertSame('Sah', $record['status']);
     }
 
@@ -251,6 +266,7 @@ class UsernameApprovalV3Test extends TestCase
     {
         $p = $this->budgetProject();
         $p['date'] = '2026-11-30';
+        $this->accounts['Head of PMO']->forceFill(['name' => 'Selected Head QA', 'nik' => 'QA-PMO-17'])->save();
         foreach ([1, 4, 7, 1, 1] as $i => $days) {
             $p['schedule'][$i]['days'] = $days;
         }
@@ -268,13 +284,22 @@ class UsernameApprovalV3Test extends TestCase
         $deal['start'] = '2000-01-01';
         $deal['end'] = '2100-12-31';
         $deal['evidence'] = 'Bukti sintetis QA';
+        $deal['signer'] = 'FORGED SIGNER';
+        $deal['signerNik'] = 'FORGED NIK';
+        $deal['signerUserId'] = 'db-user-'.$this->accounts['PM Konstruksi']->getKey();
         $deal['rows'] = [['rowId' => $saved['boq'][0]['id'], 'm' => false, 's' => true, 'qm' => 0, 'qs' => 1, 'pm' => 0, 'ps' => 100, 'sphM' => 0, 'sphS' => 100, 'offerM' => 0, 'offerS' => 100, 'capM' => $saved['boq'][0]['m'], 'capS' => $saved['boq'][0]['s']]];
         foreach (['save', 'generate', 'attest'] as $action) {
             $response = $this->api('saveDeal', [$deal, $action])->assertOk();
             $record = collect($response->json('state.deals'))->firstWhere('id', $deal['id']);
+            $this->assertSame('Selected Head QA', $record['signer']);
+            $this->assertSame('QA-PMO-17', $record['signerNik']);
+            $this->assertSame('db-user-'.$this->accounts['Head of PMO']->getKey(), $record['signerUserId']);
             $this->assertSame('2026-11-30', $record['start']);
             $this->assertSame('2026-12-13', $record['end']);
             $sql = DB::table('contracts')->where('source_id', $deal['id'])->first();
+            $this->assertSame('Selected Head QA', $sql->signer_name);
+            $this->assertSame('Head of PMO', $sql->signer_position);
+            $this->assertSame('QA-PMO-17', json_decode($sql->document_data, true)['signerNik']);
             $this->assertSame('2026-11-30', $sql->start_date);
             $this->assertSame('2026-12-13', $sql->end_date);
             $this->assertSame('2026-12-13', json_decode($sql->document_data, true)['end']);
