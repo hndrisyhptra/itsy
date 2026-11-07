@@ -37,6 +37,14 @@ class UsernameApprovalV3Test extends TestCase
         return $this->postJson('/api/prototype/commands', ['command' => $command, 'args' => $args, 'revision' => $revision, 'request_id' => (string) Str::uuid()]);
     }
 
+    private function assertAttestationQueries(array $queries): void
+    {
+        $this->assertLessThanOrEqual(60, count($queries), 'Bounded small HTTP attestation fixture (up to two PP), including the revision read.');
+        foreach ($queries as $query) {
+            $this->assertDoesNotMatchRegularExpression('/^\s*(?:insert into|update|delete from) ["`]*(?:project_plans|boq_lines|boq_components|approval_runs|approval_steps|approval_decisions|document_files|term_scans|term_work_evidence)["` ]/i', $query['query']);
+        }
+    }
+
     private function chain(): array
     {
         $chain = [];
@@ -169,6 +177,7 @@ class UsernameApprovalV3Test extends TestCase
         $before = $this->getJson('/api/prototype/state')->json('state');
         $deal = app(PrototypeWorkspaceService::class)->scenario('C')['deals'][0];
         $deal['id'] = 'bakh-auto-number-qa';
+        unset($deal['evidence']);
         $deal['projectId'] = $p['id'];
         $deal['no'] = 'FORGED/CLIENT';
         $deal['rows'] = [['rowId' => $p['boq'][0]['id'], 'm' => false, 's' => true, 'qm' => 0, 'qs' => 1,
@@ -187,18 +196,31 @@ class UsernameApprovalV3Test extends TestCase
         $this->assertSame($baseline['revision'], $this->getJson('/api/prototype/state')->json('revision'));
         $this->assertDatabaseMissing('contracts', ['source_id' => $duplicate['id']]);
         $this->api('saveDeal', [$deal, 'generate'])->assertOk();
+        DB::flushQueryLog();
+        DB::enableQueryLog();
         $this->api('saveDeal', [$deal, 'attest'])->assertOk();
+        $bakhQueries = DB::getQueryLog();
+        DB::disableQueryLog();
+        $this->assertAttestationQueries($bakhQueries);
+        $this->assertSame('', json_decode(DB::table('contracts')->where('source_id', $deal['id'])->value('document_data'), true)['evidence']);
         $saved = collect($this->getJson('/api/prototype/state')->json('state.deals'))->firstWhere('id', $deal['id']);
         $spk = app(PrototypeWorkspaceService::class)->scenario('D')['spks'][0];
         $spk['id'] = 'spk-auto-number-qa';
+        unset($spk['evidence']);
         $spk['dealId'] = $deal['id'];
         $spk['no'] = 'FORGED/CLIENT';
         $spk['start'] = $saved['start'];
         $spk['end'] = $saved['end'];
         $expectedSpk = ContractNumber::fromProject($p['no'], '02');
         foreach (['save', 'generate', 'attest'] as $action) {
+            DB::flushQueryLog();
+            DB::enableQueryLog();
             $this->api('saveSpk', [$spk, $action])->assertOk();
+            $spkQueries = DB::getQueryLog();
+            DB::disableQueryLog();
+            $this->assertAttestationQueries($spkQueries);
             $row = DB::table('work_orders')->where('source_id', $spk['id'])->first();
+            $this->assertSame('', json_decode($row->document_data, true)['evidence']);
             $this->assertSame($expectedSpk, $row->spk_no);
             $this->assertSame($expectedSpk, json_decode($row->document_data, true)['no']);
             $this->assertSame($expectedSpk, DB::table('contracts')->where('source_id', $deal['id'])->value('spk_no'));
@@ -305,6 +327,51 @@ class UsernameApprovalV3Test extends TestCase
             $this->assertSame('2026-12-13', json_decode($sql->document_data, true)['end']);
         }
         $this->assertSame($saved, $this->projectRecord($p['id']));
+    }
+
+    public function test_spk_head_identity_is_server_owned_and_stored_in_sql_snapshots_with_bounded_queries(): void
+    {
+        $p = $this->budgetProject();
+        $this->accounts['Head of PMO']->forceFill(['name' => 'SPK Head QA', 'nik' => '000017'])->save();
+        $this->api('saveProject', [$p, true])->assertOk();
+        foreach (PrototypeDomain::APPROVERS_V3 as $role) {
+            $this->asRole($role);
+            $this->api('decideProject', [$p['id'], 'Setujui', 'QA'])->assertOk();
+        }
+        $this->asRole('Admin Konstruksi');
+        $pp = $this->projectRecord($p['id']);
+        $deal = app(PrototypeWorkspaceService::class)->scenario('C')['deals'][0];
+        $deal['id'] = 'bakh-spk-head-qa';
+        $deal['projectId'] = $p['id'];
+        $deal['rows'] = [['rowId' => $pp['boq'][0]['id'], 'm' => false, 's' => true, 'qm' => 0, 'qs' => 1, 'pm' => 0, 'ps' => 100, 'sphM' => 0, 'sphS' => 100, 'offerM' => 0, 'offerS' => 100, 'capM' => null, 'capS' => $pp['boq'][0]['s']]];
+        $this->api('saveDeal', [$deal, 'attest'])->assertOk();
+        $savedDeal = collect($this->getJson('/api/prototype/state')->json('state.deals'))->firstWhere('id', $deal['id']);
+        $spk = app(PrototypeWorkspaceService::class)->scenario('D')['spks'][0];
+        $spk['id'] = 'spk-head-qa';
+        $spk['dealId'] = $deal['id'];
+        $spk['start'] = $savedDeal['start'];
+        $spk['end'] = $savedDeal['end'];
+        $spk['signer'] = $spk['position'] = $spk['signerNik'] = 'FORGED';
+        $spk['signerUserId'] = 'some-other-user';
+        $archive = DB::table('prototype_workspaces')->value('state');
+        foreach (['save', 'generate', 'attest'] as $action) {
+            DB::flushQueryLog();
+            DB::enableQueryLog();
+            $response = $this->api('saveSpk', [$spk, $action])->assertOk();
+            $queries = DB::getQueryLog();
+            DB::disableQueryLog();
+            $this->assertAttestationQueries($queries);
+            $actual = collect($response->json('state.spks'))->firstWhere('id', $spk['id']);
+            $this->assertSame('SPK Head QA', $actual['signer']);
+            $this->assertSame('000017', $actual['signerNik']);
+            $this->assertSame($pp['approverUserIds']['Head of PMO'], $actual['signerUserId']);
+            $sql = DB::table('work_orders')->where('source_id', $spk['id'])->first();
+            $this->assertSame('000017', json_decode($sql->document_data, true)['signerNik']);
+            $this->assertDatabaseHas('contracts', ['source_id' => $deal['id'], 'signer_name' => 'SPK Head QA', 'signer_position' => 'HEAD OF PMO AREA JAWA BALI']);
+            $this->accounts['Head of PMO']->forceFill(['name' => 'Account renamed QA', 'nik' => 'OTHER'])->save();
+        }
+        $this->assertSame($pp, $this->projectRecord($p['id']));
+        $this->assertSame($archive, DB::table('prototype_workspaces')->value('state'));
     }
 
     public function test_adopting_budget_template_archives_existing_v3_draft_notes_and_costs_without_changing_them_on_read(): void
@@ -823,7 +890,16 @@ class UsernameApprovalV3Test extends TestCase
         $b = $s['bapps'][0];
         $row = $s['deals'][0]['rows'][0]['rowId'];
         $this->api('releaseVolume', [$b['id'], [$row => ['m' => 100, 's' => 20]]])->assertUnprocessable();
-        $this->api('attestBapp', [$b['id'], 'BAPP/QA/V3', 'Referensi dokumen sintetis QA'])->assertOk();
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        $this->api('attestBapp', [$b['id'], 'BAPP/QA/V3'])->assertOk();
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+        $this->assertAttestationQueries($queries);
+        $completion = DB::table('ba_completions')->where('source_id', $b['id'])->first();
+        $this->assertNull($completion->evidence_reference);
+        $this->assertSame('', json_decode($completion->document_data, true)['evidence']);
+        $this->assertSame('ATTESTED', $completion->status);
         $this->api('releaseVolume', [$b['id'], [$row => ['m' => 100, 's' => 20]]])->assertOk();
         $state = $this->api('createContinuation', [$b['id'], '', [$row => ['m' => 60, 's' => 10]], 'QA lanjutan'])->assertOk()->json('state');
         $p = collect($state['projects'])->first(fn ($p) => ! empty($p['parentId']));

@@ -19,6 +19,13 @@ final class BakhSigner
         if (($project['workflowVersion'] ?? 1) < 3) {
             return $deal;
         }
+
+        return array_merge($deal, self::projectIdentity($state, $project, $required));
+    }
+
+    /** Resolve only the selected PP Head, using already loaded account/decision snapshots. */
+    public static function projectIdentity(array $state, array $project, bool $required = false): array
+    {
         $role = 'Head of PMO';
         $id = $project['approverUserIds'][$role] ?? '';
         $decision = $id ? collect($project['approvals'] ?? [])->first(fn ($a) => $a['role'] === $role && ($a['userId'] ?? '') === $id && $a['decision'] === 'Setujui') : null;
@@ -42,6 +49,6 @@ final class BakhSigner
             throw ValidationException::withMessages(['prototype' => ['Head of PMO terpilih pada PP belum memiliki identitas penandatangan yang valid.']]);
         }
 
-        return array_merge($deal, ['signer' => $name, 'signerUserId' => $id, 'signerNik' => $nik, 'signerRole' => $role, 'signerSource' => 'pp-head-pmo']);
+        return ['signer' => $name, 'signerUserId' => $id, 'signerNik' => $nik, 'signerRole' => $role, 'signerSource' => 'pp-head-pmo'];
     }
 }

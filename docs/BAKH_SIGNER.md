@@ -10,7 +10,7 @@ Pada BA KH baru/draf dari PP versi 3, **Penandatangan Telkom Akses adalah Head o
 - Laravel mengganti signer, signerUserId, signerNik, signerRole dan signerSource dari sumber server pada setiap save/generate/attest baru/draf. Nilai signer/status/identitas palsu dalam request tidak menentukan kebijakan snapshot.
 - Nama terproyeksi pada contracts.signer_name; jabatan pada contracts.signer_position ketika belum ada SPK. Seluruh identitas BA KH, termasuk NIK dan ID akun, tersimpan pada contracts.document_data. Tidak perlu migration atau kolom akun baru. Proyeksi SPK yang sudah ada tetap memakai penandatangan SPK sendiri.
 
-BA KH yang telah Terbit/Sah mempertahankan nama/NIK/ID tersimpannya, sekalipun akun atau PP berubah; pengesahan Terbit menerima bukti dan tidak mengganti identitas. Dokumen lama tanpa NIK tidak diberi NIK rekaan. PP historis versi 1/2 mempertahankan form/nama manual karena belum mempunyai pilihan Head pada rantai lamanya. Membaca atau membuka draf tidak menulis ulang data; pengguna menyimpan melalui alur biasa.
+BA KH yang telah Terbit/Sah mempertahankan nama/NIK/ID tersimpannya, sekalipun akun atau PP berubah; pengesahan Terbit tidak mengganti identitas dan tidak lagi memerlukan referensi teks bukti (aturan 7 November: [DOCUMENT_ATTESTATION.md](DOCUMENT_ATTESTATION.md)). Dokumen lama tanpa NIK tidak diberi NIK rekaan. PP historis versi 1/2 mempertahankan form/nama manual karena belum mempunyai pilihan Head pada rantai lamanya. Membaca atau membuka draf tidak menulis ulang data; pengguna menyimpan melalui alur biasa.
 
 ## Implementasi dan QA
 
@@ -19,3 +19,5 @@ PHP BakhSigner dan React bakh-signer menyelaraskan form, blankDeal, penyimpanan 
 Cadangan sebelum perubahan: storage/app/private/backups/its-before-bakh-signer-20261106-153102.sql, 2.032.468 byte; SHA-256 6e655019f5186b02969fbdcb4fca2ace345412e289c9d361f13967d04968c68a. Tidak ada migration, seed, akun uji atau perubahan transaksi pada its. Seluruh pengujian transaksi memakai SQLite :memory:. Browser/cetak fisik belum diulang manual.
 
 Hasil: 194 tes PHP / 3.260 assertions, 137 tes frontend, build produksi dan scoped Pint lulus. Rincian bukti: docs/LARAVEL_QA.md.
+
+Pembaruan 7 November: resolver identitas PP diekstrak menjadi BakhSigner::projectIdentity/projectHeadIdentity dan dipakai bersama SPK baru/draf. Kebijakan BA KH tetap sama; perilaku SPK tersendiri dijelaskan di [SPK_SIGNER_WORD.md](SPK_SIGNER_WORD.md).

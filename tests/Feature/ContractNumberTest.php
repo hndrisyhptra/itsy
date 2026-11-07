@@ -80,7 +80,7 @@ class ContractNumberTest extends TestCase
             $input['evidence'] = 'Bukti pengesahan baru';
             $after = app(PrototypeDomain::class)->execute($state, $spk ? 'saveSpk' : 'saveDeal', [$input, 'attest'])['state'];
             $this->assertSame($doc['no'], $after[$collection][0]['no']);
-            $this->assertSame('Bukti pengesahan baru', $after[$collection][0]['evidence']);
+            $this->assertSame($doc['evidence'], $after[$collection][0]['evidence']);
             try {
                 app(PrototypeDomain::class)->execute($after, $spk ? 'saveSpk' : 'saveDeal', [$input, 'save']);
                 $this->fail('Sah document must remain locked');

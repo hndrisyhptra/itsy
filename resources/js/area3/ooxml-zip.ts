@@ -10,10 +10,10 @@ function crc32(bytes: Uint8Array) {
   return (crc ^ 0xffffffff) >>> 0;
 }
 
-export function ooxmlZip(entries: Record<string, string>): Uint8Array<ArrayBuffer> {
+export function ooxmlZip(entries: Record<string, string | Uint8Array>): Uint8Array<ArrayBuffer> {
   const encoder = new TextEncoder();
   const files = Object.entries(entries).map(([path, xml]) => {
-    const name = encoder.encode(path), bytes = encoder.encode(xml);
+    const name = encoder.encode(path), bytes = typeof xml === 'string' ? encoder.encode(xml) : xml;
     return { name, bytes, crc: crc32(bytes), offset: 0 };
   });
   const localSize = files.reduce((n, f) => n + 30 + f.name.length + f.bytes.length, 0);

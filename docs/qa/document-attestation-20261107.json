@@ -1,0 +1,55 @@
+{
+  "date": "2026-11-07",
+  "feature": "Remove text evidence references from BA KH, SPK and BA PP",
+  "behavior_document": "docs/DOCUMENT_ATTESTATION.md",
+  "architecture_document": "docs/ARCHITECTURE.md",
+  "php": {
+    "command": "/Applications/XAMPP/xamppfiles/bin/php artisan test --compact",
+    "tests": 197,
+    "assertions": 3654,
+    "passed": true,
+    "database": "isolated SQLite :memory:"
+  },
+  "frontend": {
+    "command": "npm test",
+    "tests": 160,
+    "passed": true
+  },
+  "build": {
+    "command": "npm run build",
+    "passed": true
+  },
+  "pint": {
+    "scope": "five changed PHP files",
+    "passed": true
+  },
+  "performance": {
+    "domain_matrix_queries": 0,
+    "http_fixture_query_counts": {
+      "bakh_attest": 54,
+      "spk_save": 56,
+      "spk_generate": 56,
+      "spk_attest": 58,
+      "bapp_attest": 51
+    },
+    "http_includes_revision_read": true,
+    "max_allowed_http_fixture_queries": 60,
+    "http_fixture_pp_count_max": 2,
+    "unrelated_pp_boq_approval_file_scan_writes": 0,
+    "reconciliation": "BOQ/KHS Maps once per BA PP render; no catalog find per component",
+    "metadata_20pp_full_queries": 1330,
+    "metadata_20pp_incremental_queries": 8,
+    "limits": "SQLite fixtures, not a MySQL concurrent load test or universal throughput claim"
+  },
+  "backup": {
+    "path": "storage/app/private/backups/its-before-remove-evidence-reference-20261107-085027.sql",
+    "bytes": 2032468,
+    "sha256": "428ea7446e7a3d5f3b41d09bb5558c6057c662796b14e92c6eec6b0b4feb94f0"
+  },
+  "migration_required": false,
+  "live_transaction_mutations": false,
+  "legacy_reference_policy": "Ignore obsolete client input; retain stored references as archive-only; keep nullable SQL columns",
+  "actual_work_proof_and_payment_scan_flow": "unchanged",
+  "manual_browser_check": false,
+  "physical_print_check": false
+}

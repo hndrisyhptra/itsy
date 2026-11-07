@@ -84,5 +84,5 @@ test('account forms display generated read-only numbers and previews use those s
   const {s:ss,spk}=spkFixture();ss.spks.push(spk);
   const form=renderToStaticMarkup(createElement(SpkEditor,{s:ss,id:spk.id}));assert.ok(form.includes(`value="${vectors[0].spk}"`));assert.doesNotMatch(form,/STALE\/CLIENT/);
   const v=syncSpkNumber(ss,spk),preview=renderToStaticMarkup(createElement(DocumentPreview,{state:ss,kind:'Surat Perintah Kerja',spk:v,onClose:()=>{}}));
-  assert.ok(preview.includes(vectors[0].spk));assert.ok(preview.includes(vectors[0].pp));
+  assert.ok(preview.includes(vectors[0].spk));assert.ok(preview.includes(ss.projects[0].name));assert.ok(preview.includes('SPK Mandor sesuai template'));
 });

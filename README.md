@@ -10,7 +10,19 @@ Untuk audit dan melanjutkan pekerjaan pada percakapan baru, baca [catatan peruba
 
 Pada **Preview BA KH** dan **Lihat Lampiran**, tombol **Unduh Word (.docx)** membuat file editable dari isi preview yang sama, termasuk draf, langsung di browser tanpa menyimpan/mengesahkan transaksi atau menambah query database. Rincian dan hasil verifikasi: [BAKH_WORD_EXPORT](docs/BAKH_WORD_EXPORT.md).
 
+**Preview SPK Mandor** mengikuti surat pada template pengguna: logo, penerima/alamat, perihal/periode, ringkasan Material/Jasa/Total, Waspang/K3 dan penandatangan SPK dengan ruang TTD kosong. Tombol **Unduh Word (.docx)** membuat surat editable dari data preview yang sama, termasuk draf, tanpa menyimpan/mengesahkan. Lihat [SPK_TEMPLATE_WORD](docs/SPK_TEMPLATE_WORD.md).
+
 Dashboard memakai [tampilan ringkasan awal](docs/DASHBOARD_SUMMARY.md): tiga kartu utama dan enam ringkasan kecil, tanpa kartu Progress Pekerjaan per PP, Aktivitas Terbaru, Monitoring Volume dan Inbox Approval. Dropdown **Semua Branch** mencakup seluruh Branch sesuai akses akun, termasuk yang belum mempunyai PP, dan menyaring seluruh angka dari data tersimpan Laravel.
+
+**Pengesahan BA KH, SPK dan BA PP tidak lagi membutuhkan isian teks Referensi bukti dokumen bertanda tangan.** Isian/status referensi dan kolomnya di timeline dihapus; syarat dokumen lainnya tetap divalidasi Laravel. Referensi lama disimpan sebagai riwayat, sedangkan upload eviden pekerjaan serta scan TTD Pembayaran tetap mengikuti alur berkas privat. Tidak perlu migration. Rincian: [DOCUMENT_ATTESTATION](docs/DOCUMENT_ATTESTATION.md).
+
+[Arsitektur aplikasi](docs/ARCHITECTURE.md) memetakan form → command → domain Laravel → SQL its serta keputusan perubahan. Setiap pembaruan berikutnya wajib mencatat dampak arsitektur dan tinjauan query/performa, termasuk bila tidak ada perubahan pada lapisan itu.
+
+Pada **SPK → Negosiasi Baru**, cari **ID Project/nama pekerjaan**, pilih ID Project, lalu pilih PP di tabel dan tekan **Lanjut Negosiasi**. Daftar mengikuti Branch akun, maksimal 20 hasil per halaman, tanpa memilih PP pertama otomatis. PP yang belum memenuhi syarat menampilkan alasan; dokumen tersimpan tetap memakai PP aslinya. Rincian alur, query dan batas verifikasi: [NEGOTIATION_PROJECT_PICKER](docs/NEGOTIATION_PROJECT_PICKER.md).
+
+**SPK baru/draf** mengisi otomatis nama, jabatan dan NIK Head of PMO dari PP terkait. Surat dan lampiran memiliki **Unduh Word (.docx)**; dokumen terbit mempertahankan identitas tersimpan dan NIK yang belum tercatat ditandai belum tersedia. [Perilaku dan verifikasi](docs/SPK_SIGNER_WORD.md).
+
+**Lihat Lampiran SPK** mengikuti template Lampiran-SPK.xlsx: designator/uraian terpisah, harga satuan Material/Jasa, **nama kegiatan → Vol** (tanpa label NAMA PROYEK), Total Vol, nilai/rekap dan ruang TTD penandatangan SPK. Tabel yang sama tersedia di form; Cetak/Simpan PDF meminta A4 horizontal. [Pemetaan dan batas verifikasi](docs/SPK_APPENDIX_TEMPLATE.md).
 
 ## Menjalankan dan login
 

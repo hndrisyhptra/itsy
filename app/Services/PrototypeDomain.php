@@ -40,7 +40,7 @@ class PrototypeDomain
             'decide' => $this->decide($args[0] ?? '', $args[1] ?? '', $args[2] ?? ''),
             'recordApm' => $this->recordApm($args[0] ?? '', $args[1] ?? '', (bool) ($args[2] ?? true)),
             'recordPayment' => $this->recordPayment($args[0] ?? '', $args[1] ?? 0, $args[2] ?? ''),
-            'attestBapp' => $this->attestBapp($args[0] ?? '', $args[1] ?? '', $args[2] ?? ''),
+            'attestBapp' => $this->attestBapp($args[0] ?? '', $args[1] ?? ''),
             'releaseVolume' => $this->releaseVolume($args[0] ?? '', $this->object($args[1] ?? null)),
             'createContinuation' => $this->createContinuation($args[0] ?? '', $args[1] ?? '', $this->object($args[2] ?? null), $args[3] ?? '', $resultId),
             'updateKhs' => $this->updateKhs($this->object($args[0] ?? null), (bool) ($args[1] ?? false)),
@@ -578,14 +578,16 @@ class PrototypeDomain
         $this->admin();
         $this->enum($action, ['save', 'generate', 'attest']);
         $old = $this->existing('deals', $d['id'] ?? '');
+        // Removed text reference is archive-only: never accept a new client claim.
+        $d['evidence'] = $old['evidence'] ?? '';
         if ($old && $old['status'] === 'Sah') {
             $this->fail('BA KH sah terkunci.');
         }
         if ($old && $old['status'] === 'Terbit') {
             if ($action !== 'attest') {
-                $this->fail('BA KH terbit terkunci; hanya bukti pengesahan dapat dicatat.');
+                $this->fail('BA KH terbit terkunci; hanya pengesahan dokumen tersedia.');
             }
-            $d = array_merge($old, ['evidence' => $d['evidence'] ?? '']);
+            $d = $old;
         } else {
             $project = $this->record('projects', $d['projectId'] ?? '');
             if (($this->state['schema'] ?? 1) >= 3) {
@@ -600,9 +602,6 @@ class PrototypeDomain
         }
         $d = BakhSigner::sync($this->state, $d, $action !== 'save');
         $this->validateDeal($d, $action !== 'save');
-        if ($action === 'attest') {
-            $this->required($d, ['evidence']);
-        }
         $d['status'] = $action === 'attest' ? 'Sah' : ($action === 'generate' ? 'Terbit' : 'Draft');
         $this->put('deals', $d);
         $this->log($action === 'attest' ? 'BA KH disahkan' : 'BA KH disimpan', $d['no'], '/ba-kh/'.$d['id']);
@@ -615,14 +614,15 @@ class PrototypeDomain
         $this->admin();
         $this->enum($action, ['save', 'generate', 'attest']);
         $old = $this->existing('spks', $v['id'] ?? '');
+        $v['evidence'] = $old['evidence'] ?? '';
         if ($old && $old['status'] === 'Sah') {
             $this->fail('SPK sah terkunci.');
         }
         if ($old && $old['status'] === 'Terbit') {
             if ($action !== 'attest') {
-                $this->fail('SPK terbit terkunci; hanya bukti pengesahan dapat dicatat.');
+                $this->fail('SPK terbit terkunci; hanya pengesahan dokumen tersedia.');
             }
-            $v = array_merge($old, ['evidence' => $v['evidence'] ?? '']);
+            $v = $old;
         }
         $d = $this->record('deals', $v['dealId'] ?? '');
         if ($d['status'] !== 'Sah') {
@@ -631,6 +631,7 @@ class PrototypeDomain
         if ((! $old || $old['status'] === 'Draft') && ($this->state['schema'] ?? 1) >= 3) {
             $v['no'] = ContractNumber::fromProject($this->record('projects', $d['projectId'])['no'], '02');
         }
+        $v = SpkSigner::sync($this->state, $v, $action !== 'save');
         $this->required($v, ['no']);
         foreach ($this->state['spks'] as $x) {
             if ($x['id'] !== $v['id'] && ($x['dealId'] === $v['dealId'] || $x['no'] === trim($v['no']))) {
@@ -645,9 +646,6 @@ class PrototypeDomain
         $this->date($v['end']);
         if ($v['start'] > $v['end'] || $v['start'] < $d['start'] || $v['end'] > $d['end']) {
             $this->fail('Periode SPK harus dalam periode BA KH.');
-        }
-        if ($action === 'attest') {
-            $this->required($v, ['evidence']);
         }
         $this->validateDeal($d, true);
         $v['status'] = $action === 'attest' ? 'Sah' : ($action === 'generate' ? 'Terbit' : 'Draft');
@@ -852,7 +850,7 @@ class PrototypeDomain
         return null;
     }
 
-    private function attestBapp(string $id, string $no, string $evidence): null
+    private function attestBapp(string $id, string $no): null
     {
         $this->admin();
         $b = $this->record('bapps', $id);
@@ -860,9 +858,9 @@ class PrototypeDomain
         if ($b['status'] === 'Sah' || $t['type'] !== 'Final' || $t['status'] !== 'Disetujui' || count($t['approvals']) !== $this->approvalCount($t)) {
             $this->fail('BA PP terkunci atau Final belum approved.');
         }
-        $this->required(['no' => $no, 'evidence' => $evidence], ['no', 'evidence']);
+        $this->required(['no' => $no], ['no']);
         $b['no'] = trim($no);
-        $b['evidence'] = trim($evidence);
+        $b['evidence'] ??= '';
         $b['status'] = 'Sah';
         $this->put('bapps', $b);
         $this->log('BA PP difinalisasi', $b['no'], '/ba-pp/'.$id);

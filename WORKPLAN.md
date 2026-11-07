@@ -355,3 +355,51 @@ Historical iteration; superseded by the dashboard restoration below.
 - [x] Model isi/tanggal/identitas/baris dipusatkan di bakh-content.ts. Generator dimuat saat klik (8,76 kB/gzip 3,53 kB), ZIP UTF-8/CRC32 tanpa dependency baru; referensi diindeks sekali, tanpa SQL/network data request atau mutasi live/schema/.env/arsip/alur/approval. Tombol punya busy/error/klik-ganda guard; unduh tidak menyimpan/mengesahkan dokumen.
 - [x] 194 PHP tests/3.260 assertions, 156 frontend tests dan build lulus. Tujuh regresi baru termasuk 1000 item tanpa lookup master per baris/pemotongan, XML/Unicode dan kesesuaian model. CRC/XML/python-docx independen valid; output generator yang sama dirender 1+3 halaman, seluruh 4 PNG akhir diperiksa setelah perbaikan indent panjang/TTD sejajar.
 - [x] Audit lengkap: docs/BAKH_WORD_EXPORT.md, docs/CHANGELOG.md, docs/LARAVEL_QA.md, docs/qa/bakh-word-export-20261106.json, README/AGENTS dan panduan preview diperbarui. Klik unduh browser terautentikasi, Microsoft Word desktop dan cetak fisik belum diperiksa manual; berkas QA tetap di temporary lokal dan tidak masuk its.
+
+
+## Pengesahan tanpa referensi teks dan catatan arsitektur — 7 November 2026
+- [x] Hapus isian referensi bukti bertanda tangan pada BA KH, SPK dan BA PP, status referensi pada preview serta kolom Bukti dokumen pada timeline. Laravel/React menghapus kewajiban teks; attestBapp memakai ID/nomor dan mengabaikan argumen ketiga lama.
+- [x] Input evidence usang diabaikan; dokumen baru kosong dan referensi tersimpan tetap menjadi arsip. Terbit/Sah tidak dapat diubah harga/nomor/periode/identitasnya. Actual work proof, scan TTD Pembayaran, lima approval, Finance/APM, Branch dan ledger tetap dijaga. Tanpa migration, backfill atau mutasi data live.
+- [x] Rekonsiliasi BA PP mengindeks BOQ/KHS sekali per render. Domain matriks BA KH/SPK nol query; lima jalur HTTP fixture memakai 51–58 query termasuk revision read, batas 60 serta larangan write ulang tabel PP/BOQ/approval/file/scan. Bukan uji beban/throughput MySQL.
+- [x] 197 tes PHP / 3.654 assertions, 160 tes frontend, build produksi dan scoped Pint lulus. Tiga tes PHP baru, empat tes frontend baru dan regresi HTTP diperbarui untuk SQL tanpa referensi, kunci riwayat, Final, role/nomor dan ledger. Browser/cetak fisik belum diuji manual.
+- [x] docs/ARCHITECTURE.md dan docs/DOCUMENT_ATTESTATION.md baru; README/AGENTS/skills menautkan otoritas baru dan mewajibkan catatan dampak arsitektur/performa setiap update. Audit: docs/CHANGELOG.md, docs/LARAVEL_QA.md dan docs/qa/document-attestation-20261107.json. Backup its-before-remove-evidence-reference-20261107-085027.sql valid; tidak ada pengujian pada its.
+
+
+## Cari ID Project lalu pilih PP untuk negosiasi — 7 November 2026
+- [x] Negosiasi Baru tanpa auto-pilih PP pertama/dropdown panjang. Cari ID Project/nama pekerjaan (2–100 karakter, debounce 300 ms), pilih project lalu tabel PP, ringkasan dan Lanjut Negosiasi. Pagination 20, alasan nonaktif, Ganti ID Project/Ganti PP dan cache per PP; existing/deep link tetap kontekstual.
+- [x] Dua API GET metadata akun Admin/Superadmin/Branch/workspace, tanpa baca aggregate/master/arsip atau mutasi. Nama/count sibling mengikuti Branch PP; PP lanjutan memakai alokasi snapshot sendiri. Race/cancellation/error ditangani; Continue menyegarkan state sebelum form, command/harga/ledger/approval lama tetap berwenang.
+- [x] Enam tes PHP dan enam frontend baru: 120 PP/30 ID, 33 PP satu ID, pagination, sibling/search/Branch/no leak, role/input/wildcard/storage, kapasitas domain, UI/transport. Query layanan 2 (cari) dan 3–4 (daftar), batch tanpa N+1; bukan benchmark beban umum.
+- [x] 203 tes PHP / 3.796 assertions, 166 tes frontend, build dan scoped Pint lulus. Pemeriksaan baca saja MySQL its: 1 ID Project/2 PP berhasil tanpa transaksi/sesi/akun uji. Browser/responsif/keyboard belum diuji manual. Backup its-before-negotiation-project-picker-20261107-090820.sql valid; tidak ada migration/.env/mutasi live.
+- [x] Perilaku/arsitektur/audit: docs/NEGOTIATION_PROJECT_PICKER.md, docs/ARCHITECTURE.md, docs/CHANGELOG.md, docs/LARAVEL_QA.md, docs/qa/negotiation-project-picker-20261107.json serta README/AGENTS. Shared boot/refreshState masih aggregate Branch; jalur pencarian dibatasi tanpa klaim universal aplikasi lebih cepat.
+
+
+## Tindak lanjut SPK pada daftar BA KH — 7 November 2026
+- [x] Kolom Tindak Lanjut SPK memperjelas negosiasi/BA KH belum Sah, BA KH Sah menunggu SPK, dan SPK Draf/Terbit/Sah dengan nomor aktual. Buat SPK hanya Admin/Superadmin saat belum ada SPK; Buka SPK mengikuti dokumen existing. Tidak ada submit/pengesahan otomatis.
+- [x] Relasi per ID BA KH, tiga Map data dimuat sekali untuk menghindari find per baris, tanpa query/HTTP/migration/mutasi data atau perubahan alur/otorisasi. Filter mencakup ID Project/nama kegiatan; daftar BA KH tetap tanpa garis, tab SPK tetap enam kolom.
+- [x] 203 tes PHP / 3.796 assertions, 169 tes frontend dan build lulus. Tiga regresi status/role/link/tanpa duplikat/PP bersama/no-find/immutable state; browser/responsif belum diuji manual. Perilaku, arsitektur dan audit pada docs/NEGOTIATION_PROJECT_PICKER.md, ARCHITECTURE.md, CHANGELOG.md, LARAVEL_QA.md dan qa/contract-follow-up-20261107.json.
+
+
+## Preview SPK Mandor dan Word editable — 7 November 2026
+- [x] Baca/render template SPK Mandor.docx satu halaman; petakan surat dari isian SPK/BA KH/PP aktual. Preview khusus portrait berlogo, mandor/alamat, perihal/periode, nilai M/J/Total, Waspang/K3 dan penandatangan SPK; tidak menyalin data contoh atau membuat TTD.
+- [x] Unduh Word lazy memakai paket salinan sumber/slot escaped satu lintasan, tabel/paragraf native dan logo asli, tanpa metadata penulis/customXml. Delapan bagian sumber identik; geometry/header/border/grid utuh. Tabel inline, wrapping, whitespace panjang dan blok TTD diperbaiki; aset logo root/subfolder didukung. ZIP menerima byte gambar dengan CRC/batas lama; ekspor BA KH tetap lulus.
+- [x] 203 tes PHP / 3.796 assertions, 176 tes frontend dan build lulus. Tujuh regresi SPK termasuk nilai nol/komponen kosong/pembulatan domain, historical/missing/hostile text/literal slot/1000 baris/URL. Native CRC/XML/relasi/python-docx valid, source SHA utuh. Render akhir aplikasi normal1+panjang1 halaman, kedua PNG diperiksa; fixture privat tidak masuk its. Browser/Microsoft Word desktop/cetak fisik belum diuji manual.
+- [x] Tanpa SQL/endpoint/migration/mutasi live/.env/worker/aturan baru. Main preview melewati lookup root/KHS, agregasi O(baris). Word91,32kB/gzip13,22kB lazy + logo publik122,55kB; bukan benchmark beban. Dokumentasi: docs/SPK_TEMPLATE_WORD.md, ARCHITECTURE.md, CHANGELOG.md, LARAVEL_QA.md, qa/spk-template-word-20261107.json serta README/AGENTS.
+
+## Lampiran SPK — 7 November 2026
+
+- [x] Baca Lampiran-SPK.xlsx Sheet1 A1:K25 tanpa mengubah workbook/menjalankan rumus; jangan salin contoh nama/nilai ke transaksi.
+- [x] Grid11 kolom template dengan Nama Proyek/Vol, harga M/J, Total Vol, nilai/rekap, Witel dan TTD kosong memakai penandatangan SPK tersimpan; pakai ulang form/preview, landscape lampiran saja.
+- [x] Pertahankan volume komponen berbeda lewat dua baris, nol/sel kosong, total domain/pembulatan, PP lanjutan serta surat portrait/Word utama.
+- [x] Review query0 tambahan, indeks metadata sekali,regresi1000 baris tanpa per-row find; tanpa perubahan backend/domain/SQL/live its/migration.
+- [x]203 PHP/3796 assertions,182 frontend dan build; catat SPK_APPENDIX_TEMPLATE,ARCHITECTURE,CHANGELOG,QA,README/AGENTS,qa/spk-appendix-template-20261107.json.
+- [ ] Visual browser/responsif/dark/print: akses localhost ditolak karena izin tidak diberikan. Fixture privat tidak masuk its; server dihentikan; belum ada klaim visual.
+
+## SPK Head of PMO otomatis dan dua Word preview — 7 November 2026
+
+- [x] Hapus label NAMA PROYEK pada grid form/preview; nama kegiatan langsung di atas VOL.
+- [x] Backup privat its-before-spk-head-word-20261107-095133.sql sebelum perubahan domain; tidak deploy/mutasi data live.
+- [x] Resolver PP Head dibagi BA KH/SPK; form read-only3 isian, Laravel override client dan snapshot SQL nama/jabatan/NIK. Preserve Terbit/Sah, legacy/missing NIK dan semua gates/ledger/penomoran.
+- [x] Main SPK Word menambah NIK; lampiran punya DOCX native landscape,grid/recap/volume/TTD kosong sama. Helper OOXML bersama,lazy import,tanpaendpoint baru; Satuan6%.
+- [x]208 PHP/4031 assertions,187 frontend,build,Pint,diffcheck; pure resolver0 SQL/HTTP≤60 query peraksi,1000 rows no per-row find. Delapan source parts surat utuh,4 native outputs dirender1+1+1+4 halaman dan seluruh PNG diperiksa.
+- [x] Audit SPK_SIGNER_WORD,ARCHITECTURE,CHANGELOG,LARAVEL_QA,README/AGENTS dan qa/spk-head-word-20261107.json; perbarui perilaku surat/lampiran.
+- [ ] Browser/klik unduh responsif/dark,Word desktop,cetak fisik belum diperiksa; penolakan browser sebelumnya dihormati. Fixture privat bukan transaksi.

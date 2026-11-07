@@ -41,12 +41,17 @@ test('BOQ forms, legacy/current PP previews and KHS show empty unavailable cells
 test('BA KH allocation, SPK form and contract/payment previews leave unavailable components blank without changing totals or state', () => {
   const { s, p, d, spk, term } = fixture(), before = JSON.stringify(s);
   check(renderToStaticMarkup(createElement(DealEditor, { s, id: d.id })), 'BA KH allocation', false);
-  check(renderToStaticMarkup(createElement(SpkEditor, { s, id: spk.id })), 'SPK attachment');
+  const attachment = renderToStaticMarkup(createElement(SpkEditor, { s, id: spk.id }));
+  check(attachment, 'SPK attachment', false);
+  assert.match(attachment, /<td class="numeric">0<\/td>/, 'SPK template uses plain Rupiah amounts and preserves real zero');
   for (const kind of ['BA Kesepakatan Harga', 'Surat Perintah Kerja', 'BA Rekonsiliasi Pekerjaan – Termin']) {
     const html = renderToStaticMarkup(createElement(DocumentPreview, { state: s, project: p, deal: d, ...(kind !== 'BA Kesepakatan Harga' ? { spk } : {}), ...(kind.includes('Termin') ? { term } : {}), kind, onClose: () => {} }));
     if (kind === 'BA Kesepakatan Harga') {
       assert.doesNotMatch(html, /N\/A|<table/i, kind + ': narrative template refers to separate price attachment');
       assert.match(html, /Sesuai dengan lampiran Harga Satuan/);
+    } else if (kind === 'Surat Perintah Kerja') {
+      assert.match(html, /spk-document|NAMA CLUSTER/);
+      assert.doesNotMatch(html, /N\/A/i);
     } else check(html, kind);
   }
   assert.equal(JSON.stringify(s), before);

@@ -122,3 +122,78 @@ body{color:var(--text);background:var(--bg)}[data-theme=dark] .metric-label,[dat
 @page bakh-document-portrait{size:A4 portrait;margin:25.4mm 15mm 22.6mm 28.7mm}
 @media print{.document.bakh-document{page:bakh-document-portrait;max-width:none;padding:0;font-size:11pt;line-height:1.2}.document.bakh-document p{line-height:1.2;margin-bottom:10pt}.document.bakh-document .bakh-document-heading h2{font-size:14pt}.bakh-document-heading{margin-bottom:16pt}.bakh-document-meta,.bakh-document-prices{line-height:1.2;margin-bottom:14pt}.bakh-document-clauses{margin:14pt 0}.bakh-document-clauses>li{margin-bottom:6pt}.bakh-document-prices{row-gap:14pt}.document.bakh-document .bakh-document-place{margin:14pt 0 22pt}.bakh-document-signature-space{height:24mm}.document.bakh-document .bakh-document-signatures h3{font-size:11pt}.document.bakh-document .bakh-document-signatures p:last-child{font-size:10pt}.modal-body:has(.bakh-document){overflow:visible}}
 @media print{.document.bakh-appendix{page:bakh-appendix-landscape;padding:0;min-width:0;max-width:none;width:100%}.document.bakh-appendix table{min-width:0;width:100%}.document.bakh-appendix .bakh-appendix-table th,.document.bakh-appendix .bakh-appendix-table td{font-size:7pt;padding:2.5pt}.document.bakh-appendix .bakh-appendix-heading h2,.document.bakh-appendix .bakh-appendix-heading p{font-size:8pt}.bakh-appendix thead{display:table-header-group}.bakh-appendix-signatures{break-inside:avoid}.bakh-wet-signature{height:24mm}.modal-body:has(.bakh-appendix){overflow:visible}}
+
+/* Bounded Project ID → PP selection for new BA KH; shares the existing design tokens. */
+.choice-steps{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 18px;color:var(--muted)}
+.choice-steps span{padding:6px 10px;border-bottom:2px solid var(--border)}
+.choice-steps .active{color:var(--text);border-color:#9FA1FF;font-weight:600}
+.choice-search{display:flex;align-items:center;gap:10px;position:relative}
+.choice-search>svg{position:absolute;left:12px;color:var(--muted);pointer-events:none}
+.choice-search input{padding-left:38px;width:100%}
+.project-choice-results{padding:0;margin:14px 0;list-style:none;border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.project-choice-results li+li{border-top:1px solid var(--border)}
+.project-choice-results button{display:flex;align-items:center;justify-content:space-between;gap:16px;text-align:left;width:100%;padding:12px 14px;border:0;background:var(--surface);color:var(--text);cursor:pointer;font:inherit}
+.project-choice-results button:hover,.negotiation-plan-table .choice-selected{background:var(--primary-soft)}
+.project-choice-results button>span{display:grid;gap:4px;min-width:0;overflow-wrap:anywhere}
+.project-choice-results small,.chosen-plan small{color:var(--muted)}
+.choice-pagination{display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap;margin-top:14px}
+.choice-pagination span{font-size:12px;color:var(--muted)}
+.chosen-plan-body{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;overflow-wrap:anywhere}
+.chosen-plan-body p{margin:6px 0}
+.negotiation-plan-table td:last-child{min-width:165px}
+.negotiation-plan-table td small{max-width:230px;white-space:normal}
+@media(max-width:767px){.choice-pagination{justify-content:space-between;gap:6px}.chosen-plan-body{flex-direction:column}.choice-steps{font-size:12px;gap:4px}.choice-steps span{padding:6px}}
+
+.contract-follow-up{min-width:220px;max-width:300px;white-space:normal}
+.contract-follow-up small{white-space:normal;overflow-wrap:anywhere;margin-top:5px}
+
+/* SPK Mandor letter: source-derived portrait layout, isolated from SPK attachment grids. */
+.document.spk-document{min-width:0;width:100%;max-width:794px;margin-inline:auto;padding:18px 52px 38px 72px;background:#fff;color:#111;font-family:'Times New Roman',serif;font-size:14.67px;line-height:1.8}
+.spk-letter-brand{display:flex;justify-content:flex-end;margin:0 -38px 10px 0;height:74px}
+.spk-letter-brand img{display:block;width:206px;height:auto;object-fit:contain;align-self:flex-start}
+.spk-letter-body{margin-left:55.7px;margin-right:45px;overflow-wrap:anywhere}
+.document.spk-document .spk-letter-title{text-align:center;margin-bottom:35px}
+.document.spk-document h2{font-family:inherit;font-size:16px;margin:0;line-height:1.75}
+.document.spk-document p{line-height:1.8;margin:0}
+.spk-letter-addressee>p:first-child{margin-bottom:8px!important}
+.spk-letter-addressee{margin-bottom:34px}
+.spk-multiline{white-space:pre-line}
+.document.spk-document .spk-letter-subject{margin-bottom:32px}
+.document.spk-document .spk-letter-opening{margin-bottom:24px}
+.spk-letter-table-wrap{margin:0 0 30px;overflow-x:auto;max-width:100%}
+.spk-document .spk-letter-table{width:100%;border-collapse:collapse;table-layout:fixed;min-width:0;border:1px solid #111}
+.spk-document .spk-letter-table th,.spk-document .spk-letter-table td{padding:5px 6px;border:1px solid #111;color:#111;background:#fff;font-family:inherit;font-size:11px;letter-spacing:0;line-height:1.35;white-space:normal;overflow-wrap:anywhere;text-transform:none;text-align:center}
+.spk-document .spk-letter-table td:nth-child(2){text-align:left}
+.spk-document .spk-letter-table td.numeric{text-align:right;font-variant-numeric:tabular-nums}
+.document.spk-document .spk-letter-lower p{line-height:1.2;margin-bottom:14px;margin-right:-35px}
+.spk-letter-signature{margin-top:52px;break-inside:avoid;line-height:1.35}
+.spk-letter-signature>strong{display:block}
+.spk-letter-signature-space{height:70px}
+.spk-signer-name{text-decoration:underline}
+@media(max-width:767px){.document.spk-document{padding:14px 16px 24px;font-size:13px}.spk-letter-body{margin:0}.spk-letter-brand{margin-right:0;height:62px}.spk-letter-brand img{width:165px}.document.spk-document .spk-letter-lower p{margin-right:0}.spk-document .spk-letter-table th,.spk-document .spk-letter-table td{padding:4px 3px;font-size:10px}.modal-body:has(.spk-document) .preview-toolbar{min-width:0;flex-wrap:wrap}}
+@page spk-mandor-portrait{size:A4 portrait;margin:20.5mm 13.75mm 4.94mm 19.05mm}
+@media print{.document.spk-document{page:spk-mandor-portrait;max-width:none;padding:0;font-size:11pt}.spk-letter-brand{height:13mm;margin:-8mm -10mm 1mm 0}.spk-letter-brand img{width:54.6mm}.spk-letter-body{margin-left:14.73mm;margin-right:11.94mm}.document.spk-document h2{font-size:11pt}.document.spk-document p{line-height:1.9}.document.spk-document .spk-letter-title{margin-bottom:14pt}.spk-letter-addressee{margin-bottom:21pt}.document.spk-document .spk-letter-subject{margin-bottom:21pt}.document.spk-document .spk-letter-opening{margin-bottom:14pt}.spk-letter-table-wrap{overflow:visible;margin-bottom:25pt}.spk-document .spk-letter-table th,.spk-document .spk-letter-table td{font-size:8pt;padding:3pt 4pt}.spk-letter-table thead{display:table-header-group}.document.spk-document .spk-letter-lower p{line-height:1.1;margin-bottom:8pt;margin-right:-9mm}.spk-letter-signature{margin-top:30pt}.spk-letter-signature-space{height:22mm}.modal-body:has(.spk-document){overflow:visible}}
+
+.document.spk-document.spk-letter-compact .spk-letter-addressee p,.document.spk-document.spk-letter-compact .spk-letter-subject,.document.spk-document.spk-letter-compact .spk-letter-opening{line-height:1.45}.spk-letter-compact .spk-letter-addressee{margin-bottom:22px}.document.spk-letter-compact .spk-letter-subject{margin-bottom:20px}.document.spk-letter-compact .spk-letter-opening{margin-bottom:16px}
+@media print{.document.spk-document.spk-letter-compact .spk-letter-addressee p,.document.spk-document.spk-letter-compact .spk-letter-subject,.document.spk-document.spk-letter-compact .spk-letter-opening{line-height:1.45}.spk-letter-compact .spk-letter-addressee{margin-bottom:14pt}.document.spk-letter-compact .spk-letter-subject{margin-bottom:14pt}.document.spk-letter-compact .spk-letter-opening{margin-bottom:10pt}}
+
+/* SPK detail attachment, independently scoped from the portrait letter and plain BA KH list. */
+.document.spk-appendix{min-width:0;max-width:1200px;width:100%;margin-inline:auto;padding:26px 24px;background:#fff;color:#111;font-family:Arial,sans-serif}
+.document.spk-appendix .spk-appendix-heading h2{font-family:inherit;font-size:12px;text-align:left;margin:0 0 8px;line-height:1.4}
+.spk-appendix-heading dl{display:grid;grid-template-columns:90px minmax(0,1fr);gap:4px 8px;margin:0 0 18px;font-size:11px;line-height:1.4}
+.spk-appendix-heading dt,.spk-appendix-heading dd{margin:0;overflow-wrap:anywhere}.spk-appendix-heading dd::before{content:': ';white-space:pre}
+.spk-appendix-scroll{max-width:100%;overflow-x:auto}
+.spk-appendix-grid .spk-appendix-scroll .spk-appendix-table{width:100%;min-width:1050px;table-layout:fixed;border-collapse:collapse;border:1px solid #333}
+.spk-appendix-grid .spk-appendix-scroll .spk-appendix-table th,.spk-appendix-grid .spk-appendix-scroll .spk-appendix-table td{border:1px solid #333;padding:5px 4px;font:10px/1.4 Arial,sans-serif;letter-spacing:0;white-space:normal;overflow-wrap:anywhere;background:#fff;color:#111;vertical-align:middle;text-transform:none}
+.spk-appendix-grid .spk-appendix-scroll .spk-appendix-table th{font-weight:700;text-align:center}
+.spk-appendix-grid .spk-appendix-scroll .spk-appendix-table td.numeric{text-align:right;font-variant-numeric:tabular-nums}
+.spk-appendix-grid .spk-appendix-scroll .spk-appendix-table tfoot th{text-align:left}.spk-appendix-grid .spk-appendix-scroll .spk-appendix-table tfoot td{font-weight:700}
+.spk-appendix-table caption{text-align:right;padding:0 0 6px;color:#111;font-size:10px}
+.spk-appendix-col-no{width:3%}.spk-appendix-col-code{width:10%}.spk-appendix-col-description{width:23%}.spk-appendix-col-unit{width:6%}.spk-appendix-col-price{width:7%}.spk-appendix-col-project{width:12%}.spk-appendix-col-volume{width:6%}.spk-appendix-col-amount{width:8%}.spk-appendix-col-total{width:10%}
+.spk-appendix-project{display:block;margin-top:4px;font-weight:400}.spk-appendix-grid .spk-appendix-component{display:block;font-size:9px;color:#333;margin-top:2px}
+.spk-appendix-center{text-align:center}.spk-appendix-note,.document.spk-appendix .spk-appendix-note{font-size:10px;color:inherit;margin:8px 0;line-height:1.4}
+.spk-appendix-signature{width:38%;min-width:220px;text-align:center;margin-top:26px;break-inside:avoid;overflow-wrap:anywhere}
+.document.spk-appendix .spk-appendix-signature h3,.document.spk-appendix .spk-appendix-signature p{font:700 11px/1.4 Arial,sans-serif;color:#111;margin:0}.spk-appendix-signature strong{display:block;font-size:11px;text-decoration:underline}.spk-appendix-wet-signature{height:78px}
+@media(max-width:767px){.document.spk-appendix{padding:18px 12px}.modal-body:has(.spk-appendix) .preview-toolbar{min-width:0;flex-wrap:wrap}}
+@page spk-appendix-landscape{size:A4 landscape;margin:10mm}
+@media print{.document.spk-appendix{page:spk-appendix-landscape;max-width:none;padding:0}.spk-appendix-grid .spk-appendix-scroll .spk-appendix-table{min-width:0;width:100%}.document.spk-appendix .spk-appendix-grid .spk-appendix-scroll .spk-appendix-table th,.document.spk-appendix .spk-appendix-grid .spk-appendix-scroll .spk-appendix-table td{font-size:7pt;padding:2.5pt;line-height:1.3}.spk-appendix-scroll{overflow:visible}.spk-appendix-table thead{display:table-header-group}.spk-appendix-table tfoot{display:table-row-group}.spk-appendix-table tr{break-inside:avoid}.spk-appendix-wet-signature{height:23mm}.modal-body:has(.spk-appendix){overflow:visible}}

@@ -259,7 +259,7 @@ class RelationalWorkflowStore
             if (! isset($changed['bapps'][$b['id']])) {
                 continue;
             }
-            $this->record($workspace, 'bapps', $b, $i, ['final_term_id' => $key('terms', $b['termId']), 'document_no' => $b['no'], 'status' => $b['status'] === 'Sah' ? 'ATTESTED' : 'DRAFT', 'evidence_reference' => $b['evidence'] ?: null]);
+            $this->record($workspace, 'bapps', $b, $i, ['final_term_id' => $key('terms', $b['termId']), 'document_no' => $b['no'], 'status' => $b['status'] === 'Sah' ? 'ATTESTED' : 'DRAFT', 'evidence_reference' => ($b['evidence'] ?? '') ?: null]);
         }
         $this->refreshBalances($workspace, $state, $changed);
         $events = [];

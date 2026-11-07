@@ -14,6 +14,9 @@ The supplied OSP FO workbook now defines a real private .xlsx import (docs/BOQ_I
 ## Current v3 authority — username and five approvals (4 November 2026)
 The latest user request and docs/WORKFLOW_V3.md override two-stage descriptions below for new documents. Create PP as Admin Konstruksi, then selected PM → Admin Area → Mgr Deployment → Mgr Bussiness Support → Head of PMO. New payments freeze those five IDs, unlock print only at 5/5, then require a real private wet-signature scan and separate Finance approval bound to that scan before APM/full settlement. Preserve both v1 and v2 historical decisions; future terms on old PPs require explicit five-approver configuration. Login is username-based; users metadata includes NIK/Region/Branch/Service Area/role with validated placement and matching SQL assignments. Never fabricate NIK, location or signatures. Primary placement does not expand Branch permissions. Prior descriptions below are historical regression guidance where incompatible.
 
+## Text-reference removal — 7 November 2026
+Follow docs/DOCUMENT_ATTESTATION.md: BA KH/SPK/BA PP attestation no longer requires a text evidence reference. Admin authorization, full Final approvals before BA PP, Sah-before-release, exact component ledger, immutable issued data and release history remain unchanged. Existing references are archive-only; actual private payment work proof, wet-signature scans and Finance/APM are unaffected. Record architecture/query review under docs/ARCHITECTURE.md on each update.
+
 ## Purpose
 Represent legitimate reuse of unfinished BOQ volume through a single root ledger, separated by designator, component and physical unit.
 

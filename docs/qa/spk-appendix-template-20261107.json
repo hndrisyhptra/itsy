@@ -1,0 +1,56 @@
+{
+  "date": "2026-11-07",
+  "feature": "SPK attachment reference grid with Nama Proyek and Vol",
+  "source": {
+    "path": "/Users/hendrisyahputra/Downloads/Lampiran-SPK.xlsx",
+    "sheet": "Sheet1",
+    "range": "A1:K25",
+    "bytes": 12928,
+    "sha256": "f2934175527c40dc688eb3f949dece671c05ab821f596ecbeb92a32eeefd8487",
+    "read_only": true,
+    "executed_formulas": false,
+    "copied_sample_transaction_data": false
+  },
+  "implementation": {
+    "shared_table": "SpkAppendixTable",
+    "model": "spkAppendixData",
+    "columns": 11,
+    "different_component_volumes": "Separate Material/Jasa display rows, selected component volume and price only",
+    "amounts": "Agreed row prices/volumes; canonical combined line rounding with service cent remainder",
+    "signature": "Saved SPK signer and position; blank wet-signature area",
+    "print_css": "Named A4 landscape attachment page, portrait main SPK preserved"
+  },
+  "checks": {
+    "php": { "command": "/Applications/XAMPP/xamppfiles/bin/php artisan test --compact", "passed": 203, "assertions": 3796, "isolated_memory_database": true },
+    "frontend": { "command": "npm test", "passed": 182, "new_regressions": 6 },
+    "build": { "command": "npm run build", "passed": true },
+    "whitespace": { "command": "git diff --check", "passed": true },
+    "new_regression_file": "tests/Frontend/spk-appendix.test.ts",
+    "coverage": [
+      "Grouped headers, source-template footer positions, source mapping, escaping and no example identities/prices",
+      "Distinct Material/Jasa volumes without cross-component charges",
+      "Zero versus excluded components, canonical cent rounding versus main SPK/dealTotal",
+      "Continuation root labels with own agreement volumes and saved SPK signer",
+      "Shared form/attachment route without duplicate grid; main portrait Word unchanged",
+      "1000 rows with BOQ/KHS find prohibited; missing and empty references handled"
+    ]
+  },
+  "query_review": {
+    "additional_sql_or_network_paths": 0,
+    "lookup": "One root lookup for continuation; BOQ and KHS Maps built once, no per-row find",
+    "fixture_rows": 1000,
+    "general_latency_or_throughput_claim": false
+  },
+  "visual_qa": {
+    "completed": false,
+    "reason": "Browser security policy denied localhost access because permission was declined",
+    "responsive_dark_print_verified": false,
+    "alternate_browser_workaround": false,
+    "private_fixture_server_stopped": true
+  },
+  "live_database_mutation": false,
+  "schema_or_backend_change": false,
+  "qa_fixtures_written_to_its": false,
+  "new_xlsx_or_docx_export": false,
+  "behavior_document": "docs/SPK_APPENDIX_TEMPLATE.md"
+}

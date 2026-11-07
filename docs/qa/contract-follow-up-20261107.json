@@ -1,0 +1,29 @@
+{
+  "date": "2026-11-07",
+  "feature": "SPK follow-up column on BA KH negotiation list",
+  "php": {
+    "tests": 203,
+    "assertions": 3796,
+    "passed": true,
+    "database": "isolated SQLite :memory:"
+  },
+  "frontend": {
+    "tests": 169,
+    "passed": true,
+    "new_regressions": 3
+  },
+  "build": {
+    "passed": true
+  },
+  "performance": {
+    "new_sql_queries": 0,
+    "new_http_requests": 0,
+    "lookup_strategy": "PP, BA KH and SPK Maps once per render; no collection find per row",
+    "relation_key": "BA KH ID, never shared business Project ID",
+    "limits": "SSR/state regression, not browser layout or concurrent load testing"
+  },
+  "migration_required": false,
+  "live_data_mutations": false,
+  "backend_or_workflow_change": false,
+  "manual_browser_responsive_check": false
+}

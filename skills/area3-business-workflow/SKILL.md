@@ -7,6 +7,9 @@ description: Implement its Area 3 Project Plan, BOQ, mandor contracting, assigne
 
 
 
+## No text evidence reference — 7 November 2026
+The user removed signed-document text references from BA KH/SPK/BA PP, including backend gates. Follow docs/DOCUMENT_ATTESTATION.md and docs/ARCHITECTURE.md. Admin can attest without that text when other document/approval/price/volume requirements pass. Ignore obsolete client evidence, preserve stored historical references without exposing them in form/preview/timeline, and keep nullable SQL fields for history. Actual private payment work-proof uploads and wet-signature scans, Finance/APM remain governed by their existing rules. Record architecture and query/lookup impacts for every update along with audit/test limits. This overrides the older text-reference requirement below.
+
 ## Automatic BA KH signer — 6 November 2026
 Follow docs/BAKH_SIGNER.md. New/draft BA KH from v3 PP must use the selected PP Head of PMO identity, matched by user ID through actual decision/saved PP identity/account data. Form name/NIK are read-only; PHP overrides client/cached signer fields and preview shows identity with blank physical signature space. Missing NIK remains empty with an account-data hint; never infer another Head. Preserve issued/Sah identities and legacy PP without Head assignments. Store NIK/ID in the existing document snapshot, project name/role without new SQL queries or migrations, and test actual SQL persistence plus read-only/preview/forgery/history cases in memory.
 
@@ -69,7 +72,7 @@ Preserve the v2 process: BOQ inside PP → PP submission → assigned PM → ass
 3. BOQ Final and PP Sah precede mandor contracting. BA KH Sah precedes SPK. SPK Sah commits reserved volume and enables term 1.
 4. Actual term volume is mandatory. Submission creates PM inbox work, locks fields, logs actor/time and updates counts from the shared state.
 5. Finance records and validates a unique APM; corrections cannot invalidate a predecessor after its next term has been created without a future formal correction process.
-6. Final approved creates Draft BA PP. Admin attests with evidence reference, releases selected valid remainder, then creates an automatically numbered continuation without a new root BOQ upload.
+6. Final approved creates Draft BA PP. Admin attests without a text-reference requirement, releases selected valid remainder, then creates an automatically numbered continuation without a new root BOQ upload.
 
 ## Acceptance
 Attempt out-of-sequence approvals, wrong roles, missing reasons, fourth terms, next-term creation without APM, release before BA PP Sah, and duplicated PP numbers. Each must fail without partial mutation. Walk scenarios A–E from `resources/js/area3/seed.ts` and `database/demo/` and verify history and inbox changes.

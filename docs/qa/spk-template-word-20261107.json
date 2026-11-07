@@ -1,0 +1,64 @@
+{
+  "date": "2026-11-07",
+  "feature": "SPK Mandor portrait template preview and native DOCX download",
+  "source": {
+    "file": "SPK Mandor.docx",
+    "bytes": 144108,
+    "sha256": "f2f79179af2ad62d8e6339f498d0b7fd44446664c0b1d426d4558233c0c23092",
+    "unchanged": true
+  },
+  "php": {
+    "tests": 203,
+    "assertions": 3796,
+    "passed": true,
+    "database": "isolated SQLite :memory:"
+  },
+  "frontend": {
+    "tests": 176,
+    "new_spk_regressions": 7,
+    "passed": true
+  },
+  "build": {
+    "passed": true
+  },
+  "native_verification": {
+    "crc": true,
+    "xml_and_relationships": true,
+    "python_docx": true,
+    "parts": 13,
+    "preserved_source_parts": 8,
+    "normal_pages": 1,
+    "long_input_pages": 1,
+    "all_final_pngs_inspected": true,
+    "fixtures": [
+      {
+        "name": "spk",
+        "bytes": 213879,
+        "sha256": "9158688621add6caee683b9e0ab3739d4bbec982825f6ed00de0d09d9ecd2e6b"
+      },
+      {
+        "name": "spk-long",
+        "bytes": 214518,
+        "sha256": "71e646722eb9396733aa039a2ea0c9768d7a4f3344ca5b4b6b8cfce5936d796e"
+      }
+    ]
+  },
+  "performance": {
+    "new_sql_queries": 0,
+    "new_data_endpoints": 0,
+    "new_business_data_requests": 0,
+    "static_logo_get_on_download": 1,
+    "logo_bytes": 122545,
+    "word_chunk_kb": 91.32,
+    "word_chunk_gzip_kb": 13.22,
+    "shared_zip_chunk_kb": 1.16,
+    "root_khs_lookup_for_letter": false,
+    "agreement_rows_fixture": 1000,
+    "limits": "Bundle and isolated fixture measurements, no concurrent-load or browser-latency claim"
+  },
+  "migration_required": false,
+  "live_mutations": false,
+  "manual_browser_check": false,
+  "microsoft_word_desktop_check": false,
+  "physical_print_check": false
+}

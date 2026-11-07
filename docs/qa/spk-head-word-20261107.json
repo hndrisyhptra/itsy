@@ -1,0 +1,93 @@
+{
+  "date": "2026-11-07",
+  "feature": "SPK selected Head name/job/NIK, activity-only header and Word on both previews",
+  "backup": {
+    "file": "storage/app/private/backups/its-before-spk-head-word-20261107-095133.sql",
+    "bytes": 2036271,
+    "sha256": "472ca61dafb3d0401d8960db3cc453707b1a402799541bf564e5c4b7a93dcd7b"
+  },
+  "checks": {
+    "php": {
+      "passed": 208,
+      "assertions": 4031,
+      "isolated_sqlite_memory": true
+    },
+    "frontend": {
+      "passed": 187,
+      "new_cases": 5
+    },
+    "build": true,
+    "scoped_pint": true,
+    "new_php_cases": 5,
+    "signature_helper_extra_queries": 0,
+    "http_save_generate_attest_max_queries_including_revision": 60,
+    "indexed_word_fixture_rows": 1000,
+    "forgery_missing_head_nik_continuation_history_sql_snapshots_and_archive_regressions": true
+  },
+  "native_word": {
+    "generated_by_application": true,
+    "outputs": {
+      "main": {
+        "pages": 1,
+        "rows": 3,
+        "bytes": 214376,
+        "crc_xml_valid": true
+      },
+      "main-long": {
+        "pages": 1,
+        "rows": 3,
+        "bytes": 214913,
+        "crc_xml_valid": true
+      },
+      "appendix": {
+        "pages": 1,
+        "rows": 11,
+        "bytes": 42276,
+        "crc_xml_valid": true
+      },
+      "appendix-long": {
+        "pages": 4,
+        "rows": 36,
+        "bytes": 130902,
+        "crc_xml_valid": true
+      }
+    },
+    "rendered_png_pages_inspected": 7,
+    "unchanged_page_1_2_png_hashes_verified": true,
+    "main_source_parts_preserved": 8,
+    "source_sha256": "f2f79179af2ad62d8e6339f498d0b7fd44446664c0b1d426d4558233c0c23092",
+    "native_editable": true,
+    "real_signatures_generated": false,
+    "main_portrait_appendix_landscape": true,
+    "long_table_signoff_may_continue_final_page": true
+  },
+  "query_review": {
+    "new_endpoints_or_extra_sql": 0,
+    "identity_from_existing_loaded_pp_decision_snapshot_account": true,
+    "catalog_indexed_once": true,
+    "lazy_appendix_chunk_kb": 3.91,
+    "lazy_shared_word_helper_kb": 2.66,
+    "general_latency_claim": false
+  },
+  "persistence": {
+    "work_orders_document_data_identity_fields": [
+      "signer",
+      "position",
+      "signerUserId",
+      "signerNik",
+      "signerRole",
+      "signerSource"
+    ],
+    "existing_contract_name_position_projection": true,
+    "migration_required": false,
+    "live_transaction_mutations": false,
+    "legacy_issued_snapshots_frozen": true,
+    "live_qa_rows_inserted": false
+  },
+  "limitations": [
+    "Authenticated browser/download/responsive/dark mode not manually checked; previous denied browser access respected",
+    "Microsoft Word desktop and physical printer unverified",
+    "Missing employee NIK never invented; legacy issued SPK missing NIK remains unavailable"
+  ],
+  "behavior_document": "docs/SPK_SIGNER_WORD.md"
+}

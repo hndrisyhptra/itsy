@@ -1,0 +1,52 @@
+{
+  "date": "2026-11-07",
+  "feature": "Project ID search then explicit PP selection for new negotiation",
+  "behavior_document": "docs/NEGOTIATION_PROJECT_PICKER.md",
+  "architecture_document": "docs/ARCHITECTURE.md",
+  "php": {
+    "tests": 203,
+    "assertions": 3796,
+    "passed": true,
+    "database": "isolated SQLite :memory:"
+  },
+  "frontend": {
+    "tests": 166,
+    "passed": true
+  },
+  "build": {
+    "passed": true
+  },
+  "pint": {
+    "passed": true,
+    "scope": "new PHP service/controller/test and routes"
+  },
+  "query_budgets": {
+    "service_search": 2,
+    "service_root_plan_list": 3,
+    "service_mixed_plan_list_max": 4,
+    "page_size": 20,
+    "sql_lookahead": 21,
+    "fixture_pps": 120,
+    "fixture_projects": 30,
+    "one_project_pps": 33,
+    "reads_full_aggregate_or_master": false,
+    "writes_business_data": false,
+    "limits": "Service queries exclude authentication/session middleware. Contains JSON/LIKE search and concurrency are not load-tested. Existing aggregate boot/Continue refresh remain."
+  },
+  "mysql_read_only_check": {
+    "database": "its",
+    "project_results": 1,
+    "plan_results": 2,
+    "passed": true,
+    "test_login_or_credentials_created": false
+  },
+  "backup": {
+    "path": "storage/app/private/backups/its-before-negotiation-project-picker-20261107-090820.sql",
+    "bytes": 2033657,
+    "sha256": "38448e63e1feef7e7f4796b9ae49ae55cbc5ce34ef5bf4c5cf40b4508b785db7"
+  },
+  "live_transaction_changes": false,
+  "migration_required": false,
+  "manual_browser_responsive_keyboard_check": false,
+  "approval_price_volume_guards": "unchanged validated commands"
+}
