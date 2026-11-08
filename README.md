@@ -12,6 +12,8 @@ Pada **Preview BA KH** dan **Lihat Lampiran**, tombol **Unduh Word (.docx)** mem
 
 **Preview SPK Mandor** mengikuti surat pada template pengguna: logo, penerima/alamat, perihal/periode, ringkasan Material/Jasa/Total, Waspang/K3 dan penandatangan SPK dengan ruang TTD kosong. Tombol **Unduh Word (.docx)** membuat surat editable dari data preview yang sama, termasuk draf, tanpa menyimpan/mengesahkan. Lihat [SPK_TEMPLATE_WORD](docs/SPK_TEMPLATE_WORD.md).
 
+**Preview BA Rekonsiliasi Pekerjaan – Termin** mengikuti template BARP, dengan judul otomatis **TAHAP 1/2/3**, form informasi rekonsiliasi, nilai aktual tahap ini serta Waspang/Mandor/Head of PMO tersimpan. **Unduh Word (.docx)** tersedia setelah diajukan; sebelum seluruh approval lengkap berkas ditandai review, sedangkan cetak resmi tetap menunggu persetujuan. [Pemetaan form, penyimpanan dan pengujian](docs/BARP_TEMPLATE_WORD.md).
+
 Dashboard memakai [tampilan ringkasan awal](docs/DASHBOARD_SUMMARY.md): tiga kartu utama dan enam ringkasan kecil, tanpa kartu Progress Pekerjaan per PP, Aktivitas Terbaru, Monitoring Volume dan Inbox Approval. Dropdown **Semua Branch** mencakup seluruh Branch sesuai akses akun, termasuk yang belum mempunyai PP, dan menyaring seluruh angka dari data tersimpan Laravel.
 
 **Pengesahan BA KH, SPK dan BA PP tidak lagi membutuhkan isian teks Referensi bukti dokumen bertanda tangan.** Isian/status referensi dan kolomnya di timeline dihapus; syarat dokumen lainnya tetap divalidasi Laravel. Referensi lama disimpan sebagai riwayat, sedangkan upload eviden pekerjaan serta scan TTD Pembayaran tetap mengikuti alur berkas privat. Tidak perlu migration. Rincian: [DOCUMENT_ATTESTATION](docs/DOCUMENT_ATTESTATION.md).
@@ -23,6 +25,8 @@ Pada **SPK → Negosiasi Baru**, cari **ID Project/nama pekerjaan**, pilih ID Pr
 **SPK baru/draf** mengisi otomatis nama, jabatan dan NIK Head of PMO dari PP terkait. Surat dan lampiran memiliki **Unduh Word (.docx)**; dokumen terbit mempertahankan identitas tersimpan dan NIK yang belum tercatat ditandai belum tersedia. [Perilaku dan verifikasi](docs/SPK_SIGNER_WORD.md).
 
 **Lihat Lampiran SPK** mengikuti template Lampiran-SPK.xlsx: designator/uraian terpisah, harga satuan Material/Jasa, **nama kegiatan → Vol** (tanpa label NAMA PROYEK), Total Vol, nilai/rekap dan ruang TTD penandatangan SPK. Tabel yang sama tersedia di form; Cetak/Simpan PDF meminta A4 horizontal. [Pemetaan dan batas verifikasi](docs/SPK_APPENDIX_TEMPLATE.md).
+
+Pada **Pembayaran → Pengajuan Baru**, cari **ID Project/nama kegiatan**, pilih **SPK Sah**, lalu konfirmasikan **Buat Draf Pembayaran**. Draf/pengajuan yang sudah ada dibuka kembali melalui Lanjutkan Draf, Perbaiki Pengajuan atau Buka Pengajuan; data baru dibuka setelah konfirmasi server. Pencarian mengikuti Branch akun dan20 hasil per halaman. [Alur dan bukti pemeriksaan](docs/PAYMENT_PROJECT_PICKER.md).
 
 ## Menjalankan dan login
 

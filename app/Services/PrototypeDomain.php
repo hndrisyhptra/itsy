@@ -697,6 +697,9 @@ class PrototypeDomain
             }
             $this->put('terms', $t);
         }
+        $t = $this->record('terms', $id);
+        $t['barp'] = BarpTemplate::defaults($this->state, $t);
+        $this->put('terms', $t);
         $this->log('Draft termin dibuat', $spk['no'].' · Termin '.$number, '/termin/'.$id);
 
         return $id;
@@ -731,6 +734,7 @@ class PrototypeDomain
         if ($this->termTotal($t) <= 0) {
             $this->fail('Masukkan volume aktual dengan nilai tagihan positif.');
         }
+        $t = BarpTemplate::save($this->state, $t, $input, $submit);
         if ($t['status'] === 'Ditolak') {
             $t['status'] = 'Draft';
             $t['approvals'] = [];
@@ -739,6 +743,9 @@ class PrototypeDomain
             $t['status'] = 'Diajukan';
             $t['approvals'] = [];
             $t['submitted'] = now()->toISOString();
+            if (isset($t['barp'])) {
+                $t['barpHistory'][] = ['at' => $t['submitted'], 'document' => $t['barp']];
+            }
         }
         $this->put('terms', $t);
         $this->log($submit ? 'Termin diajukan ke PM Konstruksi' : 'Draft termin disimpan', 'Termin '.$t['number'], '/termin/'.$t['id']);

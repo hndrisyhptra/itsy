@@ -121,16 +121,18 @@ test('v3 payment locks five pre-signature decisions and requires a matching Fina
   recordApm(s,t.id,'APM/QA/V3-01'); assert.equal(t.paid,termTotal(s,t)); assert.equal(t.paymentHistory.length,1); assert.equal(t.approvals.length,5); assert.throws(()=>recordApm(s,t.id,'APM/QA/V3-02'),/scan/);
 });
 
-test('v3 print is blocked until five approvals and provides five named blank wet-signature areas', () => {
+test('v3 print is blocked until five approvals and uses the BARP template signature block', () => {
   const s=state(), t=payment(s), spk=getSpk(s,t.spkId);
   const render=()=>renderToStaticMarkup(createElement(DocumentPreview,{state:s,kind:'BA Rekonsiliasi Pekerjaan – Termin',term:t,spk,onClose:()=>{}}));
   for (const role of APPROVERS_V3.slice(0,4)) { actor(s,role); decide(s,t.id,'Setujui','QA'); }
   assert.match(render(),/<button[^>]*disabled[^>]*>[\s\S]*?Cetak \/ Simpan PDF browser/);
   actor(s,'Head of PMO'); decide(s,t.id,'Setujui','QA'); const html=render();
   assert.doesNotMatch(html,/<button[^>]*disabled[^>]*>[\s\S]*?Cetak \/ Simpan PDF browser/);
-  const signatures=html.match(/class="signature signature-many"[\s\S]*?<footer>/)?.[0]??'';
-  assert.equal((signatures.match(/Area TTD basah dokumen asli/g)??[]).length,5);
-  for (const role of APPROVERS_V3) assert.ok(signatures.includes(s.users.find(u=>u.id===t.approverUserIds?.[role])!.name));
+  const signatures=html.match(/class="barp-signatures"[\s\S]*?<\/section>/)?.[0]??'';
+  assert.equal((signatures.match(/Area TTD basah dokumen asli/g)??[]).length,3);
+  assert.ok(signatures.includes(t.barp!.headName));
+  assert.ok(signatures.includes(t.barp!.waspang));
+  assert.ok(signatures.includes(t.barp!.mandor));
   assert.doesNotMatch(signatures,/<img|<svg/);
 });
 

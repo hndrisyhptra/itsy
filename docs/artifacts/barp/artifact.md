@@ -1,0 +1,10 @@
+# BARP template contract — 8 November 2026
+
+- Task: native editable Word and matching HTML preview from the user-supplied BARP, not a generic report. Source is reference/BARP.docx; SHA256 9c08a9075bc7110bbe4315add0823d4a7676e3c28c282897610757d45b7f498f.
+- Preserve: A4 portrait 11906×16838 twip; 720-twip margins; Cambria 10pt body; black 14pt centered underlined title; source grid and borders, merged recap header, numbered sections, SOW/overpayment/closing prose, Waspang/Mandor pair and centered Head of PMO; notes, font/theme/numbering parts.
+- Slots: project name, Mandor, date, reconciliation period/place/location/STO/Homepass, current-stage Material/Jasa/Total, amount in words, saved Waspang and selected Head identity. Heading automatically ends `- TAHAP N`.
+- Intentional adaptations: stage-specific amount (never rebill prior terms); price-weight share explicitly labelled as share of SPK value, not physical completion; BAPP promise replaced by payment-stage wording so early terms do not claim BAPP issuance. No financial amendment inputs; extra/reduction are zero. Unselected components stay blank.
+- Safety: Word only after submission, review legend until all selected approvers approve. Official Print, private scan, Finance and APM gates unchanged. No signature images or fabricated approval stamps. Date/identities unknown on historical snapshots stay blank/ellipsis.
+- Layout repair: source floating tables/fixed heights hid rows during rendering. Tables are inline, rows flexible, headers repeat, signature block kept together; surplus spacer paragraphs removed. Dynamic long content may flow to extra pages.
+- Runtime: build-barp-word-template.py preserves source OOXML and inserts escaped, one-pass text slots; browser uses generated parts with lazy-loaded ZIP export. No runtime source-file, Python, CLI, temporary path, SQL catalog or added endpoint.
+- QA outputs are synthetic and private under /private/tmp/area3-barp-20261108. Render every final DOCX to PNG and inspect all pages; no generated fixture is a live transaction or a replacement source workbook.

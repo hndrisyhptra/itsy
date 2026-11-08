@@ -1,0 +1,95 @@
+{
+  "date": "2026-11-07",
+  "feature": "Payment creation starts with Project ID search and authorized Sah-SPK selection",
+  "behavior": "docs/PAYMENT_PROJECT_PICKER.md",
+  "backup": {
+    "file": "storage/app/private/backups/its-before-payment-project-picker-20261107-153204.sql",
+    "bytes": 2038872,
+    "sha256": "f478c6a7073ac93bf1625a3e329ff902445f22e546add20fa7aa82cf6669124d"
+  },
+  "checks": {
+    "php": {
+      "passed": 215,
+      "assertions": 4132,
+      "new_tests": 7,
+      "isolated_sqlite_memory": true
+    },
+    "frontend": {
+      "passed": 196,
+      "new_tests": 9
+    },
+    "build": true,
+    "scoped_pint": true,
+    "git_diff_check": true,
+    "shared_routing_vectors": 13,
+    "sql_pagination_fixture": {
+      "orders": 120,
+      "project_ids": 30,
+      "one_project_orders": 33,
+      "pages": [
+        20,
+        13
+      ]
+    }
+  },
+  "query_review": {
+    "search_service_queries": 2,
+    "nonempty_orders_service_queries": 4,
+    "empty_orders_service_queries": 2,
+    "page_size": 20,
+    "sentinel_limit": 21,
+    "related_terms_max_per_spk": 3,
+    "amounts": "SQL groups M/J per source BOQ row, rounds combined line amount then sums per contract; returns at most20 values",
+    "no_per_order_sql": true,
+    "scope": "work_order/contract/PP workspace and each PP Branch precede grouping/sibling matching/count/list",
+    "no_archive_master_actuals_private_files_decision_history": true,
+    "counts_exclude_http_auth_session_middleware_refresh_and_command": true,
+    "shared_boot_and_refresh_aggregate_unchanged": true,
+    "universal_latency_claim": false
+  },
+  "read_only_mysql_check": {
+    "existing_account_only": true,
+    "project_results": 1,
+    "order_results": 1,
+    "search_queries": 2,
+    "order_queries": 4,
+    "archive_revision_unchanged": true,
+    "new_accounts_sessions_or_test_transactions": false
+  },
+  "workflow": {
+    "new_spk_explicit_selection_summary": true,
+    "existing_draft_returned_rejected_v3_active_finance_apm_final_routes_same_document": true,
+    "legacy_rejection_not_reopened": true,
+    "refresh_current_authorized_state_before_action": true,
+    "await_server_confirmation_before_navigation": true,
+    "failed_commit_no_optimistic_navigation": true,
+    "uncertain_saved_response_retry_routes_existing": true,
+    "duplicate_replay_conflict_branch_role_inactive_approver_guards_tested": true,
+    "changed_domain_rules": false,
+    "schema_migration_required": false,
+    "live_write_except_private_backup": false
+  },
+  "ui": {
+    "search_debounce_ms": 300,
+    "query_min": 2,
+    "query_max": 100,
+    "abort_and_stale_response_guards": true,
+    "explicit_contextual_spk_link_no_fallback": true,
+    "loading_empty_error_retry": true,
+    "existing_payment_callbacks_and_new_selection_tested": true,
+    "table_scroll_local": true
+  },
+  "bundle_kb": {
+    "main": 367.86,
+    "main_gzip": 114.28,
+    "payments": 44.49,
+    "payments_gzip": 13.66
+  },
+  "limitations": [
+    "Authenticated browser click/keyboard/responsive375/768/1440/dark QA not manually performed; previous browser denial respected",
+    "No concurrent load/latency benchmark",
+    "Boot/refreshState continue loading existing authorized aggregate; only selection catalog is bounded",
+    "Catalog action is routing hint; approver and all document eligibility revalidated on current state and by createTerm"
+  ],
+  "simulation": "Only offline helpers use local state; account-mode search/list/create use actual SQL and existing workflow commands"
+}

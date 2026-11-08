@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
-import { type State, type BoqRow, type BoqUpload, now } from './domain';
+import { type State, type BoqRow, type BoqUpload, now, createTerm } from './domain';
+import { paymentStartAction } from './payment-selection';
 import { seed } from './seed';
 import { boot, appUrl } from './laravel';
 import { type Command, setCommandRecorder } from './commands';
@@ -54,6 +55,18 @@ async function commit(command: Command, resultId?: string, scan?: { termId: stri
 }
 function send(command: Command, resultId?: string) { active = commit(command,resultId); void active.catch(() => {}); }
 export function waitForPersistence() { return active ?? Promise.resolve(); }
+/** Read latest authorized state; resolve an existing term or await confirmed creation before navigation. */
+export async function startPaymentFromSpk(spkId:string):Promise<string> {
+  if(persistencePending)throw new Error('Tunggu konfirmasi penyimpanan sebelumnya.');
+  if(boot)await refreshState();
+  const action=paymentStartAction(state,spkId);
+  if(action.action==='open')return action.termId;
+  if(action.action!=='create')throw new Error(action.reason||'SPK belum dapat digunakan.');
+  const id=mutate(s=>createTerm(s,spkId));
+  await waitForPersistence();
+  if(!state.terms.some(t=>t.id===id&&t.spkId===spkId))throw new Error('Draf belum dikonfirmasi. Muat ulang daftar sebelum mencoba kembali.');
+  return id;
+}
 type MasterWriteResult={catalog:MasterCatalog;revision:number;summary?:MasterImportSummary;replayed?:boolean};
 export type MasterImportSummary={created:number;updated:number;unchanged:number};
 export type MasterImportPreview={summary:MasterImportSummary;rows:{row:number;code:string;package:string|null;action:'created'|'updated'|'unchanged';data:Record<string,string|number>}[];revision:number;sha256:string};

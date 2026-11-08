@@ -2,6 +2,14 @@
 
 Catatan ini menjelaskan struktur runtime aktif dan keputusan perubahan. Baca bersama [MYSQL_RUNTIME.md](MYSQL_RUNTIME.md), [buku saku relasi tabel](DATABASE_RELATIONS.md), AGENTS.md dan [CHANGELOG.md](CHANGELOG.md). Kode Laravel merupakan otoritas validasi dan status tersimpan; dokumentasi SQL konseptual lama tidak menggantikan executable migrations atau runtime.
 
+## BARP pembayaran: form → snapshot → preview/Word — 8 November 2026
+
+`createTerm` menangkap identitas Waspang SPK/Mandor/Head sesuai assignment termin lewat `BarpTemplate`; `saveTerm` memvalidasi metadata editable dan menambah `barpHistory` hanya saat pengajuan. Seluruh data memakai `payment_terms.document_data`, transaksi workspace/revisi/receipts/audit yang sama; tidak ada migration atau backfill arsip. Laravel membatasi tanggal/periode SPK/teks/Homepass dan mengabaikan pemalsuan identitas/riwayat. Draf lama mengadopsi lewat penyimpanan Admin, dokumen historis tanpa metadata tetap utuh.
+
+`barp-content.ts` menyatukan model surat untuk HTML/native DOCX: judul tahap, nominal aktual term saja, M/J/terbilang, tabel sumber, signoff fisik kosong. Cabang preview BARP melewati kalkulasi generik root/KHS/riwayat tagihan; ekspor source-derived OOXML lazy tanpa API/SQL/CLI baru. Tabel form memakai Map BOQ/KHS/previous/accepted sekali, bukan pencarian berulang per komponen. Resolver0 SQL; fixture HTTP satu PP59 queries termasuk read revisi, batas60 dan dua reference reads bawaan, unrelated writes dilarang. Batas aggregate runtime/benchmark/browser tetap dinyatakan, bukan klaim semua query sudah optimal.
+
+Otorisasi unduh yang diminta pengguna: Word tersedia Diajukan/Disetujui, berpenanda review sampai semua keputusan akun/peran lengkap. Print resmi tetap setelah seluruh approval, demikian pula scan/Finance/APM. Lima keputusan tetap wajib walau blok TTD surat mengikuti tiga penandatangan pada template. Bukti serta batas ada di [BARP_TEMPLATE_WORD.md](BARP_TEMPLATE_WORD.md) dan qa/barp-template-word-20261108.json.
+
 ## Aliran perintah dan penyimpanan
 
 ```mermaid
@@ -77,3 +85,11 @@ Review query:0 tambahan; Maps menggantikan nested find form, dibuktikan fixture1
 BakhSigner::projectIdentity/projectHeadIdentity dipakai bersama BA KH dan SpkSigner/syncSpkSigner. Kebijakan snapshot SPK berdiri sendiri: baru/draf v3 memakai Head terpilih dari PP tepat yang direferensikan BA KH (keputusan matchingID→signatureUsers matchingID→akun terpilih), sedangkan Terbit/Sah tetap identitas tersimpan. Backend menimpa incoming signer/position/identity dan menyimpannya pada work_orders.document_data, proyeksi kontrak serta audit/receipt atomik yang sudah ada; tidak mengubah arsip/schema. Missing NIK tetap kosong, missing valid Head menolak formal issuance, dan tidak ada identity lookup berdasarkan nama/global Head.
 
 Preview/Word memakai props SPK yang disinkronkan tanpa save pada read. Header lampiran langsung nama kegiatan/VOL. Surat tetap source-derived portrait dengan slot NIK; ekspor lampiran native landscape menggunakan model tabel sama dan helper word-ooxml yang diekstrak dari BA KH. Lazy chunks terpisah, semua teks di-escape, tidak ada arbitrary path/network, tanda tangan rekaan atau command saat download.0 tambahan SQL resolver,HTTP fixture≤60 query termasuk revisi,1000-row indexed export; ini bukan klaim throughput umum.208 PHP/187 frontend/build/Pint lulus;4 output Word dirender dan7 PNG diperiksa. Detail backup,SQL mapping,ukuran chunk dan batas browser/Word desktop/cetak: [SPK_SIGNER_WORD.md](SPK_SIGNER_WORD.md),qa/spk-head-word-20261107.json.
+
+## Keputusan 7 November 2026: pemilihan sumber pembayaran per ID Project/SPK Sah
+
+Pengajuan Baru memakai dua GET metadata pada PaymentProjectCatalog: Project group lalu20 SPK Sah perhalaman. Workspace dan project_plans.branch_id membatasi group, sibling matching, counts dan listing;projects.branch_id tidak menjadi otoritas. Querysearch2,list4 dengan batch≤60term dan nilai SQL dua tingkat (round per sumberBOQ→sum kontrak),tanpa per-rowSQL/arsip/master/berkas/actuals/approvalhistory. Metadata adalah routinghint, bukan izin create; kontrol domain tidak dipindah ke client.
+
+PaymentSelection PHP/payment-selection.ts dengan13vectors memilih create/open/blocked. Newsource memerlukan pilihan/summary eksplisit; existingDraft/returned/rejectedv3/active/Finance/APM/Final langsung dibuka. Store startPaymentFromSpk me-refresh stateberizin, re-evaluasi SPK/term/approver,gates lama lalu memakai createTerm dan menunggu konfirmasi; onerror tidak navigate ke IDoptimistis, retries usai responsehilang membuka existing. Backend lock/revision/receipt tetap mencegah duplikasi; tidak mengubah aturan approval/penolakan/Finance/APM/volume/status historis atau schema.
+
+Helper offline berindeks dan transport dipisah dari core routing untuk menjaga UIpencarian di chunkPayments. Evidence215PHP/196frontend/build/Pint,120orderquerybudget dan1liveProject/1liveSPK readonly2/4queries. Sharedbootstrap/refresh aggregate belum diubah;manualbrowser/responsif/loadtest belum. Pemetaan API/data/backup dan batas: [PAYMENT_PROJECT_PICKER.md](PAYMENT_PROJECT_PICKER.md),qa/payment-project-picker-20261107.json.

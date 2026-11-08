@@ -1,0 +1,268 @@
+[
+  {
+    "name": "empty",
+    "terms": [],
+    "approved": true,
+    "expected": [
+      "create",
+      "Pilih SPK",
+      "",
+      1
+    ]
+  },
+  {
+    "name": "pp-pending",
+    "terms": [],
+    "approved": false,
+    "expected": [
+      "blocked",
+      "Pilih SPK",
+      "",
+      1
+    ]
+  },
+  {
+    "name": "draft",
+    "terms": [
+      {
+        "id": "term-1",
+        "number": 1,
+        "type": "Parsial",
+        "status": "Draft",
+        "version": 3,
+        "apmStatus": ""
+      }
+    ],
+    "approved": true,
+    "expected": [
+      "open",
+      "Lanjutkan Draf",
+      "term-1",
+      null
+    ]
+  },
+  {
+    "name": "final-draft",
+    "terms": [
+      {
+        "id": "term-1",
+        "number": 1,
+        "type": "Final",
+        "status": "Draft",
+        "version": 3,
+        "apmStatus": ""
+      }
+    ],
+    "approved": true,
+    "expected": [
+      "open",
+      "Lanjutkan Draf",
+      "term-1",
+      null
+    ]
+  },
+  {
+    "name": "submitted",
+    "terms": [
+      {
+        "id": "term-1",
+        "number": 1,
+        "type": "Parsial",
+        "status": "Diajukan",
+        "version": 3,
+        "apmStatus": ""
+      }
+    ],
+    "approved": true,
+    "expected": [
+      "open",
+      "Buka Pengajuan",
+      "term-1",
+      null
+    ]
+  },
+  {
+    "name": "returned",
+    "terms": [
+      {
+        "id": "term-1",
+        "number": 1,
+        "type": "Parsial",
+        "status": "Dikembalikan",
+        "version": 3,
+        "apmStatus": ""
+      }
+    ],
+    "approved": true,
+    "expected": [
+      "open",
+      "Perbaiki Pengajuan",
+      "term-1",
+      null
+    ]
+  },
+  {
+    "name": "rejected-v3",
+    "terms": [
+      {
+        "id": "term-1",
+        "number": 1,
+        "type": "Parsial",
+        "status": "Ditolak",
+        "version": 3,
+        "apmStatus": ""
+      }
+    ],
+    "approved": true,
+    "expected": [
+      "open",
+      "Perbaiki Pengajuan",
+      "term-1",
+      null
+    ]
+  },
+  {
+    "name": "rejected-v2",
+    "terms": [
+      {
+        "id": "term-1",
+        "number": 1,
+        "type": "Parsial",
+        "status": "Ditolak",
+        "version": 2,
+        "apmStatus": ""
+      }
+    ],
+    "approved": true,
+    "expected": [
+      "open",
+      "Buka Pengajuan",
+      "term-1",
+      null
+    ]
+  },
+  {
+    "name": "finance",
+    "terms": [
+      {
+        "id": "term-1",
+        "number": 1,
+        "type": "Parsial",
+        "status": "Disetujui",
+        "version": 3,
+        "apmStatus": ""
+      }
+    ],
+    "approved": true,
+    "expected": [
+      "open",
+      "Buka Pengajuan",
+      "term-1",
+      null
+    ]
+  },
+  {
+    "name": "next",
+    "terms": [
+      {
+        "id": "term-1",
+        "number": 1,
+        "type": "Parsial",
+        "status": "Disetujui",
+        "version": 3,
+        "apmStatus": "Valid"
+      }
+    ],
+    "approved": true,
+    "expected": [
+      "create",
+      "Pilih SPK",
+      "",
+      2
+    ]
+  },
+  {
+    "name": "final-settled",
+    "terms": [
+      {
+        "id": "term-1",
+        "number": 1,
+        "type": "Final",
+        "status": "Disetujui",
+        "version": 3,
+        "apmStatus": "Valid"
+      }
+    ],
+    "approved": true,
+    "expected": [
+      "open",
+      "Buka Pengajuan",
+      "term-1",
+      null
+    ]
+  },
+  {
+    "name": "third",
+    "terms": [
+      {
+        "id": "term-1",
+        "number": 1,
+        "type": "Parsial",
+        "status": "Disetujui",
+        "version": 3,
+        "apmStatus": "Valid"
+      },
+      {
+        "id": "term-2",
+        "number": 2,
+        "type": "Parsial",
+        "status": "Disetujui",
+        "version": 3,
+        "apmStatus": "Valid"
+      }
+    ],
+    "approved": true,
+    "expected": [
+      "create",
+      "Pilih SPK",
+      "",
+      3
+    ]
+  },
+  {
+    "name": "max",
+    "terms": [
+      {
+        "id": "term-1",
+        "number": 1,
+        "type": "Parsial",
+        "status": "Disetujui",
+        "version": 3,
+        "apmStatus": "Valid"
+      },
+      {
+        "id": "term-2",
+        "number": 2,
+        "type": "Parsial",
+        "status": "Disetujui",
+        "version": 3,
+        "apmStatus": "Valid"
+      },
+      {
+        "id": "term-3",
+        "number": 3,
+        "type": "Final",
+        "status": "Disetujui",
+        "version": 3,
+        "apmStatus": "Valid"
+      }
+    ],
+    "approved": true,
+    "expected": [
+      "open",
+      "Buka Pengajuan",
+      "term-3",
+      null
+    ]
+  }
+]

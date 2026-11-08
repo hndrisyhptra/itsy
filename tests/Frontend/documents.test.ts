@@ -25,7 +25,7 @@ test('continuation PP preview totals its allocated quantities rather than full r
   assert.match(summary,/33\.695\.000/);
   assert.doesNotMatch(summary,/134\.780\.000/);
 });
-test('new payment print is gated by two approvals and provides named wet-signature spaces', () => {
+test('new payment print is gated by two approvals and retains approval gates with template Waspang and Mandor signature spaces', () => {
   const s = normalizeWorkflow(seed('D'));
   assignProjectApprovers(s, s.projects[0].id, 'user-1', 'user-2');
   const termId = createTerm(s, s.spks[0].id), term = getTerm(s, termId), spk = getSpk(s, term.spkId), row = getDeal(s, spk.dealId).rows[0];
@@ -35,9 +35,9 @@ test('new payment print is gated by two approvals and provides named wet-signatu
   for (const role of ['PM Konstruksi', 'Manager Konstruksi'] as const) {
     s.role = role; selectActor(s, role === 'PM Konstruksi' ? 'user-1' : 'user-2'); decide(s, termId, 'Setujui', 'QA');
   }
-  const html = render(), signature = html.match(/class="signature"[\s\S]*?<footer>/)?.[0] ?? '';
+  const html = render(), signature = html.match(/class="barp-signatures"[\s\S]*?<\/section>/)?.[0] ?? '';
   assert.doesNotMatch(html, /<button[^>]*disabled[^>]*>[\s\S]*?Cetak \/ Simpan PDF browser/);
-  assert.match(signature, /Rizky Nugraha/); assert.match(signature, /Dian Puspita/);
-  assert.equal((signature.match(/Area TTD basah dokumen asli/g) ?? []).length, 2);
+  assert.match(signature, /Arif Wijaya/); assert.match(signature, /Budi Santoso/);
+  assert.equal((signature.match(/Area TTD basah dokumen asli/g) ?? []).length, 3);
   assert.doesNotMatch(signature, /<img|<svg/);
 });

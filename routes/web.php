@@ -4,6 +4,7 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MasterDesignatorController;
 use App\Http\Controllers\NegotiationProjectController;
+use App\Http\Controllers\PaymentProjectController;
 use App\Http\Controllers\PrototypeBoqController;
 use App\Http\Controllers\PrototypeController;
 use App\Http\Controllers\PrototypeExportController;
@@ -30,6 +31,8 @@ Route::middleware(PrivatePrototype::class)->group(function () {
         Route::get('/api/prototype/state', [PrototypeController::class, 'state'])->name('prototype.state');
         Route::get('/api/prototype/negotiation/projects', [NegotiationProjectController::class, 'projects'])->middleware('throttle:120,1');
         Route::get('/api/prototype/negotiation/projects/{project}/plans', [NegotiationProjectController::class, 'plans'])->whereUuid('project')->middleware('throttle:120,1');
+        Route::get('/api/prototype/payment-selection/projects', [PaymentProjectController::class, 'projects'])->middleware('throttle:120,1');
+        Route::get('/api/prototype/payment-selection/projects/{project}/orders', [PaymentProjectController::class, 'orders'])->whereUuid('project')->middleware('throttle:120,1');
         Route::get('/api/masters', [MasterDesignatorController::class, 'index']);
         Route::get('/api/masters/{entity}/template', [MasterDesignatorController::class, 'template'])->where('entity', 'designator|khs')->middleware('throttle:20,1');
         Route::post('/api/masters/{entity}/import', [MasterDesignatorController::class, 'import'])->where('entity', 'designator|khs')->middleware('throttle:20,1');

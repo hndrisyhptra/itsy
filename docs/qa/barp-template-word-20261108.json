@@ -1,0 +1,103 @@
+{
+  "date": "2026-11-08",
+  "feature": "BARP payment-stage template, Admin metadata and native Word after submission",
+  "source": {
+    "file": "BARP - 100%.docx",
+    "retained": "docs/artifacts/barp/reference/BARP.docx",
+    "bytes": 21635,
+    "sha256": "9c08a9075bc7110bbe4315add0823d4a7676e3c28c282897610757d45b7f498f",
+    "unchanged": true
+  },
+  "backup": {
+    "path": "storage/app/private/backups/its-before-barp-template-20261108-011917.sql",
+    "bytes": 2044552,
+    "sha256": "07a5a29514c4393f5606464e518a642ef5c34c6bd90dd5b99b431fbf4962a114",
+    "live_writes": false
+  },
+  "php": {
+    "passed": true,
+    "tests": 218,
+    "assertions": 4258,
+    "new_tests": 3,
+    "new_assertions": 126,
+    "database": "fail-closed isolated SQLite :memory:"
+  },
+  "frontend": {
+    "passed": true,
+    "tests": 202,
+    "new_tests": 6,
+    "existing_signature_template_tests_updated": 2
+  },
+  "build": {
+    "passed": true,
+    "barp_lazy_chunk_bytes": 117060,
+    "barp_lazy_chunk_gzip_bytes": 12250
+  },
+  "pint_scoped": true,
+  "diff_check": true,
+  "migration_required": false,
+  "sql_runtime_storage": "payment_terms.document_data: barp/version1 + append-only barpHistory per explicit submission; existing workspace revision/receipt/audit transaction",
+  "query_review": {
+    "pure_resolver_sql": 0,
+    "one_pp_http_save_queries_including_revision_get": 59,
+    "http_regression_budget": 60,
+    "existing_catalog_reads_for_revision_get_and_command": 2,
+    "no_per_barp_row_queries": true,
+    "unrelated_projection_writes_rejected_by_test": true,
+    "archive_unchanged": true,
+    "limitation": "Scoped in-memory fixture. Existing command aggregate/catalog reads remain; no throughput, latency or load-test claim."
+  },
+  "native_verification": {
+    "parts": 11,
+    "tables": 5,
+    "rows": 31,
+    "crc_xml_relationships_python_docx": true,
+    "preserved_source_parts": [
+      "word/endnotes.xml",
+      "word/fontTable.xml",
+      "word/footnotes.xml",
+      "word/numbering.xml",
+      "word/settings.xml",
+      "word/theme/theme1.xml"
+    ],
+    "all_6_final_pngs_inspected": true,
+    "fixtures": [
+      {
+        "name": "stage1",
+        "bytes": 117478,
+        "sha256": "e3e15422f1a6cda51ef21d9b11c1d59b215d31be7dc332c738f39e655c758d4b",
+        "pages": 2
+      },
+      {
+        "name": "stage2-review",
+        "bytes": 117477,
+        "sha256": "0d985983a202846289d4eeb6c4a8907d52b43cefadabf95a9ec701c7ab899c1d",
+        "pages": 2
+      },
+      {
+        "name": "stage3-long",
+        "bytes": 118147,
+        "sha256": "482ab04a27525c5edef611652fc38bf7effd0c86c3ee2cff9876fa312a698786",
+        "pages": 2
+      }
+    ]
+  },
+  "gates": {
+    "Word": [
+      "Diajukan",
+      "Disetujui"
+    ],
+    "pending_review_legend": true,
+    "official_print": "all actual selected-role/account decisions approved",
+    "scan_finance_apm_ledger_and_rejection_rules": "preserved",
+    "fabricated_signatures": false
+  },
+  "limitations": [
+    "No authenticated browser/download click, responsive/dark/manual keyboard check; previous browser denial respected.",
+    "No Microsoft Word desktop or physical print verification.",
+    "No live fixture/transaction/schema changes; backup read only.",
+    "No financial addendum engine: additions/reductions zero; stage percentage is value share, never physical progress.",
+    "Historical metadata absent remains absent; no fabricated date/NIK/account.",
+    "Word editable; review legend is not cryptographic authentication."
+  ]
+}

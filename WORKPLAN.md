@@ -403,3 +403,24 @@ Historical iteration; superseded by the dashboard restoration below.
 - [x]208 PHP/4031 assertions,187 frontend,build,Pint,diffcheck; pure resolver0 SQL/HTTP≤60 query peraksi,1000 rows no per-row find. Delapan source parts surat utuh,4 native outputs dirender1+1+1+4 halaman dan seluruh PNG diperiksa.
 - [x] Audit SPK_SIGNER_WORD,ARCHITECTURE,CHANGELOG,LARAVEL_QA,README/AGENTS dan qa/spk-head-word-20261107.json; perbarui perilaku surat/lampiran.
 - [ ] Browser/klik unduh responsif/dark,Word desktop,cetak fisik belum diperiksa; penolakan browser sebelumnya dihormati. Fixture privat bukan transaksi.
+
+## Pengajuan Pembayaran — Cari ID Project / SPK Sah, 7 November 2026
+
+- [x] Backup privat its-before-payment-project-picker-20261107-153204.sql sebelum perubahan;liveSQL hanya dibaca,Dompis Prov tidak disentuh.
+- [x] Pencarian IDProject/kegiatan→groupSPKSah→tabel20/halaman→pilih/ringkasan→BuatDraf. HanyaSPKSah,explicitselection,noautofirst,BranchscopeperPP,contextualexactlink,loading/error/retry/cancellation dan scrolllokal.
+- [x] Existingdraft/returned/rejectedv3/active/FinanceAPM/Final membuka dokumen yang sama;legacyreadonly/batas3/Final preserved. Store refresh/recheck/createcommand/waitconfirmation;retry ambiguousresponse tanpa duplicate.
+- [x] ReadonlyAPI2querysearch/4list,batchterms+SQLamounts,noarchive/private/master/actuals;120SPK/30Projectquerybudget,pagination20+13. Liveitsreadonly1Project/1SPK2/4queries,revision/archivesame. Sharedboot/refreshaggregate limitation dicatat.
+- [x]215PHP/4132assertions,196frontend,build,Pint,diffcheck;7PHP+9frontend termasuk13sharedvectors,Branch/nonactiveapprover/duplicate/409,uncertainrequest/saveconfirmation.
+- [x]PAYMENT_PROJECT_PICKER,ARCHITECTURE,CHANGELOG,LARAVEL_QA,README/AGENTS,qa/payment-project-picker-20261107.json.
+- [ ] Browserautentikasi/responsif/dark/keyboard/loadtestmanual belum;izinbrowsersebelumnya dihormati. Tidak ada fixture/transaksi live atau migration.
+
+## BARP pembayaran sesuai template dan Word — 8 November 2026
+
+- [x] Baca aturan dan panduan proyek serta panduan dokumen Word. Periksa dua halaman sumber; simpan referensi/checksum dan backup privat its sebelum perubahan domain.
+- [x] Tambahkan form tanggal, tempat, periode, lokasi, STO dan Homepass. Identitas Waspang, Mandor dan Head terpilih ditentukan server. Simpan `barp` dan snapshot `barpHistory` setiap pengajuan pada JSON SQL; validasi periode dalam SPK dan pertahankan dokumen terkunci/riwayat lama.
+- [x] Gunakan satu model surat untuk HTML/Word: judul TAHAP N, aktual termin × harga kesepakatan, Material/Jasa, pembulatan dan terbilang. Ikuti lima tabel sumber serta tiga penandatangan dengan area TTD kosong. BA PP tetap terpisah; tidak mengarang progres fisik 100% atau addendum.
+- [x] Sediakan Word setelah Diajukan dengan penanda review hingga semua approval lengkap. Pertahankan syarat cetak, scan, Finance, APM dan ledger. Pertahankan enam bagian OOXML sumber; perbaiki floating table agar baris terlihat; ekspor lazy tanpa endpoint, dependency atau migration baru.
+- [x] Periksa query: resolver 0 SQL; fixture HTTP satu PP 59 query termasuk GET revisi, batas 60, dua pembacaan katalog bawaan. Larang penulisan proyeksi tak terkait/arsip. Ganti pencarian berulang form dengan Map; preview tidak memerlukan root/KHS atau nilai termin terdahulu.
+- [x] Lulus 218 pengujian PHP/4258 assertions, 202 frontend, build, scoped Pint dan diff check. Tambahkan 3 pengujian PHP dan 6 frontend; sesuaikan 2 pengujian tanda tangan dengan template sambil menjaga syarat approval. Render 3 Word, masing-masing 2 halaman; periksa seluruh 6 PNG, CRC/XML/relationships/python-docx dan geometri sumber.
+- [x] Catat perilaku dan bukti pada BARP_TEMPLATE_WORD, kontrak artifact/referensi, ARCHITECTURE, CHANGELOG, LARAVEL_QA, README/AGENTS serta qa/barp-template-word-20261108.json.
+- [ ] Pemeriksaan manual browser/klik akun/responsif/dark, Word desktop, cetak fisik dan load test belum dilakukan. Penolakan izin browser sebelumnya dihormati. Tidak ada transaksi/fixture live; addendum belum didukung dan Word editable bukan tanda tangan digital.
