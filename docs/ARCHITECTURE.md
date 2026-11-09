@@ -2,6 +2,14 @@
 
 Catatan ini menjelaskan struktur runtime aktif dan keputusan perubahan. Baca bersama [MYSQL_RUNTIME.md](MYSQL_RUNTIME.md), [buku saku relasi tabel](DATABASE_RELATIONS.md), AGENTS.md dan [CHANGELOG.md](CHANGELOG.md). Kode Laravel merupakan otoritas validasi dan status tersimpan; dokumentasi SQL konseptual lama tidak menggantikan executable migrations atau runtime.
 
+## Matriks dashboard Region → Branch — 9 November 2026
+
+`AuthenticatedWorkspace.bind` memperkaya query referensi Branch yang sudah ada dengan left join Region/kolom eksplisit, lalu scope akun tetap per Branch PP. RelationalWorkflowStore/state authorized adalah sumber angka; tidak ada endpoint, migration atau penulisan snapshot/arsip. `dashboard-matrix` mengindeks PP→BA KH→SPK→termin dan ID Project, memakai `termTotalForDeal` yang sama dengan rumus `termTotal` lama. Memoisasi memisahkan toggle tampilan dari kalkulasi data. Region null/deleted ditandai belum ditetapkan; tidak menebak teks legacy.
+
+ID unik dihitung terpisah untuk Branch/Region/global. CLOSE memerlukan semua PP visible pada ID selesai final dan seluruh tagihan terkait lunas/APM; klasifikasi sebelum filter Branch menghindari CLOSE palsu karena sibling visible yang belum selesai. Uang/jumlah PP mengikuti filter. Realisasi adalah `paid` tersimpan, bukan approved amount; BOQ hanya induk tersimpan tanpa menghitung ulang continuation. Tidak mengubah gate transaksi/Finance/volume.
+
+Direct bind tetap 5 query pada katalog awal/+200 Branch dan Region, tepat satu query Branch/Region tanpa per-row SQL. Fixture 1000 PP/SPK/termin melarang collection find dan memeriksa total; aggregate boot/reference reads yang sudah ada tetap, bukan klaim latency/load umum. 222 PHP/4332 assertions, 218 frontend/build/Pint lulus; browser/dark/responsive/keyboard/load belum langsung. Definisi lengkap, file dan batas pada [DASHBOARD_MATRIX.md](DASHBOARD_MATRIX.md), bukti qa/dashboard-matrix-20261109.json.
+
 ## Pekerjaan BARP dan ledger Lampiran Rekonsiliasi — 9 November 2026
 
 `BarpTemplate` menetapkan `barp.version=2/job` dari PP dan menangkap dua identitas Manager sesuai assignee pembayaran. Properti client/cache diabaikan; draf lama mengadopsi hanya melalui penyimpanan eksplisit. `payment_terms.document_data` dan riwayat per pengajuan tetap memakai transaksi yang ada, tanpa migration, backfill atau penulisan arsip. Metadata version2 bukan perubahan workflowVersion/approval scheme.

@@ -1,3 +1,4 @@
+import { DashboardMatrix } from './dashboard-matrix-table';
 import { useState } from 'react';
 import { ArrowUpRight, Download, FileSignature, FolderKanban, Plus, ReceiptText } from 'lucide-react';
 import { type State, money, operational } from './domain';
@@ -32,5 +33,6 @@ export function Dashboard({ s }: { s: State }) {
       ['Pembayaran Terealisasi', money(data.paid), 'Pembayaran tercatat'],
       ['Approval Menunggu', data.pendingApprovals, 'Sesuai peran Anda'],
     ].map(([label, value, sub]) => <div key={label}><span>{label}</span><strong>{value}</strong><small>{sub}</small></div>)}</div>
+    <DashboardMatrix s={s} branch={branch}/>
   </div>;
 }

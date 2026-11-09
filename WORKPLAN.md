@@ -436,3 +436,12 @@ Historical iteration; superseded by the dashboard restoration below.
 - [x] 219 PHP/4287 assertions, 208 frontend, build, scoped Pint dan diff check lulus. Tambahan satu PHP dan enam frontend; empat Word dirender 2+1+1+4 halaman dan seluruh delapan PNG diperiksa. CRC/XML/relationships/python-docx serta exact regenerated package hashes lulus.
 - [x] Catat BARP_APPENDIX, pembaruan BARP_TEMPLATE_WORD, kontrak source, ARCHITECTURE, CHANGELOG, LARAVEL_QA, README/AGENTS dan qa/barp-appendix-20261109.json.
 - [ ] Browser/klik unduh akun/responsif/dark/keyboard, Word desktop, cetak fisik dan load test belum manual; izin browser sebelumnya tetap dihormati. Dokumen panjang dapat memakai halaman akhir khusus signoff. Addendum/release otomatis dan tanda tangan digital tidak dibuat oleh fitur ini.
+
+## Matriks dashboard Region → Branch — 9 November 2026
+
+- [x] Tambah accordion Region berisi Branch di bawah dashboard awal; tabel bergaris dan filter Branch yang sama, JMLH/OPEN/CLOSE, jumlah PP, realisasi dan total BOQ Plan. Jaga tiga kartu/enam ringkasan/navigasi/tema.
+- [x] Hitung ID unik per Branch/Region/global, semua PP dalam akses menentukan CLOSE sebelum filter; seluruh SPK harus final Disetujui/APM Valid/lunas. Draft/tanpa SPK/partial historical paid tetap OPEN. User memilih pembayaran terealisasi/APM sebagai realisasi. BOQ induk tersimpan saja, tidak menggandakan subalokasi lanjutan; missing ID/Region ditandai tanpa mengarang.
+- [x] Join Region pada query Branch yang ada dengan kolom minimal; scope tetap Branch PP. Direct bind 5 query pada katalog awal/+200 Branch/Region, satu join tanpa per-row SQL. Map/Set/memo dan shared financial formula; 1000 PP/SPK/termin diperiksa tanpa repeated collection find. Tidak mengklaim throughput universal; boot aggregate tetap.
+- [x] 222 PHP/4332 assertions, 218 frontend, build, scoped Pint dan diff check lulus. Tambah tiga PHP/sepuluh frontend untuk financial/status/filter/no-write/authorization/query/indexing/markup. Tidak menyentuh its live/.env/schema/arsip/Dompis Prov; seluruh fixture memory.
+- [x] Catat DASHBOARD_MATRIX, DASHBOARD_SUMMARY, ARCHITECTURE, CHANGELOG, LARAVEL_QA, README/AGENTS dan qa/dashboard-matrix-20261109.json. Tidak ada perubahan workflow/data tersimpan sehingga tidak perlu backup/migration baru.
+- [ ] Visual dan interaksi browser, responsif/dark/keyboard/load test belum manual; akses browser sebelumnya tetap dihormati. Realisasi masih pencatatan aplikasi, bukan koneksi bank.

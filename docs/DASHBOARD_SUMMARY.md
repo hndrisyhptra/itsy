@@ -1,5 +1,7 @@
 # Ringkasan dashboard awal — 5 November 2026
 
+**Tambahan 9 November 2026:** dashboard kini menambahkan [matriks Region → Branch](DASHBOARD_MATRIX.md) sesuai permintaan terbaru. Tiga kartu, enam ringkasan dan filter tetap. Catatan penghapusan tabel analitik di bawah adalah keputusan 5 November; penambahan matriks baru dijelaskan terpisah, termasuk JMLH/OPEN/CLOSE, realisasi tercatat, BOQ induk dan query/QA.
+
 Menggantikan tampilan analitik sebelumnya sesuai permintaan pengguna terbaru. Judul Dashboard, toolbar Ringkasan operasional, tiga kartu utama dan enam ringkasan kecil memakai komponen/gaya awal.
 
 Kartu utama: **Proyek Aktif**, **Total Nilai SPK**, **Outstanding Pembayaran**. Ringkasan kecil: PP Lanjutan, Mandor Aktif, Total Nilai BOQ, Tagihan Disetujui, Pembayaran Terealisasi dan Approval Menunggu.

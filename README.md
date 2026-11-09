@@ -18,6 +18,8 @@ Pada form BARP, **Pekerjaan** otomatis dari nama PP. **Lampiran Rekonsiliasi** k
 
 Dashboard memakai [tampilan ringkasan awal](docs/DASHBOARD_SUMMARY.md): tiga kartu utama dan enam ringkasan kecil, tanpa kartu Progress Pekerjaan per PP, Aktivitas Terbaru, Monitoring Volume dan Inbox Approval. Dropdown **Semua Branch** mencakup seluruh Branch sesuai akses akun, termasuk yang belum mempunyai PP, dan menyaring seluruh angka dari data tersimpan Laravel.
 
+Di bawah ringkasan tersedia [matriks Region → Branch](docs/DASHBOARD_MATRIX.md), dengan accordion Region, ID Project **JMLH/OPEN/CLOSE**, Jumlah PP, Nilai Realisasi dan Total Nilai BOQ Plan. CLOSE berarti seluruh PP dalam ID dan cakupan akun selesai pembayaran final; realisasi memakai pembayaran tercatat/APM. Subtotal/total menghitung ID unik dan BOQ lanjutan tidak menggandakan nilai induk. Filter Branch yang sama berlaku.
+
 **Pengesahan BA KH, SPK dan BA PP tidak lagi membutuhkan isian teks Referensi bukti dokumen bertanda tangan.** Isian/status referensi dan kolomnya di timeline dihapus; syarat dokumen lainnya tetap divalidasi Laravel. Referensi lama disimpan sebagai riwayat, sedangkan upload eviden pekerjaan serta scan TTD Pembayaran tetap mengikuti alur berkas privat. Tidak perlu migration. Rincian: [DOCUMENT_ATTESTATION](docs/DOCUMENT_ATTESTATION.md).
 
 [Arsitektur aplikasi](docs/ARCHITECTURE.md) memetakan form → command → domain Laravel → SQL its serta keputusan perubahan. Setiap pembaruan berikutnya wajib mencatat dampak arsitektur dan tinjauan query/performa, termasuk bila tidak ada perubahan pada lapisan itu.

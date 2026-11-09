@@ -1,0 +1,57 @@
+{
+  "date": "2026-11-09",
+  "change": "Dashboard Region accordion / Branch matrix with unique Project IDs, all-PP final settlement, actual payments and root BOQ",
+  "user_confirmed_realization": "Actual recorded realized/APM payments, not approved unpaid invoices",
+  "php": {
+    "passed": 222,
+    "assertions": 4332,
+    "new_tests": 3,
+    "database": "fail-closed isolated SQLite :memory:",
+    "command": "/Applications/XAMPP/xamppfiles/bin/php artisan test --compact"
+  },
+  "frontend": {
+    "passed": 218,
+    "new_matrix_tests": 10,
+    "command": "npm test",
+    "index_fixture": {
+      "pp": 1000,
+      "spks": 1000,
+      "terms": 1000,
+      "prohibited": "collection find on PP/deal/SPK/term/KHS arrays",
+      "asserted": "1000 unique closed IDs, 800000 realized, 1000000 root BOQ"
+    }
+  },
+  "query_review": {
+    "scope": "AuthenticatedWorkspace.bind, service only; not full HTTP bootstrap",
+    "queries": 5,
+    "branch_region_queries": 1,
+    "additional_query_count": 0,
+    "sizes": ["initial migrated memory catalog", "+200 Branch and +200 Region"],
+    "projection": "Explicit Branch and Region columns; no select star or per-row lookup",
+    "limits": "Existing aggregate/reference boot remains; no production latency or load claim"
+  },
+  "build": {
+    "passed": true,
+    "command": "npm run build",
+    "dashboard_lazy_file": "assets/dashboard-Dz6YgYdE.js",
+    "dashboard_kb": 9.30,
+    "dashboard_gzip_kb": 3.41
+  },
+  "pint": {
+    "passed": true,
+    "files": ["app/Services/AuthenticatedWorkspace.php", "tests/Feature/DashboardRegionMetadataTest.php"]
+  },
+  "live_database_reads": false,
+  "live_database_mutations": false,
+  "schema_changed": false,
+  "workflow_changed": false,
+  "archive_rewritten": false,
+  "env_changed": false,
+  "backup": "Not required for read-only metadata/display feature with no saved-workflow/data changes",
+  "browser_qa": {
+    "verified": false,
+    "reason": "Previous browser access denial respected; no retry",
+    "unverified": ["accordion/filter clicks", "responsive/light/dark", "keyboard", "load"]
+  },
+  "documentation": "docs/DASHBOARD_MATRIX.md"
+}

@@ -24,9 +24,14 @@ class AuthenticatedWorkspace
         $state['role'] = $account['role'];
         $state['actorUserId'] = $account['id'];
         $state['profile'] = ['name' => $account['name'], 'email' => $account['email']];
-        $state['branches'] = DB::table('branches')->whereNull('deleted_at')->orderBy('name')->get()->map(fn ($b) => [
-            'id' => 'db-branch-'.$b->id_branch, 'code' => $b->kode_branch, 'name' => $b->name, 'active' => (bool) $b->is_active,
-        ])->all();
+        $state['branches'] = DB::table('branches as b')
+            ->leftJoin('regions as r', fn ($join) => $join->on('r.id_region', '=', 'b.region_id')->whereNull('r.deleted_at'))
+            ->whereNull('b.deleted_at')->orderBy('b.name')
+            ->get(['b.id_branch', 'b.kode_branch', 'b.name', 'b.is_active', 'r.id_region as visible_region_id', 'r.name as region_name'])
+            ->map(fn ($b) => [
+                'id' => 'db-branch-'.$b->id_branch, 'code' => $b->kode_branch, 'name' => $b->name, 'active' => (bool) $b->is_active,
+                'regionId' => $b->visible_region_id === null ? null : 'db-region-'.$b->visible_region_id, 'regionName' => $b->region_name ?? '',
+            ])->all();
         $assignments = DB::table('user_assignments as a')->join('roles as r', 'r.id_role', '=', 'a.role_id')->join('branches as b', 'b.id_branch', '=', 'a.branch_id')
             ->where('a.active', true)->where('b.is_active', true)->whereNull('b.deleted_at')->get(['a.user_id', 'r.code', 'b.name'])->groupBy('user_id');
         $state['users'] = User::orderBy('name')->get(['id_user', 'name', 'email', 'nik', 'role', 'active'])->map(function ($user) use ($assignments) {

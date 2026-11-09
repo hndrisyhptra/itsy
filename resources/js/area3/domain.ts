@@ -29,7 +29,7 @@ export interface Bapp { id: string; termId: string; no: string; status: 'Draft' 
 export interface Event { id: string; title: string; detail: string; route: string; actor: Role; at: string }
 export interface User { nik?:string; id: string; name: string; email: string; role: Role; active: boolean; branches?: string[] }
 export interface SignedScan { id: string; name: string; extension: string; mime: string; size: number; sha256: string; status: 'Menunggu Verifikasi' | 'Valid' | 'Perlu Koreksi'; note?: string; uploadedAt: string; verifiedAt?: string; verifiedBy?: string }
-export interface State { actorUserId?: string; settings?: { ppNumberFormat: string; nextPpSequence: number; ppNumberFormatVersion?: number; issuedPpNumbers?: Record<string,{sequence:number;pattern:string;branch:string;period:string;at:string}> }; branches?: { id: string; code: string; name: string; active: boolean }[]; schema: number; generation: string; role: Role; scenario: string; projects: Project[]; khs: Khs[]; deals: Deal[]; spks: Spk[]; terms: Term[]; bapps: Bapp[]; events: Event[]; users: User[]; profile: { name: string; email: string }; lastSaved: string }
+export interface State { actorUserId?: string; settings?: { ppNumberFormat: string; nextPpSequence: number; ppNumberFormatVersion?: number; issuedPpNumbers?: Record<string,{sequence:number;pattern:string;branch:string;period:string;at:string}> }; branches?: { id: string; code: string; name: string; active: boolean; regionId?:string|null; regionName?:string }[]; schema: number; generation: string; role: Role; scenario: string; projects: Project[]; khs: Khs[]; deals: Deal[]; spks: Spk[]; terms: Term[]; bapps: Bapp[]; events: Event[]; users: User[]; profile: { name: string; email: string }; lastSaved: string }
 export const uid = (prefix = 'id') => `${prefix}-${globalThis.crypto.randomUUID()}`;
 export const now = () => new Date().toISOString();
 export const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date());
@@ -49,7 +49,9 @@ export function getTerm(s: State, id: string) { const t = s.terms.find(t => t.id
 export const projectForSpk = (s: State, spk: Spk) => getProject(s, getDeal(s, spk.dealId).projectId);
 export const dealTotal = (d: Deal) => round(d.rows.reduce((n, r) => n + round((r.m ? r.qm * r.pm : 0) + (r.s ? r.qs * r.ps : 0)), 0));
 export function boqTotal(p: Project) { return round(p.boq.reduce((n, r) => n + round(r.qty * ((r.m ?? 0) + (r.s ?? 0))), 0)); }
-export function termTotal(s: State, t: Term) { return round(getDeal(s, getSpk(s, t.spkId).dealId).rows.reduce((n, r) => n + round((r.m ? (t.actuals[r.rowId]?.m ?? 0) * r.pm : 0) + (r.s ? (t.actuals[r.rowId]?.s ?? 0) * r.ps : 0)), 0)); }
+/** Direct saved agreement reference avoids repeated collection searches in indexed read models. */
+export function termTotalForDeal(d: Deal, t: Term) { return round(d.rows.reduce((n, r) => n + round((r.m ? (t.actuals[r.rowId]?.m ?? 0) * r.pm : 0) + (r.s ? (t.actuals[r.rowId]?.s ?? 0) * r.ps : 0)), 0)); }
+export function termTotal(s: State, t: Term) { return termTotalForDeal(getDeal(s, getSpk(s, t.spkId).dealId), t); }
 export function accepted(s: State, spkId: string, rowId: string, c: Component) { return s.terms.filter(t => t.spkId === spkId && t.status === 'Disetujui').reduce((n, t) => n + (t.actuals[rowId]?.[c] ?? 0), 0); }
 export function released(s: State, spkId: string, rowId: string, c: Component) { return s.bapps.filter(b => getTerm(s, b.termId).spkId === spkId).reduce((n, b) => n + (b.released[rowId]?.[c] ?? 0), 0); }
 export function remaining(s: State, spkId: string, row: DealRow, c: Component) { return volumeRound((c === 'm' ? row.m ? row.qm : 0 : row.s ? row.qs : 0) - accepted(s, spkId, row.rowId, c) - released(s, spkId, row.rowId, c)); }

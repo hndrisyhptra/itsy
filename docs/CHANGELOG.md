@@ -1,5 +1,13 @@
 # Catatan perubahan it's Area 3
 
+## 9 November 2026 — Matriks dashboard per Region dan Branch
+
+- Tambah tabel accordion Region → Branch di bawah ringkasan dashboard awal, tetap dengan filter Branch yang sama. Kolom Branch, ID Project JMLH/OPEN/CLOSE, Jumlah PP, Nilai Realisasi, Total Nilai. Tabel ringkas bergaris, angka rata kanan, native disclosure berlabel/aria dan gulir dalam panel mengikuti tema.
+- ID unik dihitung pada setiap tingkat; CLOSE bila seluruh PP dalam ID yang dapat diakses selesai pembayaran final, seluruh SPK Sah dan tagihan Disetujui/APM Valid/lunas. Sibling visible sebelum filter ikut menentukan status. Draft/tanpa SPK/Final baru approved atau histori paid parsial tetap OPEN. Pengguna mengonfirmasi realisasi dari pembayaran tercatat/APM; bukan tagihan approved belum dibayar. Total BOQ induk tersimpan tanpa menggandakan PP lanjutan, semua PP masuk jumlah PP. ID kosong ditandai tanpa kode rekaan; Region null/deleted menjadi belum ditetapkan.
+- Metadata Region dari left join pada query Branch yang sudah ada, kolom eksplisit dan scope per Branch PP; tidak memakai Branch master Project bersama. Map/Set mengindeks relasi dan ID; memoisasi accordion dan shared `termTotalForDeal` mempertahankan pembulatan. Direct bind tetap 5 query termasuk satu Branch/Region pada katalog awal/+200 Branch/Region. Fixture 1000 PP/SPK/termin tanpa repeated collection find; bukan benchmark beban/latency universal.
+- Lulus 222 PHP/4332 assertions, 218 frontend, build, scoped Pint dan diff check. Tiga PHP/sepuluh frontend baru mencakup hitungan, financial/history/filter/authorization/SQL/query/no-write/disclosure. Semua DB tes memory fail-closed; tidak ada query/mutasi live its, migration, .env, seed, arsip rewrite atau Dompis Prov. Visual/klik browser/responsif/dark/keyboard/load masih belum langsung karena akses browser sebelumnya ditolak.
+- File: AuthenticatedWorkspace, dashboard/domain/styles, dashboard-matrix dan dashboard-matrix-table, dua suite baru. Definisi/arsitektur/batas: [DASHBOARD_MATRIX.md](DASHBOARD_MATRIX.md), DASHBOARD_SUMMARY, ARCHITECTURE, README, AGENTS, WORKPLAN, LARAVEL_QA dan qa/dashboard-matrix-20261109.json. Catatan sebelumnya dipertahankan.
+
 ## 9 November 2026 — Pekerjaan otomatis dan Lampiran Rekonsiliasi
 
 - Lokasi Pekerjaan pada Informasi BARP diganti Pekerjaan read-only dari nama PP. Laravel menetapkan `barp.version=2/job`, mengabaikan nama/lokasi dari client dan menangkap identitas Manager Deployment/Project Support sesuai assignee pembayaran. Metadata tetap di `payment_terms.document_data`; tidak memerlukan migration.

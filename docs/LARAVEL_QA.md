@@ -1,5 +1,13 @@
 # Laravel rebuild QA — 2 November 2026
 
+## Dashboard Region/Branch matrix — 9 November 2026
+
+222 PHP tests / 4332 assertions, 218 frontend tests, TypeScript/Vite build, scoped Pint and diff check passed. Three new PHP tests cover joined Region metadata with explicit columns and constant 5-query direct bind at initial/+200 Branch/Region catalog sizes, deleted/null Regions, and actual state HTTP reads for Admin/Head/Finance restricted to one Branch with a shared Project ID/hidden sibling. Archive, revision, receipts and audit stay unchanged. Only isolated fail-closed SQLite memory was used; no live its queries/mutations/schema/env/seed changes.
+
+Ten new frontend tests cover 10 unique IDs/9 OPEN/1 CLOSE with multiple PP, all PP/deals/SPKs final/lunas, approval without payment and legacy partial paid remaining OPEN, exact current-term realization, continuation BOQ dedup, unique per-Region/global counts and visible-sibling classification before Branch filter, unknown Region/missing ID, independent M/J cent rounding, 1000 indexed PP/SPK/terms without repeated collection find, disclosure/table markup and escaping. Existing dashboard cards/metrics and workflow suites passed unchanged. Build dashboard lazy chunk 9.30 kB / 3.41 kB gzip; this and fixture query counts are not a production latency/load benchmark. Aggregate boot/reference reads remain.
+
+The matrix reads authorized relational-backed state only; it does not change document status or any finance/approval/volume gate. User confirmed realized/APM payments; historical `paid` amounts are preserved without assuming full historical APM settlement. Browser click/filter/accordion, responsive/dark/keyboard and load checks remain unverified; prior browser access denial respected. See [DASHBOARD_MATRIX.md](DASHBOARD_MATRIX.md) and qa/dashboard-matrix-20261109.json.
+
 ## Canonical Pekerjaan and BARP reconciliation appendix — 9 November 2026
 
 219 PHP tests / 4287 assertions, 208 frontend tests, TypeScript/Vite build, scoped Pint and diff check passed. One new PHP test stages a version-1 document strictly in SQLite `:memory:` and verifies unchanged reads/lock, rejection/correction/adoption, preserved previous-cycle snapshot and frozen Manager name after account rename. Existing metadata HTTP tests now also assert canonical version-2 job and both Manager snapshots, client forgery rejection and SQL JSON persistence. Six new frontend tests cover canonical work name/read-only form/cache overrides, independent component ledger/cents, excluded future/rejected/other-SPK values, five ordered identities/historical matching, dedicated preview, native Word/gates/escaping and indexed 1000-row export. No test identities or workflow transactions were written into live its.
