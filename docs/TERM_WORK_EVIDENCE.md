@@ -1,5 +1,8 @@
 # Eviden pekerjaan pengajuan Pembayaran — 5 November 2026
 
+
+**Pembaruan 9 November 2026 — progres upload:** seluruh upload nyata kini menampilkan persentase byte pengiriman dan konfirmasi server. BOQ/eviden memperlihatkan fase antrean/worker terpisah; scan/impor tetap sinkron, preview master tetap belum menyimpan. Tidak ada persentase pemrosesan rekaan, endpoint/query/migration baru atau perubahan batas/izin/approval. Banyak eviden mempunyai progres per file. [Arti angka, arsitektur dan hasil uji](UPLOAD_PROGRESS.md). Catatan sebelumnya tetap riwayat sesuai tanggalnya.
+
 Admin Konstruksi/Superadmin dapat mengunggah **PDF, JPG/JPEG, PNG atau WebP** pada kartu **Eviden Pekerjaan** di detail Termin/Pembayaran. Dapat memilih beberapa file; upload dilakukan berurutan, maksimal **10 lampiran aktif per termin, masing-masing 10 MB**. Berkas tersimpan segera setelah upload dikonfirmasi server, tanpa harus menunggu Simpan Draf. Isian volume/type yang belum disimpan tetap berada pada draft formulir.
 
 Upload/penghapusan lampiran tersedia saat **Draft/Dikembalikan**, serta **Ditolak untuk termin versi 3** yang akan diperbaiki dan diajukan ulang. Pengajuan mengunci lampiran selama approval dan setelah disetujui; penolakan historis versi 1/2 tetap terkunci. Saat koreksi, admin dapat melengkapi/mengeluarkan lampiran; file dan metadata lama tetap berada di riwayat. Pencatatan upload/remove memakai akun login, waktu server, revisi, receipt dan audit yang sama dengan transaksi lainnya. Lampiran ditambahkan sebagai fasilitas pendukung; tidak menambah persyaratan wajib baru pada pengajuan lama atau mengubah lima approval. Lihat [APPROVAL_RESUBMISSION](APPROVAL_RESUBMISSION.md).

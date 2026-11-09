@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { UploadTasks } from './upload-tasks';
 import { applyAutomaticBoqPricing, usesAutomaticBoqPricing } from './boq-pricing';
+import { startingUpload, type UploadProgress } from './upload-progress';
+import { UploadProgressView } from './upload-progress-view';
 import { uploadTask, type UploadTask } from './upload-queue';
 import { Upload } from 'lucide-react';
 import { DEFAULT_PP_NUMBER_FORMAT } from './workflow';
@@ -11,22 +13,22 @@ import { Link, Card, Field, Input, Button, Table, Notice, Badge, attempt } from 
 
 export function BoqDraftEditor({ s, p:input, onChange, disabled, onBusy }: { s:State; p:Project; onChange:(p:Project)=>void; disabled:boolean; onBusy?:(value:boolean)=>void }) {
   const automatic=usesAutomaticBoqPricing(s,input),p=applyAutomaticBoqPricing(s,input);
-  const [loading,setLoading]=useState(false),[error,setError]=useState(''),[progress,setProgress]=useState('');
+  const [loading,setLoading]=useState(false),[error,setError]=useState(''),[progress,setProgress]=useState<UploadProgress|null>(null),[uploadName,setUploadName]=useState('');
   const latest=useRef(p),controller=useRef<AbortController|null>(null);latest.current=p;
   useEffect(()=>()=>{controller.current?.abort();onBusy?.(false);},[]);
   const apply=(imported:{rows:Project['boq'];source:NonNullable<Project['boqUpload']>})=>{const current=latest.current,next:Project={...current,boq:imported.rows,boqUpload:imported.source,boqStatus:'Review'};onChange(automatic?applyAutomaticBoqPricing(s,next):{...next,budget:current.budget>0?current.budget:boqTotal(next)});};
-  async function useResult(task:UploadTask){setError('');try{apply((await uploadTask(task.id,true)).result);}catch(e){setError(e instanceof Error?e.message:'Hasil upload belum dapat digunakan.');}}
+  async function useResult(task:UploadTask){setError('');setUploadName(task.name);setProgress({phase:'processing',percent:100,message:'Mengambil hasil BOQ yang sudah diproses.'});try{apply((await uploadTask(task.id,true)).result);setProgress({phase:'completed',percent:100});}catch(e){setProgress({phase:'error',percent:100});setError(e instanceof Error?e.message:'Hasil upload belum dapat digunakan.');}}
   if(p.parentId) return <Notice>BOQ lanjutan menggunakan alokasi BA PP. BOQ Owner otomatis {money(p.budget)}; volume root dipertahankan.</Notice>;
   async function selectFile(file?:File) {
     if(!file) return;
-    setError('');
+    setError('');setProgress(null);setUploadName(file.name);
     if(!file.name.toLowerCase().endsWith('.xlsx') || file.size>10*1024*1024) { setError('Gunakan file .xlsx maksimal 10 MB.'); return; }
     setLoading(true); onBusy?.(true);
     try {
-      controller.current=new AbortController();setProgress('Mengunggah file ke antrean…');
-      const imported=await uploadBoq(file,p.id,message=>{setProgress(message);onBusy?.(false);},controller.current.signal);
+      controller.current=new AbortController();setProgress(startingUpload());
+      const imported=await uploadBoq(file,p.id,()=>{onBusy?.(false);},controller.current.signal,setProgress);
       apply(imported);
-    } catch(e) { if(!(e instanceof DOMException&&e.name==='AbortError'))setError(e instanceof Error?e.message:'File BOQ gagal dibaca. Isi draft sebelumnya tetap tersedia.'); }
+    } catch(e) { if(!(e instanceof DOMException&&e.name==='AbortError')){setError(e instanceof Error?e.message:'File BOQ gagal dibaca. Isi draft sebelumnya tetap tersedia.');setProgress(previous=>previous?.phase==='failed'?previous:{phase:'error',percent:previous?.percent??null});} }
     finally { setLoading(false); onBusy?.(false); }
   }
   const changeRows=(boq:Project['boq'])=>onChange(applyAutomaticBoqPricing(s,{...p,boq}));
@@ -38,7 +40,7 @@ export function BoqDraftEditor({ s, p:input, onChange, disabled, onBusy }: { s:S
     <Notice>Upload template BOQ dengan sheet BoQ, kolom Designator, Satuan, Material, Jasa dan VOL. Hanya volume positif diimpor; harga Master KHS digunakan untuk BOQ Owner.</Notice>
     <div className="upload-box"><Upload size={27}/><h3>Upload BOQ Plan</h3><p>Excel .xlsx maksimal 10 MB. Memilih file baru mengganti isi BOQ draft setelah file berhasil divalidasi. Harga komponen yang kosong diterima. Jika memakai rumus, hitung ulang dan simpan file sebelum upload.</p>
       <input disabled={disabled||loading||!boot} aria-label="Pilih file template BOQ Excel" type="file" accept=".xlsx" onChange={e=>{const file=e.target.files?.[0];e.target.value='';void selectFile(file);}}/>
-      {loading && <p role="status">{progress}</p>}
+      {progress && <UploadProgressView name={uploadName} progress={progress}/>}
       {error && <Notice tone="error"><span role="alert">{error}</span></Notice>}
       {p.boqUpload && <Notice><b>{p.boqUpload.name}</b><p>{p.boqUpload.package} · {p.boqUpload.sourceRows} baris sumber → {p.boq.length} komponen BOQ. Total sumber {money(p.boqUpload.sourceTotal)}.</p><small>File asli tersimpan privat. Volume dapat disesuaikan pada draft; harga sumber tetap menjadi pembanding.</small>{s.projects.some(x=>x.id===p.id && x.boqUpload?.id===p.boqUpload?.id) && <p><a href={appUrl('/api/prototype/boq/'+p.id+'/source')}>Unduh file BOQ asli</a></p>}</Notice>}
       {!boot && <Notice tone="warning">Upload Excel memerlukan sesi login Laravel.</Notice>}

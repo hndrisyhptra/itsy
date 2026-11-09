@@ -1,6 +1,17 @@
 # Laravel rebuild QA — 2 November 2026
 
 
+
+## Upload percentages across real upload features — 9 November 2026
+
+**230 PHP/4473 assertions,231 frontend and TypeScript/Vite build passed; diff check passed.**6 new frontend regressions exercise fakeXHR byte events/deduplication/unknown total, confirmation versus success, HTTP422, timeout/abort/network cleanup and no repeatedPOST, native labeled progress/escaping/server-task phases, plus actual store integration for BOQ/evidence/scan/Designator+KHS preview and master commit/retry. CSRF/credentials, multipart revision/hash/stage/UUID replay and confirmed-state publishing remain. Master preview completed explicitly does not mean imported; rejected scan never emits completed.
+
+The two queued upload fixtures consume exactly 7 existing GETs across polling, BOQ result, evidence refresh and scan recovery; there is no percentage endpoint/extra query/polling. Existing PHP authorization/atomicity/query-budget suites pass in isolated fail-closed memory. Percent computation is browser-local and de-duplicates integer/phase changes; current queue waiter and list polling coexist as before. This is scoped transport evidence, not measured MySQL latency/throughput.
+
+No PHP/schema/migration/job/worker/.env/private-permission/live SQL/account/master/transaction/archived-state changes, detached worker or Dompis access. No new database backup needed for this presentation/HTTP-transport change with unchanged server contracts. The previous Header/Rp0 migration retains its separate pending-deployment instructions; this feature does not run it. Only build/code deployment is needed for this progress UI.
+
+Task statuses retain durable server authority; 100% is upload bytes, with unknown processing progress separately indicated. Per-file batches preserve each status; no timer-generated processing percentage. Filename-only offline demo selection is excluded because it does not upload. Real byte progress is implemented through browser APIs, while automated XHR/fetch/timers are mocked and markup tested with SSR. Authenticated browser upload/Apache/aaPanel/proxy/slow-network/responsive/dark/keyboard/parallel-load QA was not repeated (earlier browser denial respected). See [UPLOAD_PROGRESS](UPLOAD_PROGRESS.md), ARCHITECTURE and [structured evidence](qa/upload-progress-20261109.json).
+
 ## Header-first PP and automatic SQL KHS pricing — 9 November 2026
 
 **230 PHP tests/4473 assertions,225 frontend tests,TypeScript/Vite build,scoped Pint and diff check passed.** PHP uses fail-closed SQLite :memory:/private fake disk. No live transactions/accounts/master prices/archive/.env changed and no worker spawned by tests. Backup before workflow edits verified at2,083,416bytes/SHA256456f9bee49560f701c5f5ee95c8d6d812c457a3c53c2c8239016e4bba9eaed8c; sandboxfailed0byte file marked.failed.

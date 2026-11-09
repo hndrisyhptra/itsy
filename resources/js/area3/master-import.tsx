@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { startingUpload, type UploadProgress } from './upload-progress';
+import { UploadProgressView } from './upload-progress-view';
 import { Download, Upload, FileCheck } from 'lucide-react';
 import { appUrl } from './laravel';
 import { commitMasterImport, previewMasterImport, MasterRequestError, type MasterImportPreview, type MasterImportSummary } from './store';
@@ -18,18 +20,18 @@ export function masterImportFailure(error:unknown):{inspectAgain:boolean;message
   return {inspectAgain:false,message:(error instanceof Error?error.message:'Penyimpanan belum dikonfirmasi.')+' Jika koneksi terputus, coba Simpan impor lagi pada dialog ini untuk memeriksa permintaan yang sama.'};
 }
 export function MasterBulkImport({entity,revision,onClose,onComplete}:{entity:'designator'|'khs';revision:number;onClose:()=>void;onComplete:(catalog:MasterCatalog,revision:number)=>void}) {
-  const [file,setFile]=useState<File|null>(null),[mode,setMode]=useState('create'),[busy,setBusy]=useState(false),[error,setError]=useState(''),[preview,setPreview]=useState<MasterImportPreview|null>(null),[requestId,setRequestId]=useState('');
+  const [file,setFile]=useState<File|null>(null),[mode,setMode]=useState('create'),[busy,setBusy]=useState(false),[error,setError]=useState(''),[preview,setPreview]=useState<MasterImportPreview|null>(null),[requestId,setRequestId]=useState(''),[progress,setProgress]=useState<UploadProgress|null>(null);
   const label=entity==='designator'?'Designator':'KHS';
-  function reset(){setPreview(null);setError('');setRequestId('');}
+  function reset(){setPreview(null);setError('');setRequestId('');setProgress(null);}
   async function inspect(){
-    if(!file||busy)return;setBusy(true);setError('');setPreview(null);
-    try{const result=await previewMasterImport(entity,file,mode,revision);setPreview(result);setRequestId(crypto.randomUUID());}
-    catch(e){setError(e instanceof Error?e.message:'Pemeriksaan gagal.');}finally{setBusy(false);}
+    if(!file||busy)return;setBusy(true);setError('');setPreview(null);setProgress(startingUpload());
+    try{const result=await previewMasterImport(entity,file,mode,revision,setProgress);setPreview(result);setRequestId(crypto.randomUUID());}
+    catch(e){setProgress(previous=>({phase:'error',percent:previous?.percent??null}));setError(e instanceof Error?e.message:'Pemeriksaan gagal.');}finally{setBusy(false);}
   }
   async function commit(){
-    if(!file||!preview||busy)return;setBusy(true);setError('');
-    try{const result=await commitMasterImport(entity,file,mode,preview,requestId);onComplete(result.catalog,result.revision);toast(`Impor ${label} selesai: ${result.summary?.created??0} baru, ${result.summary?.updated??0} diperbarui.`);}
-    catch(e){const failure=masterImportFailure(e);if(failure.inspectAgain){setPreview(null);setRequestId('');}setError(failure.message);}finally{setBusy(false);}
+    if(!file||!preview||busy)return;setBusy(true);setError('');setProgress(startingUpload());
+    try{const result=await commitMasterImport(entity,file,mode,preview,requestId,setProgress);onComplete(result.catalog,result.revision);toast(`Impor ${label} selesai: ${result.summary?.created??0} baru, ${result.summary?.updated??0} diperbarui.`);}
+    catch(e){setProgress(previous=>({phase:'error',percent:previous?.percent??null}));const failure=masterImportFailure(e);if(failure.inspectAgain){setPreview(null);setRequestId('');}setError(failure.message);}finally{setBusy(false);}
   }
   return <Modal wide title={`Bulk Import ${label}`} onClose={()=>{if(!busy)onClose();}}><div className="stack">
     <Notice>Gunakan template Excel dari submenu ini. Isi sheet Data mulai baris 2, maksimal 1000 baris dan 5 MB. Seluruh baris harus valid sebelum disimpan.{entity==='khs'&&' Designator dan Paket KHS harus sudah tersedia.'}</Notice>
@@ -37,6 +39,7 @@ export function MasterBulkImport({entity,revision,onClose,onComplete}:{entity:'d
     <Field label="File Excel (.xlsx)"><input aria-label={`File bulk import ${label}`} type="file" accept=".xlsx" disabled={busy} onChange={e=>{reset();const selected=e.target.files?.[0]??null;if(selected&&(!selected.name.toLowerCase().endsWith('.xlsx')||selected.size>5*1024*1024)){setFile(null);setError('Gunakan file .xlsx maksimal 5 MB.');e.target.value='';}else setFile(selected);}}/></Field>
     <Field label="Mode impor"><select aria-label="Mode impor master" disabled={busy} value={mode} onChange={e=>{setMode(e.target.value);reset();}}><option value="create">Tambah baru saja</option><option value="upsert">Tambah dan perbarui data cocok</option></select></Field>
     <small className="muted">{mode==='create'?'Kode/pasangan yang sudah ada akan ditolak.':'Designator dicocokkan berdasarkan kode; KHS berdasarkan pasangan kode designator dan kode paket. Identitas yang sudah digunakan BOQ tetap dilindungi.'} ID dibuat otomatis. Data arsip tidak dipulihkan.</small>
+    {progress&&<UploadProgressView progress={progress} name={file?.name}/>}
     {error&&<div className="master-import-errors" role="alert"><Notice tone="error">{error.split('\n').map((line,i)=><div key={i}>{line}</div>)}</Notice></div>}
     {preview&&<><MasterImportSummaryView summary={preview.summary}/><MasterImportPreviewTable preview={preview}/></>}
     <div className="modal-actions"><Button disabled={busy} onClick={onClose}>Tutup</Button><Button disabled={!file||busy} onClick={()=>void inspect()}><FileCheck size={15}/>{busy?'Memproses…':'Periksa file'}</Button><Button primary disabled={!preview||busy} onClick={()=>void commit()}><Upload size={15}/> Simpan impor</Button></div>

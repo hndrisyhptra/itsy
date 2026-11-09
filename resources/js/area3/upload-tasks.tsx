@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { RefreshCw, Check } from 'lucide-react';
-import { pendingUpload, recentUploads, resumeUpload, uploadStatus, type UploadTask } from './upload-queue';
+import { pendingUpload, recentUploads, resumeUpload, type UploadTask } from './upload-queue';
 import { Button, Notice } from './ui';
+import { taskUploadProgress } from './upload-progress';
+import { UploadProgressView } from './upload-progress-view';
 export function UploadTasks({kind,documentId,onUse,onReady,onPending}:{kind:'boq'|'evidence';documentId:string;onUse?:(task:UploadTask)=>void;onReady?:(task:UploadTask)=>void;onPending?:(count:number)=>void}) {
   const [tasks,setTasks]=useState<UploadTask[]>([]),[error,setError]=useState(''),[online,setOnline]=useState(true),[reload,setReload]=useState(0);
   const callbacks=useRef({onReady,onPending});callbacks.current={onReady,onPending};
@@ -19,5 +21,5 @@ export function UploadTasks({kind,documentId,onUse,onReady,onPending}:{kind:'boq
     void load();return()=>{controller.abort();clearTimeout(timer);window.removeEventListener('area3:upload-queued',refresh);window.removeEventListener('focus',refresh);callbacks.current.onPending?.(0);};
   },[kind,documentId,reload]);
   if(!tasks.length&&!error)return null;
-  return <div className="upload-task-list"><div className="section-heading"><strong>Antrean upload</strong><Button title="Muat ulang antrean" aria-label="Muat ulang antrean" onClick={()=>setReload(v=>v+1)}><RefreshCw size={14}/></Button></div>{error&&<Notice tone="error">{error}</Notice>}{!online&&tasks.some(pendingUpload)&&<Notice tone="warning">File tersimpan dalam antrean. Worker belum aktif. <Button onClick={()=>{const task=tasks.find(pendingUpload);if(task)void resumeUpload(task.id).then(()=>setReload(v=>v+1)).catch(e=>setError(e instanceof Error?e.message:String(e)));}}>Lanjutkan antrean</Button></Notice>}<ul>{tasks.map(task=><li key={task.id}><div><strong>{task.name}</strong><small>{uploadStatus(task)}{task.attempts>1?` · Percobaan ${task.attempts}`:''}</small>{task.error&&<small className="error-text">{task.error}</small>}</div>{onUse&&task.status==='completed'&&<Button title={'Gunakan BOQ '+task.name} onClick={()=>onUse(task)}><Check size={14}/> Gunakan hasil</Button>}</li>)}</ul></div>;
+  return <div className="upload-task-list"><div className="section-heading"><strong>Antrean upload</strong><Button title="Muat ulang antrean" aria-label="Muat ulang antrean" onClick={()=>setReload(v=>v+1)}><RefreshCw size={14}/></Button></div>{error&&<Notice tone="error">{error}</Notice>}{!online&&tasks.some(pendingUpload)&&<Notice tone="warning">File tersimpan dalam antrean. Worker belum aktif. <Button onClick={()=>{const task=tasks.find(pendingUpload);if(task)void resumeUpload(task.id).then(()=>setReload(v=>v+1)).catch(e=>setError(e instanceof Error?e.message:String(e)));}}>Lanjutkan antrean</Button></Notice>}<ul>{tasks.map(task=><li key={task.id}><div><UploadProgressView name={task.name} progress={taskUploadProgress(task)}/>{task.attempts>1&&<small>Percobaan {task.attempts}</small>}</div>{onUse&&task.status==='completed'&&<Button title={'Gunakan BOQ '+task.name} onClick={()=>onUse(task)}><Check size={14}/> Gunakan hasil</Button>}</li>)}</ul></div>;
 }

@@ -1,5 +1,8 @@
 # Bulk Import Designator dan KHS — 6 November 2026
 
+
+**Pembaruan 9 November 2026 — progres upload:** seluruh upload nyata kini menampilkan persentase byte pengiriman dan konfirmasi server. BOQ/eviden memperlihatkan fase antrean/worker terpisah; scan/impor tetap sinkron, preview master tetap belum menyimpan. Tidak ada persentase pemrosesan rekaan, endpoint/query/migration baru atau perubahan batas/izin/approval. Banyak eviden mempunyai progres per file. [Arti angka, arsitektur dan hasil uji](UPLOAD_PROGRESS.md). Catatan sebelumnya tetap riwayat sesuai tanggalnya.
+
 Login sebagai **Superadmin**, buka **Master Designator → Designator** atau **KHS**. Tersedia tombol berikon dan tooltip **Download Template** serta **Bulk Import**. Impor menggunakan master SQL aktif pada database `its`, bukan simulasi atau data contoh.
 
 1. Download template dari submenu yang sesuai.

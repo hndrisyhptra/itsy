@@ -6,6 +6,7 @@ import { boot, appUrl } from './laravel';
 import { type Command, setCommandRecorder } from './commands';
 import type { MasterEntity, MasterCatalog } from './master-data';
 import { enqueueUpload, uploadTask, waitUpload } from './upload-queue';
+import { postUpload, type UploadProgressHandler } from './upload-progress';
 const listeners = new Set<() => void>();
 const DRAFT_PREFIX = 'area3-laravel-draft-' + (boot?.account ? boot.account.id + '-' : '');
 let state: State = structuredClone(boot?.state ?? seed());
@@ -21,7 +22,7 @@ if (typeof window !== 'undefined') window.addEventListener('beforeunload', event
   event.preventDefault();
   event.returnValue = '';
 });
-async function commit(command: Command, resultId?: string, scan?: { termId: string; file: File; kind?:'work-evidence' }): Promise<void> {
+async function commit(command: Command, resultId?: string, scan?: { termId: string; file: File; kind?:'work-evidence'; onProgress?:UploadProgressHandler }): Promise<void> {
   if (!boot) return;
   persistencePending = true; persistenceError = ''; emit();
   const controller = new AbortController();
@@ -30,9 +31,9 @@ async function commit(command: Command, resultId?: string, scan?: { termId: stri
     const requestId = crypto.randomUUID();
     const form = new FormData();
     if (scan) { form.set('file', scan.file); form.set('revision', String(revision)); form.set('request_id', requestId); }
-    const response = await fetch(scan ? appUrl('/api/prototype/payments/' + scan.termId + (scan.kind ? '/work-evidence' : '/scan')) : boot.urls.commands, { method:'POST', credentials:'same-origin', signal:controller.signal,
-      headers: scan ? {'Accept':'application/json','X-CSRF-TOKEN':csrf} : {'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':csrf},
-      body: scan ? form : JSON.stringify({...command,revision,request_id:requestId,result_id:resultId ?? null}) });
+    const response = scan
+      ? await postUpload(appUrl('/api/prototype/payments/' + scan.termId + (scan.kind ? '/work-evidence' : '/scan')),form,{'Accept':'application/json','X-CSRF-TOKEN':csrf},scan.onProgress,controller.signal,20000)
+      : await fetch(boot.urls.commands,{method:'POST',credentials:'same-origin',signal:controller.signal,headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':csrf},body:JSON.stringify({...command,revision,request_id:requestId,result_id:resultId??null})});
     const data = await response.json();
     if (response.status === 401 || response.status === 419) { if (boot.accountUrls) window.location.assign(boot.accountUrls.login); }
     if (!response.ok) {
@@ -41,6 +42,7 @@ async function commit(command: Command, resultId?: string, scan?: { termId: stri
       throw new Error(errors.join('\n') || data.message || (response.status === 419 ? 'Sesi berakhir. Muat ulang halaman.' : 'Laravel menolak transaksi.'));
     }
     confirmed = data.state; state = structuredClone(confirmed); revision = data.revision; csrf = data.csrf ?? csrf;
+    scan?.onProgress?.({phase:'completed',percent:100,message:'Scan tersimpan; verifikasi Finance mengikuti alur dokumen.'});
   } catch (error) {
     try {
       const response = await fetch(boot.urls.state, {headers:{Accept:'application/json'},credentials:'same-origin',signal:AbortSignal.timeout(5000)});
@@ -73,16 +75,18 @@ export type MasterImportPreview={summary:MasterImportSummary;rows:{row:number;co
 export class MasterRequestError extends Error {
   constructor(message:string,public status:number){super(message);}
 }
-async function masterWrite(path:string,body:BodyInit,json=false):Promise<MasterWriteResult> {
+async function masterWrite(path:string,body:BodyInit,json=false,onProgress?:UploadProgressHandler):Promise<MasterWriteResult> {
   if(!boot?.account||persistencePending)throw new Error('Gunakan sesi login aktif dan tunggu penyimpanan sebelumnya.');
   persistencePending=true; persistenceError=''; state=structuredClone(state); emit();
   const operation=(async()=>{
     try {
-      const response=await fetch(appUrl(path),{method:'POST',credentials:'same-origin',headers:{Accept:'application/json','X-CSRF-TOKEN':csrf,...(json?{'Content-Type':'application/json'}:{})},body,signal:AbortSignal.timeout(60000)});
+      const headers={Accept:'application/json','X-CSRF-TOKEN':csrf,...(json?{'Content-Type':'application/json'}:{})};
+      const response=body instanceof FormData?await postUpload(appUrl(path),body,headers,onProgress):await fetch(appUrl(path),{method:'POST',credentials:'same-origin',headers,body,signal:AbortSignal.timeout(60000)});
       if(response.status===401||response.status===419){if(boot.accountUrls)window.location.assign(boot.accountUrls.login);}
       const data=await response.json();
       if(!response.ok)throw new MasterRequestError((Object.values(data.errors??{}).flat() as string[]).join('\n')||data.message||'Master gagal disimpan.',response.status);
       confirmed=data.state; state=structuredClone(confirmed); revision=data.revision; csrf=data.csrf??csrf;
+      onProgress?.({phase:'completed',percent:100,message:'Impor dikonfirmasi dan tersimpan.'});
       return {catalog:data.catalog as MasterCatalog,revision:data.revision as number,summary:data.summary as MasterImportSummary|undefined,replayed:data.replayed as boolean|undefined};
     } finally {persistencePending=false; state=structuredClone(state); emit();}
   })();
@@ -95,22 +99,23 @@ export async function saveMaster(entity:MasterEntity,input:{action:'save'|'delet
 function masterImportForm(file:File,mode:string,expectedRevision:number,stage:string):FormData {
   const form=new FormData();form.set('file',file);form.set('mode',mode);form.set('revision',String(expectedRevision));form.set('stage',stage);return form;
 }
-export async function previewMasterImport(entity:'designator'|'khs',file:File,mode:string,expectedRevision:number):Promise<MasterImportPreview> {
+export async function previewMasterImport(entity:'designator'|'khs',file:File,mode:string,expectedRevision:number,onProgress?:UploadProgressHandler):Promise<MasterImportPreview> {
   if(!boot?.account||persistencePending)throw new Error('Tunggu penyimpanan sebelumnya selesai.');
-  const response=await fetch(appUrl('/api/masters/'+entity+'/import'),{method:'POST',credentials:'same-origin',headers:{Accept:'application/json','X-CSRF-TOKEN':csrf},body:masterImportForm(file,mode,expectedRevision,'preview'),signal:AbortSignal.timeout(60000)});
+  const response=await postUpload(appUrl('/api/masters/'+entity+'/import'),masterImportForm(file,mode,expectedRevision,'preview'),{Accept:'application/json','X-CSRF-TOKEN':csrf},onProgress);
   if(response.status===401||response.status===419){if(boot.accountUrls)window.location.assign(boot.accountUrls.login);}
   const data=await response.json();
   if(!response.ok)throw new MasterRequestError((Object.values(data.errors??{}).flat() as string[]).join('\n')||data.message||'File gagal diperiksa.',response.status);
+  onProgress?.({phase:'completed',percent:100,message:'Pemeriksaan selesai. Data belum diimpor; tinjau hasil lalu Simpan impor.'});
   return data as MasterImportPreview;
 }
-export async function commitMasterImport(entity:'designator'|'khs',file:File,mode:string,preview:MasterImportPreview,requestId:string):Promise<MasterWriteResult> {
+export async function commitMasterImport(entity:'designator'|'khs',file:File,mode:string,preview:MasterImportPreview,requestId:string,onProgress?:UploadProgressHandler):Promise<MasterWriteResult> {
   const form=masterImportForm(file,mode,preview.revision,'commit');form.set('sha256',preview.sha256);form.set('request_id',requestId);
-  return masterWrite('/api/masters/'+entity+'/import',form);
+  return masterWrite('/api/masters/'+entity+'/import',form,false,onProgress);
 }
-export async function uploadBoq(file:File,documentId:string,onProgress?:(message:string)=>void,signal?:AbortSignal):Promise<{rows:BoqRow[];source:BoqUpload}> {
+export async function uploadBoq(file:File,documentId:string,onProgress?:(message:string)=>void,signal?:AbortSignal,onUploadProgress?:UploadProgressHandler):Promise<{rows:BoqRow[];source:BoqUpload}> {
   if (!boot || persistencePending) throw new Error('Upload BOQ memerlukan sesi login aktif; tunggu transaksi sebelumnya selesai.');
-  const task=await enqueueUpload('boq',documentId,file,undefined,signal);
-  await waitUpload(task,onProgress,signal);
+  const task=await enqueueUpload('boq',documentId,file,undefined,signal,onUploadProgress);
+  await waitUpload(task,onProgress,signal,onUploadProgress);
   return (await uploadTask(task.id,true,signal)).result;
 }
 export async function refreshState():Promise<void> {
@@ -125,22 +130,22 @@ export async function refreshState():Promise<void> {
   }
   throw new Error('Data sedang berubah. Muat ulang untuk melihat hasil upload terbaru.');
 }
-export function uploadTermScan(termId: string, file: File) {
+export function uploadTermScan(termId: string, file: File,onProgress?:UploadProgressHandler) {
   if (!boot || persistencePending) return Promise.reject(new Error('Tunggu konfirmasi transaksi Laravel sebelumnya.'));
   // useSyncExternalStore needs a new snapshot to render the upload's pending state.
   state = structuredClone(state);
-  active = commit({ command: 'uploadScan', args: [] }, undefined, { termId, file });
+  active = commit({ command: 'uploadScan', args: [] }, undefined, { termId, file,onProgress });
   return active;
 }
-export async function queueTermWorkEvidence(termId:string,file:File) {
+export async function queueTermWorkEvidence(termId:string,file:File,onProgress?:UploadProgressHandler) {
   // This is an append to the current server term; it never replaces client state.
   if(!boot)throw new Error('Gunakan sesi login aktif.');
-  return enqueueUpload('evidence',termId,file);
+  return enqueueUpload('evidence',termId,file,undefined,undefined,onProgress);
 }
-export async function uploadTermWorkEvidence(termId:string,file:File,onProgress?:(message:string)=>void) {
+export async function uploadTermWorkEvidence(termId:string,file:File,onProgress?:(message:string)=>void,onUploadProgress?:UploadProgressHandler) {
   if(!boot||persistencePending)return Promise.reject(new Error('Tunggu transaksi sebelumnya dan gunakan sesi login aktif.'));
-  const task=await queueTermWorkEvidence(termId,file);
-  await waitUpload(task,onProgress);
+  const task=await queueTermWorkEvidence(termId,file,onUploadProgress);
+  await waitUpload(task,onProgress,undefined,onUploadProgress);
   await refreshState();
 }
 export function mutate<T>(fn: (draft: State) => T): T {

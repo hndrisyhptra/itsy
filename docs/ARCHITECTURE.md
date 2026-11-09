@@ -2,6 +2,12 @@
 
 Catatan ini menjelaskan struktur runtime aktif dan keputusan perubahan. Baca bersama [MYSQL_RUNTIME.md](MYSQL_RUNTIME.md), [buku saku relasi tabel](DATABASE_RELATIONS.md), AGENTS.md dan [CHANGELOG.md](CHANGELOG.md). Kode Laravel merupakan otoritas validasi dan status tersimpan; dokumentasi SQL konseptual lama tidak menggantikan executable migrations atau runtime.
 
+## Progres semua upload file — 9 November 2026
+
+[UPLOAD_PROGRESS](UPLOAD_PROGRESS.md) mendefinisikan model fase dan transport XHR multipart bersama untuk BOQ/eviden/scan serta preview/commit master. Browser upload events menentukan persen byte; unknown total tetap indeterminate dan request 100% masih menunggu konfirmasi. BOQ/eviden memakai task server queued/processing/completed/failed dengan bar worker tanpa angka rekaan, termasuk setelah reload. Scan/master tetap sinkron dan master preview tidak menjadi write. Multi-evidence merender per file dan menolak callback batch lama.
+
+Kontrak POST/response lama tetap: CSRF/credentials/UUID/revisi/hash/status/authorization/private file/workflow audit. Tidak ada perubahan PHP/SQL/schema/job/worker/.env/permission/data, sehingga tidak ada backup workflow baru atau migration deployment. Handler dan abort listener dibersihkan; timeout 60s / scan20s, tidak ada POST auto-retry. XHR event dideduplikasi per persen bulat/fase;0 request/SQL baru untuk persen. Polling/batas queue lama tetap, termasuk biaya waiter dan daftar bersamaan; tidak mengklaim request queue terhapus atau throughput universal. Integrasi fakeXHR semua jalur memeriksa tepat7 GET lama/0 progressGET; seluruh suite230 PHP/4473 assertions dan231 frontend/build/diffcheck lulus. Browser/aaPanel/Apache/jaringan nyata/responsif/load belum diperiksa manual. Lihat qa/upload-progress-20261109.json.
+
 ## Header → BOQ dan harga KHS otomatis — 9 November 2026
 
 [PP_HEADER_BOQ_KHS](PP_HEADER_BOQ_KHS.md) menjadi authority terbaru untuk PP induk v3 editable: canonical SQL KHS m/s/version di setiap explicit save, metadata khs-auto-v1/catatan sistem, total Header dari BOQ dan Draft Rp0 sebelum upload. Header/BOQ bertukar posisi; field total baca saja. Excel/provenance tetap manifest privat server, snapshot diajukan/Sah/lanjutan/v1/v2 tetap. Tidak ada read-time transaction rewrite, endpoint baru atau migration data; migration 2026_11_09_000001 hanya mengganti CHECK budget secara atomik, guard its dan rollback nol fail-closed. Belum di-deploy agen ke live.

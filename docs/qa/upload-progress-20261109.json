@@ -1,0 +1,57 @@
+{
+  "date": "2026-11-09",
+  "change": "Measured upload percentages and separate queue status across all real upload UI",
+  "features": [
+    "BOQ Plan XLSX",
+    "Term work evidence PDF/photos (per-file batch)",
+    "Wet signature scan",
+    "Designator import preview/commit",
+    "KHS import preview/commit"
+  ],
+  "percent_source": "XMLHttpRequest.upload request-byte events; multipart payload, not worker completion",
+  "unknown_total": "Indeterminate, no invented number",
+  "queued_processing": "Actual durable server task status; transfer100 with separate indeterminate processing indicator",
+  "preview_is_commit": false,
+  "server_contract_unchanged": true,
+  "post_auto_retry": false,
+  "csrf_revision_uuid_guards_retained": true,
+  "timeouts_ms": {
+    "queue_master": 60000,
+    "scan": 20000
+  },
+  "performance": {
+    "added_progress_requests": 0,
+    "added_sql": 0,
+    "polling_intervals_unchanged": true,
+    "xhr_integer_percent_deduplication": true,
+    "integration_existing_get_count": 7,
+    "query_throughput_benchmark": false
+  },
+  "verification": {
+    "php_tests": 230,
+    "php_assertions": 4473,
+    "frontend_tests": 231,
+    "new_frontend_tests": 6,
+    "production_build": true,
+    "diff_check": true,
+    "transport": "Mock XHR/fetch/timers",
+    "ui": "React SSR markup",
+    "database": "Fail-closed SQLite memory"
+  },
+  "php_or_schema_changed": false,
+  "migration_required_for_this_feature": false,
+  "previous_header_migration_applied_by_this_change": false,
+  "live_database_access_or_mutation": false,
+  "env_or_permissions_changed": false,
+  "worker_started": false,
+  "new_backup": "Not required: presentation/transport only, server/data/workflow unchanged",
+  "dompis_accessed": false,
+  "not_claimed": [
+    "Measured worker processing percentage or queue position",
+    "Real authenticated browser/network upload verification",
+    "Apache/aaPanel/proxy/slow-network integration",
+    "Responsive/dark/keyboard/load QA",
+    "Universal latency/throughput improvement"
+  ],
+  "documentation": "docs/UPLOAD_PROGRESS.md"
+}

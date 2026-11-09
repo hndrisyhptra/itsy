@@ -2,6 +2,8 @@
 
 Aplikasi mandiri Laravel 12/PHP 8.2 + React/TypeScript untuk administrasi konstruksi dan pembayaran mandor. Folder utama `/Applications/XAMPP/xamppfiles/htdocs/its/area3-prototype`. Tidak memakai atau mengubah proyek/database Dompis Prov.
 
+Seluruh upload file nyata kini mempunyai **progres persentase pengiriman**: BOQ, eviden pekerjaan, scan TTD dan impor Designator/KHS. Setelah 100% terkirim, status membedakan konfirmasi server, antrean, pemrosesan, selesai dan gagal. Banyak eviden menampilkan progres masing-masing file. Persentase hanya mengukur pengiriman; progres worker yang belum terukur memakai indikator terpisah. Tidak perlu migration tambahan untuk fitur ini. [Panduan progres upload](docs/UPLOAD_PROGRESS.md).
+
 Panduan struktur tersedia pada [buku saku relasi database](docs/DATABASE_RELATIONS.md): PDF/Word ukuran A5, visual relasi dan katalog seluruh tabel dengan pencarian.
 
 Untuk audit dan melanjutkan pekerjaan pada percakapan baru, baca [catatan perubahan](docs/CHANGELOG.md), WORKPLAN.md, serta [bukti pengujian](docs/LARAVEL_QA.md). Setiap perubahan, termasuk tampilan, wajib dicatat beserta cakupan, file terkait dan batas verifikasinya. Lampiran BA KH memakai tabel ringkas dan cetak A4 horizontal; sel komponen yang tidak digunakan pada seluruh tabel tampil kosong, sedangkan nilai nol tetap terlihat. Rincian: [preview Lampiran BA KH](docs/BAKH_APPENDIX.md).

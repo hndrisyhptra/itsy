@@ -471,3 +471,11 @@ Historical iteration; superseded by the dashboard restoration below.
 - [x] Migration CHECK budget0 hanya v3DRAFT + guardits/rollbackfailclosed disiapkan; tidak menulis/backfill transaksi. Map/Set/array_column untuk KHS/import/ID/Owner/Mandor. Domain500PHP0SQL/TS dan HTTP26≤220/2catalogreads lulus, tanpa klaim throughput universal.
 - [x] 230PHP/4473assertions,225frontend,build,Pint,diffcheck lulus. Ekspresi CHECK fixtureSQLite/SQLDDLmock, bukan liveMySQLapply. Backup privat2.083.416byte/hash verified, failed0byte ditandai.failed. Docs/4skills/AGENTS/arsitektur/audit diperbarui.
 - [ ] Operator deploy kode/build, jalankan migration dan queue restart; agen belum deploy/migrate pada its lokal/server. Browser/responsif/keyboard/engineDDL/cetak/loadtest terpisah belum diuji ulang. Rincian: docs/PP_HEADER_BOQ_KHS.md dan docs/qa/pp-header-boq-khs-20261109.json.
+
+## Progres upload semua fitur — 9 November 2026
+
+- [x] Transport/event byte dan nativeprogress bersama: BOQ, eviden per file, scan TTD, preview/commit Designator/KHS; nama file berlabel, unknown size tanpa persen rekaan.
+- [x] Pisahkan transfer 100%/serverconfirmation/queued/processing/done/failure; task reload tetap 100% penerimaan, worker tidak diberi angka rekaan. Simpan hasil/scan/master mengikuti konfirmasi server dan preview master tetap read-only. CSRF/revisi/UUID/Branch/approval/privatefiles/polling lama tetap.
+- [x]0 SQL/request baru untuk progres; deduplikasi angka bulat, cleanup handlers, noPOSTautoretry. FakeXHR integration7 existing GET/0 progress GET dan6 tes baru,230 PHP/4473 assertions/231 frontend/build/diffcheck lulus. Tidak ada perubahan PHP/schema/migration/job/data/.env/permission; tidak membuat backup workflow baru karena kontrak server/data unchanged.
+- [x] Docs/arsitektur/audit dan dua skill/AGENTS diperbarui. Rincian docs/UPLOAD_PROGRESS.md dan docs/qa/upload-progress-20261109.json.
+- [ ] Browser/realnetwork/Apache/aaPanel/responsif/dark/keyboard/load masih perlu verifikasi terpisah; tidak mengklaim dari mockXHR/SSR. Deployment membutuhkan kode + hasil build baru; migration tambahan untuk fitur progres tidak diperlukan.

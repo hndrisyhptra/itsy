@@ -1,5 +1,8 @@
 # Antrean upload dan optimasi aplikasi — 6 November 2026
 
+
+**Pembaruan 9 November 2026 — progres upload:** seluruh upload nyata kini menampilkan persentase byte pengiriman dan konfirmasi server. BOQ/eviden memperlihatkan fase antrean/worker terpisah; scan/impor tetap sinkron, preview master tetap belum menyimpan. Tidak ada persentase pemrosesan rekaan, endpoint/query/migration baru atau perubahan batas/izin/approval. Banyak eviden mempunyai progres per file. [Arti angka, arsitektur dan hasil uji](UPLOAD_PROGRESS.md). Catatan sebelumnya tetap riwayat sesuai tanggalnya.
+
 **Tambahan server 9 November 2026:** [SERVER_UPLOAD_WORKER.md](SERVER_UPLOAD_WORKER.md) menyediakan setup aaPanel `/www/wwwroot/itsy` dan generator `area3:supervisor-config --user=...`. Ini konfigurasi Supervisor untuk perintah worker yang sama, bukan perubahan queue/timeout/SQL/privasi. Generator 0 SQL/0 process dan belum memasang layanan remote; server memakai autostart web false dan user OS PHP-FPM, bukan root SSH. Catatan pengujian/deployment lokal lama di bawah tetap riwayat tanggal masing-masing.
 
 Upload pada layar PP dan eviden pembayaran sekarang memakai antrean database Laravel bernama `area3-uploads`. Server menerima dan menyimpan file privat, mengembalikan HTTP 202, lalu worker memproses isinya. Transfer file dari browser tetap memerlukan waktu sesuai ukuran/koneksi; pembacaan Excel dan pemrosesan lampiran berlangsung di luar permintaan upload.

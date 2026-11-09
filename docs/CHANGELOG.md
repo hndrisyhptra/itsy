@@ -1,6 +1,15 @@
 # Catatan perubahan it's Area 3
 
 
+
+## 9 November 2026 — Persentase upload di semua fitur nyata
+
+- Permintaan/hasil: indikator pengiriman 0–100% pada BOQ Plan, PDF/foto eviden, scan TTD serta Periksa file/Simpan impor Designator/KHS. Sumber angka event byte multipart browser, deduplikasi persen bulat; ukuran tak diketahui tetap tanpa angka. 100% menunggu konfirmasi server, bukan hasil validasi otomatis. Antrean/pemrosesan/selesai/gagal mengikuti task server, dengan indikator worker tak tentu. Setiap eviden dalam batch mempunyai nama/progres/status sendiri; daftar antrean dapat dibuka kembali.
+- Kontrak/gates: response202 hanya penerimaan task, BOQ baru digunakan setelah hasil valid, eviden setelah attach, scan/master setelah respons terkonfirmasi. Preview master tetap belum impor. Pertahankan CSRF/sesi/revision/hash/UUID replay/409 reinspection/Branch/private paths/approval/FinanceAPM dan seluruh batas. Timeout/abort/koneksi gagal mempertahankan ketidakpastian, tidak auto-retryPOST. Offline pemilih nama demo tidak diberi persentase palsu.
+- Arsitektur/performa: helper upload-progress.ts dan UploadProgressView, wiring store/queue/BOQ/eviden/scan/master/daftar dan temaCSS.0 request/SQL baru untuk persen, tidak menambah polling/beban backend; polling aggregate/list lama tetap. Integrasi fakeXHR semua jalur tepat7 GET yang sudah diperlukan, tanpa progressGET. Tidak ada PHP/schema/migration/job/worker/.env/permission atau data its/Dompis diubah; tidak diperlukan backup workflow baru untuk UI/transport kontrak sama ini. Tidak ada klaim throughput/load.
+- Bukti:230 PHP/4473 assertions,231 frontend(6 baru),TypeScript/Vite build dan diffcheck lulus. Regresi angka/unknown/HTTP422/202-vs-completed, timeout/abort/network/cleanup/noautoPOSTretry, nama/escaping/nativeprogress, semua uploadCSRF/revisi/UUID dan preview-vs-commit. Transport/timer dipalsukan; suiteSQL memory fail-closed. Browser autentikasi/Apache/aaPanel/proxy/slow network/responsif/dark/keyboard/load belum diperiksa manual.
+- Catatan: [UPLOAD_PROGRESS](UPLOAD_PROGRESS.md), UPLOAD_QUEUE_PERFORMANCE, TERM_WORK_EVIDENCE, MASTER_BULK_IMPORT, README, AGENTS/dua skill, ARCHITECTURE/WORKPLAN/LARAVEL_QA dan [qa/upload-progress-20261109.json](qa/upload-progress-20261109.json). Catatan migration Header/Rp0 sebelumnya tetap berlaku terpisah dan belum diterapkan oleh fitur ini.
+
 ## 9 November 2026 — Header PP dahulu, BOQ dan harga KHS otomatis
 
 - Permintaan: hilangkan alasan/konfirmasi selisih harga BOQ untuk PP baru, gunakan KHS database otomatis, urutan Header PP → BOQ Plan dan Total Nilai Header otomatis setelah upload. Form kini membuka Header; Total Nilai v3 baca saja/Rp0 sebelum BOQ dan mengikuti volume/hapus/ganti hasil upload. Draf Header lengkap tetap bisa disimpan, pengajuan memerlukan BOQ/nilai positif dan seluruh persyaratan.
