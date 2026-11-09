@@ -1,0 +1,38 @@
+{
+  "date": "2026-11-09",
+  "change": "Register one its upload worker on existing running Supervisor from CLI",
+  "script": "deploy/register-upload-worker.py",
+  "server_project": "/www/wwwroot/itsy",
+  "user_evidence": "supervisorctl already manages Dompis import/qe/webhook and wibsy; only its should be added",
+  "registration_identity": "root Linux terminal",
+  "php_identity": "Explicit non-root site PHP-FPM OS user; www remains an example until server-verified",
+  "scope": {
+    "daemon": "Same PID returned by existing supervisorctl; config verified with explicit -c",
+    "config": "Only included area3-uploads.ini/conf; atomic0600, idempotent, backup on revision",
+    "rpc": ["pid", "reread", "update area3-uploads", "start area3-uploads when needed", "status area3-uploads"],
+    "no_other_program_restart": true,
+    "no_package_service_install": true,
+    "no_env_or_private_permission_rewrite": true,
+    "no_web_endpoint_or_sql_path_added": true
+  },
+  "tests": {
+    "python_offline": 8,
+    "fixtures": "Temporary directories plus mocked subprocess calls; no real services",
+    "php": 225,
+    "php_assertions": 4382,
+    "frontend": 218,
+    "build": true,
+    "embedded_php_syntax_lint": true,
+    "embedded_php_runtime_executed": false
+  },
+  "live_database_reads": false,
+  "live_database_mutations": false,
+  "real_supervisor_or_worker_started": false,
+  "schema_changed": false,
+  "workflow_changed": false,
+  "server_applied_by_agent": false,
+  "direct_terminal_recipe": {"location": "docs/SERVER_UPLOAD_WORKER.md", "requires_new_server_script_upload": false, "uses_existing_artisan_generator": true, "python_ast_syntax_passed": true, "global_restart_reload_absent": true, "executed_on_real_services": false},
+  "unverified": ["Remote Linux Supervisor/PHP-FPM/user/permissions integration", "RUNNING and heartbeat on server", "Pending upload completion", "Browser/load/boot"],
+  "source": "https://supervisord.org/running.html#supervisorctl-actions",
+  "documentation": "docs/SERVER_UPLOAD_WORKER.md"
+}

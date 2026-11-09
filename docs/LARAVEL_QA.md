@@ -1,5 +1,13 @@
 # Laravel rebuild QA — 2 November 2026
 
+## Existing-Supervisor CLI worker registration — 9 November 2026
+
+Follow-up requested direct aaPanel Terminal commands without uploading another script. SERVER_UPLOAD_WORKER includes a standalone heredoc recipe using the previously deployed Artisan generator, active PID/config/include detection, one validated non-root program/atomic file and targeted update. Its Python AST syntax and absence of global restart/reload were checked locally; the recipe was not executed against a real daemon or database and is not claimed as an end-to-end server test. The eight mocked script tests below apply to the separate reusable script.
+
+Eight new Python offline tests passed using temporary directories and mocked subprocesses: active supervisorctl PID/config verification, OS *.conf and aaPanel *.ini includes, ambiguous/foreign program/group rejection, exact non-root command/user/project/log allowlist, atomic0600 writes/backup/idempotence, site-user PHP invocation, failed preflight without config writes, and targeted update preserving other Dompis/wibsy programs/files. No real supervisorctl, runuser, package manager, service/daemon or queue process was executed by these tests. All calls that could affect host services are mocked.
+
+225 PHP tests/4382 assertions,218 frontend tests and TypeScript/Vite build passed. Embedded PHP preflight passes PHP XAMPP syntax lint only; it was not bootstrapped against live config/DB/server. New deploy script adds no web request/SQL path, and preflight uses config/target guard without transaction table queries; no DB credentials printed, .env/permissions/data changed or migration/backfill introduced. Local its and Dompis Prov untouched. Script integration with actual Linux Supervisor/user/PHP/permissions and real pending server uploads remains unverified until operator runs it. See SERVER_UPLOAD_WORKER, ARCHITECTURE and qa/supervisor-cli-registration-20261109.json.
+
 ## aaPanel supervised upload worker configuration — 9 November 2026
 
 225 PHP tests/4382 assertions,218 frontend tests,TypeScript/Vite build,scoped Pint,diff check passed. Three new tests/50 assertions verify generated Supervisor invokes the existing heartbeat/lock upload command (not raw queue default), one non-root private OS identity, auto start/restart, process-group termination, log rotation, stopwait120 > jobtimeout90 < retry180, zero SQL and no spawned process. Missing/root/injected usernames and unsafe Supervisor path interpolation/comments/newlines are refused without emitting an executable program. Process facade faked/prevents stray processes; tests use fail-closed memory environment. No live DB/worker/task/server mutation.

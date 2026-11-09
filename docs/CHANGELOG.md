@@ -1,5 +1,13 @@
 # Catatan perubahan it's Area 3
 
+## 9 November 2026 — Tambah worker its langsung dari CLI Supervisor aktif
+
+- Klarifikasi berikutnya meminta pembuatan langsung di Terminal aaPanel tanpa upload script baru. Runbook menambah blok Python heredoc siap tempel yang memakai generator Artisan yang sudah tersedia, mendeteksi config/include daemon aktif, memvalidasi satu worker non-root dan menulis atomik/update its saja. Syntax AST dan pemeriksaan tidak adanya global restart/reload lulus; resep terminal belum dieksekusi terhadap layanan/server nyata. Ini alternatif operasional, bukan perubahan endpoint/SQL/data atau klaim worker server sudah RUNNING.
+
+- User mengonfirmasi supervisorctl sudah menjalankan worker Dompis/wibsy dan meminta penambahan its saja. Tambah `deploy/register-upload-worker.py`: satu perintah root Linux untuk folder `/www/wwwroot/itsy`, user PHP situs eksplisit, mendeteksi config/include dari PID daemon Supervisor yang sama dengan supervisorctl aktif. Tidak memasang Supervisor/service baru.
+- Preflight sebagai user situs memeriksa target its/config autostartfalse/extension/izin tanpa migration atau pembacaan tabel transaksi. Hasil generator dibatasi satu program dengan command/PHP/user/folder/log yang tepat. Penulisan satu file include atomik0600, unchanged skip, backup revisi0600; foreign program/group/config utama/ambiguous includes ditolak. Registrasi memakai reread dan update/start/status **area3-uploads saja**, tanpa restart all atau perubahan worker aplikasi lain. Root mendaftarkan, worker tetap non-root.
+- Delapan tes CLI offline memakai temp dirs dan subprocess palsu: PID/config sama, include OS/aaPanel, foreign/root/command/log rejection, atomic/idempotent backup, user situs/preflight no changes dan pelestarian konfigurasi/panggilan program Dompis/wibsy. 225 PHP/4382 assertions,218 frontend,build,diff check serta lint PHP preflight lulus. Script tidak dijalankan pada Supervisor/DB nyata lokal/server; PHP lint bukan preflight runtime server. Tidak ada migration/data/.env/private-permission rewrite atau query request baru. Catatan/query/arsitektur/batas di [SERVER_UPLOAD_WORKER.md](SERVER_UPLOAD_WORKER.md), ARCHITECTURE, README/AGENTS, WORKPLAN, LARAVEL_QA dan qa/supervisor-cli-registration-20261109.json.
+
 ## 9 November 2026 — Worker upload server aaPanel
 
 - Pengguna meminta worker server dan memberikan folder `/www/wwwroot/itsy`. Tambah generator `php artisan area3:supervisor-config --user=...`, mendeteksi folder/storage/PHP_BINARY server dan menghasilkan satu program Supervisor untuk perintah heartbeat/lock `area3:work-uploads` yang sudah ada. Bukan worker default atau pengganti jalur validasi upload.

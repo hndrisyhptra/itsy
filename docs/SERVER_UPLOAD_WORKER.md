@@ -4,6 +4,142 @@ Folder server yang diberikan pengguna: **`/www/wwwroot/itsy`**. Worker ini menan
 
 `root@dompis` adalah akun SSH, bukan bukti user PHP-FPM. Worker harus memakai **user OS yang sama dengan PHP-FPM situs** agar staging/hasil privat yang diunggah melalui web tetap dapat dibaca. `www` pada contoh berikut harus diganti bila situs memakai user lain. Tidak menjalankan worker sebagai root atau membuka file privat untuk semua pengguna.
 
+## Penambahan langsung dari CLI ke Supervisor yang sudah aktif
+
+Pengguna mengonfirmasi `supervisorctl status` sudah menampilkan worker Dompis dan wibsy. Gunakan **Supervisor yang sama**, tanpa memasang paket/daemon baru atau restart semua program. FATAL pada program lain bukan bagian perbaikan ini.
+
+### Langsung tempel di Terminal aaPanel, tanpa upload script baru
+
+Kode generator Artisan dari pembaruan sebelumnya harus sudah ada di server. Blok berikut dapat ditempel langsung ke Terminal root; ganti `www` di awal jika PHP-FPM situs memakai user lain. Blok mendeteksi config/include dari daemon aktif, membuat satu file worker dan melakukan update terbatas. Tidak perlu git/pull tambahan hanya untuk menjalankan resep terminal ini. Resep ini memakai subset setup di bawah; jika config custom/permission/extension bermasalah, gunakan pesan error/log dan jangan menambah daemon kedua.
+
+```sh
+cd /www/wwwroot/itsy
+python3 - <<'PY'
+import configparser, glob, json, os, pathlib, shlex, shutil, subprocess, tempfile, time
+project = pathlib.Path('/www/wwwroot/itsy')
+user = 'www'
+def check(ok, message):
+    if not ok: raise SystemExit(message)
+def cmd(*args):
+    return subprocess.check_output([str(x) for x in args], text=True).strip()
+def ini(path):
+    p = configparser.RawConfigParser()
+    with open(path) as f: p.read_file(f)
+    return p
+check(os.geteuid() == 0 and user != 'root', 'Gunakan Terminal root; user worker harus user PHP situs non-root.')
+check(json.loads((project/'composer.json').read_text()).get('name') == 'its/area3-prototype', 'Folder bukan aplikasi its Area 3.')
+ctl = shutil.which('supervisorctl')
+check(ctl, 'supervisorctl tidak ditemukan pada PATH terminal.')
+pid = cmd(ctl, 'pid')
+check(pid.isdigit() and int(pid) > 1, 'Supervisor aktif tidak ditemukan.')
+argv = pathlib.Path('/proc', pid, 'cmdline').read_bytes().decode().strip('\0').split('\0')
+named = [argv[i+1] for i,a in enumerate(argv[:-1]) if a in ('-c','--configuration')]
+named += [a.split('=',1)[1] for a in argv if a.startswith('--configuration=')]
+choices = named or ['/etc/supervisord.conf','/etc/supervisor/supervisord.conf']
+masters = []
+for name in choices:
+    p = pathlib.Path(name)
+    if p.is_absolute() and p.is_file():
+        result = subprocess.run([ctl,'-c',str(p),'pid'], capture_output=True, text=True)
+        if result.returncode == 0 and result.stdout.strip() == pid: masters.append(p)
+check(len(masters) == 1, 'Config aktif ambigu/tidak ditemukan; kirim lokasi config Supervisor.')
+master = masters[0]
+main = ini(master)
+check(not any(main.has_section(s) for s in ('program:area3-uploads','group:area3-uploads')), 'Nama worker sudah dipakai di config utama.')
+patterns = []
+for item in shlex.split(main.get('include','files',fallback='')):
+    item = item.replace('%(here)s', str(master.parent))
+    check('%' not in item, 'Include memakai interpolasi khusus; perlu penyesuaian manual.')
+    p = pathlib.Path(item)
+    if not p.is_absolute(): p = master.parent/p
+    patterns.append(p.parent.resolve()/p.name)
+targets = {p.parent/('area3-uploads'+p.suffix) for p in patterns if p.name in ('*.ini','*.conf') and not glob.has_magic(str(p.parent))}
+check(len(targets) == 1, 'Folder include ambigu/tidak didukung; kirim bagian include config Supervisor.')
+target = targets.pop()
+check(target.parent.is_dir(), 'Folder include aktif belum tersedia.')
+for pattern in patterns:
+    for filename in glob.glob(str(pattern)):
+        p = ini(filename)
+        check(not p.has_section('group:area3-uploads'), 'Nama group sudah dipakai aplikasi lain.')
+        if p.has_section('program:area3-uploads'):
+            check(pathlib.Path(filename).resolve() == target.resolve() and p.sections() == ['program:area3-uploads'] and p.get('program:area3-uploads','directory',fallback='') == str(project), 'Nama worker sudah dipakai konfigurasi lain.')
+if target.exists(): check(ini(target).sections() == ['program:area3-uploads'], 'File tujuan milik konfigurasi lain.')
+php = cmd('php','-r','echo PHP_BINARY;')
+code = cmd('runuser','-u',user,'--',php,str(project/'artisan'),'area3:supervisor-config','--user='+user,'--no-ansi')+'\n'
+p = configparser.RawConfigParser()
+p.read_string(code)
+check(not p.defaults() and p.sections() == ['program:area3-uploads'], 'Hasil generator tidak valid.')
+s = p['program:area3-uploads']
+allowed = set('directory command user numprocs autostart autorestart startsecs startretries stopsignal stopasgroup killasgroup stopwaitsecs umask redirect_stderr stdout_logfile stdout_logfile_maxbytes stdout_logfile_backups'.split())
+check(set(s) == allowed and s['user'] == user and s['directory'] == str(project) and s['command'] == f'{php} {project}/artisan area3:work-uploads --no-interaction' and s['stdout_logfile'] == f'{project}/storage/logs/uploads-worker.log' and s['numprocs'] == '1' and s['umask'] == '0077', 'Konfigurasi berbeda dari worker/user/folder its yang diminta.')
+if not target.exists() or target.read_text() != code:
+    if target.exists():
+        backup = str(target)+'.backup-'+str(time.time_ns())
+        shutil.copy2(target, backup)
+        os.chmod(backup, 0o600)
+    fd, temporary = tempfile.mkstemp(prefix='.area3-uploads-', dir=target.parent)
+    with os.fdopen(fd,'w') as f: f.write(code)
+    os.replace(temporary,target)
+print('Konfigurasi worker its:', target, flush=True)
+cmd(ctl,'-c',master,'reread')
+cmd(ctl,'-c',master,'update','area3-uploads')
+result = subprocess.run([ctl,'-c',str(master),'status','area3-uploads'], capture_output=True, text=True)
+if not any(word in result.stdout.split() for word in ('RUNNING','STARTING')): cmd(ctl,'-c',master,'start','area3-uploads')
+for attempt in range(20):
+    result = subprocess.run([ctl,'-c',str(master),'status','area3-uploads'], capture_output=True, text=True)
+    if 'RUNNING' in result.stdout.split():
+        print(result.stdout.strip())
+        break
+    time.sleep(1)
+else: raise SystemExit('Worker belum RUNNING. Periksa: tail -n 40 /www/wwwroot/itsy/storage/logs/uploads-worker.log')
+PY
+```
+
+Resep hanya mendaftarkan worker; tidak mengubah .env, izin file aplikasi, queue/gates atau database. Syntax blok Python diperiksa lokal tanpa menjalankannya; registrasi server nyata tetap menunggu operator. Generator dan script lengkap tetap memiliki bukti pengujian terpisah di bawah. Worker lain dipertahankan; tidak ada `update` global atau `restart all` dalam resep.
+
+Setelah `deploy/register-upload-worker.py` ikut diunggah (commit/push di lokal lalu pull di server, atau unggah file tersebut), jalankan dari Terminal **root server**, bukan komputer lokal:
+
+```sh
+cd /www/wwwroot/itsy
+python3 deploy/register-upload-worker.py --project=/www/wwwroot/itsy --user=www
+```
+
+Skrip membutuhkan Python3.8+, PHP CLI situs minimal8.2, dan `runuser` Linux. `www` adalah contoh user OS PHP-FPM yang harus sesuai situs. Bila PHP CLI default berbeda dari PHP situs, tambahkan `--php=/path/absolut/php-situs`. `.env` server tetap `AREA3_UPLOAD_AUTOSTART=false`; jika masih tercache true, skrip berhenti dan meminta `config:clear` dengan PHP/user situs. Tidak ada perubahan .env atau permission otomatis.
+
+Skrip melakukan:
+
+1. Memeriksa identitas proyek dari composer/artisan, user non-root, konfigurasi target database its melalui guard aplikasi, extension CLI, serta akses direktori storage/cache/heartbeat/lock sebagai user situs. Preflight membaca konfigurasi, tidak melakukan migration atau query tabel transaksi.
+2. Menjalankan generator lama sebagai user situs, lalu memvalidasi secara ketat satu program/command/PHP/user/folder/log yang diminta; root, perintah tambahan atau storage di luar project/storage ditolak.
+3. Mengambil PID dari **supervisorctl yang sudah bekerja** dan membaca argv daemon tersebut. Config `-c` diverifikasi kembali mengembalikan PID yang sama; tidak menebak daemon lain. Membaca include aktif, mendukung *.ini aaPanel dan *.conf OS, relative path/`%(here)s`; bila ambigu atau interpolasi khusus, berhenti dengan opsi eksplisit.
+4. Menulis hanya `area3-uploads.ini` atau `.conf` ke include aktif, secara atomik/mode0600. Konfigurasi yang sama dilewati; revisi konfigurasi milik proyek yang sama mendapat backup0600. File/program/group milik proyek lain tidak ditimpa. Tidak mengubah config utama atau file worker Dompis/wibsy.
+5. Menjalankan `reread`, **`update area3-uploads`**, lalu start/status khusus program itu sampai RUNNING. `reread` hanya membaca ulang; update dibatasi satu group. Tidak memanggil reload/restart/stop all, systemctl, package manager, queue clear atau reset database.
+
+Hasil yang diharapkan:
+
+```text
+Konfigurasi disimpan: .../area3-uploads.conf
+area3-uploads RUNNING pid ..., uptime ...
+Worker upload aktif. File yang sudah antre akan diproses; tidak perlu unggah ulang.
+```
+
+Konfirmasi setelahnya memakai command yang sama dengan sebelumnya:
+
+```sh
+supervisorctl status
+```
+
+Program `area3-uploads` seharusnya muncul bersama worker yang sudah ada. Skrip tidak memperbaiki status FATAL worker aplikasi lain. Jika worker its gagal, lihat `storage/logs/uploads-worker.log`; script melaporkan belum RUNNING dan mempertahankan antrean. Jika worker lama masih memegang lock, hentikan worker **its yang lama** secara tertib sesuai langkah di bawah, bukan worker aplikasi lain.
+
+Untuk instalasi dengan path/control khusus:
+
+```sh
+python3 deploy/register-upload-worker.py --project=/www/wwwroot/itsy --user=www --supervisorctl=/path/absolut/supervisorctl --supervisor-config=/path/absolut/supervisord.conf --include-dir=/folder/include/aktif
+```
+
+`--include-dir` harus cocok dengan include dalam config aktif, tidak menambahkan folder baru ke config utama. Script tidak menyediakan instalasi Supervisor/service baru, akses HTTP atau hak sudo bagi akun web. Root hanya mendaftarkan konfigurasi; proses PHP worker tetap non-root. Custom storage/path dengan spasi/interpolasi perlu konfigurasi manual. Service boot tetap memakai layanan Supervisor yang sudah diatur server.
+
+Delapan regresi Python memakai temp directory dan subprocess palsu, memeriksa active PID/config, include OS/aaPanel, penolakan konflik/root/command/log, atomic/idempotent backup, pemanggilan user situs, preflight gagal tanpa perubahan, serta update its saja dengan file/status worker Dompis/wibsy dipertahankan. 225 PHP/4382 assertions,218 frontend/build dan sintaks PHP preflight lulus. Preflight/registrasi **belum dijalankan terhadap server nyata**; tidak ada daemon atau database lokal yang disentuh agen. Runtime web/queue SQL tidak bertambah; batas generator/aggregate lama tetap.
+
 ## 1. Unggah kode dan periksa PHP/user situs
 
 Unggah perubahan aplikasi berikut ke folder proyek server, termasuk folder `deploy`:
@@ -109,4 +245,4 @@ Tambahan hanya generator CLI dan template/runbook deployment. Worker/job/SQL/end
 
 Pengujian memory memeriksa config/perintah queue yang benar, identitas OS privat, timing terhadap ProcessUpload/retry, autostart/restart/rotasi, 0 SQL/0 process, dan penolakan root/injeksi/path. Seluruh suite dan hasil aktual dicatat pada LARAVEL_QA/qa/server-upload-worker-20261109.json. Tidak ada perubahan `.env`, task/worker/live MySQL lokal maupun aaPanel oleh agen. Tidak perlu migration/backup data karena tidak ada perubahan workflow/data tersimpan. Instalasi Supervisor, service boot/restart, PHP-FPM user, upload nyata, browser dan beban produksi di server belum diverifikasi sampai operator menerapkan konfigurasi.
 
-Referensi primer: [Laravel 12 — Supervisor dan queue](https://laravel.com/framework/docs/12.x/queues#supervisor-configuration), [Supervisor — program settings](https://supervisord.org/configuration.html#program-x-section-settings). Konfigurasi ini mempertahankan timeout lebih pendek dari retry_after dan stopwaitsecs lebih panjang dari pekerjaan terlama.
+Referensi primer: [Laravel 12 — Supervisor dan queue](https://laravel.com/framework/docs/12.x/queues#supervisor-configuration), [Supervisor — program settings](https://supervisord.org/configuration.html#program-x-section-settings), [Supervisor — control actions](https://supervisord.org/running.html#supervisorctl-actions). Konfigurasi ini mempertahankan timeout lebih pendek dari retry_after dan stopwaitsecs lebih panjang dari pekerjaan terlama.
