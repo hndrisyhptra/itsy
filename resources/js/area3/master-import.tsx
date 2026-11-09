@@ -5,12 +5,12 @@ import { Download, Upload, FileCheck } from 'lucide-react';
 import { appUrl } from './laravel';
 import { commitMasterImport, previewMasterImport, MasterRequestError, type MasterImportPreview, type MasterImportSummary } from './store';
 import type { MasterCatalog, MasterEntity } from './master-data';
-import { Button, Field, Modal, Notice, Table, toast } from './ui';
+import { Button, Field, Modal, Notice, Table, toast, ActionLink } from './ui';
 
 export function MasterImportActions({entity,canManage,disabled,onOpen}:{entity:MasterEntity;canManage:boolean;disabled:boolean;onOpen:()=>void}) {
   if(!canManage||entity==='paket-khs')return null;
   const label=entity==='designator'?'Designator':'KHS';
-  return <><a className="btn" href={appUrl('/api/masters/'+entity+'/template')} title={`Download template ${label}`} aria-label={`Download template ${label}`}><Download size={15}/> Download Template</a><Button title={`Bulk import ${label}`} aria-label={`Bulk import ${label}`} disabled={disabled} onClick={onOpen}><Upload size={15}/> Bulk Import</Button></>;
+  return <><ActionLink confirm="Unduh file ini?" className="btn" href={appUrl('/api/masters/'+entity+'/template')} title={`Download template ${label}`} aria-label={`Download template ${label}`}><Download size={15}/> Download Template</ActionLink><Button title={`Bulk import ${label}`} aria-label={`Bulk import ${label}`} disabled={disabled} onClick={onOpen}><Upload size={15}/> Bulk Import</Button></>;
 }
 export function MasterImportSummaryView({summary}:{summary:MasterImportSummary}) {
   return <Notice>{summary.created} data baru · {summary.updated} diperbarui · {summary.unchanged} tetap sama.</Notice>;
@@ -35,14 +35,14 @@ export function MasterBulkImport({entity,revision,onClose,onComplete}:{entity:'d
   }
   return <Modal wide title={`Bulk Import ${label}`} onClose={()=>{if(!busy)onClose();}}><div className="stack">
     <Notice>Gunakan template Excel dari submenu ini. Isi sheet Data mulai baris 2, maksimal 1000 baris dan 5 MB. Seluruh baris harus valid sebelum disimpan.{entity==='khs'&&' Designator dan Paket KHS harus sudah tersedia.'}</Notice>
-    <a className="btn" href={appUrl('/api/masters/'+entity+'/template')} title={`Download template ${label}`}><Download size={15}/> Download Template {label}</a>
+    <ActionLink confirm="Unduh file ini?" className="btn" href={appUrl('/api/masters/'+entity+'/template')} title={`Download template ${label}`}><Download size={15}/> Download Template {label}</ActionLink>
     <Field label="File Excel (.xlsx)"><input aria-label={`File bulk import ${label}`} type="file" accept=".xlsx" disabled={busy} onChange={e=>{reset();const selected=e.target.files?.[0]??null;if(selected&&(!selected.name.toLowerCase().endsWith('.xlsx')||selected.size>5*1024*1024)){setFile(null);setError('Gunakan file .xlsx maksimal 5 MB.');e.target.value='';}else setFile(selected);}}/></Field>
     <Field label="Mode impor"><select aria-label="Mode impor master" disabled={busy} value={mode} onChange={e=>{setMode(e.target.value);reset();}}><option value="create">Tambah baru saja</option><option value="upsert">Tambah dan perbarui data cocok</option></select></Field>
     <small className="muted">{mode==='create'?'Kode/pasangan yang sudah ada akan ditolak.':'Designator dicocokkan berdasarkan kode; KHS berdasarkan pasangan kode designator dan kode paket. Identitas yang sudah digunakan BOQ tetap dilindungi.'} ID dibuat otomatis. Data arsip tidak dipulihkan.</small>
     {progress&&<UploadProgressView progress={progress} name={file?.name}/>}
     {error&&<div className="master-import-errors" role="alert"><Notice tone="error">{error.split('\n').map((line,i)=><div key={i}>{line}</div>)}</Notice></div>}
     {preview&&<><MasterImportSummaryView summary={preview.summary}/><MasterImportPreviewTable preview={preview}/></>}
-    <div className="modal-actions"><Button disabled={busy} onClick={onClose}>Tutup</Button><Button disabled={!file||busy} onClick={()=>void inspect()}><FileCheck size={15}/>{busy?'Memproses…':'Periksa file'}</Button><Button primary disabled={!preview||busy} onClick={()=>void commit()}><Upload size={15}/> Simpan impor</Button></div>
+    <div className="modal-actions"><Button disabled={busy} onClick={onClose}>Tutup</Button><Button confirm="Unggah dan periksa file impor yang dipilih? Pemeriksaan belum menyimpan data master." disabled={!file||busy} onClick={()=>void inspect()}><FileCheck size={15}/>{busy?'Memproses…':'Periksa file'}</Button><Button confirm="Simpan seluruh hasil impor yang telah diperiksa ke master?" primary disabled={!preview||busy} onClick={()=>void commit()}><Upload size={15}/> Simpan impor</Button></div>
   </div></Modal>;
 }
 export function MasterImportPreviewTable({preview}:{preview:MasterImportPreview}) {

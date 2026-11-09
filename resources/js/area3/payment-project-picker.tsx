@@ -21,7 +21,7 @@ export function PaymentSelectionSummary({picked,busy=false,onOpen,onChange}:{pic
     <div className="chosen-plan-body"><div><strong>{picked.no}</strong><p>{picked.name}</p><small>{picked.projectCode} · {picked.ppNo} · {picked.branch}</small><p>Mandor: {picked.mandor}</p></div><strong>{money(picked.amount)}</strong></div>
     <p>{paymentStage(picked.latest)}</p>{picked.reason&&<Notice tone="warning">{picked.reason}</Notice>}
     {picked.action==='create'&&<p>Pengajuan berikutnya: <strong>Termin {picked.nextNumber}{picked.nextNumber===3?' · Final':''}</strong></p>}
-    <div className="form-footer"><Button primary disabled={busy||picked.action==='blocked'} reason={picked.reason} onClick={onOpen}>{busy?'Memeriksa data terbaru…':picked.action==='create'?'Buat Draf Pembayaran':picked.label}<ArrowRight size={15}/></Button></div>
+    <div className="form-footer"><Button confirm={picked.action==='create'?`Buat draf Termin ${picked.nextNumber} untuk SPK ${picked.no}?`:undefined} primary disabled={busy||picked.action==='blocked'} reason={picked.reason} onClick={onOpen}>{busy?'Memeriksa data terbaru…':picked.action==='create'?'Buat Draf Pembayaran':picked.label}<ArrowRight size={15}/></Button></div>
   </Card>;
 }
 export function PaymentProjectPicker({s,initialSpkId=''}:{s:State;initialSpkId?:string}) {

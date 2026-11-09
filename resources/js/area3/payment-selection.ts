@@ -1,6 +1,7 @@
+import { usesPartialPayment } from './partial-payment';
 import { canReviseSubmission, nextTermReason, operational, type State, type Term } from './domain';
 
-export interface PaymentLatest { id:string;number:number;type:string;status:string;version:number;apmStatus:string;scanStatus:string;financeApproved:boolean }
+export interface PaymentLatest { id:string;number:number;type:string;status:string;version:number;apmStatus:string;scanStatus:string;financeApproved:boolean;partialPaymentStatus?:string }
 export interface PaymentAction { action:'create'|'open'|'blocked';label:string;termId:string;nextNumber:number|null;reason:string }
 
 export function paymentAction(terms:PaymentLatest[],ppApproved:boolean):PaymentAction {
@@ -12,9 +13,11 @@ export function paymentAction(terms:PaymentLatest[],ppApproved:boolean):PaymentA
   if(terms.length>=3||terms.some(t=>t.type==='Final')) return {action:'open',label:'Buka Pengajuan',termId:latest!.id,nextNumber:null,reason:'Termin Final sudah dibuat atau batas tiga termin tercapai.'};
   return {action:ppApproved?'create':'blocked',label:'Pilih SPK',termId:'',nextNumber:terms.length+1,reason:ppApproved?'':'PP belum Sah.'};
 }
-export const paymentLatest=(t:Term):PaymentLatest=>({id:t.id,number:t.number,type:t.type,status:t.status,version:t.workflowVersion??1,apmStatus:t.apmStatus,scanStatus:t.scan?.status??'',financeApproved:!!t.financeApproval});
+export const paymentLatest=(t:Term):PaymentLatest=>({id:t.id,number:t.number,type:t.type,status:t.status,version:t.workflowVersion??1,apmStatus:t.apmStatus,scanStatus:t.scan?.status??'',financeApproved:!!t.financeApproval,...(usesPartialPayment(t)?{partialPaymentStatus:t.paymentRequest?.status}:{} )});
 export function paymentStage(latest:PaymentLatest|null):string {
   if(!latest)return 'Belum ada pengajuan';
+  if(latest.partialPaymentStatus&&latest.apmStatus!=='Valid')return `Termin ${latest.number} · ${latest.type} · ${latest.partialPaymentStatus==='Diajukan'?'Menunggu verifikasi Payment Finance':latest.partialPaymentStatus==='Diverifikasi'?'Menunggu APM':'Payment dikembalikan'}`;
+  if(latest.version===3&&latest.type==='Parsial'&&latest.status==='Disetujui'&&latest.apmStatus!=='Valid'&&!latest.scanStatus&&!latest.financeApproved)return `Termin ${latest.number} · ${latest.type} · Menunggu Admin Ajukan Payment` ;
   const verified=latest.version>=3?latest.financeApproved:latest.scanStatus==='Valid';
   const stage=latest.status!=='Disetujui'?latest.status==='Diajukan'?'Menunggu approval':latest.status:latest.apmStatus==='Valid'?'APM valid':latest.version>=2&&!verified?(latest.scanStatus==='Perlu Koreksi'?'Scan perlu koreksi':latest.scanStatus==='Menunggu Verifikasi'?'Menunggu Finance':'Menunggu scan TTD'):'Menunggu APM';
   return `Termin ${latest.number} · ${latest.type} · ${stage}`;

@@ -147,7 +147,7 @@ class AuthenticatedWorkspace
             'saveSpk' => $deal($input['dealId'] ?? ''),
             'createTerm' => $spk($input),
             'saveTerm' => $spk($input['spkId'] ?? ''),
-            'decide', 'recordApm', 'recordPayment', 'verifyTermScan', '_attachTermScan', '_attachTermWorkEvidence', 'removeTermWorkEvidence' => $term($input),
+            'requestPartialPayment', 'verifyPartialPayment', 'payPartialPayment', 'decide', 'recordApm', 'recordPayment', 'verifyTermScan', '_attachTermScan', '_attachTermWorkEvidence', 'removeTermWorkEvidence' => $term($input),
             'attestBapp', 'releaseVolume', 'createContinuation' => $bapp($input),
             default => null,
         };

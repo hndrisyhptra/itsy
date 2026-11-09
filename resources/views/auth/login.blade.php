@@ -23,7 +23,7 @@
             <h2>{{ $setup ? 'Siapkan akses pertama' : 'Semangat Pagi...!!' }}</h2>
             <p class="form-intro">{{ $setup ? 'Buat akun Superadmin untuk mulai mengelola pengguna dan menjalankan alur proyek.' : 'Masuk dengan akun Anda untuk melanjutkan pekerjaan.' }}</p>
             @include('auth.errors')
-            <form method="post" action="{{ $setup ? route('setup') : route('login') }}" class="access-form" data-access-form>
+            <form method="post" action="{{ $setup ? route('setup') : route('login') }}" class="access-form" data-access-form @if($setup) data-confirm="Buat akun Superadmin pertama dengan data ini?" @endif>
                 @csrf
                 @if($setup)<div class="access-field"><label for="name">Nama lengkap</label><input id="name" name="name" value="{{ old('name') }}" autocomplete="name" required maxlength="255" placeholder="Nama administrator" autofocus></div>@endif
                 <div class="access-field"><label for="username">Username</label><input id="username" name="username" value="{{ old('username') }}" autocomplete="username" required minlength="3" maxlength="50" pattern="[A-Za-z0-9][A-Za-z0-9._-]{2,49}" placeholder="Username Anda" @if(!$setup) autofocus @endif></div>

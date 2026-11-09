@@ -479,3 +479,31 @@ Historical iteration; superseded by the dashboard restoration below.
 - [x]0 SQL/request baru untuk progres; deduplikasi angka bulat, cleanup handlers, noPOSTautoretry. FakeXHR integration7 existing GET/0 progress GET dan6 tes baru,230 PHP/4473 assertions/231 frontend/build/diffcheck lulus. Tidak ada perubahan PHP/schema/migration/job/data/.env/permission; tidak membuat backup workflow baru karena kontrak server/data unchanged.
 - [x] Docs/arsitektur/audit dan dua skill/AGENTS diperbarui. Rincian docs/UPLOAD_PROGRESS.md dan docs/qa/upload-progress-20261109.json.
 - [ ] Browser/realnetwork/Apache/aaPanel/responsif/dark/keyboard/load masih perlu verifikasi terpisah; tidak mengklaim dari mockXHR/SSR. Deployment membutuhkan kode + hasil build baru; migration tambahan untuk fitur progres tidak diperlukan.
+
+## Payment Parsial ke Finance sebelum scan — 9 November 2026
+
+- [x] Admin Ajukan Payment setelah lima selected approvals/Head, Finance verify dan APM full bill tanpa scan; actual/harga/volume tetap. Penanda/request/cycle/identitas/amount server-owned dan client forgery diabaikan. Request Finance return beralasan lalu explicit Admin resubmit menyimpan siklus tanpa mengulang work decisions.
+- [x] Pisahkan verifikasi Payment dari scan, izinkan late private scan/correction/Finance verification setelah APM hanya jalur baru; preserve payment/settlement/approval/history. Gerbang next term butuh lunas+APM, bukan scan, dengan ledger/max3/Final lama tetap.
+- [x] Status Berkas NOK/OK dan catatan incompleteness, paid amount+Termin N/jenis pada list, independent inbox/menu/timeline/report/picker. List20rowDOM pagination/index/memo,1000row fixture; runtime SQL/global read tetap.
+- [x] Migration000002 partial_payment_requests + XOR/term-composite reference APM, its guard/rollbackhistory. Incremental term projection/query review54/55/57 including revision, budget75/2pricecatalog; no unnecessary actual/approval/scan/ledger writes. Backup2.084.634byte/hash verified, no live transaction rewrite.
+- [x]239PHP/4944assertions,237frontend/build/Pint/diffcheck; MariaDB10.4 private schema63migrations/repeat/0users. Legacy scan settlement survives SQLite down/up; no-scan financial flow/late scan/SQL failure/replay/roles/Branch/cycles tested memory fail-closed.
+- [x] Docs/arsitektur/query/relasi/audit/AGENTS/lima skill updated. Buku saku artifact lama dated5Nov tidak diregenerasi; relasi baru dijelaskan docs/PARTIAL_PAYMENT.md. Bukti docs/qa/partial-payment-20261109.json.
+- [ ] **Format kasbon ditunda atas permintaan pengguna**, menunggu format/kolom resmi. Tidak ada input/nominal/potongan atau prasyarat kasbon yang diinvent.
+- [ ] Operator deploy kode/build lalu migration baru dan queue restart; **agen belum migrate its aktif lokal/server**. Browser/account click/responsif/keyboard/cetak/full MySQL financial flow/load terpisah masih belum diverifikasi.
+
+
+## Konfirmasi setiap tombol aksi — 9 November 2026
+
+- [x] Ajukan/approval/save/Finance/APM/master/import/upload/hapus/antrean/unduh/cetak serta akun/logout meminta YA/TIDAK. Existing contextual dialogs distandardisasi tanpa double confirmation; navigasi/tab/preview/validasi baca-saja tetap langsung.
+- [x] Shared native dialog on-demand, TIDAK default, safe text, Escape/backdrop/route/pagehide cancel, single pending/no duplicate callback, recheck kontrol aktif. Form Enter tetap validasi/CSRF dan logout baru clear draf sesudah YA.
+- [x] UI/Blade only: 0 SQL/endpoint/poll/migration/package tambahan, domain/state/otorisasi/ledger dan live its/.env/Dompis tidak berubah. Tidak memerlukan backup workflow baru.
+- [x] 239 PHP/4.944 assertions, 243 frontend, build/diff check; enam regresi fake DOM dan audit entry points, existing query budgets pass. Docs/arsitektur/audit/README/AGENTS/dua skill tercatat; docs/ACTION_CONFIRMATION.md dan docs/qa/action-confirmation-20261109.json.
+- [ ] Browser nyata/fokus/responsif/dark/keyboard/download/cetak/server deployment masih perlu verifikasi terpisah. Migration Payment Parsial sebelumnya tetap terpisah dan tidak dijalankan fitur ini.
+
+
+## Perbaikan error preload confirmation CSS — 9 November 2026
+
+- [x] Telusuri generated preload helper /build/ origin-root yang salah pada Apache subfolder, meski file CSS lokal tersedia. Set Vite base ./, pertahankan @vite manifest entry dan rebuild lokal. Tidak hardcode path aplikasi/.env.
+- [x] npm run check:assets: file/manifest lengkap, generated helper actual dieksekusi pada fake DOM untuk root/subfolder/CDN, 30 manifest references / 23 deps / 3 profiles lulus; 243 frontend dan build lulus. Review query: 0 jalur SQL/poll baru; tidak mengubah flow/data/its/Dompis.
+- [x] Audit ARCHITECTURE/CHANGELOG/ACTION_CONFIRMATION/QA; panduan deploy build lengkap karena public/build diabaikan Git, lalu refresh tab lama.
+- [ ] Browser/HTTP/server pengguna/CDN nyata belum diverifikasi; bukan klaim deployment server telah diperbaiki otomatis.

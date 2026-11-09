@@ -1,5 +1,8 @@
 # Penyimpanan aplikasi MySQL — 5 November 2026
 
+
+**Pembaruan9 November2026 — Payment Parsial:** Admin dapat mengajukan Payment setelah lima approval/Head tanpa scan, Finance memverifikasi lalu mencatat APM/lunas. Scan dapat disusulkan dan berstatus NOK/OK terpisah; Final/v1/v2 dan histori tetap. Kasbon ditunda sampai format pengguna tersedia. Authority terbaru, migration baru (belum diterapkan pada its aktif), relasi/proyeksi SQL dan bukti: [PARTIAL_PAYMENT](PARTIAL_PAYMENT.md). Penjelasan scan wajib untuk semua dokumen di bawah merupakan aturan sebelumnya bila berbeda.
+
 Aplikasi akun sekarang membaca dan menyimpan transaksi pada database **its** (MySQL protocol, XAMPP MariaDB 10.4.28). Sebelumnya database ini sudah digunakan untuk akun/master, tetapi seluruh transaksi berada pada satu JSON `prototype_workspaces.state`. Itulah sebabnya PP terlihat di aplikasi sementara `project_plans` kosong.
 
 Migration `2026_11_05_000001_enable_relational_workflow_storage` dan perintah `area3:activate-storage` sudah diterapkan pada database aktif. Data yang dipindahkan: **1 PP Sah**, **20 baris/20 komponen BOQ**, **1 BA KH/11 komponen kontrak**, **5 keputusan approval**, 27 rincian anggaran dan 1 referensi file BOQ. Nomor PP tetap `0001/LG.000/TA-03R502/11-2026`. Belum ada SPK/pembayaran pada data pengguna, sehingga tabel terkait memang masih kosong.
@@ -19,7 +22,8 @@ Migration `2026_11_05_000001_enable_relational_workflow_storage` dan perintah `a
 | Siklus, penugasan dan keputusan approval PP/pembayaran v2/v3 | `approval_runs`, `approval_steps`, `approval_decisions` |
 | Eviden pekerjaan termin (PDF/foto), path dan riwayat | `term_work_evidence`, `document_files`; lihat [TERM_WORK_EVIDENCE](TERM_WORK_EVIDENCE.md) |
 | File asli dan scan privat, verifikasi Finance | `document_files`, `term_scans` |
-| APM dan jumlah pelunasan | `apm_settlements` |
+| Pengajuan Payment Parsial/siklus/verifikasi Finance | `partial_payment_requests` (migration baru perlu deploy), snapshot `payment_terms.document_data` |
+| APM dan jumlah pelunasan | `apm_settlements`: otoritas scan historis atau request Payment Parsial, sesuai migration baru |
 | BA PP beserta riwayat pelepasan | `ba_completions` |
 | Saldo dan perpindahan volume | `volume_balances`, `volume_movements` |
 | Penomoran, konfigurasi dan aktivitas | `numbering_rules`, `number_sequences`, `workflow_metadata`, `workflow_events` |

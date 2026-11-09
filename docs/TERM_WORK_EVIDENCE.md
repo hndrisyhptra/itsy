@@ -1,6 +1,9 @@
 # Eviden pekerjaan pengajuan Pembayaran — 5 November 2026
 
 
+**Pembaruan9 November2026 — Payment Parsial:** Admin dapat mengajukan Payment setelah lima approval/Head tanpa scan, Finance memverifikasi lalu mencatat APM/lunas. Scan dapat disusulkan dan berstatus NOK/OK terpisah; Final/v1/v2 dan histori tetap. Kasbon ditunda sampai format pengguna tersedia. Authority terbaru, migration baru (belum diterapkan pada its aktif), relasi/proyeksi SQL dan bukti: [PARTIAL_PAYMENT](PARTIAL_PAYMENT.md). Penjelasan scan wajib untuk semua dokumen di bawah merupakan aturan sebelumnya bila berbeda.
+
+
 **Pembaruan 9 November 2026 — progres upload:** seluruh upload nyata kini menampilkan persentase byte pengiriman dan konfirmasi server. BOQ/eviden memperlihatkan fase antrean/worker terpisah; scan/impor tetap sinkron, preview master tetap belum menyimpan. Tidak ada persentase pemrosesan rekaan, endpoint/query/migration baru atau perubahan batas/izin/approval. Banyak eviden mempunyai progres per file. [Arti angka, arsitektur dan hasil uji](UPLOAD_PROGRESS.md). Catatan sebelumnya tetap riwayat sesuai tanggalnya.
 
 Admin Konstruksi/Superadmin dapat mengunggah **PDF, JPG/JPEG, PNG atau WebP** pada kartu **Eviden Pekerjaan** di detail Termin/Pembayaran. Dapat memilih beberapa file; upload dilakukan berurutan, maksimal **10 lampiran aktif per termin, masing-masing 10 MB**. Berkas tersimpan segera setelah upload dikonfirmasi server, tanpa harus menunggu Simpan Draf. Isian volume/type yang belum disimpan tetap berada pada draft formulir.

@@ -60,7 +60,7 @@ trait AuthenticatesArea3
                 throw new \RuntimeException('Fixture replacement requires isolated memory storage.');
             }
             foreach (['term_work_evidence', 'volume_movements', 'command_receipts', 'continuation_allocations', 'volume_releases', 'ba_completions',
-                'apm_settlements', 'term_scans', 'approval_decisions', 'approval_steps', 'approval_runs', 'term_actuals', 'payment_terms',
+                'apm_settlements', 'partial_payment_requests', 'term_scans', 'approval_decisions', 'approval_steps', 'approval_runs', 'term_actuals', 'payment_terms',
                 'work_orders', 'contract_documents', 'contract_components', 'contracts', 'volume_balances', 'boq_components', 'boq_lines',
                 'boq_import_rows', 'boq_import_batches', 'boq_import_templates', 'document_files', 'project_plan_budget_rows',
                 'project_plan_team', 'project_plan_schedule', 'project_plan_costs', 'project_plans', 'projects',

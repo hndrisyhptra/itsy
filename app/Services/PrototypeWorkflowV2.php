@@ -283,7 +283,7 @@ trait PrototypeWorkflowV2
     {
         $this->admin();
         $t = $this->record('terms', $id);
-        if (($t['workflowVersion'] ?? 1) < 2 || $t['status'] !== 'Disetujui' || count($t['approvals']) !== $this->approvalCount($t) || $t['apmStatus'] === 'Valid' || ($t['scan']['status'] ?? '') === 'Valid') {
+        if (($t['workflowVersion'] ?? 1) < 2 || $t['status'] !== 'Disetujui' || count($t['approvals']) !== $this->approvalCount($t) || ($t['apmStatus'] === 'Valid' && ! self::usesPartialPayment($t)) || ($t['scan']['status'] ?? '') === 'Valid') {
             $this->fail('Scan hanya diunggah setelah seluruh approval dan sebelum verifikasi/APM.');
         }
         $t['scanHistory'] ??= [];
@@ -304,7 +304,7 @@ trait PrototypeWorkflowV2
         $t = $this->record('terms', $id);
         $this->enum($decision, ['Valid', 'Perlu Koreksi']);
         $note = $this->text($note);
-        if (($t['workflowVersion'] ?? 1) < 2 || $t['status'] !== 'Disetujui' || count($t['approvals']) !== $this->approvalCount($t) || ! isset($t['scan']) || $t['apmStatus'] === 'Valid' || ($t['scan']['status'] ?? '') !== 'Menunggu Verifikasi') {
+        if (($t['workflowVersion'] ?? 1) < 2 || $t['status'] !== 'Disetujui' || count($t['approvals']) !== $this->approvalCount($t) || ! isset($t['scan']) || ($t['apmStatus'] === 'Valid' && ! self::usesPartialPayment($t)) || ($t['scan']['status'] ?? '') !== 'Menunggu Verifikasi') {
             $this->fail('Scan menunggu verifikasi dengan seluruh approval diperlukan.');
         }
         if ($decision === 'Perlu Koreksi' && ! $note) {

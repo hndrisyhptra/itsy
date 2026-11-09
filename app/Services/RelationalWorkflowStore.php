@@ -227,6 +227,7 @@ class RelationalWorkflowStore
             }
             $this->record($workspace, 'spks', $spk, $i, ['contract_id' => $key('deals', $spk['dealId']), 'spk_no' => $spk['no'], 'status' => $spk['status']]);
         }
+        $previousTerms = array_column($previous['terms'] ?? [], null, 'id');
         foreach ($state['terms'] as $i => $t) {
             if (! isset($changed['terms'][$t['id']])) {
                 continue;
@@ -240,20 +241,32 @@ class RelationalWorkflowStore
                 'approved_amount' => $t['status'] === 'Disetujui' ? $domain->termTotal($t) : null,
                 'submitted_at' => $this->dateTime($t['submitted'] ?? null), 'revision' => $workspace->revision,
             ]);
-            $actualComponents = [];
-            foreach ($t['actuals'] as $row => $values) {
-                foreach (['m', 's'] as $c) {
-                    $component = $key('contract-component', $spk['dealId'].'|'.$row.'|'.$c);
-                    if (DB::table('contract_components')->where('id_contract_component', $component)->exists()) {
-                        $actualComponents[] = $component;
-                        DB::table('term_actuals')->updateOrInsert(['term_id' => $key('terms', $t['id']), 'contract_component_id' => $component], ['actual_quantity' => $values[$c] ?? 0]);
+            $oldTerm = $previousTerms[$t['id']] ?? null;
+            if (! $oldTerm || $oldTerm['actuals'] !== $t['actuals']) {
+                $actualComponents = [];
+                foreach ($t['actuals'] as $row => $values) {
+                    foreach (['m', 's'] as $c) {
+                        $component = $key('contract-component', $spk['dealId'].'|'.$row.'|'.$c);
+                        if (DB::table('contract_components')->where('id_contract_component', $component)->exists()) {
+                            $actualComponents[] = $component;
+                            DB::table('term_actuals')->updateOrInsert(['term_id' => $key('terms', $t['id']), 'contract_component_id' => $component], ['actual_quantity' => $values[$c] ?? 0]);
+                        }
                     }
                 }
+                DB::table('term_actuals')->where('term_id', $key('terms', $t['id']))->whereNotIn('contract_component_id', $actualComponents)->delete();
             }
-            DB::table('term_actuals')->where('term_id', $key('terms', $t['id']))->whereNotIn('contract_component_id', $actualComponents)->delete();
-            $this->approvals($workspace, $t, false);
-            $this->paymentFiles($workspace, $t);
-            $this->workEvidenceFiles($workspace, $t);
+            $approvalFields = ['status', 'workflowVersion', 'approvalScheme', 'approverUserIds', 'pmUserId', 'managerUserId', 'approvals', 'history', 'submitted', 'preparedBy'];
+            if (! $oldTerm || Arr::only($oldTerm, $approvalFields) != Arr::only($t, $approvalFields)) {
+                $this->approvals($workspace, $t, false);
+            }
+            $this->partialPaymentRequests($workspace, $t, $oldTerm);
+            $fileFields = ['scan', 'scanHistory', 'apmStatus', 'apm', 'paymentHistory'];
+            if (! $oldTerm || Arr::only($oldTerm, $fileFields) != Arr::only($t, $fileFields)) {
+                $this->paymentFiles($workspace, $t);
+            }
+            if (! $oldTerm || ($oldTerm['workEvidence'] ?? []) != ($t['workEvidence'] ?? [])) {
+                $this->workEvidenceFiles($workspace, $t);
+            }
         }
         foreach ($state['bapps'] as $i => $b) {
             if (! isset($changed['bapps'][$b['id']])) {
@@ -371,12 +384,35 @@ class RelationalWorkflowStore
             }
             $settlement = [
                 'id_apm_settlement' => $this->id($workspace->id, 'apm', $term['id']), 'term_id' => $termId,
-                'verified_scan_id' => $this->id($workspace->id, 'scan', $term['scan']['id']), 'apm_no' => $term['apm'],
+                'verified_scan_id' => PrototypeDomain::usesPartialPayment($term) ? null : $this->id($workspace->id, 'scan', $term['scan']['id']),
+                'payment_request_id' => PrototypeDomain::usesPartialPayment($term) ? $this->id($workspace->id, 'payment-request', $term['paymentRequest']['id']) : null,
+                'apm_no' => $term['apm'],
                 'amount' => $payment['amount'], 'recorded_by' => $this->user($payment['actor']), 'recorded_at' => $this->dateTime($payment['at']),
             ];
             if (! DB::table('apm_settlements')->where('id_apm_settlement', $settlement['id_apm_settlement'])->exists()) {
                 DB::table('apm_settlements')->insert($settlement);
             }
+        }
+    }
+
+    private function partialPaymentRequests(PrototypeWorkspace $workspace, array $term, ?array $previous): void
+    {
+        if (! PrototypeDomain::usesPartialPayment($term)) {
+            return;
+        }
+        $before = array_column([...($previous['paymentRequestHistory'] ?? []), ...(isset($previous['paymentRequest']) ? [$previous['paymentRequest']] : [])], null, 'id');
+        foreach ([...($term['paymentRequestHistory'] ?? []), $term['paymentRequest']] as $request) {
+            if (($before[$request['id']] ?? null) == $request) {
+                continue;
+            }
+            DB::table('partial_payment_requests')->updateOrInsert(['id_payment_request' => $this->id($workspace->id, 'payment-request', $request['id'])], [
+                'term_id' => $this->id($workspace->id, 'terms', $term['id']), 'cycle_no' => $request['cycle'],
+                'status' => ['Diajukan' => 'WAITING', 'Diverifikasi' => 'VERIFIED', 'Dikembalikan' => 'RETURNED', 'Dibayar' => 'PAID'][$request['status']],
+                'amount' => $request['amount'], 'requested_by' => $this->user($request['requestedBy']), 'requested_at' => $this->dateTime($request['requestedAt']),
+                'documents_at_request' => $request['documentsAtRequest'], 'documents_at_payment' => $request['documentsAtPayment'] ?? null,
+                'finance_user_id' => $this->user($request['decision']['userId'] ?? null), 'finance_decided_at' => $this->dateTime($request['decision']['at'] ?? null), 'finance_note' => $request['decision']['note'] ?? null,
+                'request_data' => $this->json($request),
+            ]);
         }
     }
 

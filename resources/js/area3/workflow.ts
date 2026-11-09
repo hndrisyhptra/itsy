@@ -1,3 +1,4 @@
+import { usesPartialPayment } from './partial-payment';
 import { applyBudgetPlan } from './plan-budget';
 import { AUTO_KHS_NOTE, AUTO_KHS_POLICY } from './boq-pricing';
 import { applyPlanTemplate } from './plan-template';
@@ -113,7 +114,7 @@ export function assignProjectApprovers(s: State, id: string, pm: string, manager
 }
 export function verifyTermScan(s: State, id: string, decision: 'Valid' | 'Perlu Koreksi', note: string) {
   recordCommand('verifyTermScan', [id, decision, note]); requireFinance(s); const t = getTerm(s, id);
-  if ((t.workflowVersion ?? 1) < 2 || t.status !== 'Disetujui' || t.approvals.length !== approvalRoles(t).length || !t.scan || t.scan.status !== 'Menunggu Verifikasi' || t.apmStatus === 'Valid') throw new Error('Scan menunggu verifikasi dengan seluruh approval diperlukan.');
+  if ((t.workflowVersion ?? 1) < 2 || t.status !== 'Disetujui' || t.approvals.length !== approvalRoles(t).length || !t.scan || t.scan.status !== 'Menunggu Verifikasi' || (t.apmStatus === 'Valid'&&!usesPartialPayment(t))) throw new Error('Scan menunggu verifikasi dengan seluruh approval diperlukan.');
   if (decision === 'Perlu Koreksi' && !note.trim()) throw new Error('Catatan koreksi scan wajib diisi.');
   t.scan = { ...t.scan, status: decision, note, verifiedBy: s.actorUserId, verifiedAt: now() };
   if ((t.workflowVersion ?? 1) >= 3) { const user = approver(s, s.actorUserId, 'Finance'); const approval:Approval = {role:'Finance', userId:user.id, actorName:user.name, decision: decision === 'Valid' ? 'Setujui' : 'Kembalikan', note, at:now(), scanId:t.scan.id}; (t.financeHistory ??= []).push(approval); if (decision === 'Valid') t.financeApproval = approval; else delete t.financeApproval; }

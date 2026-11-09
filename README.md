@@ -1,6 +1,12 @@
 # it's Area 3 — Construction Workspace
 
+Build aset mendukung root domain dan subfolder XAMPP melalui base relatif. Setelah deploy jalankan `npm run build` lalu `npm run check:assets` dan muat ulang halaman; `public/build` diabaikan Git sehingga pull saja tidak memperbarui aset. [Penanganan error preload CSS](docs/ACTION_CONFIRMATION.md#perbaikan-css-preload-subfolder--9-november-2026).
+
+**Tombol aksi meminta konfirmasi YA / TIDAK**, termasuk pengajuan, approval, simpan draf, Finance/APM, upload, hapus, impor, unduhan/cetak dan akun. Navigasi/tab/preview tetap langsung. [Cakupan dan hasil pengujian](docs/ACTION_CONFIRMATION.md).
+
 Aplikasi mandiri Laravel 12/PHP 8.2 + React/TypeScript untuk administrasi konstruksi dan pembayaran mandor. Folder utama `/Applications/XAMPP/xamppfiles/htdocs/its/area3-prototype`. Tidak memakai atau mengubah proyek/database Dompis Prov.
+
+**Termin Parsial setelah approval Head of PMO** dapat memakai **Ajukan Payment → verifikasi Finance → Nomor APM/lunas**, meskipun scan berkas belum diunggah. Status Berkas pada daftar adalah **NOK/OK**, terpisah dari pembayaran; nilai terbayar mencantumkan keterangan termin. Scan dapat disusulkan tanpa mengulang pembayaran. Termin berikutnya menunggu Payment/APM lunas. **Format kasbon ditunda sesuai permintaan pengguna.** Migration baru perlu dijalankan saat deploy dan belum diterapkan agen pada its aktif. [Alur, relasi SQL, deployment dan verifikasi](docs/PARTIAL_PAYMENT.md).
 
 Seluruh upload file nyata kini mempunyai **progres persentase pengiriman**: BOQ, eviden pekerjaan, scan TTD dan impor Designator/KHS. Setelah 100% terkirim, status membedakan konfirmasi server, antrean, pemrosesan, selesai dan gagal. Banyak eviden menampilkan progres masing-masing file. Persentase hanya mengukur pengiriman; progres worker yang belum terukur memakai indikator terpisah. Tidak perlu migration tambahan untuk fitur ini. [Panduan progres upload](docs/UPLOAD_PROGRESS.md).
 

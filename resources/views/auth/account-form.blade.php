@@ -5,7 +5,7 @@
 <header class="accounts-header">@include('auth.brand')<a href="{{ route('accounts.index') }}" class="access-button">← Daftar akun</a></header>
 <main class="accounts-content account-editor"><span class="form-kicker">PENGATURAN AKSES</span><h1>{{ $account ? 'Ubah akun pengguna' : 'Tambahkan akun pengguna' }}</h1><p>Tetapkan peran dan Branch sesuai tanggung jawab pengguna.</p>
 @include('auth.errors')
-<form method="post" action="{{ $account ? route('accounts.update', $account) : route('accounts.store') }}" class="access-form account-form" data-access-form>
+<form method="post" action="{{ $account ? route('accounts.update', $account) : route('accounts.store') }}" class="access-form account-form" data-access-form data-confirm="Simpan data akun beserta peran dan Branch penugasannya?">
 @csrf @if($account) @method('PUT') @endif
 <div class="account-grid"><div class="access-field"><label for="name">Nama lengkap</label><input id="name" name="name" value="{{ old('name', $account?->name) }}" required maxlength="255" autocomplete="name"></div><div class="access-field"><label for="email">Email</label><input id="email" name="email" type="email" value="{{ old('email', $account?->email) }}" required maxlength="255" autocomplete="email"></div></div>
 <div class="access-field"><label for="username">Username login</label><input id="username" name="username" value="{{ old('username', $account?->username) }}" autocomplete="username" required minlength="3" maxlength="50" pattern="[A-Za-z0-9][A-Za-z0-9._-]{2,49}"><small class="field-help">Huruf, angka, titik, garis bawah, dan tanda hubung; disimpan dalam huruf kecil.</small></div>

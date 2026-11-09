@@ -1,3 +1,5 @@
+import { type PartialPaymentRequest, usesPartialPayment, assertPartialApmReady, documentStatus } from './partial-payment';
+export { requestPartialPayment, verifyPartialPayment } from './partial-payment';
 import { blankBarp, saveBarp, type BarpData } from './barp-form';
 import { syncSpkSigner } from './spk-signer';
 import { applyBudgetPlan } from './plan-budget';
@@ -22,9 +24,9 @@ export interface Project { boqPricingPolicy?:'khs-auto-v1'; approvalOrderChange?
 export interface DealRow { rowId: string; m: boolean; s: boolean; qm: number; qs: number; pm: number; ps: number; sphM: number; sphS: number; offerM: number; offerS: number; capM: number | null; capS: number | null }
 export interface Deal { signerUserId?:string; signerNik?:string; signerRole?:'Head of PMO'; signerSource?:'pp-head-pmo'; id: string; projectId: string; no: string; mandor: string; status: 'Draft' | 'Terbit' | 'Sah'; rows: DealRow[]; place: string; location: string; witel: string; date: string; start: string; end: string; signer: string; fo: string; jointer: string; evidence: string }
 export interface Spk { signerUserId?: string; signerNik?: string; signerRole?: 'Head of PMO'; signerSource?: 'pp-head-pmo'; id: string; dealId: string; no: string; status: 'Draft' | 'Terbit' | 'Sah'; date: string; start: string; end: string; place: string; address: string; supervisor: string; phone: string; signer: string; position: string; evidence: string }
-export interface Approval { actorNik?:string; scanId?: string; userId?: string; actorName?: string; role: Role; decision: 'Setujui' | 'Kembalikan' | 'Tolak'; note: string; at: string }
+export interface Approval { paymentRequestId?:string; requestedAt?:string; actorNik?:string; scanId?: string; userId?: string; actorName?: string; role: Role; decision: 'Setujui' | 'Kembalikan' | 'Tolak'; note: string; at: string }
 export interface WorkEvidence {id:string;name:string;mime:string;extension:string;size:number;sha256:string;uploadedBy:string;uploadedAt:string;removedAt?:string;removedBy?:string}
-export interface Term { barp?:BarpData; barpHistory?:{at:string;document:BarpData}[]; approvalOrderChange?:{previousBusinessSupportUserId?:string;projectSupportUserId:string;actorUserId?:string;at:string}; approvalScheme?:'project-support-first'|'project-support'|'business-support'; workEvidence?:WorkEvidence[]; approverUserIds?: Partial<Record<Role,string>>; financeApproval?: Approval; financeHistory?: Approval[]; workflowVersion?: number; pmUserId?: string; managerUserId?: string; scan?: SignedScan; scanHistory?: SignedScan[]; id: string; spkId: string; number: number; type: 'Parsial' | 'Final'; status: 'Draft' | 'Diajukan' | 'Dikembalikan' | 'Ditolak' | 'Disetujui'; actuals: Record<string, { m: number; s: number }>; approvals: Approval[]; history: Approval[]; submitted?: string; apm: string; apmStatus: 'Belum Terbit' | 'Valid' | 'Perlu Koreksi'; paid: number; paymentHistory: { amount: number; ref: string; at: string }[] }
+export interface Term { paymentFlow?:'partial-payment-v1'; paymentRequest?:PartialPaymentRequest; paymentRequestHistory?:PartialPaymentRequest[]; barp?:BarpData; barpHistory?:{at:string;document:BarpData}[]; approvalOrderChange?:{previousBusinessSupportUserId?:string;projectSupportUserId:string;actorUserId?:string;at:string}; approvalScheme?:'project-support-first'|'project-support'|'business-support'; workEvidence?:WorkEvidence[]; approverUserIds?: Partial<Record<Role,string>>; financeApproval?: Approval; financeHistory?: Approval[]; workflowVersion?: number; pmUserId?: string; managerUserId?: string; scan?: SignedScan; scanHistory?: SignedScan[]; id: string; spkId: string; number: number; type: 'Parsial' | 'Final'; status: 'Draft' | 'Diajukan' | 'Dikembalikan' | 'Ditolak' | 'Disetujui'; actuals: Record<string, { m: number; s: number }>; approvals: Approval[]; history: Approval[]; submitted?: string; apm: string; apmStatus: 'Belum Terbit' | 'Valid' | 'Perlu Koreksi'; paid: number; paymentHistory: { amount: number; ref: string; at: string }[] }
 export interface Bapp { id: string; termId: string; no: string; status: 'Draft' | 'Sah'; evidence: string; released: Record<string, { m: number; s: number }>; releaseHistory: { quantities: Record<string, { m: number; s: number }>; at: string; actor: Role }[] }
 export interface Event { id: string; title: string; detail: string; route: string; actor: Role; at: string }
 export interface User { nik?:string; id: string; name: string; email: string; role: Role; active: boolean; branches?: string[] }
@@ -87,6 +89,7 @@ export function nextTermReason(s: State, spkId: string): string {
   if (terms.length >= 3) return 'Maksimal tiga termin per SPK.';
   const previous = terms.at(-1);
   if (previous && previous.status !== 'Disetujui') return `Termin ${previous.number} belum mendapat approval lengkap.`;
+  if(previous&&usesPartialPayment(previous)&&previous.paid!==termTotal(s,previous))return 'Payment termin sebelumnya harus lunas sebelum termin berikutnya.';
   if (previous && previous.apmStatus !== 'Valid') return `Termin ${previous.number + 1} belum dapat dibuat karena Nomor APM Termin ${previous.number} belum valid.`;
   return '';
 }
@@ -215,15 +218,23 @@ export function decide(s: State, termId: string, decision: Approval['decision'],
   else { t.status = decision === 'Kembalikan' ? 'Dikembalikan' : 'Ditolak'; t.approvals = []; }
   log(s, decision === 'Setujui' ? `Approval ${s.role} selesai` : `Termin ${decision.toLowerCase()}`, `${getSpk(s, t.spkId).no} · Termin ${t.number}${note ? ` · ${note}` : ''}`, `/termin/${t.id}`);
 }
+export function payPartialPayment(s:State,termId:string,apm:string) {
+  recordCommand('payPartialPayment',[termId,apm]);requireFinance(s);if(!usesPartialPayment(getTerm(s,termId)))throw new Error('Admin harus mengajukan Payment Parsial terlebih dahulu.');settleApm(s,termId,apm,true);
+}
 export function recordApm(s: State, termId: string, apm: string, valid = true) {
-  recordCommand('recordApm', [termId, apm, valid]); requireFinance(s); const t = getTerm(s, termId); if ((t.workflowVersion ?? 1) >= 2) apm = apm.trim().toUpperCase();
+  recordCommand('recordApm', [termId, apm, valid]);settleApm(s,termId,apm,valid);
+}
+function settleApm(s:State,termId:string,apm:string,valid:boolean) {
+  requireFinance(s); const t = getTerm(s, termId); if ((t.workflowVersion ?? 1) >= 2) apm = apm.trim().toUpperCase();
   if (t.status !== 'Disetujui' || t.approvals.length !== approvalCount(t)) throw new Error('Approval lengkap wajib selesai.');
-  if ((t.workflowVersion ?? 1) >= 2 && (t.scan?.status !== 'Valid' || t.apmStatus === 'Valid' || !valid)) throw new Error('APM memerlukan scan yang diverifikasi Finance dan belum dibayar.');
-  if ((t.workflowVersion ?? 1) >= 3 && (t.financeApproval?.decision !== 'Setujui' || t.financeApproval.scanId !== t.scan?.id || t.financeApproval.userId !== t.scan?.verifiedBy)) throw new Error('Approval Finance harus sesuai scan terbaru sebelum APM dicatat.');
+  const partial=usesPartialPayment(t);if(partial)assertPartialApmReady(t,termTotal(s,t));
+  if ((t.workflowVersion ?? 1) >= 2 && ((!partial&&t.scan?.status !== 'Valid') || t.apmStatus === 'Valid' || !valid)) throw new Error('APM memerlukan scan yang diverifikasi Finance dan belum dibayar.');
+  if (!partial && (t.workflowVersion ?? 1) >= 3 && (t.financeApproval?.decision !== 'Setujui' || t.financeApproval.scanId !== t.scan?.id || t.financeApproval.userId !== t.scan?.verifiedBy)) throw new Error('Approval Finance harus sesuai scan terbaru sebelum APM dicatat.');
   if (!/^[A-Za-z0-9][A-Za-z0-9/._-]{4,59}$/.test(apm.trim())) throw new Error('Nomor APM 5–60 karakter: huruf, angka, / . _ atau -.');
   if (valid && s.terms.some(x => x.id !== t.id && x.apmStatus === 'Valid' && x.apm.toUpperCase() === apm.trim().toUpperCase())) throw new Error('Nomor APM sudah digunakan.');
   if (!valid && s.terms.some(x => x.spkId === t.spkId && x.number > t.number)) throw new Error('APM tidak dapat dibatalkan setelah termin berikutnya dibuat.');
   if ((t.workflowVersion ?? 1) >= 2) { const amount = round(termTotal(s, t) - t.paid); if (amount <= 0) throw new Error('Tagihan sudah lunas.'); t.paid = termTotal(s, t); t.paymentHistory.push({ amount, ref: apm.trim(), at: now() }); }
+  if(partial){t.paymentRequest!.status='Dibayar';t.paymentRequest!.apm=apm.trim();t.paymentRequest!.paidAt=now();t.paymentRequest!.paidBy=s.actorUserId;t.paymentRequest!.documentsAtPayment=documentStatus(t);}
   t.apm = apm.trim(); t.apmStatus = valid ? 'Valid' : 'Perlu Koreksi'; log(s, 'APM dicatat', t.apm, '/termin/' + t.id);
 }
 export function recordPayment(s: State, termId: string, amount: number, ref: string) {

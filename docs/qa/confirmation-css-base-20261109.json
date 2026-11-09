@@ -1,0 +1,48 @@
+{
+  "date": "2026-11-09",
+  "timezone": "Asia/Jakarta",
+  "issue": "Unable to preload CSS for /build/assets/confirmation-CPS8TDLk.css",
+  "local_evidence": {
+    "css_file_present": true,
+    "old_generated_helper": "/build/ + dependency, origin-root",
+    "affected_topology": "Apache subfolder",
+    "remote_missing_or_stale_assets_not_ruled_out": true
+  },
+  "fix": {
+    "vite_base": "./",
+    "new_generated_helper": "new URL(dependency, importerUrl).href with import.meta.url",
+    "laravel_vite_manifest_entry_preserved": true,
+    "hardcoded_deploy_path": false,
+    "env_changes": false,
+    "local_rebuilt": true
+  },
+  "build_harness": {
+    "command": "npm run check:assets",
+    "manifest_file_references": 30,
+    "preload_dependencies": 23,
+    "deployment_profiles": [
+      "Artisan root",
+      "Apache subfolder",
+      "CDN prefix"
+    ],
+    "generated_production_helper_executed": true,
+    "link_events": "fake DOM/load events",
+    "real_http_or_browser": false
+  },
+  "verification": {
+    "php_tests": 239,
+    "php_assertions": 4944,
+    "frontend_tests": 243,
+    "typescript_vite_build": true,
+    "diff_check": true,
+    "database": "fail-closed SQLite memory"
+  },
+  "added_queries_endpoints_polls_runtime_dependencies_migrations": 0,
+  "live_data_or_dompis_changes": false,
+  "deployment": "public/build is gitignored; build target or deploy complete matching manifest/assets, then refresh old tabs",
+  "limits": [
+    "Browser and user server not inspected",
+    "No actual CDN/HTTP/load/visual/keyboard verification"
+  ],
+  "behavior_document": "docs/ACTION_CONFIRMATION.md"
+}

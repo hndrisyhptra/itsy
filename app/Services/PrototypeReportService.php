@@ -75,13 +75,13 @@ class PrototypeReportService
                 $waiting = 0;
                 foreach ($terms as $t) {
                     if (($t['status'] === 'Diajukan' && PrototypeDomain::nextApprovalRole($t) === $role)
-                        || ($role === 'Finance' && ($t['workflowVersion'] ?? 1) >= 2 && $t['apmStatus'] !== 'Valid' && in_array($t['scan']['status'] ?? '', ['Menunggu Verifikasi', 'Valid'], true))) {
+                        || ($role === 'Finance' && PrototypeDomain::financeTaskPending($t))) {
                         $waiting++;
                     }
-                    foreach (array_merge($t['history'], $t['financeHistory'] ?? []) as $a) {
+                    foreach (array_merge($t['history'], $t['financeHistory'] ?? [], PrototypeDomain::partialFinanceHistory($t)) as $a) {
                         if ($a['role'] === $role) {
                             $counts[$a['decision']]++;
-                            $hours[] = (strtotime($a['at']) - strtotime($t['submitted'] ?? $a['at'])) / 3600;
+                            $hours[] = (strtotime($a['at']) - strtotime($a['requestedAt'] ?? $t['submitted'] ?? $a['at'])) / 3600;
                         }
                     }
                 }

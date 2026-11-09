@@ -1,5 +1,8 @@
 # Cari ID Project dan pilih SPK Sah untuk pengajuan pembayaran
 
+
+**Pembaruan9 November2026 — Payment Parsial:** Admin dapat mengajukan Payment setelah lima approval/Head tanpa scan, Finance memverifikasi lalu mencatat APM/lunas. Scan dapat disusulkan dan berstatus NOK/OK terpisah; Final/v1/v2 dan histori tetap. Kasbon ditunda sampai format pengguna tersedia. Authority terbaru, migration baru (belum diterapkan pada its aktif), relasi/proyeksi SQL dan bukti: [PARTIAL_PAYMENT](PARTIAL_PAYMENT.md). Penjelasan scan wajib untuk semua dokumen di bawah merupakan aturan sebelumnya bila berbeda.
+
 Pembaruan 7 November 2026: **Pembayaran → Pengajuan Baru** membuka pencarian ID Project/nama kegiatan, bukan dropdown semua SPK dengan SPK pertama otomatis terpilih. Alur baru hanya memilih sumber pengajuan; approval, eviden, scan, Finance/APM dan ledger tetap divalidasi oleh layanan Laravel yang sudah ada.
 
 ## Alur pengguna

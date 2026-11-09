@@ -1,0 +1,24 @@
+import { useState } from 'react';
+import { type State, type Term, operational, money, termTotal, requestPartialPayment, verifyPartialPayment, payPartialPayment } from './domain';
+import { documentStatus, partialPaymentLabel } from './partial-payment';
+import { mutate, persistencePending, waitForPersistence } from './store';
+import { Card, Notice, Field, Input, Button, Badge, Modal, toast } from './ui';
+
+export function PartialPaymentPanel({s,t}:{s:State;t:Term}) {
+  const [note,setNote]=useState(''),[apm,setApm]=useState(''),[busy,setBusy]=useState(false),[confirm,setConfirm]=useState(false);
+  if(t.workflowVersion!==3||t.type!=='Parsial'||t.status!=='Disetujui'||(t.apmStatus==='Valid'&&!t.paymentRequest))return null;
+  const request=t.paymentRequest,unpaid=t.apmStatus!=='Valid'&&t.paid===0,finance=s.role==='Finance',locked=busy||persistencePending;
+  async function run(action:(state:State)=>unknown,message:string){if(locked)return;setBusy(true);try{mutate(action);await waitForPersistence();toast(message);setConfirm(false);}catch(e){toast(e instanceof Error?e.message:'Payment belum dikonfirmasi.',true);}finally{setBusy(false);}}
+  return <Card title="Payment Termin Parsial" subtitle="Lima approval → Ajukan Payment oleh Admin → verifikasi Finance → APM → lunas. Berkas dapat dilengkapi kemudian.">
+    <div className="summary-strip"><span>Tagihan <b>{money(termTotal(s,t))}</b></span><span>Payment <b>{partialPaymentLabel(t)}</b></span><span>Status Berkas <Badge>{documentStatus(t)}</Badge></span></div>
+    {documentStatus(t)==='NOK'&&<Notice tone="warning">Berkas belum lengkap (NOK): scan dokumen TTD belum diunggah. Payment Parsial dapat diajukan dan dibayar setelah verifikasi Finance; Admin tetap perlu melengkapi berkas.</Notice>}
+    {!request&&unpaid&&<Notice>Setelah Head of PMO menyetujui, Admin mengirim pengajuan Payment ke inbox Finance melalui tombol berikut.</Notice>}
+    {operational(s)&&unpaid&&(!request||request.status==='Dikembalikan')&&<Button confirm="Ajukan Payment termin ini ke inbox Finance?" primary disabled={locked} onClick={()=>void run(state=>requestPartialPayment(state,t.id),'Payment diajukan ke inbox Finance.')}>Ajukan Payment</Button>}
+    {request&&<><p>Diajukan oleh {request.requestedByName} · Pengajuan Payment #{request.cycle} · {request.status}</p>{request.decision&&<Notice tone={request.status==='Dikembalikan'?'warning':'success'}>Finance: {request.decision.actorName} · {request.decision.decision}{request.decision.note&&` · ${request.decision.note}`}</Notice>}</>}
+    {finance&&unpaid&&request?.status==='Diajukan'&&<><Field label="Catatan verifikasi Payment / alasan pengembalian"><textarea maxLength={1000} value={note} disabled={locked} onChange={e=>setNote(e.target.value)}/></Field><div className="actions"><Button confirm="Kembalikan Payment kepada Admin dengan catatan yang telah diisi?" disabled={locked||!note.trim()} onClick={()=>void run(state=>verifyPartialPayment(state,t.id,'Kembalikan',note),'Payment dikembalikan kepada Admin.')}>Kembalikan Payment</Button><Button confirm="Setujui dan verifikasi Payment termin ini?" primary disabled={locked} onClick={()=>void run(state=>verifyPartialPayment(state,t.id,'Setujui',note),'Payment diverifikasi; lanjutkan pencatatan APM.')}>Setujui &amp; Verifikasi Payment</Button></div></>}
+    {finance&&unpaid&&request?.status==='Diverifikasi'&&<div className="stack"><h3>Realisasi Payment</h3><div className="form-grid"><Field label="Nilai pembayaran (otomatis)"><input readOnly value={money(request.amount)}/></Field><Field label="Nomor APM *"><Input disabled={locked} value={apm} onChange={setApm}/></Field></div><Button primary disabled={locked||!apm.trim()} onClick={()=>setConfirm(true)}>Catat APM &amp; Bayar Termin</Button></div>}
+    {request?.status==='Dibayar'&&<Notice tone="success">Terbayar {money(t.paid)} · Termin {t.number} ({t.type}) · APM {request.apm}. Berkas saat pembayaran: {request.documentsAtPayment}. Termin berikutnya dapat dibuat sesuai sisa volume dan batas tiga termin.</Notice>}
+    {!!t.paymentRequestHistory?.length&&<details><summary>Riwayat pengajuan Payment</summary>{t.paymentRequestHistory.map(r=><p key={r.id}>#{r.cycle} · {r.status} · {r.decision?.actorName} · {r.decision?.note}</p>)}</details>}
+    {confirm&&<Modal title="Catat APM dan pelunasan?" onClose={()=>{if(!locked)setConfirm(false);}}><p>Termin {t.number} akan dicatat lunas sebesar {money(request?.amount??0)} dengan APM {apm}. Pastikan pembayaran telah dilakukan.</p>{documentStatus(t)==='NOK'&&<Notice tone="warning">Berkas belum lengkap. Status Berkas tetap NOK sampai Admin mengunggah scan TTD.</Notice>}<div className="modal-actions"><Button disabled={locked} onClick={()=>setConfirm(false)}>TIDAK</Button><Button primary disabled={locked} onClick={()=>void run(state=>payPartialPayment(state,t.id,apm),'Payment dan APM tersimpan; termin lunas.')}>YA</Button></div></Modal>}
+  </Card>;
+}

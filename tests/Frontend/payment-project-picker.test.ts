@@ -76,7 +76,7 @@ test('existing-payment table actions open their exact document while a new SPK a
 
 test('latest payment status explains scan, Finance, APM and settlement, while creation always checks current assignment gates',()=>{
   const t:PaymentLatest={id:'t',number:1,type:'Parsial',status:'Disetujui',version:3,apmStatus:'',scanStatus:'',financeApproved:false};
-  assert.match(paymentStage(null),/Belum ada/);assert.match(paymentStage(t),/Menunggu scan TTD/);
+  assert.match(paymentStage(null),/Belum ada/);assert.match(paymentStage(t),/Admin Ajukan Payment/);
   assert.match(paymentStage({...t,scanStatus:'Menunggu Verifikasi'}),/Menunggu Finance/);
   assert.match(paymentStage({...t,scanStatus:'Perlu Koreksi'}),/Scan perlu koreksi/);
   assert.match(paymentStage({...t,financeApproved:true}),/Menunggu APM/);

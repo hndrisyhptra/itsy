@@ -32,3 +32,7 @@ Tidak ada perubahan kode runtime, konfigurasi, migration, atau data. Suite PHP/f
 Sumber fungsi tabel: `app/Services/RelationalWorkflowStore.php`, akses akun/domain/controller berkas, `database/migrations`, `MYSQL_RUNTIME.md`, `WORKFLOW_V3.md`, `BOQ_IMPORT.md`, dan `TERM_WORK_EVIDENCE.md`. Dokumentasi konseptual lama tidak menggantikan implementasi aktif.
 
 Bukti: [database-handbook-20261105.json](qa/database-handbook-20261105.json). Untuk pembaruan, gunakan snapshot metadata terbaru dan perbarui deskripsi serta diagram bersamaan. Builder/validator dokumentasi tersimpan dalam `tmp/database-handbook`; dependensi dokumen memakai runtime bundel Codex, bukan dependensi aplikasi.
+
+## Tambahan runtime9 November2026 — Payment Parsial
+
+Migration2026_11_09_000002 menambah partial_payment_requests (PK id_payment_request) → payment_terms/users, serta referensi komposit per termin pada apm_settlements. Otoritas settlement tepat salah satu scan lama atau request Payment terverifikasi. Diagram/katalog kolom terkini tersedia pada [PARTIAL_PAYMENT](PARTIAL_PAYMENT.md). Buku saku PDF/Word/HTML di atas tetap snapshot5 November dan belum diregenerasi; tidak diklaim sudah memuat tabel baru. Migration belum diterapkan agen pada its aktif.

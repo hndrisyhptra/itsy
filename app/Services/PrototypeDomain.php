@@ -8,6 +8,7 @@ use Illuminate\Validation\ValidationException;
 /** Server authority for the demo workflow. The React calculations are UX previews. */
 class PrototypeDomain
 {
+    use PartialPaymentWorkflow;
     use PrototypeTermWorkEvidence;
     use PrototypeWorkflowV2;
 
@@ -38,6 +39,9 @@ class PrototypeDomain
             'createTerm' => $this->createTerm($args[0] ?? '', $resultId),
             'saveTerm' => $this->saveTerm($this->object($args[0] ?? null), (bool) ($args[1] ?? false)),
             'decide' => $this->decide($args[0] ?? '', $args[1] ?? '', $args[2] ?? ''),
+            'requestPartialPayment' => $this->requestPartialPayment($args[0] ?? ''),
+            'verifyPartialPayment' => $this->verifyPartialPayment($args[0] ?? '', $args[1] ?? '', $args[2] ?? ''),
+            'payPartialPayment' => $this->payPartialPayment($args[0] ?? '', $args[1] ?? ''),
             'recordApm' => $this->recordApm($args[0] ?? '', $args[1] ?? '', (bool) ($args[2] ?? true)),
             'recordPayment' => $this->recordPayment($args[0] ?? '', $args[1] ?? 0, $args[2] ?? ''),
             'attestBapp' => $this->attestBapp($args[0] ?? '', $args[1] ?? ''),
@@ -668,6 +672,9 @@ class PrototypeDomain
             $this->fail('Maksimal tiga termin dan tidak ada termin setelah Final.');
         }
         $previous = end($terms);
+        if ($previous && self::usesPartialPayment($previous) && bccomp((string) $previous['paid'], (string) $this->termTotal($previous), 2) !== 0) {
+            $this->fail('Payment termin sebelumnya harus lunas sebelum termin berikutnya.');
+        }
         if ($previous && ($previous['status'] !== 'Disetujui' || count($previous['approvals']) !== $this->approvalCount($previous) || $previous['apmStatus'] !== 'Valid')) {
             $this->fail('Termin sebelumnya membutuhkan approval lengkap dan APM valid.');
         }
@@ -801,10 +808,14 @@ class PrototypeDomain
         if ($t['status'] !== 'Disetujui' || count($t['approvals']) !== $this->approvalCount($t)) {
             $this->fail('APM membutuhkan approval lengkap.');
         }
-        if (($t['workflowVersion'] ?? 1) >= 2 && (($t['scan']['status'] ?? '') !== 'Valid' || $t['apmStatus'] === 'Valid')) {
+        $partial = self::usesPartialPayment($t);
+        if ($partial) {
+            $this->assertPartialApmReady($t);
+        }
+        if (($t['workflowVersion'] ?? 1) >= 2 && ((! $partial && ($t['scan']['status'] ?? '') !== 'Valid') || $t['apmStatus'] === 'Valid')) {
             $this->fail('APM memerlukan scan yang diverifikasi Finance dan belum dibayar.');
         }
-        if (($t['workflowVersion'] ?? 1) >= 3 && (($t['financeApproval']['decision'] ?? '') !== 'Setujui' || ($t['financeApproval']['scanId'] ?? '') !== ($t['scan']['id'] ?? '') || ($t['financeApproval']['userId'] ?? '') !== ($t['scan']['verifiedBy'] ?? ''))) {
+        if (! $partial && ($t['workflowVersion'] ?? 1) >= 3 && (($t['financeApproval']['decision'] ?? '') !== 'Setujui' || ($t['financeApproval']['scanId'] ?? '') !== ($t['scan']['id'] ?? '') || ($t['financeApproval']['userId'] ?? '') !== ($t['scan']['verifiedBy'] ?? ''))) {
             $this->fail('Approval Finance harus sesuai scan terbaru sebelum APM dicatat.');
         }
         if (($t['workflowVersion'] ?? 1) >= 2 && ! $valid) {
@@ -830,6 +841,13 @@ class PrototypeDomain
             }
             $t['paid'] = $this->termTotal($t);
             $t['paymentHistory'][] = ['amount' => $value, 'ref' => $apm, 'at' => now()->toISOString(), 'actor' => $this->state['actorUserId'] ?? '', 'source' => 'APM'];
+        }
+        if ($partial) {
+            $t['paymentRequest']['status'] = 'Dibayar';
+            $t['paymentRequest']['apm'] = $apm;
+            $t['paymentRequest']['paidAt'] = now()->toISOString();
+            $t['paymentRequest']['paidBy'] = $this->state['actorUserId'];
+            $t['paymentRequest']['documentsAtPayment'] = isset($t['scan']) ? 'OK' : 'NOK';
         }
         $this->put('terms', $t);
         $this->log('APM dicatat', $apm, '/termin/'.$id);

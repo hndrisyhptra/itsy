@@ -1,0 +1,42 @@
+{
+  "date": "2026-11-09",
+  "timezone": "Asia/Jakarta",
+  "feature": "Explicit YA/TIDAK confirmation before user actions",
+  "scope": ["PP/payment submission", "approvals", "draft saves", "Finance verification and APM", "BA KH/SPK/BA PP", "master CRUD/import", "uploads and removals", "downloads/print", "accounts/profile/logout", "local row additions/removals"],
+  "direct_controls": ["navigation/tabs/pagination", "search/filter typing", "preview", "read-only validation", "open forms", "cancel/close", "ordinary login/password visibility"],
+  "implementation": {
+    "native_dialog": true,
+    "default_focus": "TIDAK",
+    "duplicate_dialogs_or_callbacks": false,
+    "textContent_not_html": true,
+    "escape_backdrop_route_pagehide_cancel": true,
+    "disabled_disconnected_rechecked": true,
+    "submit_enter_covered": true,
+    "existing_contextual_dialogs_standardized": true,
+    "unsupported_dialog_cancels": true,
+    "new_runtime_dependencies": 0
+  },
+  "verification": {
+    "php_tests": 239,
+    "php_assertions": 4944,
+    "frontend_tests": 243,
+    "new_frontend_regressions": 6,
+    "typescript_vite_build": true,
+    "diff_check": true,
+    "ui_harness": "Fake DOM/SSR/AST entry-point coverage, not real browser",
+    "php_database": "Fail-closed SQLite memory"
+  },
+  "query_review": {
+    "new_endpoints_queries_polls": 0,
+    "server_domain_state_changes": false,
+    "existing_query_budget_suites_pass": true,
+    "dialog_only_created_on_action": true,
+    "performance_claim": "No added SQL path; no universal latency/load claim"
+  },
+  "new_migrations": 0,
+  "live_database_env_permission_or_dompis_changes": false,
+  "backup": "Not required for UI-only change; no server workflow/storage contract changed",
+  "previous_partial_payment_migration_deployment": "Unchanged; not applied by this feature",
+  "limits": ["Real browser native focus/keyboard/responsive/dark not manually verified", "Actual downloads/print/account clicks/server deployment not manually verified"],
+  "behavior_document": "docs/ACTION_CONFIRMATION.md"
+}

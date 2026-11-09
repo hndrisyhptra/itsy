@@ -62,7 +62,7 @@ test('an unavailable timeline PP never falls back to the first accessible PP',()
 
 test('current position distinguishes five approval levels, returned documents, scan, Finance and APM',()=>{
   const t=term();for(const role of APPROVERS_V3){assert.equal(paymentPosition(t),'Menunggu approval '+role);t.approvals.push({role,decision:'Setujui',at:'2026-11-04T01:00:00Z',note:'QA'});}
-  t.status='Disetujui';assert.match(paymentPosition(t),/unggah scan/);
+  t.status='Disetujui';assert.match(paymentPosition(t),/Admin Ajukan Payment/);
   t.scan={id:'qa-scan',name:'qa.pdf',extension:'pdf',mime:'application/pdf',size:1,sha256:'a'.repeat(64),uploadedAt:'2026-11-04T01:00:00Z',status:'Menunggu Verifikasi'};
   assert.equal(paymentPosition(t),'Menunggu approval Finance');t.scan.status='Perlu Koreksi';assert.match(paymentPosition(t),/unggah ulang/);
   t.scan.status='Valid';assert.match(paymentPosition(t),/scan terbaru/);t.financeApproval={role:'Finance',decision:'Setujui',at:'2026-11-04T02:00:00Z',note:'QA',scanId:'wrong'};assert.match(paymentPosition(t),/scan terbaru/);
@@ -87,5 +87,5 @@ test('timeline relates term, scan and Finance histories through the PP exact SPK
   const s=state(),t=term();t.spkId=s.spks[0].id;t.status='Disetujui';t.financeHistory=[{role:'Finance',actorName:'QA Finance',decision:'Kembalikan',note:'Scan belum lengkap',at:'2026-11-04T04:00:00Z'}];s.terms.push(t);
   s.events.push({id:'event-term',title:'Scan perlu koreksi',detail:'QA',route:'/termin/'+t.id,actor:'Finance',at:'2026-11-04T04:00:00Z'});
   const data=projectTimeline(s,s.projects[0].id)!;assert.equal(data.terms.length,1);assert.equal(data.events[0].id,'event-term');
-  const html=renderToStaticMarkup(createElement(ProjectTimeline,{s,id:s.projects[0].id}));assert.ok(html.includes('Scan belum lengkap'));assert.ok(html.includes('Finance · setelah scan TTD fisik'));assert.ok(html.includes('/termin/'+t.id));
+  const html=renderToStaticMarkup(createElement(ProjectTimeline,{s,id:s.projects[0].id}));assert.ok(html.includes('Scan belum lengkap'));assert.ok(html.includes('Verifikasi berkas · scan TTD fisik'));assert.ok(html.includes('/termin/'+t.id));
 });

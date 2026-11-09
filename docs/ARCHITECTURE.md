@@ -2,6 +2,32 @@
 
 Catatan ini menjelaskan struktur runtime aktif dan keputusan perubahan. Baca bersama [MYSQL_RUNTIME.md](MYSQL_RUNTIME.md), [buku saku relasi tabel](DATABASE_RELATIONS.md), AGENTS.md dan [CHANGELOG.md](CHANGELOG.md). Kode Laravel merupakan otoritas validasi dan status tersimpan; dokumentasi SQL konseptual lama tidak menggantikan executable migrations atau runtime.
 
+## Asset preload relatif untuk root/subfolder — 9 November 2026
+
+Shared confirmation CSS diekstrak Vite ke chunk bersama auth/main. Generated helper sebelumnya membentuk /build/<dependency> dari origin root, sementara @vite dan import JS mengikuti URL modul aplikasi. Pada Apache subfolder, CSS diminta di luar application public dan lazy page gagal. base ./ sekarang menghasilkan resolusi new URL(dependency, importerUrl) serta meneruskan import.meta.url; @vite tetap memilih entry melalui manifest. Tidak memakai env/path hardcoded, tidak mengubah rute backend.
+
+Review performa: 0 SQL/fetch/poll aplikasi baru, tidak menambahkan fallback download/reload otomatis, duplikasi katalog atau dependency runtime. CSS yang memang sudah diperlukan memakai path yang benar dan preload dedup Vite tetap. tools/check-build-assets.mjs memeriksa manifest/file dan mengeksekusi helper preload produksi dengan fake DOM pada root/Apache subfolder/CDN: 30 file references, 23 deps, 3 profiles lulus. 243 frontend dan TypeScript/Vite build lulus. Bukan real-browser/HTTP/CDN/load test; server pengguna belum diakses.
+
+Build assets ignored by Git tetap membutuhkan build target/deployment lengkap dan refresh halaman lama. Tidak ada mutation its, migration, perubahan account/Branch/domain/ledger/.env/permission atau Dompis. Detail ACTION_CONFIRMATION.md dan qa/confirmation-css-base-20261109.json.
+
+## Konfirmasi tindakan YA / TIDAK — 9 November 2026
+
+[Confirmation UI](ACTION_CONFIRMATION.md) menambah lapisan client sebelum callback Button/ActionLink, upload berbasis file input dan submit akun/master. Shared confirmation.ts membuat satu native dialog saat aksi diminta; YA menjalankan jalur lama, selain itu tidak ada efek. Form submit/Enter mempertahankan validasi browser dan CSRF; logout belum membersihkan draf sebelum YA. Konfirmasi konteks yang sudah ada distandardisasi labelnya, tanpa dialog kedua.
+
+Tidak mengubah otoritas Laravel, command/snapshot/revisi/receipt, SQL/storage/ledger, approval/scan/Finance/APM atau worker. **0 SQL/endpoint/poll/package/migration tambahan**; tidak membaca database untuk membangun dialog. Kontrol asal diperiksa kembali sesudah YA, klik ganda tidak mengantrekan aksi, pesan textContent dan modal native di atas Modal React dengan Escape terisolasi. Validasi backend tetap wajib karena dialog bukan kontrol otorisasi.
+
+239 PHP/4.944 assertions, 243 frontend, build/diff check lulus; enam regresi fake DOM/AST mencakup aksi batal/sekali, disabled, route, literal text, submit/Enter dan entry points. Existing query-budget tests tetap lulus; tanpa klaim latency/load baru. Tidak ada live its/env/permission/Dompis changes. Browser native focus/keyboard/visual/download/print dan remote deployment belum diverifikasi. Bukti qa/action-confirmation-20261109.json.
+
+## Payment Parsial sebelum berkas lengkap — 9 November2026
+
+[PARTIAL_PAYMENT](PARTIAL_PAYMENT.md) mendefinisikan tiga command baru yang tetap melewati controller/SQL account/Branch, lock/revisi/receipt/audit: Admin request setelah lima approval, Finance verification, Finance APM/full settlement. Marker partial-payment-v1 dan nominal/ID/cycle/aktor server-owned, tidak diterima saveTerm; tidak ada read-time adopsi/history rewrite. Scan financeApproval terpisah dari request decision. Late private scan upload/verifikasi setelah APM hanya untuk marker ini, tanpa mengubah settlement atau menyetujui pekerjaan lagi. Kasbon secara eksplisit ditunda pengguna, tidak ada form/prasyarat/kolom spekulatif.
+
+Normalized partial_payment_requests menyimpan siklus/keputusan/dokumentasi saat request/payment bersama snapshot payment_terms. APM menambah nullable payment_request_id, scan nullable dan XOR CHECK serta kedua composite-term FK; legacy scan authority tetap. Migration guarded its/rollbackhistory tersedia namun belum di-deploy agen. Detail relasi/kolom, mermaid dan preservation tersedia pada dokumen perilaku. Arsip unchanged; no master/account/env/permission/live transaction changes.
+
+Proyeksi term membandingkan bagian actual/approval/file/workEvidence sebelum write; request/cycle sebelumnya diindeks dan unchanged skipped. Three-action onePP/oneTerm HTTP fixture including revision54/55/57queries (budget75),2existingpricecatalogreads and no actual/approval/scan/ledger rewrites. Payment list memo/indexed relationships and20DOMrowpage,1000rowfixture; new picker skips unused list calculations. Catalog adds2JSONprojections in existing bounded batch, no extra per-row query. Aggregate/global validation and scan projection old costs remain; not throughput/load claim.
+
+239PHP/4944assertions,237frontend,build/Pint/diffcheck pass; HTTP no-scan settlement/next term/late scan, financialreturncycle/roles/Branch/Head/forgedmetadata/APMrollback/replay/XOR/FK/legacyupgrade and independent status tested in fail-closed memory. MariaDB10.4 private empty socket schema63 migrations/repeat passed,0users; not live migration or full MariaDB payment-flow test. Backup2.084.634byte/hash verified. Browser/click/responsif/keyboard/bank/load not claimed. See qa/partial-payment-20261109.json and deployment instructions.
+
 ## Progres semua upload file — 9 November 2026
 
 [UPLOAD_PROGRESS](UPLOAD_PROGRESS.md) mendefinisikan model fase dan transport XHR multipart bersama untuk BOQ/eviden/scan serta preview/commit master. Browser upload events menentukan persen byte; unknown total tetap indeterminate dan request 100% masih menunggu konfirmasi. BOQ/eviden memakai task server queued/processing/completed/failed dengan bar worker tanpa angka rekaan, termasuk setelah reload. Scan/master tetap sinkron dan master preview tidak menjadi write. Multi-evidence merender per file dan menolak callback batch lama.

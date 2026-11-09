@@ -1,0 +1,105 @@
+{
+  "date": "2026-11-09",
+  "change": "Admin requests Partial Payment after Head, Finance verifies/APM pays without wet scan; independent NOK/OK",
+  "kasbon": {
+    "user_decision": "Skip special format until supplied",
+    "form_implemented": false,
+    "required_before_payment": false,
+    "invented_fields_or_deductions": false
+  },
+  "scope": {
+    "version": 3,
+    "type": "Parsial",
+    "requires_five_selected_approvals": true,
+    "explicit_admin_adoption": true,
+    "marker": "partial-payment-v1",
+    "final_and_v1_v2_unchanged": true,
+    "legacy_scan_complete_path_preserved_before_adoption": true
+  },
+  "commands": [
+    "requestPartialPayment",
+    "verifyPartialPayment",
+    "payPartialPayment"
+  ],
+  "document_status": {
+    "NOK": "No current wet scan metadata",
+    "OK": "Wet scan uploaded, not automatic Finance verification",
+    "work_evidence_is_wet_scan": false,
+    "request_and_payment_flags_frozen": true,
+    "late_scan_does_not_repay": true
+  },
+  "payment": {
+    "finance_verification_required": true,
+    "apm_full_canonical_bill": true,
+    "next_term_requires_paid_and_valid_apm": true,
+    "max_three_and_final_gates_preserved": true,
+    "finance_return_has_separate_payment_cycle": true
+  },
+  "migration": {
+    "file": "2026_11_09_000002_enable_partial_payment_requests.php",
+    "new_table": "partial_payment_requests",
+    "pk": "id_payment_request",
+    "apm_authority": "Exactly one verified_scan_id or payment_request_id; each composite FK includes term_id",
+    "rollback_preserves_request_history": true,
+    "data_backfill": false,
+    "live_applied_by_agent": false
+  },
+  "performance": {
+    "fixture": "1 PP / 1 term HTTP including GET revision",
+    "request_queries": 54,
+    "verify_queries": 55,
+    "pay_queries": 57,
+    "budget_per_action": 75,
+    "price_catalog_reads": 2,
+    "no_actual_approval_file_ledger_rewrites_on_payment_commands": true,
+    "incremental_subprojection_guards": true,
+    "list_fixture_terms": 1000,
+    "list_dom_rows_per_page": 20,
+    "list_relationship_indexes": true,
+    "new_picker_projection_fields": 2,
+    "picker_new_queries": 0,
+    "global_aggregate_read_remains": true,
+    "load_test_claim": false
+  },
+  "verification": {
+    "php_tests": 239,
+    "php_assertions": 4944,
+    "new_php_tests": 9,
+    "frontend_tests": 237,
+    "new_frontend_tests": 6,
+    "production_build": true,
+    "pint": true,
+    "diff_check": true,
+    "database_tests": "Fail-closed SQLite memory, fake private disk",
+    "legacy_settlement_migration_down_up": true
+  },
+  "mariadb_schema_qa": {
+    "version": "10.4.28",
+    "private_root": "/private/tmp/area3-partial-qa-339h7eku",
+    "skip_networking": true,
+    "directory_mode": "0700",
+    "migrations": 63,
+    "repeat_migrate": true,
+    "users": 0,
+    "full_payment_command_flow_on_mariadb_tested": false,
+    "live_database_used": false,
+    "temporary_server_stopped": true
+  },
+  "backup": {
+    "file": "storage/app/private/backups/its-before-partial-payment-20261109-083829.sql",
+    "bytes": 2084634,
+    "sha256": "27d2d620179800cd7dbd82fa5839e2b033ab8f3ea6915802209ecbbf26a643bc",
+    "failed_zero_byte_marked": true
+  },
+  "live_transaction_master_account_archive_env_or_permission_changes": false,
+  "dompis_accessed": false,
+  "limits": [
+    "Kasbon format deferred by user",
+    "New migration not applied to local/server active its",
+    "Browser/authenticated clicks/responsive/dark/keyboard/print/load unverified",
+    "No bank/ERP transfer integration",
+    "Full payment workflow on MySQL/MariaDB not executed; schema QA only",
+    "Existing handbook artifacts dated5Nov not regenerated"
+  ],
+  "documentation": "docs/PARTIAL_PAYMENT.md"
+}

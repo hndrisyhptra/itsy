@@ -2,6 +2,37 @@
 
 
 
+
+## Confirmation CSS preload / relative build base — 9 November 2026
+
+239 PHP tests / 4.944 assertions, 243 frontend tests, TypeScript/Vite production build dan diff check lulus. Bug ditelusuri pada generated helper lama yang memakai /build/ origin-root; file confirmation CSS ada di public/build lokal, tetapi alamat itu tidak mengikuti Apache subfolder. base ./ menghasilkan new URL(dependency, importerUrl) dengan import.meta.url. @vite tetap memuat entry dari manifest; tidak ada .env/rute/flow/storage change.
+
+Tambahan npm run check:assets menguji build produksi aktual: 30 manifest file references tersedia, seluruh imports/dynamicImports punya entry, generated preload helper dieksekusi terhadap 23 deps pada 3 URL deployment (root Artisan, Apache /its/area3-prototype/public dan aset CDN). Fake link/load events memeriksa resolved origin/path dan file dependency sebelum import callback. Ini regression harness build, bukan browser/manual request/CDN deployment test. 0 query/endpoint/poll/runtime package/migration tambahan; PHP tetap fail-closed memory dan query-budget suites lulus. Tidak ada live its/akun/arsip/Dompis/env writes.
+
+Browser halaman pengguna dan server aaPanel tidak diakses. Jika error terjadi di server root, build tidak lengkap atau tab lama tetap perlu diperiksa; source fix tidak membuktikan remote file sudah tersedia. Deploy perlu build target karena public/build diabaikan Git, atau kirim manifest/assets lengkap dari build sama; refresh halaman sesudahnya. Bukti qa/confirmation-css-base-20261109.json dan ACTION_CONFIRMATION.md.
+
+## Action confirmation YA / TIDAK — 9 November 2026
+
+**239 PHP tests / 4.944 assertions, 243 frontend tests, TypeScript/Vite build dan diff check lulus.** Enam tes frontend baru memverifikasi callback tidak berjalan sebelum YA, TIDAK tanpa write, YA sekali/klik ganda, Escape/backdrop/route/pagehide, native dialog gagal dibuka, pesan literal dan fokus TIDAK/restore dalam fake DOM, recheck disabled/disconnected, submit/Enter/validasi dan audit AST titik masuk mutasi. Navigasi langsung tetap bekerja.
+
+Cakupan aktual: draft/submission/approval/Finance/APM, master CRUD/import, upload BOQ/eviden/scan dan removal, pembuatan/reservasi dokumen/termin, akun/profil/logout, unduh/cetak, baris dan preferensi. Existing dialogs mempertahankan konteks tetapi memakai YA/TIDAK. Form akun/first setup memakai shared confirmation tanpa mengubah login biasa/password visibility. Source review: 0 endpoint/SQL/poll/dependency/migration baru; existing query/ledger/auth suites lulus. Tests PHP tetap fail-closed SQLite memory; tidak ada live its/arsip/env/data/permission/Dompis changes.
+
+Fake DOM/SSR/AST tidak membuktikan native dialog pada browser nyata. Browser autentikasi/fokus/Escape pada nested Modal/responsif/dark/keyboard/download/cetak, real server deployment dan load belum diverifikasi. Build lokal selesai. Migration Partial Payment terdahulu belum diubah/deploy oleh fitur konfirmasi ini. Rincian ACTION_CONFIRMATION.md dan qa/action-confirmation-20261109.json.
+
+## Partial Payment before scan completion — 9 November 2026
+
+**239 PHP tests / 4944 assertions,237 frontend tests,TypeScript/Vite build,scoped Pint and diff check passed.**9new PHP/6new frontend regressions. User explicitly deferred the special kasbon form: no invented form/fields/amount deductions or kasbon prerequisites. Scope is explicit Admin adoption of approved unpaid v3 Partial into paymentFlow partial-payment-v1; Final/v1/v2/issued history and existing scan-complete path before adoption remain.
+
+HTTP tests exercise five real selected account approvals; Admin request with no file; Finance inbox pending/verification/APM; full canonical amount and next term while NOK; actual private PDF late upload and separate Finance validation after payment; unchanged request/payment/settlement/approval/archive; note-required return/explicit new cycle with immutable old SQL row. Head/wrong role/Branch, forged form metadata, replay UUID, invalid/duplicate APM, direct unverified APM, atomic forced SQL failure/receipt/revision, XOR neither/both authorities and cross-term FK are rejected. Legacy Final scan-authorized settlement survives executable SQLite migration down/up; empty fresh/repeatable63migrations and guard rollback with request history pass.
+
+PHP domain/HTTP tests use fail-closed SQLite memory and fake private disk; no detached worker/test data written to live its. Actual schema was also created from zero on a private MariaDB10.4 server with skip-networking and a unique0700 /tmp socket/data directory: all63migrations, including both9Nov migrations, and repeat migrate passed; users0. Composite scan/request FKs, nullable scan and settlement_authority CHECK inspected. Server terminated in finally. This is real MariaDB DDL/schema QA, not full financial command execution on MariaDB or live deployment. Evidence path /private/tmp/area3-partial-qa-339h7eku; sandbox first socket bind was denied, approved rerun succeeded.
+
+Query evidence on onePP/oneTerm fixture including GET revision: request54,verify55,pay57 queries, ceiling75 each with2existing price catalog reads. Regression prohibits unrelated PP/BOQ/actual/approval/file/scan/ledger writes on those commands. Store indexes previous terms/requests and skips unchanged subprojections; no old-cycle rewrite. List Maps/memo/canonical amount/20DOMrowpage tested at1000terms with relationship.find forbidden. Picker adds2JSONprojections on its existing batch, no per-row request query; existing2/4query budgets passed. Aggregate/reference/global validation and changed-scan legacy projection remain; no universal throughput/load claim.
+
+Live its only read for backup: storage/app/private/backups/its-before-partial-payment-20261109-083829.sql,2084634bytes,SHA25627d2d620179800cd7dbd82fa5839e2b033ab8f3ea6915802209ecbbf26a643bc. Zero-byte failed attempt marked.failed, temporary credential file cleaned. **New migration not applied to active local/server its**; no .env/private permissions/master/account/archive/transaction changes or Dompis access. Deploy code then migrate/build/queue restart per behavior doc; never reset/fresh/seed/reactivate storage.
+
+UI labels/SSR show Ajukan Payment, Finance verification/APM after verification, no kasbon fields, paid amount+termin and NOK independent of payment; scan upload stays enabled for eligible Admin after payment. Existing upload progress retained. Browser authenticated clicks/network/responsive/dark/keyboard, physical documents/signatures, actual bank/ERP transfers and multiuser load were not tested. Payment is Finance's APM recording, not bank automation. See [PARTIAL_PAYMENT](PARTIAL_PAYMENT.md), ARCHITECTURE and [structured evidence](qa/partial-payment-20261109.json).
+
 ## Upload percentages across real upload features — 9 November 2026
 
 **230 PHP/4473 assertions,231 frontend and TypeScript/Vite build passed; diff check passed.**6 new frontend regressions exercise fakeXHR byte events/deduplication/unknown total, confirmation versus success, HTTP422, timeout/abort/network cleanup and no repeatedPOST, native labeled progress/escaping/server-task phases, plus actual store integration for BOQ/evidence/scan/Designator+KHS preview and master commit/retry. CSRF/credentials, multipart revision/hash/stage/UUID replay and confirmed-state publishing remain. Master preview completed explicitly does not mean imported; rejected scan never emits completed.

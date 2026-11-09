@@ -3,6 +3,7 @@ import { Component, type ReactNode } from 'react';
 import App from './App';
 import { appUrl, boot } from './laravel';
 import './styles.css';
+import './confirmation.css';
 class ErrorBoundary extends Component<{ children: ReactNode }, { error: string }> {
   state = { error: '' };
   static getDerivedStateFromError(error: Error) { return { error: error.message }; }

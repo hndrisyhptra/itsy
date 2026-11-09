@@ -1,4 +1,6 @@
 import './auth.css';
+import './confirmation.css';
+import { installFormConfirmation } from './confirmation';
 
 const region = document.querySelector<HTMLSelectElement>('[data-region-select]');
 const branch = document.querySelector<HTMLSelectElement>('[data-branch-select]');
@@ -28,7 +30,7 @@ document.querySelectorAll<HTMLButtonElement>('[data-toggle-password]').forEach(b
   });
 });
 document.querySelectorAll<HTMLFormElement>('[data-access-form]').forEach(form => {
-  form.addEventListener('submit', () => {
+  installFormConfirmation(form, () => {
     const button = form.querySelector<HTMLButtonElement>('[data-submit-label]');
     if (button) { button.disabled = true; button.textContent = button.dataset.submitLabel ?? 'Menyimpan…'; }
     form.setAttribute('aria-busy', 'true');
