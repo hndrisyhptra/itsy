@@ -68,6 +68,8 @@ BA KH baru/draf dari PP versi 3 otomatis menampilkan nama dan NIK **Head of PMO 
 
 Upload BOQ serta PDF/foto eviden pada layar aplikasi memakai antrean database Laravel. Status proses tampil pada dokumen; BOQ selesai dapat diambil kembali melalui **Gunakan hasil**. Upload terkait harus selesai sebelum pengajuan approval. Di XAMPP lokal, worker mulai otomatis saat upload dengan pengguna OS Apache agar akses file privat tetap sesuai. Worker manual khusus adalah `php artisan area3:work-uploads`; `php artisan queue:work` tanpa nama queue hanya memantau `default`. Bila berhenti, gunakan **Lanjutkan antrean**. Detail worker, tabel/endpoint, batas operasional dan bukti optimasi: [UPLOAD_QUEUE_PERFORMANCE](docs/UPLOAD_QUEUE_PERFORMANCE.md).
 
+Untuk server aaPanel `/www/wwwroot/itsy`, tersedia [panduan worker Supervisor](docs/SERVER_UPLOAD_WORKER.md). Setelah kode termasuk folder `deploy` diunggah, `php artisan area3:supervisor-config --user=www` menghasilkan konfigurasi dari folder/PHP CLI server yang sebenarnya; ganti `www` sesuai user PHP-FPM situs. Set `AREA3_UPLOAD_AUTOSTART=false` pada server dan daftarkan hasilnya di Supervisor. Generator hanya menampilkan konfigurasi, belum memasang/menjalankan layanan. Supervisor menjalankan worker yang sama dengan heartbeat, satu proses, restart otomatis dan log berotasi; tidak perlu migration.
+
 Penyimpanan kini menulis dokumen yang berubah saja, pembacaan layar dibatasi Branch di SQL, preview file memakai query langsung, dan modul halaman dimuat sesuai kebutuhan. Pada uji perubahan pengaturan dengan 20 PP: 1.330 → 8 query; JavaScript utama sekitar 27% lebih kecil. Angka ini bukan hasil uji beban serentak.
 
 ## Bulk Import master

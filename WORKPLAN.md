@@ -445,3 +445,12 @@ Historical iteration; superseded by the dashboard restoration below.
 - [x] 222 PHP/4332 assertions, 218 frontend, build, scoped Pint dan diff check lulus. Tambah tiga PHP/sepuluh frontend untuk financial/status/filter/no-write/authorization/query/indexing/markup. Tidak menyentuh its live/.env/schema/arsip/Dompis Prov; seluruh fixture memory.
 - [x] Catat DASHBOARD_MATRIX, DASHBOARD_SUMMARY, ARCHITECTURE, CHANGELOG, LARAVEL_QA, README/AGENTS dan qa/dashboard-matrix-20261109.json. Tidak ada perubahan workflow/data tersimpan sehingga tidak perlu backup/migration baru.
 - [ ] Visual dan interaksi browser, responsif/dark/keyboard/load test belum manual; akses browser sebelumnya tetap dihormati. Realisasi masih pencatatan aplikasi, bukan koneksi bank.
+
+## Worker upload server aaPanel — 9 November 2026
+
+- [x] Catat folder server pengguna `/www/wwwroot/itsy`; pisahkan root SSH dari user OS PHP-FPM. Tambah generator konfigurasi Supervisor dari PHP_BINARY/base/storage aktual dengan user non-root eksplisit dan penolakan injeksi/path ambigu. Hanya tampilkan konfigurasi; tidak memasang daemon atau menjalankan worker.
+- [x] Template memakai perintah lama area3:work-uploads/koneksiuploads/queuearea3-uploads dan lock/heartbeat yang sama: satu proses, autostart/autorestart, stop/kill group, stopwait120/jobtimeout90/retry180, umask0077 dan rotasi log. Runbook aaPanel/userwww contoh/CLI/izin/.envserverautostartfalse/boot/deploy/verifikasi; jangan menjalankan workerroot atau raw queuedefault.
+- [x] Review generator0 SQL/0 process/0 write, satu stub substitution. Tidak mengubah job/queue/gates/SQL/otorisasi/ledger, migration/data/workflow/archive/.env lokal atau live its. Tidak perlu backup data baru. Query/runtime upload lama tetap; tidak mengklaim latency/load universal.
+- [x] 225 PHP/4382 assertions,218 frontend/build,scoped Pint,diff check lulus. Tiga PHP baru/50 assertions noSQL/noProcess/config/timing/private user/injeksi. Independent INI parse memakai fixture path server; tidak diklaim sebagai service integration.
+- [x] Dokumentasikan SERVER_UPLOAD_WORKER, UPLOAD_QUEUE_PERFORMANCE, ARCHITECTURE, CHANGELOG, LARAVEL_QA, README/AGENTS dan qa/server-upload-worker-20261109.json.
+- [ ] Penerapan Supervisor aaPanel/include/service boot/restart, verifikasi PHP/extension/userFPM dan upload nyata/server/browser/load menunggu operator. Tidak ada akses remote yang dipakai agen. Heartbeat20s lama bisa stale saat job panjang dan tidak diubah fitur ini.

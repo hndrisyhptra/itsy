@@ -1,0 +1,18 @@
+[program:area3-uploads]
+directory={{project}}
+command={{php}} {{project}}/artisan area3:work-uploads --no-interaction
+user={{user}}
+numprocs=1
+autostart=true
+autorestart=true
+startsecs=5
+startretries=10
+stopsignal=TERM
+stopasgroup=true
+killasgroup=true
+stopwaitsecs=120
+umask=0077
+redirect_stderr=true
+stdout_logfile={{storage}}/logs/uploads-worker.log
+stdout_logfile_maxbytes=10MB
+stdout_logfile_backups=5

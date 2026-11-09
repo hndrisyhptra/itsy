@@ -1,5 +1,7 @@
 # Antrean upload dan optimasi aplikasi — 6 November 2026
 
+**Tambahan server 9 November 2026:** [SERVER_UPLOAD_WORKER.md](SERVER_UPLOAD_WORKER.md) menyediakan setup aaPanel `/www/wwwroot/itsy` dan generator `area3:supervisor-config --user=...`. Ini konfigurasi Supervisor untuk perintah worker yang sama, bukan perubahan queue/timeout/SQL/privasi. Generator 0 SQL/0 process dan belum memasang layanan remote; server memakai autostart web false dan user OS PHP-FPM, bukan root SSH. Catatan pengujian/deployment lokal lama di bawah tetap riwayat tanggal masing-masing.
+
 Upload pada layar PP dan eviden pembayaran sekarang memakai antrean database Laravel bernama `area3-uploads`. Server menerima dan menyimpan file privat, mengembalikan HTTP 202, lalu worker memproses isinya. Transfer file dari browser tetap memerlukan waktu sesuai ukuran/koneksi; pembacaan Excel dan pemrosesan lampiran berlangsung di luar permintaan upload.
 
 ## Cara menggunakan

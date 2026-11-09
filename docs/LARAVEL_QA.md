@@ -1,5 +1,13 @@
 # Laravel rebuild QA — 2 November 2026
 
+## aaPanel supervised upload worker configuration — 9 November 2026
+
+225 PHP tests/4382 assertions,218 frontend tests,TypeScript/Vite build,scoped Pint,diff check passed. Three new tests/50 assertions verify generated Supervisor invokes the existing heartbeat/lock upload command (not raw queue default), one non-root private OS identity, auto start/restart, process-group termination, log rotation, stopwait120 > jobtimeout90 < retry180, zero SQL and no spawned process. Missing/root/injected usernames and unsafe Supervisor path interpolation/comments/newlines are refused without emitting an executable program. Process facade faked/prevents stray processes; tests use fail-closed memory environment. No live DB/worker/task/server mutation.
+
+Python standard-library ConfigParser independently parsed the rendered stub using `/www/wwwroot/itsy`, an illustrative aaPanel PHP8.2 path and userwww. This is INI structure validation, not a Supervisor daemon integration test or verification of server PHP/FPM identity. Generator dynamically uses the actual CLI binary/base/storage at runtime and does not write/install/start files/services. Existing queue SQL/workflow paths unchanged,0 added SQL; not a throughput optimization claim.
+
+Runbook covers aaPanel plugin/include differences, service boot, autostart webfalse, correct site identity/private permissions, existing pending work, graceful code deploy and status/log checks. Supervisor installation/boot/restart on remote server, actual site PHP/extension/user, real uploads, browser and load remain unverified. Existing heartbeat20s can temporarily expire during long job; no indicator/API change. No new dependency/migration or local/remote `.env` edits. See [SERVER_UPLOAD_WORKER.md](SERVER_UPLOAD_WORKER.md), ARCHITECTURE and qa/server-upload-worker-20261109.json.
+
 ## Dashboard Region/Branch matrix — 9 November 2026
 
 222 PHP tests / 4332 assertions, 218 frontend tests, TypeScript/Vite build, scoped Pint and diff check passed. Three new PHP tests cover joined Region metadata with explicit columns and constant 5-query direct bind at initial/+200 Branch/Region catalog sizes, deleted/null Regions, and actual state HTTP reads for Admin/Head/Finance restricted to one Branch with a shared Project ID/hidden sibling. Archive, revision, receipts and audit stay unchanged. Only isolated fail-closed SQLite memory was used; no live its queries/mutations/schema/env/seed changes.

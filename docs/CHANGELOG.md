@@ -1,5 +1,13 @@
 # Catatan perubahan it's Area 3
 
+## 9 November 2026 — Worker upload server aaPanel
+
+- Pengguna meminta worker server dan memberikan folder `/www/wwwroot/itsy`. Tambah generator `php artisan area3:supervisor-config --user=...`, mendeteksi folder/storage/PHP_BINARY server dan menghasilkan satu program Supervisor untuk perintah heartbeat/lock `area3:work-uploads` yang sudah ada. Bukan worker default atau pengganti jalur validasi upload.
+- User OS harus user PHP-FPM situs, bukan root SSH; generator menolak root/injeksi/path ambigu dan hanya menampilkan teks. Template satu proses/autostart/autorestart, SIGTERM/stop-kill group, stopwait120 > jobtimeout90 < retry180, umask0077 dan log10MB/5 backup. Runbook memandu autostart web false, CLI/extensions/permission, pendaftaran plugin/service boot, restart deploy dan verifikasi upload. Tidak mengubah default XAMPP lokal/`.env` pengguna.
+- Review query: generator0 SQL/0 process/0 write, satu stub dan substitusi; tidak membaca graph/master/akun/kredensial. Queue/worker/job/timeout/SQL/gates/ledger tetap. Tidak ada migration, live query/mutation, detached worker atau sentuhan Dompis Prov; backup baru tidak dibutuhkan untuk konfigurasi tanpa perubahan workflow/data tersimpan.
+- Lulus 225 PHP/4382 assertions,218 frontend,build,scoped Pint,diff check dan independent INI parse dengan fixture path server. Tiga PHP baru/50 assertions memeriksa konfigurasi/perintah/timing/private user, noSQL/noProcess dan root/injeksi/path. Supervisor/aaPanel/user FPM/PHP server/service boot/restart/upload nyata/browser/load belum diverifikasi atau dipasang agen. Indikator heartbeat20s lama tidak diubah dan bisa stale sementara ketika satu job lama.
+- File: `UploadSupervisorConfig`, `deploy/supervisor/area3-uploads.conf.stub`, `UploadSupervisorConfigTest`, [SERVER_UPLOAD_WORKER.md](SERVER_UPLOAD_WORKER.md), UPLOAD_QUEUE_PERFORMANCE, ARCHITECTURE, README/AGENTS, WORKPLAN, LARAVEL_QA dan qa/server-upload-worker-20261109.json.
+
 ## 9 November 2026 — Matriks dashboard per Region dan Branch
 
 - Tambah tabel accordion Region → Branch di bawah ringkasan dashboard awal, tetap dengan filter Branch yang sama. Kolom Branch, ID Project JMLH/OPEN/CLOSE, Jumlah PP, Nilai Realisasi, Total Nilai. Tabel ringkas bergaris, angka rata kanan, native disclosure berlabel/aria dan gulir dalam panel mengikuti tema.

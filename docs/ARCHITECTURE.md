@@ -2,6 +2,12 @@
 
 Catatan ini menjelaskan struktur runtime aktif dan keputusan perubahan. Baca bersama [MYSQL_RUNTIME.md](MYSQL_RUNTIME.md), [buku saku relasi tabel](DATABASE_RELATIONS.md), AGENTS.md dan [CHANGELOG.md](CHANGELOG.md). Kode Laravel merupakan otoritas validasi dan status tersimpan; dokumentasi SQL konseptual lama tidak menggantikan executable migrations atau runtime.
 
+## Konfigurasi worker upload server aaPanel — 9 November 2026
+
+`UploadSupervisorConfig` menghasilkan konfigurasi melalui `deploy/supervisor/area3-uploads.conf.stub` memakai base/storage path dan PHP_BINARY runtime CLI. User OS wajib eksplisit dan non-root; karakter injeksi/interpolasi/comment serta path ambigu ditolak. CLI hanya menampilkan teks, tanpa DB, command shell, file write atau proses worker. Supervisor menjalankan perintah `area3:work-uploads` yang sudah ada, mempertahankan lock/heartbeat/private identity/queue uploads→area3-uploads. Web autostart dinonaktifkan di server oleh operator, tidak diubah agen di `.env` lokal. Tidak ada API/migration/perubahan data/job/SQL/workflow.
+
+Satu proses, autorestart termasuk exit normal, SIGTERM/group shutdown dengan 120s > timeout90s < retry180s, umask0077 dan log10MB/5 backup menjaga operasi server sesuai model upload lama. Supervisor service boot, include path aaPanel, binary/extension dan user PHP-FPM tetap harus diterapkan/diverifikasi operator; `root@dompis` bukan identity worker. Generator0 SQL/0 process; 225 PHP/4382 assertions,218 frontend/build/Pint dan independent INI parse lulus. Tidak mengklaim throughput atau worker remote sudah aktif. [SERVER_UPLOAD_WORKER.md](SERVER_UPLOAD_WORKER.md) dan qa/server-upload-worker-20261109.json mencatat langkah/batas, termasuk heartbeat lama yang dapat stale saat job panjang.
+
 ## Matriks dashboard Region → Branch — 9 November 2026
 
 `AuthenticatedWorkspace.bind` memperkaya query referensi Branch yang sudah ada dengan left join Region/kolom eksplisit, lalu scope akun tetap per Branch PP. RelationalWorkflowStore/state authorized adalah sumber angka; tidak ada endpoint, migration atau penulisan snapshot/arsip. `dashboard-matrix` mengindeks PP→BA KH→SPK→termin dan ID Project, memakai `termTotalForDeal` yang sama dengan rumus `termTotal` lama. Memoisasi memisahkan toggle tampilan dari kalkulasi data. Region null/deleted ditandai belum ditetapkan; tidak menebak teks legacy.
