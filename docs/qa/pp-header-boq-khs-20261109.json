@@ -1,0 +1,71 @@
+{
+  "date": "2026-11-09",
+  "change": "Header PP first, BOQ second, automatic SQL KHS prices and Header total",
+  "policy": "khs-auto-v1",
+  "scope": "Editable v3 root PP on explicit save/submission; not locked history, v1/v2 or continuation allocations",
+  "form": {
+    "order": [
+      "Header PP",
+      "BOQ Plan"
+    ],
+    "header_total_read_only": true,
+    "budget_before_boq": 0,
+    "upload_auto_saves_pp": false
+  },
+  "server": {
+    "canonical_khs_price_and_version": true,
+    "budget": "Canonical boqTotal, per-line combined rounding",
+    "client_price_total_review_note_ignored": true,
+    "private_source_and_excel_comparisons_retained": true,
+    "system_review_is_human_approval": false,
+    "submitted_snapshots_preserved": true
+  },
+  "migration": {
+    "file": "2026_11_09_000001_allow_zero_budget_v3_project_drafts.php",
+    "check": "budget > 0 OR (budget = 0 AND status = 'DRAFT' AND workflow_version = 3)",
+    "one_alter": true,
+    "target_guard": "its or isolated SQLite memory tests",
+    "rollback_refuses_zero_rows": true,
+    "live_applied_by_agent": false,
+    "real_mysql_ddl_tested": false,
+    "sqlite_check_expression_and_mock_dialects_passed": true
+  },
+  "backup": {
+    "path": "storage/app/private/backups/its-before-header-khs-auto-20261109-072825.sql",
+    "bytes": 2083416,
+    "sha256": "456f9bee49560f701c5f5ee95c8d6d812c457a3c53c2c8239016e4bba9eaed8c",
+    "failed_zero_byte_attempt_marked": true
+  },
+  "verification": {
+    "php_tests": 230,
+    "php_assertions": 4473,
+    "frontend_tests": 225,
+    "production_build": true,
+    "pint": true,
+    "diff_check": true,
+    "fresh_migrations": 62
+  },
+  "performance": {
+    "domain_components": 500,
+    "domain_extra_sql": 0,
+    "repeated_khs_linear_lookup_forbidden": true,
+    "frontend_components": 500,
+    "http_fixture_components": 26,
+    "http_includes_revision_read": true,
+    "http_query_budget": 220,
+    "http_batched_price_catalog_queries": 2,
+    "new_endpoint_or_per_row_queries": false,
+    "load_test_or_universal_latency_claim": false
+  },
+  "live_mutations": false,
+  "env_changed": false,
+  "dompis_accessed": false,
+  "limits": [
+    "Migration not deployed on local/server its",
+    "DDL MySQL/MariaDB mocked, not real engine integration",
+    "Concurrent catalog edits may leave provisional form values stale until refresh/save; SQL authoritative",
+    "Aggregate/catalog reads and per-row normalized writes remain",
+    "Authenticated browser/responsive/keyboard/print/load tests not repeated"
+  ],
+  "documentation": "docs/PP_HEADER_BOQ_KHS.md"
+}

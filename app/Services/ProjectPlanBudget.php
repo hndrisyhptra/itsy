@@ -21,11 +21,12 @@ final class ProjectPlanBudget
         if (! is_array($rows) || ! array_is_list($rows) || count($rows) !== count($owners) || count(array_unique(array_column($rows, 'rowId'))) !== count($owners)) {
             self::fail('Designator BOQ Mandor harus sesuai BOQ Plan.');
         }
+        $mandorByRow = array_column($rows, null, 'rowId');
         $totals = array_fill_keys(['ownerM', 'ownerS', 'mandorM', 'mandorS', 'material', 'bop'], 0.0);
         foreach ($owners as $owner) {
             $totals['ownerM'] = self::add($totals['ownerM'], self::product($owner['qm'], $owner['m'] ?? 0));
             $totals['ownerS'] = self::add($totals['ownerS'], self::product($owner['qs'], $owner['s'] ?? 0));
-            $row = collect($rows)->firstWhere('rowId', $owner['rowId']);
+            $row = $mandorByRow[$owner['rowId']] ?? null;
             if (! is_array($row)) {
                 self::fail('Designator BOQ Mandor tidak ditemukan.');
             }

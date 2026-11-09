@@ -1,5 +1,10 @@
 # Draft PP, cap preview dan penghapusan batas BOP — 5 November 2026
 
+## Pembaruan terkini — 9 November 2026
+
+PP baru dimulai **1. Header PP → 2. BOQ Plan**. Pada PP induk v3 yang masih editable, harga langsung mengikuti KHS SQL tanpa alasan/konfirmasi selisih; Header Total Nilai baca saja dan dihitung dari BOQ, Rp0 sebelum upload. Header lengkap cukup untuk draf; pengajuan tetap perlu BOQ/nilai positif dan seluruh persyaratan. Dokumen terkunci/v1/v2 serta alokasi lanjutan tetap dipertahankan. Migration CHECK draf Rp0 telah disiapkan, belum diterapkan agen pada its aktif. [Perilaku, migration, arsitektur/query dan bukti](PP_HEADER_BOQ_KHS.md). Penjelasan lama di bawah tetap menjadi catatan historis bila berbeda.
+
+
 Pembaruan 6 November: approver keempat PP/Pembayaran baru menjadi **Mgr Project Support**; penutup PP baru memakai empat jabatan baku. Assignment/keputusan Business Support historis tetap berlaku. Aturan terkini: [PROJECT_SUPPORT_APPROVAL](PROJECT_SUPPORT_APPROVAL.md). Penjelasan sebelumnya di bawah bersifat historis bila berbeda.
 
 ## Simpan Draft dengan Header lengkap

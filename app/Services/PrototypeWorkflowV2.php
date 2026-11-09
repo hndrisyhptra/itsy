@@ -104,35 +104,43 @@ trait PrototypeWorkflowV2
             $this->fail('Referensi file BOQ tersimpan harus dipertahankan atau diganti melalui upload.');
         }
         $rows = [];
+        $automaticPrices = $version >= 3 && empty($old['parentId']);
         if (empty($old['parentId'])) {
+            $catalog = array_column($this->state['khs'], null, 'id');
+            $sources = array_column($import['rows'] ?? [], null, 'khsId');
+            $seenKhs = $seenRows = [];
             foreach ($input['boq'] ?? [] as $row) {
-                $khs = $this->record('khs', $row['khsId'] ?? '');
-                if (! $khs['active'] || $this->number($row['qty'] ?? 0, true) <= 0 || collect($rows)->contains('khsId', $khs['id'])) {
+                $khs = $catalog[$row['khsId'] ?? ''] ?? null;
+                if (! $khs || ! $khs['active'] || $this->number($row['qty'] ?? 0, true) <= 0 || isset($seenKhs[$khs['id']])) {
                     $this->fail('BOQ harus menggunakan designator aktif, unik, dan volume positif maksimal tiga desimal.');
                 }
                 $rowId = $this->id($row['id'] ?? '');
-                if (collect($rows)->contains('id', $rowId)) {
+                if (isset($seenRows[$rowId])) {
                     $this->fail('ID baris BOQ duplikat.');
                 }
-                $source = $import ? collect($import['rows'])->firstWhere('khsId', $khs['id']) : null;
+                $seenKhs[$khs['id']] = $seenRows[$rowId] = true;
+                $source = $sources[$khs['id']] ?? null;
                 if ($import && ! $source) {
                     $this->fail('Designator tidak ditemukan dalam file BOQ yang diunggah.');
                 }
                 $mismatch = $source && ($source['excelM'] !== $khs['m'] || $source['excelS'] !== $khs['s']);
-                $note = $source ? $this->text($row['note'] ?? '') : 'Input manual dari Master KHS';
+                $note = $automaticPrices ? 'Harga BOQ otomatis mengikuti Master KHS. Harga Excel disimpan sebagai pembanding.' : ($source ? $this->text($row['note'] ?? '') : 'Input manual dari Master KHS');
                 $sameReviewPrice = ($row['version'] ?? null) === $khs['version']
                     && array_key_exists('m', $row) && array_key_exists('s', $row)
                     && ($row['m'] === null) === ($khs['m'] === null) && ($row['s'] === null) === ($khs['s'] === null)
                     && $row['m'] == $khs['m'] && $row['s'] == $khs['s'];
-                $reviewed = ! $mismatch || (($row['reviewed'] ?? false) === true && $note !== '' && $sameReviewPrice);
+                $reviewed = $automaticPrices || ! $mismatch || (($row['reviewed'] ?? false) === true && $note !== '' && $sameReviewPrice);
                 if ($submit && ! $reviewed) {
                     $this->fail('Review selisih harga Excel dengan Master KHS dan isi alasan sebelum pengajuan.');
                 }
-                $rows[] = ['id' => $rowId, 'khsId' => $khs['id'], 'qty' => $row['qty'], 'm' => $khs['m'], 's' => $khs['s'], 'excelM' => $source['excelM'] ?? $khs['m'], 'excelS' => $source['excelS'] ?? $khs['s'], 'version' => $khs['version'], 'reviewed' => $reviewed, 'note' => $note] + ($source ? ['sourceRow' => $source['sourceRow'], 'sourceCode' => $source['sourceCode'], 'sourceQty' => $source['qty']] : []);
+                $rows[] = ['id' => $rowId, 'khsId' => $khs['id'], 'qty' => $row['qty'], 'm' => $khs['m'], 's' => $khs['s'], 'excelM' => $source ? $source['excelM'] : $khs['m'], 'excelS' => $source ? $source['excelS'] : $khs['s'], 'version' => $khs['version'], 'reviewed' => $reviewed, 'note' => $note] + ($source ? ['sourceRow' => $source['sourceRow'], 'sourceCode' => $source['sourceCode'], 'sourceQty' => $source['qty']] : []);
             }
             if ((! $rows && ($submit || $version < 3)) || count($rows) > 500) {
-                $this->fail('Masukkan 1–500 baris BOQ sebelum Header PP.');
+                $this->fail('Masukkan 1–500 baris BOQ sebelum pengajuan PP.');
             }
+        }
+        if ($automaticPrices) {
+            $p['budget'] = $this->boqTotal(['boq' => $rows]);
         }
         if ($version >= 3) {
             $source = ! empty($old['parentId']) ? $this->record('projects', $old['rootId'])['boq'] : $rows;
@@ -167,13 +175,16 @@ trait PrototypeWorkflowV2
             }
         }
         $p['no'] = $old['no'] ?? $this->nextProjectNumber($p);
-        $id = $this->saveProject($p, $submit);
+        $id = $this->saveProject($p, $submit, $automaticPrices && ! $submit);
         $p = $this->record('projects', $id);
         if (empty($p['parentId'])) {
             $p['boq'] = $rows;
             $p['boqStatus'] = $submit ? 'Final' : ($rows ? 'Review' : 'Belum diimpor');
         }
         $p['workflowVersion'] = $version;
+        if ($automaticPrices) {
+            $p['boqPricingPolicy'] = 'khs-auto-v1';
+        }
         if ($version >= 3) {
             $p['approvalScheme'] = $scheme;
         }

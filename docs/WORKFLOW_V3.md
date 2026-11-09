@@ -25,7 +25,7 @@ Urutan terbaru juga berlaku pada pengajuan berjalan; approval yang sudah diberik
 
 ## Project Plan Baru
 
-1. **Admin Konstruksi** membuat PP (Superadmin tetap dapat membantu tindakan operasional), dimulai dengan BOQ, kemudian Header dan seluruh rencana.
+1. **Admin Konstruksi** membuat PP (Superadmin tetap dapat membantu tindakan operasional), dimulai dengan **Header PP**, kemudian **BOQ Plan** dan seluruh rencana (perubahan 9 November). Harga BOQ induk editable otomatis mengikuti KHS; Total Nilai Header baca saja/Rp0 sebelum upload. Pengajuan tetap memerlukan BOQ/nilai positif. Lihat [PP_HEADER_BOQ_KHS](PP_HEADER_BOQ_KHS.md).
 2. **PM Konstruksi** yang dipilih memberikan approval pertama.
 3. **Admin Area** yang dipilih memberikan approval kedua.
 4. **Mgr Project Support** yang dipilih memberikan approval ketiga.

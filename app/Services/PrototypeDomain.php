@@ -337,7 +337,7 @@ class PrototypeDomain
         }
     }
 
-    private function saveProject(array $p, bool $attest): string
+    private function saveProject(array $p, bool $attest, bool $allowZeroBudget = false): string
     {
         $this->admin();
         $old = $this->existing('projects', $p['id'] ?? '');
@@ -351,7 +351,7 @@ class PrototypeDomain
                 $this->fail('No PP sudah digunakan.');
             }
         }
-        if ($this->number($p['budget'] ?? 0) <= 0) {
+        if ($this->number($p['budget'] ?? 0) <= 0 && ! $allowZeroBudget) {
             $this->fail('Anggaran harus lebih dari nol.');
         }
         $this->date($p['date']);

@@ -129,7 +129,7 @@ class BoqWorkbookImportTest extends TestCase
         $this->api($p, true)->assertOk()->assertJsonPath('state.projects.0.no', $number)->assertJsonPath('state.projects.0.status', 'Diajukan');
     }
 
-    public function test_price_differences_require_explicit_review_and_client_cannot_replace_source_prices(): void
+    public function test_v3_price_differences_automatically_follow_khs_and_client_cannot_replace_source_or_canonical_prices(): void
     {
         $import = $this->upload(fn ($xml) => preg_replace('/(<c\b[^>]*\br="E75"[^>]*>\s*<v>)[^<]+/', '${1}704701', $xml))->assertOk()->json();
         $this->assertSame(704701, $import['rows'][0]['excelM']);
@@ -137,11 +137,75 @@ class BoqWorkbookImportTest extends TestCase
         $p = $this->project($import);
         $p['boq'][0]['excelM'] = 704700;
         $p['boq'][0]['reviewed'] = true;
-        $this->api($p)->assertOk()->assertJsonPath('state.projects.0.boq.0.excelM', 704701)->assertJsonPath('state.projects.0.boq.0.reviewed', false)->assertJsonPath('state.projects.0.boq.0.m', 704700);
+        $p['boq'][0]['m'] = 1;
+        $p['budget'] = 999;
+        $this->api($p)->assertOk()->assertJsonPath('state.projects.0.boq.0.excelM', 704701)->assertJsonPath('state.projects.0.boq.0.reviewed', true)->assertJsonPath('state.projects.0.boq.0.m', 704700)->assertJsonPath('state.projects.0.budget', 140056789)->assertJsonPath('state.projects.0.boqPricingPolicy', 'khs-auto-v1');
         $p = $this->approvers($p);
-        $this->api($p, true)->assertUnprocessable();
-        $p['boq'][0]['note'] = 'Gunakan harga KHS Paket 10 setelah diperiksa.';
+        $p['boq'][0]['note'] = '';
+        $p['boq'][0]['reviewed'] = false;
         $this->api($p, true)->assertOk()->assertJsonPath('state.projects.0.boq.0.reviewed', true)->assertJsonPath('state.projects.0.boq.0.excelM', 704701);
+    }
+
+    public function test_quantity_and_removal_recalculate_sql_header_total_without_changing_private_source(): void
+    {
+        $import = $this->upload()->assertOk()->json();
+        $p = $this->project($import);
+        $workspace = app(PrototypeWorkspaceService::class)->workspace(request());
+        $directory = app(BoqImportStorage::class)->directory($workspace, $import['source']['id']);
+        $manifest = Storage::disk('local')->get($directory.'/manifest.json');
+        $archive = $workspace->getRawOriginal('state');
+        $p['boq'][0]['qty'] = 12;
+        $p['boq'][0]['m'] = 1;
+        $p['budget'] = 9;
+        DB::enableQueryLog();
+        $p = $this->api($p)->assertOk()->assertJsonPath('state.projects.0.budget', 140761489)->json('state.projects.0');
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+        $catalogReads = array_filter($queries, fn ($q) => str_contains($q['query'], 'from "designator_package_prices"'));
+        $this->assertCount(2, $catalogReads, 'One batch KHS read per revision read/command, never one per BOQ row.');
+        $this->assertLessThanOrEqual(220, count($queries), '26-component HTTP fixture including revision read and normalized SQL writes.');
+        $sql = DB::table('project_plans')->where('source_id', $p['id'])->first();
+        $this->assertEquals(140761489, $sql->budget);
+        $this->assertEquals(140761489, json_decode($sql->document_data, true)['budget']);
+        $p['boq'] = array_slice($p['boq'], 1);
+        $p['planBudget']['mandor'] = array_slice($p['planBudget']['mandor'], 1);
+        $this->api($p)->assertOk()->assertJsonPath('state.projects.0.budget', 132305089);
+        $this->assertEquals(132305089, DB::table('project_plans')->where('source_id', $p['id'])->value('budget'));
+        $this->assertSame($manifest, Storage::disk('local')->get($directory.'/manifest.json'));
+        $this->assertSame(hash_file('sha256', $this->fixture()), hash('sha256', Storage::disk('local')->get($directory.'/source.xlsx')));
+        $this->assertSame($archive, $workspace->fresh()->getRawOriginal('state'));
+        $this->assertDatabaseCount('prototype_audits', 2);
+    }
+
+    public function test_maximum_500_component_domain_save_uses_indexed_khs_and_no_extra_sql(): void
+    {
+        $state = $this->getJson('/api/prototype/state')->assertOk()->json('state');
+        $reference = collect($state['khs'])->firstWhere('active', true);
+        $p = $this->project(['source' => ['sourceTotal' => 1], 'rows' => []]);
+        unset($p['boqUpload']);
+        $state['khs'] = $p['boq'] = [];
+        for ($i = 0; $i < 500; $i++) {
+            $state['khs'][] = array_replace($reference, ['id' => 'khs-index-'.$i, 'm' => 100, 's' => null]);
+            $p['boq'][] = ['id' => 'row-index-'.$i, 'khsId' => 'khs-index-'.$i, 'qty' => 1, 'm' => 999, 's' => 999];
+        }
+        $domain = new class extends PrototypeDomain
+        {
+            public function record(string $collection, string $id): array
+            {
+                if ($collection === 'khs') {
+                    throw new \LogicException('Repeated linear KHS lookup.');
+                }
+
+                return parent::record($collection, $id);
+            }
+        };
+        DB::enableQueryLog();
+        $result = $domain->execute($state, 'saveProject', [$p, false]);
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+        $this->assertCount(0, $queries);
+        $this->assertCount(500, $result['state']['projects'][0]['boq']);
+        $this->assertEquals(50000, $result['state']['projects'][0]['budget']);
     }
 
     public function test_supplied_paket5_workbook_accepts_empty_opposite_component_prices(): void
@@ -171,7 +235,7 @@ class BoqWorkbookImportTest extends TestCase
         $this->api($this->project($import))->assertOk()->assertJsonCount(4, 'state.projects.0.boq');
     }
 
-    public function test_cached_formula_inputs_are_read_as_data_and_price_differences_still_need_review(): void
+    public function test_cached_formula_inputs_remain_comparisons_and_v3_uses_khs_without_review(): void
     {
         $import = $this->upload(function ($xml) {
             $xml = preg_replace('/<c\b[^>]*\br="G75"[^>]*>.*?<\/c>/s', '<c r="G75"><f>5+6</f><v>11</v></c>', $xml);
@@ -185,10 +249,10 @@ class BoqWorkbookImportTest extends TestCase
         $this->assertSame(704700, $import['rows'][0]['m']);
         $this->assertFalse($import['rows'][0]['reviewed']);
         $p = $this->approvers($this->project($import));
-        $this->api($p, true)->assertUnprocessable();
+        $this->api($p, true)->assertOk()->assertJsonPath('state.projects.0.boq.0.m', 704700)->assertJsonPath('state.projects.0.boq.0.excelM', 704701)->assertJsonPath('state.projects.0.boq.0.reviewed', true);
     }
 
-    public function test_blank_prices_are_zero_comparisons_but_do_not_bypass_khs_review(): void
+    public function test_blank_prices_remain_zero_comparisons_without_inventing_components(): void
     {
         foreach (['', '<c r="F75"/>', '<c r="F75" t="str"><f>IF(1=1,&quot;&quot;,0)</f><v/></c>'] as $replacement) {
             $import = $this->upload(fn ($xml) => preg_replace('/<c\b[^>]*\br="F75"[^>]*>.*?<\/c>/s', $replacement, $xml))
@@ -226,7 +290,7 @@ class BoqWorkbookImportTest extends TestCase
         $this->post('/api/prototype/boq/import', ['file' => UploadedFile::fake()->createWithContent('fake.xlsx', 'not an Excel workbook')], ['Accept' => 'application/json'])->assertUnprocessable();
     }
 
-    public function test_khs_change_invalidates_a_previous_file_price_review(): void
+    public function test_khs_change_is_applied_automatically_on_explicit_v3_save_and_submission(): void
     {
         $p = $this->project($this->upload()->assertOk()->json());
         $p = $this->approvers($p);
@@ -239,12 +303,20 @@ class BoqWorkbookImportTest extends TestCase
         $this->postJson('/api/masters/khs', ['action' => 'save', 'id' => $priceId, 'data' => ['designator_id' => $source->designator_id, 'package_id' => $source->package_id, 'price' => '704702.00'],
             'revision' => $revision, 'request_id' => (string) Str::uuid()])->assertOk();
         $this->asRole('Admin Konstruksi');
-        $this->api($p, true)->assertUnprocessable();
-        $saved = $this->api($p)->assertOk()->assertJsonPath('state.projects.0.boq.0.reviewed', false)->json('state.projects.0');
+        $saved = $this->api($p)->assertOk()->assertJsonPath('state.projects.0.boq.0.reviewed', true)->json('state.projects.0');
         $this->assertEquals(704702, $saved['boq'][0]['m']);
-        $saved['boq'][0]['reviewed'] = true;
-        $saved['boq'][0]['note'] = 'Harga KHS terbaru diperiksa kembali';
-        $this->api($saved, true)->assertOk();
+        $this->assertEquals(app(PrototypeDomain::class)->boqTotal($saved), $saved['budget']);
+        $saved['boq'][0]['reviewed'] = false;
+        $saved['boq'][0]['note'] = '';
+        $submitted = $this->api($saved, true)->assertOk()->assertJsonPath('state.projects.0.boq.0.reviewed', true)->assertJsonPath('state.projects.0.boq.0.excelM', 704700)->assertJsonPath('state.projects.0.boq.0.m', 704702)->json('state.projects.0');
+        $this->asRole('Superadmin');
+        $revision = $this->getJson('/api/masters')->assertOk()->json('revision');
+        $this->postJson('/api/masters/khs', ['action' => 'save', 'id' => $priceId, 'data' => ['designator_id' => $source->designator_id, 'package_id' => $source->package_id, 'price' => '704703.00'],
+            'revision' => $revision, 'request_id' => (string) Str::uuid()])->assertOk();
+        $this->asRole('Admin Konstruksi');
+        $this->getJson('/api/prototype/state')->assertOk()->assertJsonPath('state.projects.0.budget', $submitted['budget'])->assertJsonPath('state.projects.0.boq.0.m', 704702);
+        $this->api($submitted)->assertUnprocessable();
+        $this->assertEquals($submitted['boq'], json_decode(DB::table('project_plans')->where('source_id', $submitted['id'])->value('document_data'), true)['boq']);
     }
 
     public function test_cached_excel_totals_are_ignored_and_amounts_are_recomputed_from_source_inputs(): void

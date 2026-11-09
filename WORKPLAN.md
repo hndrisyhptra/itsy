@@ -463,3 +463,11 @@ Historical iteration; superseded by the dashboard restoration below.
 - [x] Catat SERVER_UPLOAD_WORKER, ARCHITECTURE, CHANGELOG, LARAVEL_QA, README/AGENTS dan qa/supervisor-cli-registration-20261109.json. Tidak perlu migration/build server untuk script ini, atau backup database karena tidak ada perubahan workflow/data tersimpan.
 - [ ] Operator menjalankan script di `/www/wwwroot/itsy` setelah file ikut diunggah, dengan user/PHP situs yang benar; RUNNING/heartbeat/upload nyata/server/boot belum diverifikasi agen.
 - [x] Klarifikasi: sediakan juga blok siap tempel langsung Terminal aaPanel tanpa push/pull script baru, memakai generator server yang sudah tersedia. AST syntax/global-update scope diperiksa; resep belum dijalankan pada layanan nyata. Simpan di SERVER_UPLOAD_WORKER dan catat QA/arsitektur agar audit tidak menyamakan syntax dengan service integration.
+
+## Header → BOQ, harga KHS otomatis — 9 November 2026
+
+- [x] Ubah urutan1Header/2BOQ dan Total Nilai v3 baca saja, Rp0 sebelum upload; Header lengkap tetap Draft. Hasil BOQ/volume/hapus/ganti menghitung ulang form, simpan terkonfirmasi memproyeksikan total ke SQL.
+- [x] KHS SQL menjadi harga/versi otomatis saat explicit save/submit v3 root; harga/note/review/budget client tidak dipercaya. Simpan pembanding/provenance privat dan policy khs-auto-v1 sebagai normalisasi sistem, tanpa human approval rekaan. Pertahankan sejarah/v1/v2/lanjutan/ceilingMandor.
+- [x] Migration CHECK budget0 hanya v3DRAFT + guardits/rollbackfailclosed disiapkan; tidak menulis/backfill transaksi. Map/Set/array_column untuk KHS/import/ID/Owner/Mandor. Domain500PHP0SQL/TS dan HTTP26≤220/2catalogreads lulus, tanpa klaim throughput universal.
+- [x] 230PHP/4473assertions,225frontend,build,Pint,diffcheck lulus. Ekspresi CHECK fixtureSQLite/SQLDDLmock, bukan liveMySQLapply. Backup privat2.083.416byte/hash verified, failed0byte ditandai.failed. Docs/4skills/AGENTS/arsitektur/audit diperbarui.
+- [ ] Operator deploy kode/build, jalankan migration dan queue restart; agen belum deploy/migrate pada its lokal/server. Browser/responsif/keyboard/engineDDL/cetak/loadtest terpisah belum diuji ulang. Rincian: docs/PP_HEADER_BOQ_KHS.md dan docs/qa/pp-header-boq-khs-20261109.json.

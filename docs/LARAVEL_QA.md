@@ -1,5 +1,18 @@
 # Laravel rebuild QA — 2 November 2026
 
+
+## Header-first PP and automatic SQL KHS pricing — 9 November 2026
+
+**230 PHP tests/4473 assertions,225 frontend tests,TypeScript/Vite build,scoped Pint and diff check passed.** PHP uses fail-closed SQLite :memory:/private fake disk. No live transactions/accounts/master prices/archive/.env changed and no worker spawned by tests. Backup before workflow edits verified at2,083,416bytes/SHA256456f9bee49560f701c5f5ee95c8d6d812c457a3c53c2c8239016e4bba9eaed8c; sandboxfailed0byte file marked.failed.
+
+Coverage: Header1/BOQ2/defaultHeader/readOnlyRp0, header-only SQL Draft with no invented BOQ, automatic canonical m/s/version/total despite forged client values, mismatch and cached-formula comparisons without manual approval, volume/removal SQL totals, original workbook/hash/manifest/archive preservation, KHS changes on explicit Draft saves, submitted snapshots unchanged after master updates and edits rejected. Existing five-approval, Mandor/source/ledger/Branch/replay/continuation/scanFinanceAPM guards pass. Legacy v2 manual mismatch remains; current pricing metadata records system resolution, not human approval.
+
+Query review: PHP domain500components0SQL and rejects repeated linear KHS record calls; TS500rows similarly prohibits catalogfind and exercises Owner/Mandor budget. HTTP26component revision+save budget≤220 queries, exactly2 batched KHS catalog reads. This fixture includes existing normalized writes and is not a constant-query/latency/load guarantee. Full graph/catalog reads and larger render/write costs remain. No endpoint/library/new per-row network query added.
+
+Migration2026_11_09_000001 swaps pp_budget_positive atomically, allowing budget0 only v3DRAFT; rollback refuses zero drafts. Positive values/historical versions/submitted/approved/negative cases verified through CHECK-expression SQLite table; MySQL8/MariaDBDDL mocked as singleALTER/no row update. Migration suite62 fresh/repeatable migrations and extensionusers rollback/backfill/password preservation pass. **The new CHECK migration has not been executed on live its or a disposable MySQL engine.** Operator must migrate the target after deploying code/build, then queue:restart; local/runtime its remains unchanged by the agent.
+
+No authenticated browser screenshot/click, responsive/keyboard pass, desktopWord/physicalprint, queue-server integration or MySQL concurrency/load run is claimed. Form/SQL/pricing are real implementation, with offline sample-only simulation still excluded from authenticated UI. See [PP_HEADER_BOQ_KHS](PP_HEADER_BOQ_KHS.md), ARCHITECTURE and [structured evidence](qa/pp-header-boq-khs-20261109.json).
+
 ## Existing-Supervisor CLI worker registration — 9 November 2026
 
 Follow-up requested direct aaPanel Terminal commands without uploading another script. SERVER_UPLOAD_WORKER includes a standalone heredoc recipe using the previously deployed Artisan generator, active PID/config/include detection, one validated non-root program/atomic file and targeted update. Its Python AST syntax and absence of global restart/reload were checked locally; the recipe was not executed against a real daemon or database and is not claimed as an end-to-end server test. The eight mocked script tests below apply to the separate reusable script.

@@ -1,5 +1,10 @@
 # Impor BOQ Excel dan simpan draf — 4 November 2026
 
+## Pembaruan terkini — 9 November 2026
+
+PP baru dimulai **1. Header PP → 2. BOQ Plan**. Pada PP induk v3 yang masih editable, harga langsung mengikuti KHS SQL tanpa alasan/konfirmasi selisih; Header Total Nilai baca saja dan dihitung dari BOQ, Rp0 sebelum upload. Header lengkap cukup untuk draf; pengajuan tetap perlu BOQ/nilai positif dan seluruh persyaratan. Dokumen terkunci/v1/v2 serta alokasi lanjutan tetap dipertahankan. Migration CHECK draf Rp0 telah disiapkan, belum diterapkan agen pada its aktif. [Perilaku, migration, arsitektur/query dan bukti](PP_HEADER_BOQ_KHS.md). Penjelasan lama di bawah tetap menjadi catatan historis bila berbeda.
+
+
 Pemilih file pada langkah pertama PP kini mengunggah dan membaca workbook nyata melalui Laravel. Tombol **Muat Contoh BOQ (Simulasi)** tetap terpisah dan tidak pernah mengaku membaca file pengguna.
 
 ## Format yang didukung

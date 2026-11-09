@@ -85,15 +85,13 @@ test('draft permits missing approvers but submission requires all five and suppl
   saved.approverUserIds=chain(s);saveProject(s,saved,true);assert.equal(getProject(s,p.id).status,'Diajukan');assert.equal(getProject(s,p.id).no,no);
 });
 
-test('imported comparison prices survive drafts and require a reason and explicit KHS confirmation before submission', () => {
+test('v3 imported comparison prices survive while saved prices and total automatically follow current KHS without manual review', () => {
   const s=state('B'),p=structuredClone(s.projects[0]);p.id=p.rootId='qa-import-review';p.unit='Konstruksi';p.approverUserIds=chain(s);
   p.boqUpload={id:'qa-source',name:'qa.xlsx',sha256:'a'.repeat(64),size:100,sheet:'BoQ',package:'Paket 10',sourceRows:1,sourceTotal:1,uploadedBy:'qa',uploadedAt:new Date().toISOString()};
   const r=p.boq[0],k=s.khs.find(k=>k.id===r.khsId)!;r.excelM=(k.m??0)+1;r.reviewed=false;r.note='';
-  saveProject(s,p,false);let saved=getProject(s,p.id);assert.equal(saved.boq[0].excelM,r.excelM);assert.equal(saved.boq[0].reviewed,false);
-  assert.throws(()=>saveProject(s,saved,true),/Review selisih/);saved.boq[0].note='Harga KHS diperiksa';assert.throws(()=>saveProject(s,saved,true),/Review selisih/);
-  saved.boq[0].reviewed=true;k.m=(k.m??0)+2;k.version++;
-  assert.throws(()=>saveProject(s,saved,true),/Review selisih/);saved.boq[0].m=k.m;saved.boq[0].version=k.version;
-  saveProject(s,saved,true);saved=getProject(s,p.id);assert.equal(saved.boq[0].m,k.m);assert.equal(saved.boq[0].excelM,r.excelM);assert.equal(saved.boqStatus,'Final');
+  saveProject(s,p,false);let saved=getProject(s,p.id);assert.equal(saved.boq[0].excelM,r.excelM);assert.equal(saved.boq[0].reviewed,true);assert.equal(saved.boqPricingPolicy,'khs-auto-v1');
+  saved.boq[0].note='';saved.boq[0].reviewed=false;k.m=(k.m??0)+2;k.version++;
+  saveProject(s,saved,true);saved=getProject(s,p.id);assert.equal(saved.boq[0].m,k.m);assert.equal(saved.boq[0].version,k.version);assert.equal(saved.boq[0].excelM,r.excelM);assert.equal(saved.boqStatus,'Final');assert.match(saved.boq[0].note,/otomatis mengikuti Master KHS/);
 });
 
 test('v3 PP requires all five assigned roles and a return restarts all approvals with retained history', () => {

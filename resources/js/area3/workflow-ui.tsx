@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { UploadTasks } from './upload-tasks';
+import { applyAutomaticBoqPricing, usesAutomaticBoqPricing } from './boq-pricing';
 import { uploadTask, type UploadTask } from './upload-queue';
 import { Upload } from 'lucide-react';
 import { DEFAULT_PP_NUMBER_FORMAT } from './workflow';
@@ -8,11 +9,12 @@ import { mutate, uploadBoq } from './store';
 import { boot, appUrl } from './laravel';
 import { Link, Card, Field, Input, Button, Table, Notice, Badge, attempt } from './ui';
 
-export function BoqDraftEditor({ s, p, onChange, disabled, onBusy }: { s:State; p:Project; onChange:(p:Project)=>void; disabled:boolean; onBusy?:(value:boolean)=>void }) {
+export function BoqDraftEditor({ s, p:input, onChange, disabled, onBusy }: { s:State; p:Project; onChange:(p:Project)=>void; disabled:boolean; onBusy?:(value:boolean)=>void }) {
+  const automatic=usesAutomaticBoqPricing(s,input),p=applyAutomaticBoqPricing(s,input);
   const [loading,setLoading]=useState(false),[error,setError]=useState(''),[progress,setProgress]=useState('');
   const latest=useRef(p),controller=useRef<AbortController|null>(null);latest.current=p;
   useEffect(()=>()=>{controller.current?.abort();onBusy?.(false);},[]);
-  const apply=(imported:{rows:Project['boq'];source:NonNullable<Project['boqUpload']>})=>{const current=latest.current,total=imported.rows.reduce((sum,r)=>sum+r.qty*((r.m??0)+(r.s??0)),0);onChange({...current,boq:imported.rows,boqUpload:imported.source,boqStatus:'Review',budget:current.budget>0?current.budget:Math.round(total*100)/100});};
+  const apply=(imported:{rows:Project['boq'];source:NonNullable<Project['boqUpload']>})=>{const current=latest.current,next:Project={...current,boq:imported.rows,boqUpload:imported.source,boqStatus:'Review'};onChange(automatic?applyAutomaticBoqPricing(s,next):{...next,budget:current.budget>0?current.budget:boqTotal(next)});};
   async function useResult(task:UploadTask){setError('');try{apply((await uploadTask(task.id,true)).result);}catch(e){setError(e instanceof Error?e.message:'Hasil upload belum dapat digunakan.');}}
   if(p.parentId) return <Notice>BOQ lanjutan menggunakan alokasi BA PP. BOQ Owner otomatis {money(p.budget)}; volume root dipertahankan.</Notice>;
   async function selectFile(file?:File) {
@@ -27,8 +29,10 @@ export function BoqDraftEditor({ s, p, onChange, disabled, onBusy }: { s:State; 
     } catch(e) { if(!(e instanceof DOMException&&e.name==='AbortError'))setError(e instanceof Error?e.message:'File BOQ gagal dibaca. Isi draft sebelumnya tetap tersedia.'); }
     finally { setLoading(false); onBusy?.(false); }
   }
-  const update=(id:string,values:Partial<Project['boq'][number]>)=>onChange({...p,boq:p.boq.map(r=>r.id===id?{...r,...values}:r)});
-  const unresolved=p.boq.filter(r=>{const k=s.khs.find(k=>k.id===r.khsId);return p.boqUpload && k && (r.excelM!==k.m || r.excelS!==k.s) && (!r.reviewed || !r.note.trim());}).length;
+  const changeRows=(boq:Project['boq'])=>onChange(applyAutomaticBoqPricing(s,{...p,boq}));
+  const update=(id:string,values:Partial<Project['boq'][number]>)=>changeRows(p.boq.map(r=>r.id===id?{...r,...values}:r));
+  const catalog=new Map(s.khs.map(k=>[k.id,k]));
+  const unresolved=automatic?0:p.boq.filter(r=>{const k=catalog.get(r.khsId);return p.boqUpload && k && (r.excelM!==k.m || r.excelS!==k.s) && (!r.reviewed || !r.note.trim());}).length;
   const price=(value:number|null|undefined)=>value===null?'':money(value??0);
   return <>
     <Notice>Upload template BOQ dengan sheet BoQ, kolom Designator, Satuan, Material, Jasa dan VOL. Hanya volume positif diimpor; harga Master KHS digunakan untuk BOQ Owner.</Notice>
@@ -42,12 +46,13 @@ export function BoqDraftEditor({ s, p, onChange, disabled, onBusy }: { s:State; 
     </div>
     {boot?.account&&<UploadTasks kind="boq" documentId={p.id} onUse={!disabled&&!loading?task=>void useResult(task):undefined}/>}
     {!!unresolved && <Notice tone="warning">{unresolved} komponen memiliki selisih harga. Isi alasan dan konfirmasikan penggunaan harga KHS sebelum mengajukan PP. Draf tetap dapat disimpan.</Notice>}
-    <Table headers={['Designator / Paket','Satuan','Volume','Material Excel / KHS','Jasa Excel / KHS','Jumlah KHS','Review / Aksi']}>{p.boq.map(r=>{
-      const k=s.khs.find(k=>k.id===r.khsId),mismatch=!!p.boqUpload && !!k && (r.excelM!==k.m || r.excelS!==k.s);
-      return <tr key={r.id}><td><b>{k?.code}</b><small>{k?.name} · {k?.package}</small>{r.sourceRow && <small>Baris Excel {r.sourceRow} · {r.sourceCode}</small>}</td><td>{k?.unit}</td><td><input aria-label={'Volume '+k?.code} type="number" min="0.001" step="0.001" disabled={disabled||loading} value={r.qty} onChange={e=>update(r.id,{qty:Number(e.target.value)})}/></td><td className="numeric">{price(p.boqUpload?r.excelM:k?.m)}{k?.m != null && <small>KHS {price(k?.m)}</small>}</td><td className="numeric">{price(p.boqUpload?r.excelS:k?.s)}{k?.s != null && <small>KHS {price(k?.s)}</small>}</td><td className="numeric">{money(r.qty*((k?.m??0)+(k?.s??0)))}</td><td>{mismatch && <><Input aria-label={'Alasan selisih '+k?.code} disabled={disabled||loading} value={r.note} onChange={note=>update(r.id,{note,reviewed:false})}/><label><input type="checkbox" disabled={disabled||loading||!r.note.trim()} checked={r.reviewed&&!!r.note.trim()} onChange={e=>update(r.id,{reviewed:e.target.checked,version:k?.version??r.version,m:k?.m??null,s:k?.s??null})}/> Gunakan harga KHS</label></>}<Button disabled={disabled||loading} danger onClick={()=>onChange({...p,boq:p.boq.filter(x=>x.id!==r.id)})}>Hapus</Button></td></tr>;
+    {automatic && <Notice>Harga BOQ otomatis mengikuti Master KHS di database. Selisih harga Excel disimpan sebagai pembanding dan tidak memerlukan alasan atau konfirmasi. Total Nilai pada Header PP mengikuti BOQ ini.</Notice>}
+    <Table headers={['Designator / Paket','Satuan','Volume','Material Excel / KHS','Jasa Excel / KHS','Jumlah KHS',automatic?'Harga / Aksi':'Review / Aksi']}>{p.boq.map(r=>{
+      const k=catalog.get(r.khsId),mismatch=!automatic && !!p.boqUpload && !!k && (r.excelM!==k.m || r.excelS!==k.s);
+      return <tr key={r.id}><td><b>{k?.code}</b><small>{k?.name} · {k?.package}</small>{r.sourceRow && <small>Baris Excel {r.sourceRow} · {r.sourceCode}</small>}</td><td>{k?.unit}</td><td><input aria-label={'Volume '+k?.code} type="number" min="0.001" step="0.001" disabled={disabled||loading} value={r.qty} onChange={e=>update(r.id,{qty:Number(e.target.value)})}/></td><td className="numeric">{price(p.boqUpload?r.excelM:k?.m)}{k?.m != null && <small>KHS {price(k?.m)}</small>}</td><td className="numeric">{price(p.boqUpload?r.excelS:k?.s)}{k?.s != null && <small>KHS {price(k?.s)}</small>}</td><td className="numeric">{money(r.qty*((k?.m??0)+(k?.s??0)))}</td><td>{mismatch && <><Input aria-label={'Alasan selisih '+k?.code} disabled={disabled||loading} value={r.note} onChange={note=>update(r.id,{note,reviewed:false})}/><label><input type="checkbox" disabled={disabled||loading||!r.note.trim()} checked={r.reviewed&&!!r.note.trim()} onChange={e=>update(r.id,{reviewed:e.target.checked,version:k?.version??r.version,m:k?.m??null,s:k?.s??null})}/> Gunakan harga KHS</label></>}<Button disabled={disabled||loading} danger onClick={()=>changeRows(p.boq.filter(x=>x.id!==r.id))}>Hapus</Button></td></tr>;
     })}</Table>
     <div className="total-row">BOQ Owner ({num(p.boq.length)} komponen)<strong>{money(boqTotal(p))}</strong></div>
-    {!!p.boq.length && <Notice>BOQ sudah terisi. Lanjutkan ke Header PP; BOQ Owner otomatis tampil pada Anggaran &amp; Margin.</Notice>}
+    {!!p.boq.length && <Notice>BOQ sudah terisi. Total Nilai pada Header PP dan BOQ Owner pada Anggaran &amp; Margin otomatis mengikuti harga KHS.</Notice>}
   </>;
 }
 

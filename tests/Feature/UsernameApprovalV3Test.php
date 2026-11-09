@@ -98,11 +98,14 @@ class UsernameApprovalV3Test extends TestCase
     {
         $p = $this->newProject();
         $p['boq'] = $p['schedule'] = $p['approverUserIds'] = [];
+        $p['budget'] = 0;
         unset($p['planBudget'], $p['riskLevel'], $p['signatureRows']);
         $this->api('saveProject', [$p, false])->assertOk();
         $draft = $this->projectRecord($p['id']);
         $this->assertSame('Draft', $draft['status']);
         $this->assertSame('Belum diimpor', $draft['boqStatus']);
+        $this->assertEquals(0, $draft['budget']);
+        $this->assertSame('khs-auto-v1', $draft['boqPricingPolicy']);
         $this->assertSame([], $draft['boq']);
         $this->assertSame([], $draft['approverUserIds']);
         $this->assertSame([], $draft['approvals']);
@@ -135,9 +138,9 @@ class UsernameApprovalV3Test extends TestCase
         $p = $this->newProject();
         $p['boq'] = $p['schedule'] = $p['approverUserIds'] = [];
         $before = $this->getJson('/api/prototype/state')->json();
-        foreach (['name', 'projectCode', 'date', 'branch', 'budget'] as $field) {
+        foreach (['name', 'projectCode', 'date', 'branch'] as $field) {
             $bad = $p;
-            $bad[$field] = $field === 'budget' ? 0 : '';
+            $bad[$field] = '';
             $this->api('saveProject', [$bad, false])->assertStatus($field === 'branch' ? 403 : 422);
             $after = $this->getJson('/api/prototype/state')->json();
             $this->assertSame($before['revision'], $after['revision']);

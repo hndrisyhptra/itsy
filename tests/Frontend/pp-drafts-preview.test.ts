@@ -31,7 +31,7 @@ test('complete Header alone saves a numbered SQL-ready draft shown in the PP lis
 });
 
 test('draft still rejects an incomplete Header or invalid input without creating another PP',()=>{
-  for(const change of [(p:Project)=>{p.name='';},(p:Project)=>{p.projectCode='';},(p:Project)=>{p.branch='';},(p:Project)=>{p.budget=0;},(p:Project)=>{p.date='2026-02-30';},(p:Project)=>{p.schedule=[{name:'QA',days:-1,start:'',end:''}];}]){
+  for(const change of [(p:Project)=>{p.name='';},(p:Project)=>{p.projectCode='';},(p:Project)=>{p.branch='';},(p:Project)=>{p.date='2026-02-30';},(p:Project)=>{p.schedule=[{name:'QA',days:-1,start:'',end:''}];}]){
     const {s,p}=fixture();change(p);const before=JSON.stringify(s);assert.throws(()=>saveProject(s,p,false));assert.equal(JSON.stringify(s),before);
   }
 });
@@ -41,7 +41,7 @@ test('opening a new PP never restores the shared cache belonging to a previous P
   Object.defineProperty(globalThis,'localStorage',{configurable:true,value:{getItem:()=>{reads++;return JSON.stringify({...p,name:'STALE PREVIOUS PP',boq:seed('B').projects[0].boq});},setItem:()=>{},removeItem:()=>{}}});
   try {
     const html=renderToStaticMarkup(createElement(ProjectEditor,{s,id:'new'}));
-    assert.equal(reads,0);assert.doesNotMatch(html,/STALE PREVIOUS PP/);assert.match(html,/Isi Header PP/);assert.match(html,/Simpan Draft/);
+    assert.equal(reads,0);assert.doesNotMatch(html,/STALE PREVIOUS PP/);assert.match(html,/Informasi Project Plan/);assert.match(html,/Simpan Draft/);
   } finally {if(prior)Object.defineProperty(globalThis,'localStorage',prior);else Reflect.deleteProperty(globalThis,'localStorage');}
 });
 

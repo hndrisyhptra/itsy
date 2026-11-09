@@ -1,7 +1,8 @@
 import { applyBudgetPlan } from './plan-budget';
+import { AUTO_KHS_NOTE, AUTO_KHS_POLICY } from './boq-pricing';
 import { applyPlanTemplate } from './plan-template';
 import { recordCommand } from './commands';
-import { type State, type Project, type Term, type Role, type Approval, getProject, getTerm, requireAdmin, requireFinance, validVolume, projectErrors, now, log } from './domain';
+import { type State, type Project, type Term, type Role, type Approval, getProject, getTerm, requireAdmin, requireFinance, validVolume, boqTotal, projectErrors, now, log } from './domain';
 
 export const APPROVERS_V3: Role[] = ['PM Konstruksi', 'Admin Area', 'Mgr Project Support', 'Mgr Deployment', 'Head of PMO'];
 export const APPROVERS_V3_PREVIOUS: Role[] = ['PM Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Project Support', 'Head of PMO'];
@@ -74,7 +75,9 @@ export function saveProjectV2(s: State, input: Project, submit: boolean) {
   if (p.parentId) { p.budget = old!.budget; p.boq = old!.boq; p.boqStatus = old!.boqStatus; }
   else {
     if ((!p.boq.length && (submit || version < 3)) || p.boq.length > 500 || new Set(p.boq.map(r => r.id)).size !== p.boq.length || new Set(p.boq.map(r => r.khsId)).size !== p.boq.length) throw new Error('Masukkan 1–500 designator unik pada BOQ sebelum pengajuan PP.');
-    p.boq = p.boq.map(r => { const k = s.khs.find(k => k.id === r.khsId && k.active); if (!k || !validVolume(r.qty) || r.qty <= 0) throw new Error('BOQ harus memakai designator aktif dan volume positif maksimal tiga desimal.'); const mismatch=!!p.boqUpload && (r.excelM!==k.m || r.excelS!==k.s); const reviewed=!mismatch || (r.reviewed && !!r.note.trim() && r.version===k.version && r.m===k.m && r.s===k.s); if(submit && !reviewed) throw new Error('Review selisih harga Excel dengan Master KHS dan isi alasan sebelum pengajuan.'); return { ...r, m: k.m, s: k.s, excelM: p.boqUpload?r.excelM:k.m, excelS: p.boqUpload?r.excelS:k.s, version: k.version, reviewed, note: p.boqUpload?r.note:'Input manual dari Master KHS' }; });
+    const catalog=new Map(s.khs.map(k=>[k.id,k]));
+    p.boq = p.boq.map(r => { const k = catalog.get(r.khsId); if (!k?.active || !validVolume(r.qty) || r.qty <= 0) throw new Error('BOQ harus memakai designator aktif dan volume positif maksimal tiga desimal.'); const mismatch=!!p.boqUpload && (r.excelM!==k.m || r.excelS!==k.s); const reviewed=version>=3 || !mismatch || (r.reviewed && !!r.note.trim() && r.version===k.version && r.m===k.m && r.s===k.s); if(submit && !reviewed) throw new Error('Review selisih harga Excel dengan Master KHS dan isi alasan sebelum pengajuan.'); return { ...r, m: k.m, s: k.s, excelM: p.boqUpload?r.excelM:k.m, excelS: p.boqUpload?r.excelS:k.s, version: k.version, reviewed, note: version>=3?AUTO_KHS_NOTE:p.boqUpload?r.note:'Input manual dari Master KHS' }; });
+    if(version>=3){p.budget=boqTotal(p);p.boqPricingPolicy=AUTO_KHS_POLICY;}else delete p.boqPricingPolicy;
     p.boqStatus = submit ? 'Final' : p.boq.length ? 'Review' : 'Belum diimpor';
   }
   if (version >= 3) {
@@ -85,7 +88,7 @@ export function saveProjectV2(s: State, input: Project, submit: boolean) {
     p.previousPlanning=old?.previousPlanning??(old&&!old.planBudget?{costs:structuredClone(old.costs),risk:old.risk,communication:old.communication,quality:old.quality}:undefined);
     p.signatureUsers=Object.fromEntries(Object.entries(chain).map(([role,id])=>{const u=s.users.find(u=>u.id===id)!;return [role,{userId:u.id,name:u.name,nik:u.nik??''}];}));
   }
-  const errors = projectErrors(s, p); if (errors.length) throw new Error(errors.join('\n'));
+  const errors = projectErrors(s, p,version>=3&&!p.parentId&&!submit); if (errors.length) throw new Error(errors.join('\n'));
   if (submit && (!p.intro.trim() || (!p.planTemplateVersion && (!p.team.length || p.team.some(t => !t.name.trim() || !t.job.trim()))) || (!p.planBudget && !p.risk.trim()) || !p.communication.trim() || !p.quality.trim() || p.schedule.some(v => (!p.planTemplateVersion || v.days > 0) && (!v.start || !v.end)))) throw new Error('Lengkapi seluruh rencana PP sebelum diajukan.');
   p.workflowVersion = version; p.pmUserId = chain['PM Konstruksi']; if (version >= 3) p.approverUserIds = chain; else p.managerUserId = chain['Manager Konstruksi']; p.status = submit ? 'Diajukan' : 'Draft'; p.approvals = []; p.approvalHistory = old?.approvalHistory ?? [];
   if (!old) { s.settings ??= { ppNumberFormat: DEFAULT_PP_NUMBER_FORMAT, nextPpSequence: 1, ppNumberFormatVersion: 2 }; rememberProjectNumber(s,p,number); s.settings.nextPpSequence = number.nextSequence; s.projects.unshift(p); } else s.projects[s.projects.indexOf(old)] = p;

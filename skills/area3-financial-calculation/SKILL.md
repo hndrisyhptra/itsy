@@ -5,6 +5,10 @@ description: Implement and verify official KHS component prices, agreed BA KH/SP
 
 # area3-financial-calculation
 
+## Header first and automatic KHS pricing — 9 November 2026
+The user changed the new PP sequence to Header PP first, BOQ Plan second. Follow docs/PP_HEADER_BOQ_KHS.md; this supersedes BOQ-first/manual positive Header budget and explicit price-mismatch review for editable current v3 root PP. On explicit save/submission, Laravel canonicalizes active SQL KHS prices/version, preserves private Excel comparisons/provenance and derives budget from canonical BOQ. Ignore client prices/total/review/note; khs-auto-v1/reviewed/system note record automatic resolution, never a human decision. Header Total is read-only, Rp0 before upload; complete Header permits a Draft without BOQ. Submit still requires BOQ/positive total/all planning/five approvers. Preserve v1/v2 rules, submitted/Sah snapshots, continuation allocations and Mandor ceilings; GET never reprices history. Migration 2026_11_09_000001 changes only pp_budget_positive to allow zero for v3 DRAFT; rollback refuses existing zero drafts. Prepared, not deployed on live its by the agent. Use indexed KHS/source/row/Mandor lookups; retain Branch/revision/queue/source authorization and query-budget evidence. See the behavior doc for deployment and actual test limitations.
+
+
 
 ## Mandor agreement price cap — 6 November 2026
 Follow docs/SPH_THRESHOLD.md. New/draft agreed Material/Jasa unit prices, as well as SPH, must independently stay within the selected saved PP planBudget.mandor.priceM/priceS for that source row. Equal/zero limits are valid; missing itemized references fail closed and continuations use their own budgets. Preserve KHS caps, legacy PP without itemized budgets and issued BA KH/SPK snapshots. Show max/per-unit hints and accessible immediate alerts on agreement inputs and invalid row badges. Reject over-limit save/generate/attest on Laravel, ignoring client limits/status. Reuse loaded indexed references without new SQL/network lookups; verify HTTP rejection writes no SQL/revision/audit plus PHP/React boundary and historical tests.

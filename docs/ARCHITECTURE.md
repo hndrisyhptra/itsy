@@ -2,6 +2,12 @@
 
 Catatan ini menjelaskan struktur runtime aktif dan keputusan perubahan. Baca bersama [MYSQL_RUNTIME.md](MYSQL_RUNTIME.md), [buku saku relasi tabel](DATABASE_RELATIONS.md), AGENTS.md dan [CHANGELOG.md](CHANGELOG.md). Kode Laravel merupakan otoritas validasi dan status tersimpan; dokumentasi SQL konseptual lama tidak menggantikan executable migrations atau runtime.
 
+## Header → BOQ dan harga KHS otomatis — 9 November 2026
+
+[PP_HEADER_BOQ_KHS](PP_HEADER_BOQ_KHS.md) menjadi authority terbaru untuk PP induk v3 editable: canonical SQL KHS m/s/version di setiap explicit save, metadata khs-auto-v1/catatan sistem, total Header dari BOQ dan Draft Rp0 sebelum upload. Header/BOQ bertukar posisi; field total baca saja. Excel/provenance tetap manifest privat server, snapshot diajukan/Sah/lanjutan/v1/v2 tetap. Tidak ada read-time transaction rewrite, endpoint baru atau migration data; migration 2026_11_09_000001 hanya mengganti CHECK budget secara atomik, guard its dan rollback nol fail-closed. Belum di-deploy agen ke live.
+
+Map/array_column/Set mengindeks KHS/sumber/ID BOQ/Owner/Mandor sebelum iterasi; tidak ada lookup SQL per baris tambahan. Fixture domain500row PHP0SQL/TS melarang repeated linear KHS lookup. HTTP26row dibatasi220 query termasuk revision read+normalized write, katalog harga tepat2; ledger/write masih tumbuh terhadap jumlah item, aggregate/catalog boot dan render tetap ada. Ini bukti regresi scoped, bukan load test/latency universal. Snapshot SQL, private source hash/manifest dan archive teruji tidak berubah selain dokumen yang disimpan. Lihat QA/qa/pp-header-boq-khs-20261109.json untuk hasil suite dan batas browser/MySQL migration verification.
+
 ## Registrasi CLI pada Supervisor server yang sudah aktif — 9 November 2026
 
 Klarifikasi pengguna meminta langsung paste ke Terminal aaPanel. Runbook menyediakan resep heredoc mandiri memakai generator Artisan yang sudah di-deploy, tanpa upload script baru. Resep menjaga active daemon/include dan scope satu program; syntax AST/scope diperiksa, bukan dijalankan terhadap service nyata. Script reusable di bawah tetap alternatif. Tidak ada jalur request/SQL baru pada alternatif operasional ini.

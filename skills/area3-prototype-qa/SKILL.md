@@ -5,6 +5,10 @@ description: Test the its Area 3 interactive prototype through the linked busine
 
 # area3-prototype-qa
 
+## Header first and automatic KHS pricing — 9 November 2026
+The user changed the new PP sequence to Header PP first, BOQ Plan second. Follow docs/PP_HEADER_BOQ_KHS.md; this supersedes BOQ-first/manual positive Header budget and explicit price-mismatch review for editable current v3 root PP. On explicit save/submission, Laravel canonicalizes active SQL KHS prices/version, preserves private Excel comparisons/provenance and derives budget from canonical BOQ. Ignore client prices/total/review/note; khs-auto-v1/reviewed/system note record automatic resolution, never a human decision. Header Total is read-only, Rp0 before upload; complete Header permits a Draft without BOQ. Submit still requires BOQ/positive total/all planning/five approvers. Preserve v1/v2 rules, submitted/Sah snapshots, continuation allocations and Mandor ceilings; GET never reprices history. Migration 2026_11_09_000001 changes only pp_budget_positive to allow zero for v3 DRAFT; rollback refuses existing zero drafts. Prepared, not deployed on live its by the agent. Use indexed KHS/source/row/Mandor lookups; retain Branch/revision/queue/source authorization and query-budget evidence. See the behavior doc for deployment and actual test limitations.
+
+
 
 
 ## Automatic BA KH signer — 6 November 2026
