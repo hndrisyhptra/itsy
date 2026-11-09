@@ -24,7 +24,7 @@ function approve(t:Term){t.status='Disetujui';t.approvals=roles.map((role,i)=>({
 
 test('BARP validates the same calendar, period, required fields and optional Homepass as Laravel; identities are server-owned',()=>{
  const {s,t}=fixture();
- for(const [key,value] of [['date','2026-02-30'],['start','1900-01-01'],['end','2999-01-01'],['homepass',-1],['homepass',1.2],['homepass','10'],['homepass',1000000001],['location','x'.repeat(501)]] as const){
+ for(const [key,value] of [['date','2026-02-30'],['start','1900-01-01'],['end','2999-01-01'],['homepass',-1],['homepass',1.2],['homepass','10'],['homepass',1000000001],['sto','x'.repeat(151)]] as const){
   const input=structuredClone(t);Object.assign(input.barp!,{[key]:value});assert.throws(()=>saveBarp(s,t,input,false));
  }
  const input=structuredClone(t);input.barp!.place='';assert.doesNotThrow(()=>saveBarp(s,t,input,false));assert.throws(()=>saveBarp(s,t,input,true),/Lengkapi/);
@@ -40,7 +40,7 @@ test('BARP submission stores immutable per-cycle snapshots and never trusts clie
  const {s,t}=fixture(),input=structuredClone(t);input.barpHistory=[{at:'FORGED',document:input.barp!}];
  saveTerm(s,input,true);const saved=getTerm(s,t.id);
  assert.equal(saved.barpHistory?.length,1);assert.notEqual(saved.barpHistory?.[0].at,'FORGED');
- const first=structuredClone(saved.barpHistory![0]);saved.status='Ditolak';const next=structuredClone(saved);next.barp!.location='Koreksi';
+ const first=structuredClone(saved.barpHistory![0]);saved.status='Ditolak';const next=structuredClone(saved);next.barp!.sto='Koreksi';
  saveTerm(s,next,true);assert.deepEqual(getTerm(s,t.id).barpHistory![0],first);assert.equal(getTerm(s,t.id).barpHistory?.length,2);
  assert.throws(()=>saveTerm(s,next,false),/terkunci/);
 });

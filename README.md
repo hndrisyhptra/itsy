@@ -14,6 +14,8 @@ Pada **Preview BA KH** dan **Lihat Lampiran**, tombol **Unduh Word (.docx)** mem
 
 **Preview BA Rekonsiliasi Pekerjaan – Termin** mengikuti template BARP, dengan judul otomatis **TAHAP 1/2/3**, form informasi rekonsiliasi, nilai aktual tahap ini serta Waspang/Mandor/Head of PMO tersimpan. **Unduh Word (.docx)** tersedia setelah diajukan; sebelum seluruh approval lengkap berkas ditandai review, sedangkan cetak resmi tetap menunggu persetujuan. [Pemetaan form, penyimpanan dan pengujian](docs/BARP_TEMPLATE_WORD.md).
 
+Pada form BARP, **Pekerjaan** otomatis dari nama PP. **Lampiran Rekonsiliasi** kini memakai tabel Volume Aktual Pekerjaan yang sama, rekap tahap/kumulatif, dan lima ruang TTD: Head of PMO, Mgr Project Deployment, Mgr Project Support, Waspang, Ketua Mandor. Preview/Word lampiran horizontal; surat utama tetap vertikal. [Perilaku, penyimpanan dan bukti](docs/BARP_APPENDIX.md).
+
 Dashboard memakai [tampilan ringkasan awal](docs/DASHBOARD_SUMMARY.md): tiga kartu utama dan enam ringkasan kecil, tanpa kartu Progress Pekerjaan per PP, Aktivitas Terbaru, Monitoring Volume dan Inbox Approval. Dropdown **Semua Branch** mencakup seluruh Branch sesuai akses akun, termasuk yang belum mempunyai PP, dan menyaring seluruh angka dari data tersimpan Laravel.
 
 **Pengesahan BA KH, SPK dan BA PP tidak lagi membutuhkan isian teks Referensi bukti dokumen bertanda tangan.** Isian/status referensi dan kolomnya di timeline dihapus; syarat dokumen lainnya tetap divalidasi Laravel. Referensi lama disimpan sebagai riwayat, sedangkan upload eviden pekerjaan serta scan TTD Pembayaran tetap mengikuti alur berkas privat. Tidak perlu migration. Rincian: [DOCUMENT_ATTESTATION](docs/DOCUMENT_ATTESTATION.md).

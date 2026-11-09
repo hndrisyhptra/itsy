@@ -43,7 +43,7 @@ export function barpDocumentData(project:Project,deal:Deal,spk:Spk,term:Term){
   material=round(material);total=round(total);contract=round(contract);
   const service=round(total-material),amount=`Rp ${number.format(total)},- (${rupiahWords(total)})`,job=filled(project.name),mandor=filled(b.mandor);
   return {
-    title:`BERITA ACARA REKON PEKERJAAN - TAHAP ${term.number}`,job,mandor,location:filled(b.location),sto:b.sto.trim(),homepass:b.homepass===null?'':number.format(b.homepass),
+    title:`BERITA ACARA REKON PEKERJAAN - TAHAP ${term.number}`,job,mandor,location:filled(b.version>=2?b.job:b.location),objectLabel:b.version>=2?'PEKERJAAN':'LOKASI',sto:b.sto.trim(),homepass:b.homepass===null?'':number.format(b.homepass),
     opening:`Pada hari ini ${date?.weekday??'…'} tanggal ${date?.full??'…'}, telah dilakukan rekonsiliasi terhadap pelaksanaan pekerjaan ${job}, antara PT. Telkom Akses selanjutnya disebut TELKOM AKSES dengan ${mandor} selanjutnya disebut MANDOR, dengan kesepakatan sebagai berikut:`,
     price:`TELKOM AKSES dan Mandor sepakat bahwa harga borongan berdasarkan hasil rekonsiliasi proyek periode tanggal ${start?.full??'…'} sampai ${end?.full??'…'} untuk tahap ${term.number} adalah sebesar ${amount}, dengan porsi nilai tahap ini ${contract>0?number.format(round(total/contract*100)):'0'}% dari nilai SPK. Rincian sebagai berikut:`,
     stageScope:`Harga Berdasarkan Surat Perintah Kerja — volume tahap ${term.number} :`,

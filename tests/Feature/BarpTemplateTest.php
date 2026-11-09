@@ -39,7 +39,7 @@ class BarpTemplateTest extends TestCase
         $identity = array_intersect_key($t['barp'], array_flip(['waspang', 'mandor', 'headName', 'headNik', 'headUserId']));
         $this->assertSame('Head of PMO Test', $t['barp']['headName']);
         $this->assertSame($s['spks'][0]['start'], $t['barp']['start']);
-        $t['barp'] = array_merge($t['barp'], ['location' => 'Lokasi BARP', 'sto' => 'STO BARP', 'homepass' => 0, 'headName' => 'FORGED', 'headNik' => 'FORGED', 'headUserId' => 'FORGED', 'waspang' => 'FORGED', 'mandor' => 'FORGED']);
+        $t['barp'] = array_merge($t['barp'], ['location' => 'Lokasi BARP', 'sto' => 'STO BARP', 'homepass' => 0, 'headName' => 'FORGED', 'headNik' => 'FORGED', 'headUserId' => 'FORGED', 'waspang' => 'FORGED', 'mandor' => 'FORGED', 'job' => 'FORGED', 'deployment' => ['name' => 'FORGED'], 'support' => ['userId' => 'FORGED']]);
         $t['barpHistory'] = [['at' => 'FORGED']];
         DB::enableQueryLog();
         DB::flushQueryLog();
@@ -53,6 +53,10 @@ class BarpTemplateTest extends TestCase
         $catalogReads = array_filter($queries, fn ($q) => str_contains($q['query'], 'from "designator_package_prices"'));
         $this->assertCount(2, $catalogReads, 'Existing revision/command reference reads only; no per-BARP-row lookup.');
         $this->assertSame($identity, array_intersect_key($saved['barp'], $identity));
+        $this->assertSame(2, $saved['barp']['version']);
+        $this->assertSame($s['projects'][0]['name'], $saved['barp']['job']);
+        $this->assertSame(['userId' => 'db-user-'.$this->accounts['Mgr Deployment']->getKey(), 'name' => 'Mgr Deployment Test', 'nik' => ''], $saved['barp']['deployment']);
+        $this->assertSame('Mgr Project Support Test', $saved['barp']['support']['name']);
         $this->assertSame('STO BARP', $saved['barp']['sto']);
         $this->assertSame(0, $saved['barp']['homepass']);
         $this->assertArrayNotHasKey('barpHistory', $saved);
@@ -65,7 +69,7 @@ class BarpTemplateTest extends TestCase
     public function test_barp_validation_is_atomic_and_submission_snapshots_survive_rejection_and_resubmission(): void
     {
         [$s, $t] = $this->draft();
-        foreach ([['date', '2026-02-30'], ['start', '1900-01-01'], ['end', '2999-01-01'], ['homepass', -1], ['homepass', 1.2], ['homepass', '10'], ['homepass', 1000000001], ['location', str_repeat('x', 501)]] as [$field, $value]) {
+        foreach ([['date', '2026-02-30'], ['start', '1900-01-01'], ['end', '2999-01-01'], ['homepass', -1], ['homepass', 1.2], ['homepass', '10'], ['homepass', 1000000001], ['sto', str_repeat('x', 151)]] as [$field, $value]) {
             $invalid = $t;
             $invalid['barp'][$field] = $value;
             $revision = PrototypeWorkspace::first()->revision;
@@ -86,15 +90,54 @@ class BarpTemplateTest extends TestCase
         $this->api('decide', [$t['id'], 'Tolak', 'Perbaiki lokasi'])->assertOk();
         $this->asRole('Admin Konstruksi');
         $t = $this->getJson('/api/prototype/state')->json('state.terms.0');
-        $t['barp']['location'] = 'Lokasi koreksi';
+        $t['barp']['sto'] = 'STO koreksi';
         $again = $this->api('saveTerm', [$t, true])->assertOk()->json('state.terms.0');
         $this->assertCount(2, $again['barpHistory']);
         $this->assertSame($submitted['barp'], $again['barpHistory'][0]['document']);
-        $this->assertSame('Lokasi koreksi', $again['barpHistory'][1]['document']['location']);
+        $this->assertSame('STO koreksi', $again['barpHistory'][1]['document']['sto']);
         $this->assertSame([], $again['approvals']);
         $this->assertSame('PM Konstruksi', PrototypeDomain::nextApprovalRole($again));
         $this->asRole('PM Konstruksi');
         $this->api('saveTerm', [$t, false])->assertForbidden();
+    }
+
+    public function test_version_one_barp_is_preserved_on_reads_and_adopted_only_on_explicit_admin_correction(): void
+    {
+        [$s, $t] = $this->draft();
+        $submitted = $this->api('saveTerm', [$t, true])->assertOk()->json('state.terms.0');
+        // Change an isolated fixture to a document submitted before this feature, never live data.
+        $this->assertSame(':memory:', DB::connection()->getDatabaseName());
+        $row = DB::table('payment_terms')->where('source_id', $t['id'])->first();
+        $document = json_decode($row->document_data, true);
+        $old = $submitted['barp'];
+        $old['version'] = 1;
+        $old['location'] = 'Lokasi historis';
+        unset($old['job'], $old['deployment'], $old['support']);
+        $document['barp'] = $document['barpHistory'][0]['document'] = $old;
+        $json = json_encode($document);
+        DB::table('payment_terms')->where('source_id', $t['id'])->update(['document_data' => $json]);
+        $read = $this->getJson('/api/prototype/state')->assertOk()->json('state.terms.0');
+        $this->assertSame($old, $read['barp']);
+        $this->assertSame($json, DB::table('payment_terms')->where('source_id', $t['id'])->value('document_data'));
+        $this->api('saveTerm', [$read, false])->assertUnprocessable();
+        $this->asRole('PM Konstruksi');
+        $this->api('decide', [$t['id'], 'Tolak', 'Koreksi metadata'])->assertOk();
+        $this->asRole('Admin Konstruksi');
+        $read = $this->getJson('/api/prototype/state')->json('state.terms.0');
+        $read['barp']['job'] = 'FORGED';
+        $read['barp']['deployment'] = ['name' => 'FORGED', 'userId' => 'FORGED'];
+        $saved = $this->api('saveTerm', [$read, false])->assertOk()->json('state.terms.0');
+        $this->assertSame(2, $saved['barp']['version']);
+        $this->assertSame($s['projects'][0]['name'], $saved['barp']['job']);
+        $this->assertSame('Mgr Deployment Test', $saved['barp']['deployment']['name']);
+        $this->assertSame('Mgr Project Support Test', $saved['barp']['support']['name']);
+        $this->assertSame($old, $saved['barpHistory'][0]['document']);
+        $this->accounts['Mgr Deployment']->forceFill(['name' => 'Nama akun sesudah snapshot'])->save();
+        $resubmitted = $this->api('saveTerm', [$saved, true])->assertOk()->json('state.terms.0');
+        $this->assertSame($old, $resubmitted['barpHistory'][0]['document']);
+        $this->assertSame($saved['barp'], $resubmitted['barpHistory'][1]['document']);
+        $this->assertSame('Mgr Deployment Test', $resubmitted['barp']['deployment']['name']);
+        $this->assertSame([], $resubmitted['approvals']);
     }
 
     public function test_historical_documents_without_metadata_are_not_rewritten(): void

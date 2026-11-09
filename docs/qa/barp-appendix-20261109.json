@@ -1,0 +1,107 @@
+{
+  "date": "2026-11-09",
+  "timezone": "Asia/Jakarta",
+  "feature": "Canonical Pekerjaan and shared actual-volume BARP appendix with five physical signers",
+  "source": {
+    "file": "docs/artifacts/barp-appendix/reference.png",
+    "bytes": 4648923,
+    "sha256": "5ea1031cd94694dff1ba813120449fa8032fbae3ddb1c58f6800e05cb118e6f0",
+    "signatures_not_copied": true
+  },
+  "backup": {
+    "path": "storage/app/private/backups/its-before-barp-appendix-20261108-215109.sql",
+    "bytes": 2044552,
+    "sha256": "344c8cd76048cdb9e175d5bbb5e9558373418a0ddd08b3c341fb4c261827b7bc",
+    "live_read_only": true,
+    "initial_sandbox_failure_retried_with_approved_access": true
+  },
+  "php": {
+    "passed": true,
+    "tests": 219,
+    "assertions": 4287,
+    "new_test": 1,
+    "database": "fail-closed isolated SQLite :memory:"
+  },
+  "frontend": {
+    "passed": true,
+    "tests": 208,
+    "new_tests": 6,
+    "indexed_fixture_rows": 1000
+  },
+  "build": {
+    "passed": true,
+    "appendix_lazy_chunk_kb": 3.71,
+    "appendix_lazy_gzip_kb": 1.7,
+    "does_not_import_main_word_template": true
+  },
+  "pint_scoped": true,
+  "diff_check": true,
+  "migration_required": false,
+  "storage": {
+    "metadata_version": 2,
+    "workflowVersion_unchanged": true,
+    "job": "server selected PP name; client/cache/obsolete location ignored",
+    "identities": "frozen selected payment Deployment/Support users plus existing Head/Waspang/Mandor",
+    "table": "payment_terms.document_data",
+    "history": "explicit editable adoption only; old submitted metadata and previous cycles retained",
+    "archive_unchanged": true,
+    "no_live_transactions_seeded": true
+  },
+  "query_review": {
+    "pure_default_resolver_sql": 0,
+    "one_pp_http_save_queries_including_revision_get": 59,
+    "budget": 60,
+    "existing_catalog_reads": 2,
+    "new_endpoints": 0,
+    "new_per_row_queries": 0,
+    "unrelated_writes_rejected_by_test": true,
+    "limitation": "Scoped memory fixture, not latency/load proof; aggregate boot and reference command reads unchanged."
+  },
+  "native_verification": {
+    "crc_xml_relationships_python_docx": true,
+    "all_8_final_pngs_inspected": true,
+    "portrait_main_unchanged_orientation": true,
+    "appendix_landscape": true,
+    "grid_columns": 13,
+    "physical_signers": 5,
+    "fixtures": [
+      {
+        "name": "main-v2",
+        "bytes": 117766,
+        "sha256": "de992463a82e565bac17d387832b9aff616dbac254f5bc50b9490dd7a0c529b2",
+        "pages": 2,
+        "table_count": 5
+      },
+      {
+        "name": "appendix-approved",
+        "bytes": 64650,
+        "sha256": "6422f855c1038daf607b8c4dd4b2cf0c595cef9baf00559a14b96cb09e0dfac3",
+        "pages": 1,
+        "table_count": 2
+      },
+      {
+        "name": "appendix-review",
+        "bytes": 64919,
+        "sha256": "96b82661515535d345a9029dbd76c4f7fc965cc5449e5b9bb0cee12068956f83",
+        "pages": 1,
+        "table_count": 2
+      },
+      {
+        "name": "appendix-long",
+        "bytes": 161584,
+        "sha256": "72d7800bc03aa7ecb99964855aec785eba5d06ad708ea43b6fe026a8c95169e1",
+        "pages": 4,
+        "table_count": 2
+      }
+    ],
+    "latest_generators_match_inspected_packages": true
+  },
+  "limits": [
+    "No manual browser/account download click/responsive/dark/keyboard QA; earlier browser denial respected.",
+    "No Microsoft Word desktop or physical printing or load test.",
+    "Long appendices may require a final separate signoff page.",
+    "No financial addendum or volume release is created by remaining-volume display.",
+    "Historical missing identities remain ellipsis; no current-account or Business Support alias fallback.",
+    "Word editable and not digitally signed; pending exports review-marked, official print/scan/Finance/APM remain gated."
+  ]
+}

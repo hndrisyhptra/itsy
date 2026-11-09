@@ -2,6 +2,10 @@
 
 Berlaku 8 November 2026. Referensi pengguna: `BARP - 100%.docx`, disimpan tanpa perubahan di [artifacts/barp/reference/BARP.docx](artifacts/barp/reference/BARP.docx). SHA256 `9c08a9075bc7110bbe4315add0823d4a7676e3c28c282897610757d45b7f498f`. Kontrak pelestarian template ada di [artifact.md](artifacts/barp/artifact.md).
 
+## Pembaruan 9 November 2026
+
+[Pekerjaan otomatis dan Lampiran Rekonsiliasi](BARP_APPENDIX.md) menggantikan lokasi manual pada dokumen editable: `barp.version=2` menyimpan `job` dari nama PP, serta snapshot Manager Deployment/Project Support. Lampiran kini mengikuti ledger Volume Aktual Pekerjaan dengan lima penandatangan dan Word horizontal. Dokumen versi 1 dan siklus lama tetap utuh; uraian 8 November di bawah menjadi referensi implementasi awal untuk versi tersebut. Surat utama versi 2 menampilkan PEKERJAAN, bukan LOKASI. Syarat approval/scan/Finance/APM tetap.
+
 ## Pemakaian
 
 Buka Pembayaran → pengajuan → Informasi BA Rekonsiliasi Pekerjaan. Admin Konstruksi/Superadmin dapat mengubah informasi saat Draft/Dikembalikan/Ditolak v3; dokumen Diajukan/Disetujui terkunci. Isi volume aktual seperti sebelumnya, simpan draf atau ajukan. Preview Dokumen/Preview BA dan preview inbox membuka surat yang sama untuk Parsial maupun Final. Lampiran Rekonsiliasi tetap tabel aktual terpisah; BA PP tetap melalui proses Final tersendiri.

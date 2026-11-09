@@ -6,6 +6,29 @@ use Illuminate\Validation\ValidationException;
 
 final class BarpTemplate
 {
+    /** Already-loaded selected identities only, with no database lookup. */
+    private static function paymentSigner(array $state, array $project, array $term, string $role): array
+    {
+        $id = ($term['workflowVersion'] ?? 1) >= 3 ? ($term['approverUserIds'][$role] ?? '') : '';
+        $decision = $id ? collect(array_merge($term['approvals'] ?? [], $project['approvals'] ?? []))->first(fn ($a) => $a['role'] === $role && ($a['userId'] ?? '') === $id && $a['decision'] === 'Setujui') : null;
+        $snapshot = $project['signatureUsers'][$role] ?? [];
+        if (! $id || ($snapshot['userId'] ?? '') !== $id) {
+            $snapshot = [];
+        }
+        $user = $id ? collect($state['users'])->first(fn ($u) => $u['id'] === $id && $u['role'] === $role) : null;
+        $first = static function (...$values): string {
+            foreach ($values as $value) {
+                if (is_string($value) && trim($value) !== '') {
+                    return trim($value);
+                }
+            }
+
+            return '';
+        };
+
+        return ['userId' => $id, 'name' => $first($decision['actorName'] ?? null, $snapshot['name'] ?? null, $user['name'] ?? null), 'nik' => $first($decision['actorNik'] ?? null, $snapshot['nik'] ?? null, $user['nik'] ?? null)];
+    }
+
     public static function defaults(array $state, array $term): array
     {
         $spk = collect($state['spks'])->firstWhere('id', $term['spkId']);
@@ -21,7 +44,7 @@ final class BarpTemplate
             $head = $spk;
         }
 
-        return ['version' => 1, 'date' => now()->toDateString(), 'place' => $spk['place'], 'start' => $spk['start'], 'end' => $spk['end'], 'location' => $deal['location'] ?? '', 'sto' => '', 'homepass' => null,
+        return ['version' => 2, 'job' => $project['name'], 'deployment' => self::paymentSigner($state, $project, $term, 'Mgr Deployment'), 'support' => self::paymentSigner($state, $project, $term, 'Mgr Project Support'), 'date' => now()->toDateString(), 'place' => $spk['place'], 'start' => $spk['start'], 'end' => $spk['end'], 'location' => $deal['location'] ?? '', 'sto' => '', 'homepass' => null,
             'waspang' => $spk['supervisor'], 'mandor' => $deal['mandor'], 'headName' => $head['signer'], 'headNik' => $head['signerNik'] ?? '', 'headUserId' => $head['signerUserId'] ?? ''];
     }
 
@@ -35,7 +58,15 @@ final class BarpTemplate
             self::fail('Informasi BARP harus berupa formulir yang valid.');
         }
         $barp = $term['barp'] ?? self::defaults($state, $term);
-        foreach (['date' => 10, 'place' => 150, 'start' => 10, 'end' => 10, 'location' => 500, 'sto' => 150] as $field => $limit) {
+        $spk = collect($state['spks'])->firstWhere('id', $term['spkId']);
+        $deal = collect($state['deals'])->firstWhere('id', $spk['dealId']);
+        $project = collect($state['projects'])->firstWhere('id', $deal['projectId']);
+        $barp['job'] = $project['name'];
+        if (($barp['version'] ?? 1) < 2) {
+            $barp['deployment'] = self::paymentSigner($state, $project, $term, 'Mgr Deployment');
+            $barp['support'] = self::paymentSigner($state, $project, $term, 'Mgr Project Support');
+        }
+        foreach (['date' => 10, 'place' => 150, 'start' => 10, 'end' => 10, 'sto' => 150] as $field => $limit) {
             if (array_key_exists($field, $data)) {
                 if (! is_string($data[$field]) || mb_strlen($data[$field]) > $limit) {
                     self::fail('Isian BARP '.$field.' tidak valid atau terlalu panjang.');
@@ -48,21 +79,20 @@ final class BarpTemplate
             self::fail('Homepass BARP harus bilangan bulat nonnegatif atau dikosongkan.');
         }
         $barp['homepass'] = $hp === null ? null : (int) $hp;
-        $barp['version'] = 1;
+        $barp['version'] = 2;
         foreach (['date', 'start', 'end'] as $field) {
             $value = $barp[$field];
             if ($value !== '' && (! preg_match('/^\d{4}-\d{2}-\d{2}$/D', $value) || ! checkdate((int) substr($value, 5, 2), (int) substr($value, 8, 2), (int) substr($value, 0, 4)))) {
                 self::fail('Tanggal BARP tidak valid.');
             }
         }
-        $spk = collect($state['spks'])->firstWhere('id', $term['spkId']);
         if (($barp['start'] && $barp['start'] < $spk['start']) || ($barp['end'] && $barp['end'] > $spk['end']) || ($barp['start'] && $barp['end'] && $barp['start'] > $barp['end'])) {
             self::fail('Periode rekonsiliasi harus berada dalam periode SPK.');
         }
         if ($submit) {
-            foreach (['date', 'place', 'start', 'end', 'location'] as $field) {
+            foreach (['date', 'place', 'start', 'end', 'job'] as $field) {
                 if ($barp[$field] === '') {
-                    self::fail('Lengkapi tanggal, tempat, periode dan lokasi pada Informasi BARP sebelum mengajukan.');
+                    self::fail('Lengkapi tanggal, tempat, periode dan nama pekerjaan pada Informasi BARP sebelum mengajukan.');
                 }
             }
         }

@@ -24,10 +24,12 @@ def cell(table,row,col,text):fill(nodes[table].findall('w:tr',ns)[row].findall('
 for i,text in {0:'{{TITLE}}',3:'Nama Proyek : {{JOB}}',4:'Jenis Pekerjaan : SWAKELOLA MANDORAN',5:'Nama : {{MANDOR}}',8:'{{OPENING}}',20:'{{PRICE}}',26:'{{RECON_HEADING}}',27:'{{RECON_TEXT}}'}.items():para(i,text)
 # First unused spacer carries the review status. Never put a fabricated approval into signature cells.
 para(1,'{{STATUS}}');para(35,'{{PLACE_DATE}}')
+cell(13,0,1,'{{OBJECT_LABEL}}');cell(28,0,1,'{{OBJECT_LABEL}}')
 for col,text in enumerate(['1','{{LOCATION}}','{{STO}}','{{HOMEPASS}}']):cell(13,1,col,text)
 cell(23,1,1,'{{STAGE_SCOPE}}')
 for start,prefix in [(2,''),(6,'ZERO_'),(10,'ZERO_'),(14,'')]:
     for offset,key in enumerate(['MATERIAL','SERVICE','TOTAL']):cell(23,start+offset,2,'{{'+prefix+key+'}}')
+cell(13,0,1,'{{OBJECT_LABEL}}');cell(28,0,1,'{{OBJECT_LABEL}}')
 for col,text in enumerate(['1','{{LOCATION}}','{{STO}}','{{MATERIAL}}','{{SERVICE}}','{{TOTAL}}']):cell(28,2,col,text)
 for col,text in enumerate(['','TOTAL','{{MATERIAL}}','{{SERVICE}}','{{TOTAL}}']):cell(28,3,col,text)
 cell(36,2,0,'{{WASPANG}}');cell(36,2,1,'{{MANDOR}}');cell(39,2,0,'{{HEAD}}')

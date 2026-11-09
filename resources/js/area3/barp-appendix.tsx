@@ -1,0 +1,10 @@
+import type { State,Project,Deal,Spk,Term } from './domain';
+import { barpAppendixData,BARP_APPENDIX_WIDTHS,BARP_APPENDIX_LEFT,BARP_APPENDIX_RIGHT } from './barp-appendix-content';
+export function BarpAppendix({state,project,deal,spk,term}:{state:State;project:Project;deal:Deal;spk:Spk;term:Term}){
+  const data=barpAppendixData(state,project,deal,spk,term);
+  return <article className="document barp-appendix"><header><h2>{data.title}</h2><p>PEKERJAAN: {data.job} · Termin #{data.stage}</p><p>WITEL: {data.witel}</p></header>{data.status&&<p className="barp-review">{data.status}</p>}
+    <div className="barp-appendix-scroll"><table><colgroup>{BARP_APPENDIX_WIDTHS.map((width,i)=><col key={i} style={{width:`${width}%`}}/>)}</colgroup><thead><tr>{BARP_APPENDIX_LEFT.map(h=><th key={h} rowSpan={2} scope="col">{h}</th>)}<th colSpan={3} scope="colgroup">VOLUME AKTUAL PER TERMIN</th>{BARP_APPENDIX_RIGHT.map(h=><th key={h} rowSpan={2} scope="col">{h}</th>)}</tr><tr>{[1,2,3].map(n=><th key={n} scope="col">Termin #{n}{n===data.stage?' · Saat ini':''}</th>)}</tr></thead><tbody>{data.rows.map(row=><tr key={row.id}>{row.cells.map((cell,i)=><td key={i} className={i>=4?'numeric':i===0||i===3?'center':''}>{cell}</td>)}</tr>)}{!data.rows.length&&<tr><td colSpan={13}>Belum ada komponen pekerjaan.</td></tr>}</tbody><tfoot>{data.recap.map(row=><tr key={row.label}><th colSpan={12} scope="row">{row.label}</th><td className="numeric">{row.value}</td></tr>)}</tfoot></table></div>
+    <p className="barp-appendix-note">Harga dan nilai dalam Rupiah (Rp). Material dan Jasa dicatat terpisah. Sisa proyeksi belum merupakan pelepasan volume. Tagihan hanya tahap ini; nilai kumulatif adalah informasi.</p>
+    <section className="barp-appendix-signatures" aria-label="Penandatangan lampiran rekonsiliasi">{data.signatures.map(signer=><div key={signer.job}><h3>{signer.job}</h3><div className="barp-appendix-wet-signature" aria-label="Area TTD basah dokumen asli"/><strong>{signer.name}</strong>{signer.nik&&<p>NIK: {signer.nik}</p>}</div>)}</section>
+  </article>;
+}

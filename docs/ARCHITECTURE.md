@@ -2,6 +2,16 @@
 
 Catatan ini menjelaskan struktur runtime aktif dan keputusan perubahan. Baca bersama [MYSQL_RUNTIME.md](MYSQL_RUNTIME.md), [buku saku relasi tabel](DATABASE_RELATIONS.md), AGENTS.md dan [CHANGELOG.md](CHANGELOG.md). Kode Laravel merupakan otoritas validasi dan status tersimpan; dokumentasi SQL konseptual lama tidak menggantikan executable migrations atau runtime.
 
+## Pekerjaan BARP dan ledger Lampiran Rekonsiliasi — 9 November 2026
+
+`BarpTemplate` menetapkan `barp.version=2/job` dari PP dan menangkap dua identitas Manager sesuai assignee pembayaran. Properti client/cache diabaikan; draf lama mengadopsi hanya melalui penyimpanan eksplisit. `payment_terms.document_data` dan riwayat per pengajuan tetap memakai transaksi yang ada, tanpa migration, backfill atau penulisan arsip. Metadata version2 bukan perubahan workflowVersion/approval scheme.
+
+`term-volume.ts` membagi satu model per komponen antara editor dan lampiran: SPK, aktual termin, accepted, sisa, harga dan nilai dengan pembulatan domain. Root BOQ/KHS/previous terms diindeks sekali; tidak ada nested find per baris atau penggabungan volume Material/Jasa. `barp-appendix-content` membagi model tabel, rekap dan lima penandatangan untuk HTML/Word landscape. Historical identity fallback hanya keputusan/snapshot sesuai ID; tidak mengambil akun terkini yang bisa mengganti identitas lama. Surat utama portrait tetap terpisah.
+
+`barp-file.ts` memisahkan filename/MIME sehingga download appendix tidak mengunduh template utama. Export native lazy tanpa endpoint/network/catalog tambahan; hanya metadata authorized yang telah dimuat. Main model membedakan PEKERJAAN versi2 dengan LOKASI historis versi1. Word tetap setelah diajukan/review-marked; official print/scan/Finance/APM/ledger tidak berubah.
+
+Resolver 0 SQL, fixture HTTP satu PP tetap 59 queries termasuk GET revisi (batas 60, dua catalog reads bawaan), unrelated writes/arsip ditolak pengujian. Fixture 1000 baris memeriksa indexing dan ekspor utuh; aggregate boot/commands tetap dan angka ini bukan uji beban. Pemetaan visual, adaptasi screenshot, snapshot/history, 219 PHP/208 frontend, empat Word/8 PNG, serta batas browser/Word desktop/cetak fisik tercatat pada [BARP_APPENDIX.md](BARP_APPENDIX.md) dan qa/barp-appendix-20261109.json.
+
 ## BARP pembayaran: form → snapshot → preview/Word — 8 November 2026
 
 `createTerm` menangkap identitas Waspang SPK/Mandor/Head sesuai assignment termin lewat `BarpTemplate`; `saveTerm` memvalidasi metadata editable dan menambah `barpHistory` hanya saat pengajuan. Seluruh data memakai `payment_terms.document_data`, transaksi workspace/revisi/receipts/audit yang sama; tidak ada migration atau backfill arsip. Laravel membatasi tanggal/periode SPK/teks/Homepass dan mengabaikan pemalsuan identitas/riwayat. Draf lama mengadopsi lewat penyimpanan Admin, dokumen historis tanpa metadata tetap utuh.
