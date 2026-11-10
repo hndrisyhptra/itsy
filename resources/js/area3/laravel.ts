@@ -4,11 +4,12 @@ declare global { interface Window { __AREA3__?: LaravelBoot } }
 export const boot = typeof window === 'undefined' ? undefined : window.__AREA3__;
 export const basePath = boot?.basePath ?? '';
 export const appUrl = (path: string) => basePath + path;
+const workspacePaths = {state:'/api/prototype/state',commands:'/api/prototype/commands',csv:'/api/prototype/exports/csv',backup:'/api/prototype/backup'} as const;
+export const workspaceUrl = (kind: keyof typeof workspacePaths) => appUrl(workspacePaths[kind]);
 export const relativePath = (path: string) => basePath && (path === basePath || path.startsWith(basePath + '/')) ? path.slice(basePath.length) || '/' : path;
 export function exportUrl(report: string, filters: Record<string, string>): string | undefined {
   if (!boot) return undefined;
-  const url = new URL(boot.urls.csv);
-  url.searchParams.set('report', report);
-  for (const [key,value] of Object.entries(filters)) if (value) url.searchParams.set(key,value);
-  return url.href;
+  const query = new URLSearchParams({report});
+  for (const [key,value] of Object.entries(filters)) if (value) query.set(key,value);
+  return workspaceUrl('csv')+'?'+query;
 }

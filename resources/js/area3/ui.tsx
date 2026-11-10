@@ -12,7 +12,7 @@ import { X, ArrowLeft, ArrowRight, Check, FileText, Printer, Download, Inbox as 
 import { money, num, approvalCount, approvalRoles, selectedApprover, type State, type Project, type Deal, type Spk, type Term, type Bapp, getProject, getDeal, projectForSpk, termTotal, dealTotal, boqTotal, dateLabel, accepted } from './domain';
 import { saveDraft, readDraft, waitForPersistence, persistencePending } from './store';
 import { serializeCsv } from './exports';
-import { appUrl, relativePath, boot } from './laravel';
+import { appUrl, relativePath, boot, workspaceUrl } from './laravel';
 import { runConfirmedAction } from './confirmation';
 export { confirmAction } from './confirmation';
 export function navigate(path: string) { history.pushState({}, '', appUrl(path)); window.dispatchEvent(new Event('popstate')); window.scrollTo(0, 0); }
@@ -58,7 +58,7 @@ export function Toasts() { const [items, set] = useState<{ id: number; message: 
 export function attempt(fn: () => unknown, message?: string) { try { const result = fn(); if (message) { if (persistencePending) void waitForPersistence().then(() => toast(message)).catch(() => {}); else toast(message); } return result; } catch (e) { toast(e instanceof Error ? e.message : String(e), true); return undefined; } }
 export function useDraft<T>(key: string, initial: T, persist = true): [T, React.Dispatch<React.SetStateAction<T>>] { const [value, setValue] = useState<T>(() => persist ? readDraft(key, initial) : initial); useEffect(() => { if(persist)saveDraft(key, value); }, [key, value, persist]); return [value, setValue]; }
 export function DownloadCsv(name: string, headers: string[], rows: (string | number)[][]) { download(name, new Blob([serializeCsv(headers, rows)], { type: 'text/csv;charset=utf-8' })); }
-export function download(name: string, blob: Blob) { const url = boot && name.endsWith('.json') ? boot.urls.backup : URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = name; a.style.display = 'none'; document.body.appendChild(a); a.click(); a.remove(); if (url.startsWith('blob:')) setTimeout(() => URL.revokeObjectURL(url), 10000); }
+export function download(name: string, blob: Blob) { const url = boot && name.endsWith('.json') ? workspaceUrl('backup') : URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = name; a.style.display = 'none'; document.body.appendChild(a); a.click(); a.remove(); if (url.startsWith('blob:')) setTimeout(() => URL.revokeObjectURL(url), 10000); }
 export function BakhWordDownload({ state, project, deal, kind }: { state: State; project: Project; deal: Deal; kind: 'bakh' | 'appendix' }) {
   const [busy, setBusy] = useState(false), running = useRef(false);
   async function saveWord() {

@@ -3,6 +3,15 @@
 
 
 
+## 10 November 2026 — Same-origin untuk Failed to fetch saat simpan/ajukan PP
+
+- Pengguna menyatakan dropdown approver selesai setelah membuat ulang akun, lalu melaporkan Failed to fetch pada simpan draf/Ajukan PP di https://its.telkomakses-area3.id/. Pengerjaan sempat dijeda untuk pull; dilanjutkan pada commit 3e397b8 dengan role Operation dipertahankan. Stash tidak di-pop seluruhnya atau dihapus; hanya patch transport/tes relevan diterapkan kembali.
+- Boot/API/account URLs kini path aplikasi relatif terhadap origin; command/state/recovery/CSV/backup memakai endpoint dikenal dan basePath. Menghindari URL HTTP/host internal dari proxy pada halaman HTTPS, tanpa hardcode domain, force HTTPS global, CORS permisif, perubahan trust proxy atau .env. Pesan saja belum membuktikan mixed-content di server sebenarnya; remote Console/Network belum diakses.
+- Kegagalan network/timeout menjelaskan ketidakpastian simpan dan mengharuskan cek daftar sebelum ulang; HTML/non-JSON menyebut HTTP status. Satu recovery GET lama dipertahankan, tanpa POST auto-retry/clear draf/navigasi sukses palsu. CSRF/revisi/UUID/Branch dan validasi domain tetap.
+- Query/performa: 0 endpoint/SQL/poll/round-trip tambahan; normal save1POST, kegagalan1POST+1GET, timeout20s sama. PHP root/subfolder dengan HTTP upstream dan frontend salah-origin/network/timeout/413/422/response-lost-after-save/actual route/CSRF/cache tests lulus. Dua mock endpoint diperbarui; test jumlah migrations63→64 mengikuti commit Operation, tanpa schema change.
+- **240 PHP / 4.963 assertions, 244 frontend, production build/check:assets, scoped Pint dan diff check lulus.** Bukan live SSL/proxy/browser/load/remote deployment check. No its live/env/permission/migration/Dompis mutations; kontrak workflow/storage unchanged sehingga tidak memerlukan backup workflow baru.
+- Perilaku/deploy/batas: [SAME_ORIGIN_TRANSPORT](SAME_ORIGIN_TRANSPORT.md), README/ARCHITECTURE/WORKPLAN/LARAVEL_QA dan qa/same-origin-transport-20261110.json. Perubahan ini belum di-commit/push atau di-deploy agen; pull sebelum perubahan selesai belum memuat fix.
+
 ## 9 November 2026 — Perbaikan preload CSS pada akses subfolder
 
 - Laporan: Halaman belum dapat dimuat / Unable to preload CSS for /build/assets/confirmation-CPS8TDLk.css. File ada pada build lokal, tetapi generated Vite preload helper mengawali dependency dengan /build/ dari akar domain. Shared CSS baru menampakkan kegagalan pada Apache /its/area3-prototype/public; dynamic import JS sebelumnya sudah relatif. Server pengguna tidak diinspeksi, sehingga missing/stale assets server juga tetap perlu dibedakan.

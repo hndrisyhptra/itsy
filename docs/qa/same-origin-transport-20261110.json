@@ -1,0 +1,63 @@
+{
+  "date": "2026-11-10",
+  "timezone": "Asia/Makassar",
+  "report": {
+    "site": "https://its.telkomakses-area3.id/",
+    "actions": [
+      "save PP draft",
+      "submit PP"
+    ],
+    "message": "Failed to fetch Perubahan belum dikonfirmasi; data server ditampilkan kembali. Draft formulir tetap tersedia.",
+    "prior_approver_issue": "User resolved by recreating accounts"
+  },
+  "resumed_after_pull": {
+    "commit": "3e397b8",
+    "operation_roles_preserved": true,
+    "stash_full_pop_or_drop": false
+  },
+  "fix": {
+    "server_boot_api_account_paths_origin_relative": true,
+    "frontend_known_same_origin_paths": true,
+    "legacy_http_boot_host_ignored_for_workspace_api": true,
+    "csv_filters_and_private_backup_preserved": true,
+    "network_timeout_http_nonjson_messages": true,
+    "post_auto_retry": false,
+    "uncertain_result_preserved": true,
+    "csrf_revision_request_uuid_authorization_preserved": true
+  },
+  "verification": {
+    "php_tests": 240,
+    "php_assertions": 4963,
+    "new_php_tests": 1,
+    "new_php_assertions": 12,
+    "frontend_tests": 244,
+    "new_frontend_tests": 1,
+    "existing_mock_endpoint_updates": 2,
+    "migration_count_assertion_updated_for_pulled_operation_migration": 64,
+    "production_build": true,
+    "check_assets": true,
+    "pint": true,
+    "diff_check": true,
+    "db": "fail-closed SQLite memory",
+    "transport": "mocked fetch/XHR; not actual browser"
+  },
+  "performance": {
+    "added_queries_endpoints_polls_dependencies": 0,
+    "normal_save_posts": 1,
+    "failed_save_posts": 1,
+    "existing_recovery_gets": 1,
+    "command_timeout_seconds": 20,
+    "existing_query_budgets_pass": true,
+    "load_benchmark_claim": false
+  },
+  "new_migrations": 0,
+  "live_its_env_permissions_dompis_mutations": false,
+  "commit_push_remote_deployment_done_by_agent": false,
+  "actual_server_mixed_content_root_cause_proven": false,
+  "limits": [
+    "No authenticated server browser/Console/Network inspection",
+    "No actual SSL/proxy/WAF/CDN/timeout/load diagnosis",
+    "No live save/approval or database migration run"
+  ],
+  "behavior_document": "docs/SAME_ORIGIN_TRANSPORT.md"
+}

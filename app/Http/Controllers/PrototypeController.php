@@ -11,12 +11,14 @@ class PrototypeController extends Controller
     public function show(Request $request, PrototypeWorkspaceService $service)
     {
         $workspace = $service->workspace($request);
+        // Keep browser requests on the page's public origin behind TLS proxies.
+        $path = fn (string $name) => $request->getBaseUrl().route($name, [], false);
 
         return view('prototype', ['boot' => $service->payload($workspace) + [
             'basePath' => $request->getBaseUrl(), 'scenarios' => [],
             'account' => $request->attributes->get('area3.account'),
-            'accountUrls' => ['logout' => route('logout'), 'manage' => route('accounts.index'), 'login' => route('login')],
-            'urls' => ['state' => route('prototype.state'), 'commands' => route('prototype.commands'), 'csv' => route('prototype.csv'), 'backup' => route('prototype.backup')],
+            'accountUrls' => ['logout' => $path('logout'), 'manage' => $path('accounts.index'), 'login' => $path('login')],
+            'urls' => ['state' => $path('prototype.state'), 'commands' => $path('prototype.commands'), 'csv' => $path('prototype.csv'), 'backup' => $path('prototype.backup')],
         ]]);
     }
 

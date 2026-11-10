@@ -82,7 +82,7 @@ test('all authenticated upload transports expose progress while retaining queue 
   const result={rows:[],source:{id:'qa-upload-task',name:'boq.xlsx'}};
   globals(t,{window:win,setTimeout:(fn:()=>void,ms:number)=>ms===2000?(queueMicrotask(fn),1):nativeTimeout(fn,ms),fetch:async(url:string)=>{
     fetches.push(url);
-    if(url==='/state')return Response.json({state,revision:5,csrf:'csrf-next'});
+    if(url==='/its/area3-prototype/public/api/prototype/state')return Response.json({state,revision:5,csrf:'csrf-next'});
     if(url.endsWith('?result=1'))return Response.json({task:{...task,status:'completed'},result});
     return Response.json({task:{...task,status:++checks%2===1?'processing':'completed'}});
   }});
@@ -95,7 +95,7 @@ test('all authenticated upload transports expose progress while retaining queue 
   const evidenceValues:UploadProgress[]=[];task.kind='evidence';task.documentId='term-progress';
   const evidence=store.uploadTermWorkEvidence('term-progress',new File(['pdf'],'proof.pdf'),undefined,v=>evidenceValues.push(v));xhr=latest();
   assert.match(xhr.url,/\/api\/uploads\/payments\/term-progress\/evidence$/);xhr.progress(30,100);xhr.uploaded();xhr.respond(202,{task});await evidence;
-  assert.equal(evidenceValues.some(v=>v.percent===30),true);assert.equal(evidenceValues.at(-1)?.phase,'completed');assert.equal(fetches.length,6);assert.equal(fetches.at(-1),'/state');
+  assert.equal(evidenceValues.some(v=>v.percent===30),true);assert.equal(evidenceValues.at(-1)?.phase,'completed');assert.equal(fetches.length,6);assert.equal(fetches.at(-1),'/its/area3-prototype/public/api/prototype/state');
   const preview={revision:5,sha256:'a'.repeat(64),rows:[],summary:{created:1,updated:0,unchanged:0}};
   for(const entity of ['designator','khs'] as const){
     const report:UploadProgress[]=[];const inspect=store.previewMasterImport(entity,file,'upsert',3,v=>report.push(v));xhr=latest();

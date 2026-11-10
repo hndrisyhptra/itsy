@@ -1,5 +1,15 @@
 # Arsitektur aplikasi it's Area 3
 
+## Same-origin workspace transport — 10 November 2026
+
+[SAME_ORIGIN_TRANSPORT](SAME_ORIGIN_TRANSPORT.md) memisahkan alamat publik browser dari alamat upstream Laravel. PrototypeController.show menghasilkan path named route + request baseUrl tanpa scheme/host; workspaceUrl menyusun path endpoint dikenal pada frontend. Command/state/recovery/CSV/backup tidak lagi memakai boot absolute URL yang dapat mengarah HTTP/host internal. Account URLs fresh boot juga relatif. Tidak mengubah proxy trust/CORS/.env atau menambah host situs hardcoded.
+
+Network/timeout dibedakan dari response non-JSON dan validasi; rejection promise PP kini memakai pesan persistenceError yang menjelaskan hasil belum terkonfirmasi. Success/clear/navigation tetap setelah respons server; response-lost-after-save menjalankan recovery GET lama tanpa duplicate POST. Cache draf existing tetap, tidak menciptakan shared new-PP cache/auto-save.
+
+0 SQL/endpoint/poll/dependency/request tambahan: normal save1POST, failure1POST+1GET, CSRF/revisi/UUID/Branch/auth/ledger/domain/Finance/schema unchanged. Runtime aggregate/reference cost tetap; bukan latency/load improvement claim. NewPHP boot mock covers root/subfolder/http-upstream, frontend integration covers oldHTTPboot/path/errors/uncertainty and existing upload query counts remain. 240PHP/4963assertions,244frontend/build/check:assets/Pint/diffcheck pass.
+
+Role Operation dari pulled commit3e397b8 dipertahankan; satu assertion migrations mengikuti64. No live its/env/permission/migration/Dompis changes, no archive fallback. Server https://its.telkomakses-area3.id/ belum diakses lewat sesi autentikasi/Console/Network; root cause remote dan deployment belum diklaim terbukti. Audit qa/same-origin-transport-20261110.json.
+
 ## Katalog role akun Operation — 10 November 2026
 
 Tujuh kode role Operation ditambahkan sebagai nilai valid pada `AccountAccess::ROLES`, `PrototypeDomain::ROLES`, dan union role TypeScript; migration guarded menambahkannya ke tabel referensi SQL `roles`. Akun tetap diikat ke satu role aktif dan Branch melalui `user_assignments`, dengan validasi penempatan yang sama. Identitas role baru tidak mengubah permission, approver chain, inbox, Finance/APM atau akses Branch; seluruh otorisasi tetap melalui pemeriksaan per fitur. Tidak ada endpoint/query request baru. Migration hanya melakukan lookup kode per role saat deploy, dan rollback menolak identitas yang telah dipakai.

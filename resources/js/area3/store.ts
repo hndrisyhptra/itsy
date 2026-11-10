@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react';
 import { type State, type BoqRow, type BoqUpload, now, createTerm } from './domain';
 import { paymentStartAction } from './payment-selection';
 import { seed } from './seed';
-import { boot, appUrl } from './laravel';
+import { boot, appUrl, workspaceUrl } from './laravel';
 import { type Command, setCommandRecorder } from './commands';
 import type { MasterEntity, MasterCatalog } from './master-data';
 import { enqueueUpload, uploadTask, waitUpload } from './upload-queue';
@@ -33,9 +33,10 @@ async function commit(command: Command, resultId?: string, scan?: { termId: stri
     if (scan) { form.set('file', scan.file); form.set('revision', String(revision)); form.set('request_id', requestId); }
     const response = scan
       ? await postUpload(appUrl('/api/prototype/payments/' + scan.termId + (scan.kind ? '/work-evidence' : '/scan')),form,{'Accept':'application/json','X-CSRF-TOKEN':csrf},scan.onProgress,controller.signal,20000)
-      : await fetch(boot.urls.commands,{method:'POST',credentials:'same-origin',signal:controller.signal,headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':csrf},body:JSON.stringify({...command,revision,request_id:requestId,result_id:resultId??null})});
-    const data = await response.json();
+      : await fetch(workspaceUrl('commands'),{method:'POST',credentials:'same-origin',signal:controller.signal,headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':csrf},body:JSON.stringify({...command,revision,request_id:requestId,result_id:resultId??null})});
     if (response.status === 401 || response.status === 419) { if (boot.accountUrls) window.location.assign(boot.accountUrls.login); }
+    let data;
+    try { data = await response.json(); } catch { throw new Error(`Server mengembalikan respons yang tidak dapat dibaca (HTTP ${response.status}). Periksa konfigurasi situs atau log server.`); }
     if (!response.ok) {
       if (data.state) { confirmed = data.state; revision = data.revision; csrf = data.csrf ?? csrf; }
       const errors: string[] = Object.values(data.errors ?? {}).flat() as string[];
@@ -45,14 +46,20 @@ async function commit(command: Command, resultId?: string, scan?: { termId: stri
     scan?.onProgress?.({phase:'completed',percent:100,message:'Scan tersimpan; verifikasi Finance mengikuti alur dokumen.'});
   } catch (error) {
     try {
-      const response = await fetch(boot.urls.state, {headers:{Accept:'application/json'},credentials:'same-origin',signal:AbortSignal.timeout(5000)});
+      const response = await fetch(workspaceUrl('state'), {headers:{Accept:'application/json'},credentials:'same-origin',signal:AbortSignal.timeout(5000)});
       if (response.ok) { const data = await response.json(); confirmed=data.state; revision=data.revision; csrf=data.csrf ?? csrf; }
     } catch { /* Preserve the last confirmed state. Draft forms are kept locally. */ }
     state = structuredClone(confirmed);
-    persistenceError = `${error instanceof Error ? error.message : 'Koneksi Laravel terputus.'} Perubahan belum dikonfirmasi; data server ditampilkan kembali. Draft formulir tetap tersedia.`;
+    const list = command.command === 'saveProject' ? 'daftar Project Plan' : 'daftar dokumen';
+    const message = error instanceof TypeError && /fetch|network|load failed/i.test(error.message)
+      ? `Koneksi ke server tidak berhasil menerima respons. Status penyimpanan belum dapat dipastikan; periksa ${list} sebelum mengirim ulang.`
+      : error instanceof Error && error.name === 'AbortError'
+        ? 'Batas waktu respons server terlampaui. Status penyimpanan belum dapat dipastikan; periksa daftar dokumen sebelum mengirim ulang.'
+        : error instanceof Error ? error.message : 'Koneksi Laravel terputus.';
+    persistenceError = `${message} Perubahan belum dikonfirmasi; data terakhir yang berhasil dimuat ditampilkan kembali. Draft formulir tetap tersedia.`;
     // Keep PP editor input mounted on a failed save; its explicit save handler shows the error.
     if(scan?.kind!=='work-evidence'&&command.command!=='saveProject')window.dispatchEvent(new CustomEvent('area3:server-error',{detail:persistenceError}));
-    throw error;
+    throw new Error(persistenceError);
   } finally { clearTimeout(timeout); persistencePending=false; emit(); }
 }
 function send(command: Command, resultId?: string) { active = commit(command,resultId); void active.catch(() => {}); }
@@ -122,7 +129,7 @@ export async function refreshState():Promise<void> {
   if(!boot)return;
   for(let attempt=0;attempt<3;attempt++){
     if(persistencePending)await waitForPersistence().catch(()=>{});
-    const response=await fetch(boot.urls.state,{credentials:'same-origin',headers:{Accept:'application/json'},signal:AbortSignal.timeout(15000)});
+    const response=await fetch(workspaceUrl('state'),{credentials:'same-origin',headers:{Accept:'application/json'},signal:AbortSignal.timeout(15000)});
     if(!response.ok)throw new Error('Data terbaru belum dapat dimuat. Gunakan Muat ulang data.');
     const data=await response.json();
     if(persistencePending||data.revision<revision)continue;

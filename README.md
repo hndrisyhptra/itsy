@@ -1,5 +1,7 @@
 # it's Area 3 — Construction Workspace
 
+Simpan/pengajuan memakai alamat API pada origin halaman yang sama agar kompatibel dengan HTTPS/proxy dan subfolder. Koneksi terputus tidak mengirim ulang simpan otomatis; periksa daftar dokumen bila hasilnya belum pasti. [Penanganan Failed to fetch dan deployment](docs/SAME_ORIGIN_TRANSPORT.md).
+
 Build aset mendukung root domain dan subfolder XAMPP melalui base relatif. Setelah deploy jalankan `npm run build` lalu `npm run check:assets` dan muat ulang halaman; `public/build` diabaikan Git sehingga pull saja tidak memperbarui aset. [Penanganan error preload CSS](docs/ACTION_CONFIRMATION.md#perbaikan-css-preload-subfolder--9-november-2026).
 
 **Tombol aksi meminta konfirmasi YA / TIDAK**, termasuk pengajuan, approval, simpan draf, Finance/APM, upload, hapus, impor, unduhan/cetak dan akun. Navigasi/tab/preview tetap langsung. [Cakupan dan hasil pengujian](docs/ACTION_CONFIRMATION.md).

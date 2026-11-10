@@ -3,6 +3,16 @@
 
 
 
+## Failed-to-fetch / same-origin workspace transport — 10 November 2026
+
+**240 PHP tests / 4.963 assertions,244 frontend tests,TypeScript/Vite build,check:assets,scoped Pint dan diff check lulus.** 1PHP test baru (12 assertions) memeriksa boot URLs/accountURLs root/subfolder meski upstream/URL generator HTTP; 1frontend integration test baru memeriksa salah-origin boot HTTP dari halaman HTTPS/subfolder, path POST/recovery GET/CSV/backup, CSRF/revisi/UUID, network/timeout/nonJSON413/422, cache/pending, response-lost-after-save/recovery dan normal success.
+
+Dua tes mock payment-start/upload-progress diperbarui ke endpoint sebenarnya; tepat jumlah GET/POST lama dan semua progress gates tetap. Normal save1POST, failure1POST+1GET tanpa automatic retry. Test migration count63→64 mengikuti migration role Operation pada commit yang ditarik; tidak mengubah migration/role authority. Existing query/ledger/approval/Branch/performance suites lulus. Tidak ada query/endpoint/poll/dependency runtime baru; bootstrap/domain/schema unchanged.
+
+Tests PHP fail-closed SQLite memory, PHP boot memakai mock service; frontend network/fakeXHR terisolasi, bukan live server. Pengguna melaporkan situs HTTPS dan pesan UI; belum ada bukti Console mixed-content/CORS atau pemeriksaan remote proxy. Perbaikan path menutup kemungkinan origin/scheme keliru yang ditemukan pada kode, tidak mengklaim remote connection/SSL/proxy/database/load sudah diuji. No live its/env/permission/migration/Dompis write. Backup baru tidak diperlukan karena workflow/storage contract tidak berubah.
+
+Dilanjutkan setelah pause/pull pada3e397b8; role Operation tetap. Build lokal selesai, perubahan belum di-commit/push/deploy agen. Rincian SAME_ORIGIN_TRANSPORT.md dan qa/same-origin-transport-20261110.json.
+
 ## Confirmation CSS preload / relative build base — 9 November 2026
 
 239 PHP tests / 4.944 assertions, 243 frontend tests, TypeScript/Vite production build dan diff check lulus. Bug ditelusuri pada generated helper lama yang memakai /build/ origin-root; file confirmation CSS ada di public/build lokal, tetapi alamat itu tidak mengikuti Apache subfolder. base ./ menghasilkan new URL(dependency, importerUrl) dengan import.meta.url. @vite tetap memuat entry dari manifest; tidak ada .env/rute/flow/storage change.

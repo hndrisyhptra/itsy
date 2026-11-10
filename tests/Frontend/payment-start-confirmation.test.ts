@@ -11,8 +11,8 @@ test('payment start waits for server confirmation, reuses the latest existing dr
   Object.defineProperty(globalThis,'window',{configurable:true,value:{__AREA3__:{account:{id:'qa'},state:structuredClone(server),revision,csrf:'qa-csrf',basePath:'',urls:{state:'/state',commands:'/commands'}},addEventListener:()=>{},dispatchEvent:()=>{}}});
   Object.defineProperty(globalThis,'CustomEvent',{configurable:true,value:class{constructor(public type:string,public options:unknown){}}});
   Object.defineProperty(globalThis,'fetch',{configurable:true,value:async(url:string,options?:RequestInit)=>{
-    if(url==='/state')return new Response(JSON.stringify(failRead?{message:'Read failed'}:payload()),{status:failRead?503:200});
-    assert.equal(url,'/commands');posts++;const input=JSON.parse(options!.body as string);
+    if(url==='/api/prototype/state')return new Response(JSON.stringify(failRead?{message:'Read failed'}:payload()),{status:failRead?503:200});
+    assert.equal(url,'/api/prototype/commands');posts++;const input=JSON.parse(options!.body as string);
     return new Promise<Response>((resolve,reject)=>{
       confirm=()=>{
         if(fail){resolve(new Response(JSON.stringify({message:'Server menolak',...payload()}),{status:409}));return;}

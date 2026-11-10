@@ -513,3 +513,13 @@ Historical iteration; superseded by the dashboard restoration below.
 - [x] Pertahankan satu role aktif per akun, penugasan Branch dan hierarki penempatan yang ada; role baru tidak mendapat kewenangan workflow otomatis.
 - [x] Catat mapping/perilaku pada docs/ACCOUNT_ROLES.md, README.md, docs/ARCHITECTURE.md, docs/CHANGELOG.md dan docs/LARAVEL_QA.md.
 - [ ] Jalankan verifikasi suite hanya setelah diminta; migration belum dijalankan pada its aktif.
+
+
+## Failed to fetch pada simpan draf/Ajukan PP — 10 November 2026
+
+- [x] Pengguna menyatakan masalah akun selesai dengan create ulang. Tugas koneksi dijeda untuk pull lalu dilanjutkan pada3e397b8; role Operation dan seluruh aturan approval/Branch dipertahankan. Stash tidak di-pop seluruhnya/dihapus.
+- [x] Same-origin root/subfolder boot/API/account URLs dan fixed endpoint command/state/recovery/CSV/backup; tidak memakai URL HTTP/upstream yang salah, tanpa hardcode host/CORS permissive/trust proxy/.env change.
+- [x] Pesan network/timeout/nonJSONHTTP jelas, hasil write tetap uncertain dan PP form/cache tidak dibuang. Satu recovery GET lama, tanpa POST auto-retry atau klaim sukses/navigasi palsu.
+- [x] 240 PHP/4.963 assertions,244 frontend/build/check:assets/Pint/diff check lulus. NewPHP12assertions+1FE integration; dua mock actual endpoint updates dan migration assertion64 sesuai pulled Operation. Query review0 SQL/endpoint/poll/request tambahan; normal1POST/failure1POST+1GET.
+- [x] Docs SAME_ORIGIN_TRANSPORT, arsitektur/CHANGELOG/README/LARAVEL_QA dan qa/same-origin-transport-20261110.json tercatat. Tidak ada live its/migration/env/permission/Dompis changes atau workflow contract change.
+- [ ] Fix baru perlu commit/push/pull+build/check:assets pada server dan refresh halaman. Agen belum commit/push/deploy, belum periksa authenticated browser/Console/Network/SSL/proxy/load server; tidak mengklaim root cause remote telah terbukti.

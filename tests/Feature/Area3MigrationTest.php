@@ -101,7 +101,7 @@ class Area3MigrationTest extends TestCase
         $this->assertSame(1, DB::table('branches')->where('name', 'DENPASAR')->count());
         $this->migrate();
         $this->assertSame(1030, DB::table('designator_package_prices')->count());
-        $this->assertSame(63, DB::table('migrations')->count());
+        $this->assertSame(64, DB::table('migrations')->count());
     }
 
     public function test_users_alignment_preserves_existing_ids_and_passwords_and_the_model_uses_id_user(): void
