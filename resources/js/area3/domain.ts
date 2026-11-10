@@ -13,7 +13,7 @@ import { recordCommand } from './commands';
 import { usesBusinessSupport, saveProjectV2, assertAssigned, previewProjectNumber, rememberProjectNumber, nextApprovalRole, approvalRoles, validateAssignments, canReviseSubmission } from './workflow';
 export { canReviseSubmission } from './workflow';
 export { adoptApprovalOrder, APPROVERS_V3, APPROVERS_V3_PREVIOUS, APPROVERS_V3_LEGACY, nextApprovalRole, usesBusinessSupport, projectApprovalScheme, approvalRoles, selectedApprover, assignPaymentApprovers, validateAssignments, decideProject, setNumberFormat, selectActor, assignProjectApprovers, verifyTermScan, projectApprovalRole, canApproveProject, canApproveTerm, branchOptions, previewProjectNumber, normalizeWorkflow } from './workflow';
-export const ROLES = ['Admin Konstruksi', 'PM Konstruksi', 'Manager Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Bussiness Support', 'Mgr Project Support', 'Head of PMO', 'Finance', 'Superadmin'] as const;
+export const ROLES = ['Admin Konstruksi', 'PM Konstruksi', 'Manager Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Bussiness Support', 'Mgr Project Support', 'Head of PMO', 'Finance', 'Superadmin', 'Admin Operation', 'Admin Operation Area', 'Officer 1 Operation', 'Officer 2 Operation', 'Officer 3 Operation', 'Manager Branch Operation', 'General Manager Operation'] as const;
 export type Role = typeof ROLES[number];
 export type Component = 'm' | 's';
 export interface Khs { id: string; code: string; name: string; unit: string; package: string; m: number | null; s: number | null; version: number; active: boolean; history: { at: string; actor: Role; m: number | null; s: number | null }[] }

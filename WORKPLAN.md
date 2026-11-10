@@ -507,3 +507,9 @@ Historical iteration; superseded by the dashboard restoration below.
 - [x] npm run check:assets: file/manifest lengkap, generated helper actual dieksekusi pada fake DOM untuk root/subfolder/CDN, 30 manifest references / 23 deps / 3 profiles lulus; 243 frontend dan build lulus. Review query: 0 jalur SQL/poll baru; tidak mengubah flow/data/its/Dompis.
 - [x] Audit ARCHITECTURE/CHANGELOG/ACTION_CONFIRMATION/QA; panduan deploy build lengkap karena public/build diabaikan Git, lalu refresh tab lama.
 - [ ] Browser/HTTP/server pengguna/CDN nyata belum diverifikasi; bukan klaim deployment server telah diperbaiki otomatis.
+# 10 November 2026 — Role akun Operation
+
+- [x] Tambahkan ADMIN_OPS, ADMIN_OPS_AREA, OFFICER_OPS1/2/3, MGR_BRANCH_OPS dan GM_OPS beserta label yang diminta ke validasi akun Laravel, domain PHP/TypeScript dan katalog SQL melalui guarded migration.
+- [x] Pertahankan satu role aktif per akun, penugasan Branch dan hierarki penempatan yang ada; role baru tidak mendapat kewenangan workflow otomatis.
+- [x] Catat mapping/perilaku pada docs/ACCOUNT_ROLES.md, README.md, docs/ARCHITECTURE.md, docs/CHANGELOG.md dan docs/LARAVEL_QA.md.
+- [ ] Jalankan verifikasi suite hanya setelah diminta; migration belum dijalankan pada its aktif.

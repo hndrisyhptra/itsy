@@ -1,5 +1,11 @@
 # Arsitektur aplikasi it's Area 3
 
+## Katalog role akun Operation — 10 November 2026
+
+Tujuh kode role Operation ditambahkan sebagai nilai valid pada `AccountAccess::ROLES`, `PrototypeDomain::ROLES`, dan union role TypeScript; migration guarded menambahkannya ke tabel referensi SQL `roles`. Akun tetap diikat ke satu role aktif dan Branch melalui `user_assignments`, dengan validasi penempatan yang sama. Identitas role baru tidak mengubah permission, approver chain, inbox, Finance/APM atau akses Branch; seluruh otorisasi tetap melalui pemeriksaan per fitur. Tidak ada endpoint/query request baru. Migration hanya melakukan lookup kode per role saat deploy, dan rollback menolak identitas yang telah dipakai.
+
+Perilaku/mapping: [ACCOUNT_ROLES.md](ACCOUNT_ROLES.md). Perubahan belum diuji pada its aktif dan migration tidak dijalankan.
+
 Catatan ini menjelaskan struktur runtime aktif dan keputusan perubahan. Baca bersama [MYSQL_RUNTIME.md](MYSQL_RUNTIME.md), [buku saku relasi tabel](DATABASE_RELATIONS.md), AGENTS.md dan [CHANGELOG.md](CHANGELOG.md). Kode Laravel merupakan otoritas validasi dan status tersimpan; dokumentasi SQL konseptual lama tidak menggantikan executable migrations atau runtime.
 
 ## Asset preload relatif untuk root/subfolder — 9 November 2026

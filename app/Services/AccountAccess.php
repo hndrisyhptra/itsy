@@ -18,6 +18,13 @@ class AccountAccess
         'HEAD_OF_PMO' => 'Head of PMO',
         'FINANCE' => 'Finance',
         'SUPERADMIN' => 'Superadmin',
+        'ADMIN_OPS' => 'Admin Operation',
+        'ADMIN_OPS_AREA' => 'Admin Operation Area',
+        'OFFICER_OPS1' => 'Officer 1 Operation',
+        'OFFICER_OPS2' => 'Officer 2 Operation',
+        'OFFICER_OPS3' => 'Officer 3 Operation',
+        'MGR_BRANCH_OPS' => 'Manager Branch Operation',
+        'GM_OPS' => 'General Manager Operation',
     ];
 
     public function context(?User $user, bool $requireActive = true): ?array
