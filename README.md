@@ -1,5 +1,7 @@
 # it's Area 3 — Construction Workspace
 
+**Pembaruan 11 November 2026:** data pribadi Mandor SPK dan kasbon Finance sudah diimplementasikan untuk pengajuan baru `kasbon-v1`; Parsial/Final boleh dibayar sebelum scan, dengan kasbon terbit, persetujuan Finance, bukti transfer dan APM. Riwayat lama tetap. Migrasi baru belum diterapkan pada its aktif; lihat [alur, tabel, privasi, deploy dan batas pengujian](docs/FINANCE_KASBON.md). Aturan lama di bawah tetap berlaku pada dokumen historis bila berbeda.
+
 Simpan/pengajuan memakai alamat API pada origin halaman yang sama agar kompatibel dengan HTTPS/proxy dan subfolder. Koneksi terputus tidak mengirim ulang simpan otomatis; periksa daftar dokumen bila hasilnya belum pasti. [Penanganan Failed to fetch dan deployment](docs/SAME_ORIGIN_TRANSPORT.md).
 
 Build aset mendukung root domain dan subfolder XAMPP melalui base relatif. Setelah deploy jalankan `npm run build` lalu `npm run check:assets` dan muat ulang halaman; `public/build` diabaikan Git sehingga pull saja tidak memperbarui aset. [Penanganan error preload CSS](docs/ACTION_CONFIRMATION.md#perbaikan-css-preload-subfolder--9-november-2026).

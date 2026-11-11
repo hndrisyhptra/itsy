@@ -1,3 +1,4 @@
+import { usesFinancePayment } from './finance-payment';
 import { type State, type Term, type Approval, getTerm, requireAdmin, requireFinance, approvalRoles, now, log, termTotal, uid } from './domain';
 import { recordCommand } from './commands';
 
@@ -9,6 +10,7 @@ export interface PartialPaymentRequest {
 export const usesPartialPayment=(t:Term)=>t.workflowVersion===3&&t.type==='Parsial'&&t.paymentFlow==='partial-payment-v1';
 export const documentStatus=(t:Term):'OK'|'NOK'=>t.scan?'OK':'NOK';
 export function financeTaskPending(t:Term) {
+  if(usesFinancePayment(t))return ['Diajukan','Disetujui'].includes(t.status)&&(t.apmStatus!=='Valid'||t.scan?.status==='Menunggu Verifikasi');
   if(t.status!=='Disetujui')return false;
   if(usesPartialPayment(t))return (t.apmStatus!=='Valid'&&['Diajukan','Diverifikasi'].includes(t.paymentRequest?.status??''))||t.scan?.status==='Menunggu Verifikasi';
   return (t.workflowVersion??1)>=2&&t.apmStatus!=='Valid'&&['Menunggu Verifikasi','Valid'].includes(t.scan?.status??'');
@@ -19,7 +21,7 @@ export function partialPaymentLabel(t:Term) {
   return !request?'Belum diajukan ke Finance':request.status==='Diajukan'?'Menunggu verifikasi Payment Finance':request.status==='Diverifikasi'?'Menunggu pencatatan APM':request.status==='Dikembalikan'?'Payment dikembalikan ke Admin':'Payment terbayar';
 }
 function eligible(t:Term) {
-  if(t.workflowVersion!==3||t.type!=='Parsial'||t.status!=='Disetujui'||t.approvals.length!==approvalRoles(t).length||t.apmStatus==='Valid'||t.paid>0)throw new Error('Payment khusus Termin Parsial membutuhkan lima approval lengkap dan tagihan belum dibayar.');
+  if(usesFinancePayment(t)||t.workflowVersion!==3||t.type!=='Parsial'||t.status!=='Disetujui'||t.approvals.length!==approvalRoles(t).length||t.apmStatus==='Valid'||t.paid>0)throw new Error('Payment khusus Termin Parsial membutuhkan lima approval lengkap dan tagihan belum dibayar.');
   const approvals=new Map(t.approvals.map(a=>[a.role,a]));
   for(const role of approvalRoles(t)){const a=approvals.get(role);if(a?.decision!=='Setujui'||!a.userId||a.userId!==t.approverUserIds?.[role])throw new Error('Approval Payment harus sesuai kelima pengguna terpilih, termasuk Head of PMO.');}
 }

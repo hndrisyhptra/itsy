@@ -31,18 +31,31 @@ class UploadQueue
     public function enqueue(PrototypeWorkspace $workspace, UploadedFile $file, string $kind, string $document, string $requestId, ?int $revision): array
     {
         $account = app(AuthenticatedWorkspace::class)->account();
-        abort_unless(in_array($account['role'], ['Admin Konstruksi', 'Superadmin'], true), 403);
+        abort_unless(in_array($account['role'], $kind === 'transfer-proof' ? ['Finance'] : ['Admin Konstruksi', 'Superadmin'], true), 403);
+        if (in_array($kind, FinanceDocuments::KINDS, true)) {
+            abort_unless(DB::table('migrations')->where('migration', '2026_11_11_000001_create_finance_kasbon_workflow')->exists(), 503, 'Upload dokumen kasbon belum siap. Administrator perlu menjalankan migration kasbon dan memuat ulang worker aplikasi.');
+        }
         $hash = hash_file('sha256', $file->getRealPath());
 
         return DB::transaction(function () use ($workspace, $file, $kind, $document, $requestId, $revision, $hash) {
             $row = PrototypeWorkspace::whereKey($workspace->id)->lockForUpdate()->firstOrFail();
             $existing = DB::table('upload_tasks')->where('request_uuid', $requestId)->first();
             if ($existing) {
+                if (in_array($kind, FinanceDocuments::KINDS, true)) {
+                    app(FinanceDocuments::class)->authorize($row, $document, $kind === 'transfer-proof');
+                }
                 abort_unless((int) $existing->user_id === (int) auth()->id() && $existing->workspace_id === $row->id && $existing->kind === $kind && $existing->document_id === $document && $existing->sha256 === $hash, 409, 'ID upload sudah digunakan untuk file lain.');
 
                 return $this->describe($existing);
             }
             abort_if($revision !== null && $row->revision !== $revision, 409, 'Data berubah. Muat ulang sebelum mengunggah.');
+            $context = null;
+            if (in_array($kind, FinanceDocuments::KINDS, true)) {
+                $record = app(FinanceDocuments::class)->authorizeUpload($row, $document, $kind);
+                if ($kind === 'transfer-proof') {
+                    $context = json_decode($record->term_data, true, 512, JSON_THROW_ON_ERROR)['kasbon']['id'];
+                }
+            }
             if ($kind === 'evidence') {
                 $term = $this->term($row, $document);
                 abort_unless($this->editable($term), 422, 'Lampiran terkunci; pengajuan harus dapat diperbaiki Admin.');
@@ -55,9 +68,15 @@ class UploadQueue
             $path = $file->storeAs('upload-queue/'.$row->id.'/'.$id, 'source', 'local');
             abort_unless($path, 500, 'File gagal disimpan.');
             try {
-                DB::table('upload_tasks')->insert(['id_upload_task' => $id, 'workspace_id' => $row->id, 'user_id' => auth()->id(), 'request_uuid' => $requestId,
-                    'kind' => $kind, 'document_id' => $document, 'status' => 'queued', 'original_name' => $name ?: 'upload', 'storage_key' => $path,
-                    'mime' => $file->getMimeType() ?: 'application/octet-stream', 'size' => $file->getSize(), 'sha256' => $hash, 'created_at' => now(), 'updated_at' => now()]);
+                $task = ['id_upload_task' => $id, 'workspace_id' => $row->id, 'user_id' => auth()->id(), 'request_uuid' => $requestId,
+                    'kind' => $kind, 'document_id' => $document, 'status' => 'queued', 'original_name' => in_array($kind, FinanceDocuments::KINDS, true) ? $kind : ($name ?: 'upload'), 'storage_key' => $path,
+                    'mime' => $file->getMimeType() ?: 'application/octet-stream', 'size' => $file->getSize(), 'sha256' => $hash, 'created_at' => now(), 'updated_at' => now()];
+                // BOQ/work evidence must also run on the pre-kasbon upload schema.
+                // Only transfer proof needs the immutable kasbon-version binding.
+                if ($kind === 'transfer-proof') {
+                    $task['context_id'] = $context;
+                }
+                DB::table('upload_tasks')->insert($task);
                 // Same database transaction for task and job: there is no unqueued task after commit.
                 ProcessUpload::dispatch($id)->beforeCommit();
             } catch (Throwable $error) {
@@ -91,7 +110,7 @@ class UploadQueue
             $user = User::find($task->user_id);
             abort_unless(app(AccountAccess::class)->context($user), 403, 'Akses akun pengunggah sudah tidak aktif.');
             Auth::setUser($user);
-            abort_unless(in_array(app(AuthenticatedWorkspace::class)->account()['role'], ['Admin Konstruksi', 'Superadmin'], true), 403, 'Peran pengunggah tidak lagi diizinkan.');
+            abort_unless(in_array(app(AuthenticatedWorkspace::class)->account()['role'], $task->kind === 'transfer-proof' ? ['Finance'] : ['Admin Konstruksi', 'Superadmin'], true), 403, 'Peran pengunggah tidak lagi diizinkan.');
             DB::table('upload_tasks')->where('id_upload_task', $id)->increment('attempts', 1, ['status' => 'processing', 'started_at' => now(), 'updated_at' => now()]);
             $disk = Storage::disk('local');
             abort_unless($disk->exists($task->storage_key) && hash_file('sha256', $disk->path($task->storage_key)) === $task->sha256, 422, 'File upload tidak ditemukan atau tidak utuh. Unggah ulang file.');
@@ -102,20 +121,26 @@ class UploadQueue
                 app(BoqImportStorage::class)->store($workspace, new UploadedFile($disk->path($task->storage_key), $task->original_name, null, null, true), $catalog, $id);
                 DB::table('upload_tasks')->where('id_upload_task', $id)->update(['status' => 'completed', 'completed_at' => now(), 'updated_at' => now(), 'error' => null]);
             } else {
+                $private = in_array($task->kind, FinanceDocuments::KINDS, true);
                 $mime = (new \finfo(FILEINFO_MIME_TYPE))->file($disk->path($task->storage_key));
                 $ext = ['application/pdf' => 'pdf', 'image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'][$mime] ?? null;
                 abort_unless($ext && ($ext === 'pdf' || @getimagesize($disk->path($task->storage_key))), 422, 'Isi eviden harus PDF atau foto JPG, PNG, WebP yang valid.');
-                $target = 'work-evidence/'.$workspace->id.'/'.$task->document_id.'/'.$id.'.'.$ext;
+                abort_if($private && $task->kind !== 'transfer-proof' && $ext === 'pdf', 422, 'KTP/buku tabungan harus berupa foto.');
+                $target = ($private ? 'finance-private/' : 'work-evidence/').$workspace->id.'/'.$task->document_id.'/'.$id.'.'.$ext;
                 abort_unless($disk->copy($task->storage_key, $target), 500, 'Eviden gagal disiapkan.');
                 try {
-                    DB::transaction(function () use ($workspace, $task, $id, $mime, $ext) {
-                        $row = PrototypeWorkspace::whereKey($workspace->id)->lockForUpdate()->firstOrFail();
-                        $this->term($row, $task->document_id); // Recheck current Branch assignment, not enqueue-time permissions.
-                        app(PrototypeWorkspaceService::class)->command($row, ['command' => '_attachTermWorkEvidence', 'args' => [$task->document_id,
-                            ['id' => $id, 'name' => $task->original_name, 'mime' => $mime, 'extension' => $ext, 'size' => (int) $task->size, 'sha256' => $task->sha256]],
-                            'revision' => $row->revision, 'request_id' => $task->request_uuid], false);
-                        DB::table('upload_tasks')->where('id_upload_task', $id)->update(['status' => 'completed', 'completed_at' => now(), 'updated_at' => now(), 'error' => null]);
-                    });
+                    if ($private) {
+                        app(FinanceDocuments::class)->attach($workspace, $task, $mime, $ext, $target);
+                    } else {
+                        DB::transaction(function () use ($workspace, $task, $id, $mime, $ext) {
+                            $row = PrototypeWorkspace::whereKey($workspace->id)->lockForUpdate()->firstOrFail();
+                            $this->term($row, $task->document_id); // Recheck current Branch assignment, not enqueue-time permissions.
+                            app(PrototypeWorkspaceService::class)->command($row, ['command' => '_attachTermWorkEvidence', 'args' => [$task->document_id,
+                                ['id' => $id, 'name' => $task->original_name, 'mime' => $mime, 'extension' => $ext, 'size' => (int) $task->size, 'sha256' => $task->sha256]],
+                                'revision' => $row->revision, 'request_id' => $task->request_uuid], false);
+                            DB::table('upload_tasks')->where('id_upload_task', $id)->update(['status' => 'completed', 'completed_at' => now(), 'updated_at' => now(), 'error' => null]);
+                        });
+                    }
                 } catch (Throwable $error) {
                     // Preserve bytes on uncertain/transient DB failures; terminal cleanup below
                     // removes only unlinked files, never a successfully committed attachment.
@@ -149,11 +174,12 @@ class UploadQueue
         }
         DB::table('upload_tasks')->where('id_upload_task', $id)->update(['status' => 'failed', 'error' => mb_substr($message, 0, 1500), 'completed_at' => now(), 'updated_at' => now()]);
         Storage::disk('local')->deleteDirectory(dirname($task->storage_key));
-        if ($task->kind === 'evidence') {
-            $prefix = 'work-evidence/'.$task->workspace_id.'/'.$task->document_id.'/'.$task->id_upload_task;
+        if ($task->kind === 'evidence' || in_array($task->kind, FinanceDocuments::KINDS, true)) {
+            $private = in_array($task->kind, FinanceDocuments::KINDS, true);
+            $prefix = ($private ? 'finance-private/' : 'work-evidence/').$task->workspace_id.'/'.$task->document_id.'/'.$task->id_upload_task;
             foreach (['pdf', 'jpg', 'png', 'webp'] as $extension) {
                 $key = $prefix.'.'.$extension;
-                if (! DB::table('document_files')->where('storage_disk', 'local')->where('storage_key', $key)->exists()) {
+                if (! ($private ? DB::table('finance_private_files')->where('storage_key', $key)->exists() : DB::table('document_files')->where('storage_disk', 'local')->where('storage_key', $key)->exists())) {
                     Storage::disk('local')->delete($key);
                 }
             }

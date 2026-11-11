@@ -57,13 +57,13 @@ class Area3MigrationTest extends TestCase
         $this->migrate();
         $manifest = json_decode(file_get_contents(database_path('mysql/master-source-manifest.json')), true);
         $foreignKeys = 0;
-        foreach ($manifest['schema']['primary_keys'] as $table => $key) {
+        foreach (($manifest['schema']['primary_keys'] + ['finance_private_files' => 'id_finance_file', 'mandor_payee_profiles' => 'id_payee', 'finance_kasbons' => 'id_kasbon']) as $table => $key) {
             $this->assertTrue(Schema::hasColumn($table, $key), $table.'.'.$key);
             $primary = collect(Schema::getIndexes($table))->firstWhere('primary', true);
             $this->assertSame([$key], $primary['columns'], $table);
             $foreignKeys += count(Schema::getForeignKeys($table));
         }
-        $this->assertSame(97, $foreignKeys);
+        $this->assertSame(107, $foreignKeys);
         $this->assertFalse(Schema::hasTable('area3_users'));
         $this->assertFalse(Schema::hasColumn('users', 'id'));
         $this->assertTrue(Schema::hasColumn('boq_lines', 'source_import_id'));
@@ -101,7 +101,7 @@ class Area3MigrationTest extends TestCase
         $this->assertSame(1, DB::table('branches')->where('name', 'DENPASAR')->count());
         $this->migrate();
         $this->assertSame(1030, DB::table('designator_package_prices')->count());
-        $this->assertSame(64, DB::table('migrations')->count());
+        $this->assertSame(65, DB::table('migrations')->count());
     }
 
     public function test_users_alignment_preserves_existing_ids_and_passwords_and_the_model_uses_id_user(): void

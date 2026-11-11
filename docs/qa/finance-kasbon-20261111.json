@@ -1,0 +1,72 @@
+{
+  "date": "2026-11-11",
+  "feature": "mandor-private-payee-and-finance-kasbon-v1",
+  "baseline_commit": "d180fbf",
+  "backup": {
+    "file": "storage/app/private/backups/its-before-kasbon-20261111-004540.sql",
+    "bytes": 2096563,
+    "sha256": "55ac43195104c27f527fb75daf042185cb873d83b8a304743e8cf71133056cdb",
+    "restore_tested": false
+  },
+  "verification": {
+    "php": {
+      "passed": 254,
+      "assertions": 5390,
+      "database": "sqlite :memory:",
+      "new_feature_tests": 14
+    },
+    "frontend": {
+      "passed": 252,
+      "new_tests": 8
+    },
+    "build": "passed",
+    "asset_check": {
+      "manifest_references": 32,
+      "preload_dependencies": 25,
+      "profiles": 3
+    },
+    "scoped_pint": "passed",
+    "diff_check": "passed"
+  },
+  "query_evidence": {
+    "private_payee_with_workspace_fixture": 5,
+    "private_payee_service": 4,
+    "kasbon_issue_http_one_term": 47,
+    "apm_http_one_term": 44,
+    "issue_apm_budget": 75,
+    "issue_unrelated_projection_writes": 0,
+    "picker_query_count_delta": 0,
+    "limitation": "Scoped isolated fixtures; existing full aggregate/catalog reads remain; no multiuser/MySQL latency benchmark."
+  },
+  "storage": {
+    "migration": "2026_11_11_000001_create_finance_kasbon_workflow",
+    "live_applied": false,
+    "new_tables": {
+      "mandor_payee_profiles": "id_payee",
+      "finance_private_files": "id_finance_file",
+      "finance_kasbons": "id_kasbon"
+    },
+    "pii_encryption": "Laravel Crypt with existing APP_KEY",
+    "private_file_prefix": "finance-private/",
+    "pii_in_boot_exports_localStorage": false,
+    "upload_context": "server-bound kasbon id at enqueue",
+    "apm_authority": "scan OR legacy Partial request OR kasbon+transfer; same-term composite FK"
+  },
+  "preservation": {
+    "old_workflow_authorities": true,
+    "five_approval_chain": true,
+    "wet_signatures_blank": true,
+    "issued_kasbon_and_payee_snapshots": true,
+    "workspace_archive_unchanged": true,
+    "no_demo_live_data": true
+  },
+  "not_verified": [
+    "Live MySQL/MariaDB migration",
+    "Authenticated browser/responsive/keyboard",
+    "Physical print and Excel/Word layout",
+    "Server aaPanel upload/worker integration",
+    "Live bank transfer/external identity validation",
+    "Production concurrency/load"
+  ],
+  "deployment": "Preserve APP_KEY; backup database/private storage; maintenance window migrate/build/check-assets; restart only its upload worker; no deployment performed."
+}

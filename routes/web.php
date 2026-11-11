@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\FinanceDocumentController;
 use App\Http\Controllers\MasterDesignatorController;
 use App\Http\Controllers\NegotiationProjectController;
 use App\Http\Controllers\PaymentProjectController;
@@ -28,6 +29,10 @@ Route::middleware(PrivatePrototype::class)->group(function () {
         Route::post('/akun', [AccountController::class, 'save'])->name('accounts.store');
         Route::get('/akun/{user}/edit', [AccountController::class, 'edit'])->name('accounts.edit');
         Route::put('/akun/{user}', [AccountController::class, 'save'])->name('accounts.update');
+        Route::match(['get', 'post'], '/api/finance/spk/{spk}/payee', [FinanceDocumentController::class, 'payee'])->where('spk', '[a-zA-Z0-9-]{3,100}')->middleware('throttle:60,1');
+        Route::match(['get', 'post'], '/api/finance/terms/{term}/kasbon', [FinanceDocumentController::class, 'kasbon'])->where('term', '[a-zA-Z0-9-]{3,100}')->middleware('throttle:60,1');
+        Route::post('/api/finance/uploads/{kind}/{document}', [FinanceDocumentController::class, 'upload'])->where('kind', 'mandor-ktp|mandor-bank|transfer-proof')->where('document', '[a-zA-Z0-9-]{3,100}')->middleware('throttle:prototype-scans');
+        Route::get('/api/finance/files/{file}', [FinanceDocumentController::class, 'file'])->whereUuid('file');
         Route::get('/api/prototype/state', [PrototypeController::class, 'state'])->name('prototype.state');
         Route::get('/api/prototype/negotiation/projects', [NegotiationProjectController::class, 'projects'])->middleware('throttle:120,1');
         Route::get('/api/prototype/negotiation/projects/{project}/plans', [NegotiationProjectController::class, 'plans'])->whereUuid('project')->middleware('throttle:120,1');

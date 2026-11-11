@@ -33,7 +33,7 @@ class PartialPaymentTest extends TestCase
         $this->asRole('Admin Konstruksi');
         $s = $this->getJson('/api/prototype/state')->assertOk()->json('state');
         $response = $this->api('createTerm', [$s['spks'][0]['id']])->assertOk();
-        $t = $response->json('state.terms.0');
+        $t = $this->historicalPaymentFixture($response->json('state.terms.0.id'));
         $t['type'] = $final ? 'Final' : 'Parsial';
         $t['actuals'] = [$s['deals'][0]['rows'][0]['rowId'] => ['m' => 1, 's' => 1]];
         $t['barp']['place'] = 'Tempat QA';

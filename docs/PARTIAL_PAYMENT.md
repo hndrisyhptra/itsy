@@ -1,5 +1,7 @@
 # Payment Termin Parsial sebelum kelengkapan scan — 9 November 2026
 
+**Pembaruan 11 November 2026:** data pribadi Mandor SPK dan kasbon Finance sudah diimplementasikan untuk pengajuan baru `kasbon-v1`; Parsial/Final boleh dibayar sebelum scan, dengan kasbon terbit, persetujuan Finance, bukti transfer dan APM. Riwayat lama tetap. Migrasi baru belum diterapkan pada its aktif; lihat [alur, tabel, privasi, deploy dan batas pengujian](FINANCE_KASBON.md). Aturan lama di bawah tetap berlaku pada dokumen historis bila berbeda.
+
 Permintaan terbaru menambah jalur Payment untuk **Termin Parsial v3** yang telah disetujui kelima approver sampai Head of PMO. Admin dapat mengirim Payment ke Finance tanpa scan TTD. Finance harus memverifikasi Payment sebelum mencatat APM sebagai pelunasan penuh. **Format/form kasbon ditunda secara eksplisit oleh pengguna; tidak dibuat isian, perhitungan atau kewajiban kasbon rekaan.** Pengguna akan memberikan formatnya kemudian.
 
 ## Alur pengguna

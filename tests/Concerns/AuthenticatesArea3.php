@@ -5,10 +5,13 @@ namespace Tests\Concerns;
 use App\Models\PrototypeWorkspace;
 use App\Models\User;
 use App\Services\AccountAccess;
+use App\Services\FinanceDocuments;
 use App\Services\PrototypeDomain;
 use App\Services\PrototypeWorkspaceService;
 use App\Services\RelationalWorkflowStore;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 trait AuthenticatesArea3
 {
@@ -27,6 +30,48 @@ trait AuthenticatesArea3
         $this->actingAs($user)->withSession(['password_hash_web' => $user->password]);
 
         return $user;
+    }
+
+    /** Freeze a pre-kasbon v3 fixture; production never removes this marker. */
+    private function historicalPaymentFixture(string $id): array
+    {
+        if (DB::getDriverName() !== 'sqlite' || DB::connection()->getDatabaseName() !== ':memory:' || ! app()->environment('testing')) {
+            throw new \RuntimeException('Memory only');
+        }
+        $w = PrototypeWorkspace::first();
+        $store = app(RelationalWorkflowStore::class);
+        $state = $store->read($w);
+        $before = $state;
+        foreach ($state['terms'] as &$t) {
+            if ($t['id'] === $id) {
+                unset($t['paymentFlow'], $t['financePayment']);
+                $found = $t;
+            }
+        }
+        unset($t);
+        DB::transaction(fn () => $store->write($w, $state, $before));
+
+        return $found;
+    }
+
+    /** Synthetic PII/files only on the existing fail-closed memory fixture. */
+    private function completeMandorPayee(string $spk): void
+    {
+        if (DB::getDriverName() !== 'sqlite' || DB::connection()->getDatabaseName() !== ':memory:' || ! app()->environment('testing')) {
+            throw new \RuntimeException('Memory only');
+        }
+        Storage::fake('local');
+        $w = PrototypeWorkspace::first();
+        $id = app(RelationalWorkflowStore::class)->id($w->id, 'spks', $spk);
+        $files = [];
+        foreach (['ktpFileId' => 'mandor-ktp', 'bankFileId' => 'mandor-bank'] as $key => $kind) {
+            $file = (string) Str::uuid();
+            $path = 'finance-private/'.$w->id.'/'.$spk.'/'.$file.'.png';
+            Storage::disk('local')->put($path, 'QA private bytes');
+            DB::table('finance_private_files')->insert(['id_finance_file' => $file, 'workspace_id' => $w->id, 'spk_id' => $id, 'term_id' => null, 'kind' => $kind, 'storage_key' => $path, 'mime' => 'image/png', 'extension' => 'png', 'size' => 16, 'sha256' => hash('sha256', 'QA private bytes'), 'uploaded_by' => auth()->id(), 'created_at' => now()]);
+            $files[$key] = $file;
+        }
+        app(FinanceDocuments::class)->savePayee($w, $spk, ['data' => $files + ['nik' => '0011223344556677', 'accountNumber' => '0001234567', 'accountName' => 'QA Mandor', 'bank' => 'QA Bank'], 'revision' => $w->revision, 'request_id' => (string) Str::uuid()]);
     }
 
     private function seedWorkflow(string $scenario = 'overview'): array
@@ -60,7 +105,7 @@ trait AuthenticatesArea3
                 throw new \RuntimeException('Fixture replacement requires isolated memory storage.');
             }
             foreach (['term_work_evidence', 'volume_movements', 'command_receipts', 'continuation_allocations', 'volume_releases', 'ba_completions',
-                'apm_settlements', 'partial_payment_requests', 'term_scans', 'approval_decisions', 'approval_steps', 'approval_runs', 'term_actuals', 'payment_terms',
+                'apm_settlements', 'finance_kasbons', 'mandor_payee_profiles', 'finance_private_files', 'partial_payment_requests', 'term_scans', 'approval_decisions', 'approval_steps', 'approval_runs', 'term_actuals', 'payment_terms',
                 'work_orders', 'contract_documents', 'contract_components', 'contracts', 'volume_balances', 'boq_components', 'boq_lines',
                 'boq_import_rows', 'boq_import_batches', 'boq_import_templates', 'document_files', 'project_plan_budget_rows',
                 'project_plan_team', 'project_plan_schedule', 'project_plan_costs', 'project_plans', 'projects',

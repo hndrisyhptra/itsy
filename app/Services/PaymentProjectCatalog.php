@@ -50,7 +50,7 @@ final class PaymentProjectCatalog
         }
         $visible = $rows->take(self::PAGE_SIZE);
         $terms = $visible->isEmpty() ? collect() : DB::table('payment_terms')->whereIn('work_order_id', $visible->pluck('id_spk'))
-            ->orderBy('term_no')->get(['work_order_id', 'source_id as id', 'term_no', 'term_type', 'status', 'workflow_version', 'document_data->apmStatus as apm_status', 'document_data->scan->status as scan_status', 'document_data->financeApproval->at as finance_at', 'document_data->paymentFlow as payment_flow', 'document_data->paymentRequest->status as payment_status'])->groupBy('work_order_id');
+            ->orderBy('term_no')->get(['work_order_id', 'source_id as id', 'term_no', 'term_type', 'status', 'workflow_version', 'document_data->apmStatus as apm_status', 'document_data->scan->status as scan_status', 'document_data->financeApproval->at as finance_at', 'document_data->paymentFlow as payment_flow', 'document_data->paymentRequest->status as payment_status', 'document_data->financePayment->status as finance_payment_status'])->groupBy('work_order_id');
         // Domain rounds the combined M/J amount per source BOQ row, then sums those lines.
         $amounts = [];
         if ($visible->isNotEmpty()) {
@@ -68,6 +68,7 @@ final class PaymentProjectCatalog
                     'APPROVED' => 'Disetujui', 'SUBMITTED' => 'Diajukan', 'RETURNED' => 'Dikembalikan', 'REJECTED' => 'Ditolak', default => 'Draft'
                 },
                 'version' => (int) $t->workflow_version, 'apmStatus' => $t->apm_status ?? '', 'scanStatus' => $t->scan_status ?? '', 'financeApproved' => ! empty($t->finance_at),
+                ...($t->payment_flow === 'kasbon-v1' ? ['financePaymentStatus' => ($t->finance_payment_status === 'Menunggu Approval' && $t->status === 'APPROVED') ? 'Menunggu Kasbon Finance' : ($t->finance_payment_status ?? 'Menunggu Kasbon Finance')] : []),
                 ...($t->payment_flow === 'partial-payment-v1' ? ['partialPaymentStatus' => $t->payment_status] : []),
             ])->all();
             $latest = $history ? $history[array_key_last($history)] : null;

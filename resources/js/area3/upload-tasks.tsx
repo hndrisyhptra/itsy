@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { RefreshCw, Check } from 'lucide-react';
-import { pendingUpload, recentUploads, resumeUpload, type UploadTask } from './upload-queue';
+import { pendingUpload, recentUploads, resumeUpload, type UploadKind, type UploadTask } from './upload-queue';
 import { Button, Notice } from './ui';
 import { taskUploadProgress } from './upload-progress';
 import { UploadProgressView } from './upload-progress-view';
-export function UploadTasks({kind,documentId,onUse,onReady,onPending}:{kind:'boq'|'evidence';documentId:string;onUse?:(task:UploadTask)=>void;onReady?:(task:UploadTask)=>void;onPending?:(count:number)=>void}) {
+export function UploadTasks({kind,documentId,onUse,onReady,onPending}:{kind:UploadKind;documentId:string;onUse?:(task:UploadTask)=>void;onReady?:(task:UploadTask)=>void;onPending?:(count:number)=>void}) {
   const [tasks,setTasks]=useState<UploadTask[]>([]),[error,setError]=useState(''),[online,setOnline]=useState(true),[reload,setReload]=useState(0);
   const callbacks=useRef({onReady,onPending});callbacks.current={onReady,onPending};
   useEffect(()=>{

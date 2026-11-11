@@ -8,6 +8,7 @@ use Illuminate\Validation\ValidationException;
 /** Server authority for the demo workflow. The React calculations are UX previews. */
 class PrototypeDomain
 {
+    use FinancePaymentWorkflow;
     use PartialPaymentWorkflow;
     use PrototypeTermWorkEvidence;
     use PrototypeWorkflowV2;
@@ -35,6 +36,14 @@ class PrototypeDomain
             'reviewBoq' => $this->reviewBoq($args[0] ?? '', $args[1] ?? '', $args[2] ?? ''),
             'finalizeBoq' => $this->finalizeBoq($args[0] ?? ''),
             'saveDeal' => $this->saveDeal($this->object($args[0] ?? null), $args[1] ?? 'save'),
+            'saveSpkFinance' => $this->saveSpkFinance($this->object($args[0] ?? null), $args[1] ?? 'save'),
+            '_recordPayeeFile' => $this->recordPayeeFile($args[0] ?? ''),
+            '_setPayeeVersion' => $this->setPayeeVersion($args[0] ?? '', (int) ($args[1] ?? 0)),
+            '_issueKasbon' => $this->issueKasbonSummary($args[0] ?? '', $this->object($args[1] ?? null)),
+            '_attachTransferProof' => $this->attachTransferProof($args[0] ?? '', $this->object($args[1] ?? null)),
+            'adoptFinancePayment' => $this->adoptFinancePayment($args[0] ?? ''),
+            'submitFinanceTerm' => $this->submitFinanceTerm($this->object($args[0] ?? null)),
+            'decideFinancePayment' => $this->decideFinancePayment($args[0] ?? '', $args[1] ?? '', $args[2] ?? ''),
             'saveSpk' => $this->saveSpk($this->object($args[0] ?? null), $args[1] ?? 'save'),
             'createTerm' => $this->createTerm($args[0] ?? '', $resultId),
             'saveTerm' => $this->saveTerm($this->object($args[0] ?? null), (bool) ($args[1] ?? false)),
@@ -619,6 +628,13 @@ class PrototypeDomain
         $this->enum($action, ['save', 'generate', 'attest']);
         $old = $this->existing('spks', $v['id'] ?? '');
         $v['evidence'] = $old['evidence'] ?? '';
+        unset($v['_payeeReady']);
+        unset($v['financialFlow'], $v['payeeVersion']);
+        foreach (['financialFlow', 'payeeVersion'] as $field) {
+            if (isset($old[$field])) {
+                $v[$field] = $old[$field];
+            }
+        }
         if ($old && $old['status'] === 'Sah') {
             $this->fail('SPK sah terkunci.');
         }
@@ -672,7 +688,7 @@ class PrototypeDomain
             $this->fail('Maksimal tiga termin dan tidak ada termin setelah Final.');
         }
         $previous = end($terms);
-        if ($previous && self::usesPartialPayment($previous) && bccomp((string) $previous['paid'], (string) $this->termTotal($previous), 2) !== 0) {
+        if ($previous && (($this->state['schema'] ?? 1) >= 3 || self::usesPartialPayment($previous) || self::usesFinancePayment($previous)) && bccomp((string) $previous['paid'], (string) $this->termTotal($previous), 2) !== 0) {
             $this->fail('Payment termin sebelumnya harus lunas sebelum termin berikutnya.');
         }
         if ($previous && ($previous['status'] !== 'Disetujui' || count($previous['approvals']) !== $this->approvalCount($previous) || $previous['apmStatus'] !== 'Valid')) {
@@ -696,6 +712,8 @@ class PrototypeDomain
             $t['workflowVersion'] = $version;
             $t['pmUserId'] = $chain['PM Konstruksi'];
             if ($version >= 3) {
+                $t['paymentFlow'] = 'kasbon-v1';
+                $t['financePayment'] = ['status' => 'Menunggu Approval'];
                 $t['approvalScheme'] = 'project-support-first';
                 $t['approverUserIds'] = $chain;
                 $t['financeHistory'] = [];
@@ -808,14 +826,18 @@ class PrototypeDomain
         if ($t['status'] !== 'Disetujui' || count($t['approvals']) !== $this->approvalCount($t)) {
             $this->fail('APM membutuhkan approval lengkap.');
         }
+        $financePayment = self::usesFinancePayment($t);
+        if ($financePayment) {
+            $this->assertFinanceApmReady($t);
+        }
         $partial = self::usesPartialPayment($t);
         if ($partial) {
             $this->assertPartialApmReady($t);
         }
-        if (($t['workflowVersion'] ?? 1) >= 2 && ((! $partial && ($t['scan']['status'] ?? '') !== 'Valid') || $t['apmStatus'] === 'Valid')) {
+        if (($t['workflowVersion'] ?? 1) >= 2 && ((! $partial && ! $financePayment && ($t['scan']['status'] ?? '') !== 'Valid') || $t['apmStatus'] === 'Valid')) {
             $this->fail('APM memerlukan scan yang diverifikasi Finance dan belum dibayar.');
         }
-        if (! $partial && ($t['workflowVersion'] ?? 1) >= 3 && (($t['financeApproval']['decision'] ?? '') !== 'Setujui' || ($t['financeApproval']['scanId'] ?? '') !== ($t['scan']['id'] ?? '') || ($t['financeApproval']['userId'] ?? '') !== ($t['scan']['verifiedBy'] ?? ''))) {
+        if (! $partial && ! $financePayment && ($t['workflowVersion'] ?? 1) >= 3 && (($t['financeApproval']['decision'] ?? '') !== 'Setujui' || ($t['financeApproval']['scanId'] ?? '') !== ($t['scan']['id'] ?? '') || ($t['financeApproval']['userId'] ?? '') !== ($t['scan']['verifiedBy'] ?? ''))) {
             $this->fail('Approval Finance harus sesuai scan terbaru sebelum APM dicatat.');
         }
         if (($t['workflowVersion'] ?? 1) >= 2 && ! $valid) {
@@ -848,6 +870,12 @@ class PrototypeDomain
             $t['paymentRequest']['paidAt'] = now()->toISOString();
             $t['paymentRequest']['paidBy'] = $this->state['actorUserId'];
             $t['paymentRequest']['documentsAtPayment'] = isset($t['scan']) ? 'OK' : 'NOK';
+        }
+        if ($financePayment) {
+            $t['financePayment']['status'] = 'Dibayar';
+            $t['financePayment']['documentsAtPayment'] = isset($t['scan']) ? 'OK' : 'NOK';
+            $t['financePayment']['kasbonId'] = $t['kasbon']['id'];
+            $t['financePayment']['transferFileId'] = $t['transferProof']['id'];
         }
         $this->put('terms', $t);
         $this->log('APM dicatat', $apm, '/termin/'.$id);

@@ -78,7 +78,7 @@ class PrototypeReportService
                         || ($role === 'Finance' && PrototypeDomain::financeTaskPending($t))) {
                         $waiting++;
                     }
-                    foreach (array_merge($t['history'], $t['financeHistory'] ?? [], PrototypeDomain::partialFinanceHistory($t)) as $a) {
+                    foreach (array_merge($t['history'], $t['financeHistory'] ?? [], PrototypeDomain::partialFinanceHistory($t), $t['financePaymentHistory'] ?? []) as $a) {
                         if ($a['role'] === $role) {
                             $counts[$a['decision']]++;
                             $hours[] = (strtotime($a['at']) - strtotime($a['requestedAt'] ?? $t['submitted'] ?? $a['at'])) / 3600;

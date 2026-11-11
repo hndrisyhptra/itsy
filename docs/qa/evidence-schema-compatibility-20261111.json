@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-11",
+  "fix": "pre-kasbon-upload-schema-compatibility",
+  "confirmed_local_cause": {
+    "sqlstate": "42S22",
+    "mysql_error": 1054,
+    "missing_column": "upload_tasks.context_id",
+    "path": "evidence enqueue before job insert"
+  },
+  "behavior": {
+    "context_column_written_only_for": "transfer-proof",
+    "boq_and_evidence_require_kasbon_schema": false,
+    "private_pending_migration_status": 503,
+    "private_guard_before_staging": true,
+    "automatic_migration": false
+  },
+  "verification": {
+    "php_passed": 256,
+    "php_assertions": 5451,
+    "frontend_passed": 252,
+    "new_regression_tests": 2,
+    "targeted_tests_passed": 26,
+    "targeted_assertions": 559,
+    "build": "passed",
+    "asset_manifest_references": 32,
+    "asset_preloads": 25,
+    "asset_profiles": 3,
+    "scoped_pint": "passed",
+    "diff_check": "passed",
+    "database": "fail-closed sqlite :memory:",
+    "disk": "private fake"
+  },
+  "query_evidence": {
+    "boq_plus_evidence_enqueue_http": 24,
+    "budget": 50,
+    "legacy_schema_or_migration_queries": 0,
+    "private_enqueue_readiness_queries_added": 1,
+    "notes": "Scoped fixture, no universal load/latency claim."
+  },
+  "preservation": {
+    "workspace_archive": true,
+    "pp_and_final_payments_not_rewritten": true,
+    "transfer_kasbon_version_binding": true,
+    "ownership_branch_permissions": true,
+    "idempotency_cleanup": true
+  },
+  "live_changes": {
+    "its_data": false,
+    "schema": false,
+    "environment": false,
+    "daemon_or_worker": false,
+    "dompis": false,
+    "remote_deployment": false
+  },
+  "limits": [
+    "Local log diagnosis, remote logs not accessed",
+    "No authenticated browser/server upload retry",
+    "No live MySQL migration",
+    "No aaPanel integration or load test"
+  ]
+}

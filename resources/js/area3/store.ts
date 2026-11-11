@@ -5,7 +5,7 @@ import { seed } from './seed';
 import { boot, appUrl, workspaceUrl } from './laravel';
 import { type Command, setCommandRecorder } from './commands';
 import type { MasterEntity, MasterCatalog } from './master-data';
-import { enqueueUpload, uploadTask, waitUpload } from './upload-queue';
+import { enqueueUpload, uploadTask, waitUpload, type UploadKind } from './upload-queue';
 import { postUpload, type UploadProgressHandler } from './upload-progress';
 const listeners = new Set<() => void>();
 const DRAFT_PREFIX = 'area3-laravel-draft-' + (boot?.account ? boot.account.id + '-' : '');
@@ -182,3 +182,18 @@ export function clearDraft(key:string) {
   if (persistencePending) void waitForPersistence().then(remove).catch(() => {}); else remove();
 }
 export function clearAllDrafts() { try {Object.keys(localStorage).filter(key=>key.startsWith(DRAFT_PREFIX)).forEach(key=>localStorage.removeItem(key));} catch {} }
+
+const privateRequests=new Map<string,string>();
+export async function savePrivateDocument(path:string,data:unknown):Promise<void>{
+  const key=path+JSON.stringify(data),id=privateRequests.get(key)??crypto.randomUUID();privateRequests.set(key,id);
+  try{await masterWrite(path,JSON.stringify({data,revision,request_id:id}),true);privateRequests.delete(key);}
+  catch(error){try{await refreshState();}catch{/* Keep private form inputs mounted; no automatic retry. */}throw error;}
+}
+const privateUploadRequests=new WeakMap<File,Map<string,string>>();
+export async function uploadPrivateDocument(kind:UploadKind,documentId:string,file:File,onProgress?:UploadProgressHandler){
+  const key=kind+'|'+documentId,requests=privateUploadRequests.get(file)??new Map<string,string>();privateUploadRequests.set(file,requests);
+  const requestId=requests.get(key)??crypto.randomUUID();requests.set(key,requestId);
+  try{const task=await enqueueUpload(kind,documentId,file,revision,undefined,onProgress,requestId);
+    await waitUpload(task,undefined,undefined,onProgress);await refreshState();requests.delete(key);return task;
+  }catch(error){window.dispatchEvent(new Event('area3:upload-queued'));throw error;}
+}

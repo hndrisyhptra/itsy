@@ -37,9 +37,9 @@ class UsernameApprovalV3Test extends TestCase
         return $this->postJson('/api/prototype/commands', ['command' => $command, 'args' => $args, 'revision' => $revision, 'request_id' => (string) Str::uuid()]);
     }
 
-    private function assertAttestationQueries(array $queries): void
+    private function assertAttestationQueries(array $queries, bool $financial = false): void
     {
-        $this->assertLessThanOrEqual(60, count($queries), 'Bounded small HTTP attestation fixture (up to two PP), including the revision read.');
+        $this->assertLessThanOrEqual($financial ? 68 : 60, count($queries), 'Bounded small HTTP attestation fixture (up to two PP), including the revision read.');
         foreach ($queries as $query) {
             $this->assertDoesNotMatchRegularExpression('/^\s*(?:insert into|update|delete from) ["`]*(?:project_plans|boq_lines|boq_components|approval_runs|approval_steps|approval_decisions|document_files|term_scans|term_work_evidence)["` ]/i', $query['query']);
         }
@@ -216,12 +216,15 @@ class UsernameApprovalV3Test extends TestCase
         $spk['end'] = $saved['end'];
         $expectedSpk = ContractNumber::fromProject($p['no'], '02');
         foreach (['save', 'generate', 'attest'] as $action) {
+            if ($action === 'attest') {
+                $this->completeMandorPayee($spk['id']);
+            }
             DB::flushQueryLog();
             DB::enableQueryLog();
             $this->api('saveSpk', [$spk, $action])->assertOk();
             $spkQueries = DB::getQueryLog();
             DB::disableQueryLog();
-            $this->assertAttestationQueries($spkQueries);
+            $this->assertAttestationQueries($spkQueries, true);
             $row = DB::table('work_orders')->where('source_id', $spk['id'])->first();
             $this->assertSame('', json_decode($row->document_data, true)['evidence']);
             $this->assertSame($expectedSpk, $row->spk_no);
@@ -358,12 +361,15 @@ class UsernameApprovalV3Test extends TestCase
         $spk['signerUserId'] = 'some-other-user';
         $archive = DB::table('prototype_workspaces')->value('state');
         foreach (['save', 'generate', 'attest'] as $action) {
+            if ($action === 'attest') {
+                $this->completeMandorPayee($spk['id']);
+            }
             DB::flushQueryLog();
             DB::enableQueryLog();
             $response = $this->api('saveSpk', [$spk, $action])->assertOk();
             $queries = DB::getQueryLog();
             DB::disableQueryLog();
-            $this->assertAttestationQueries($queries);
+            $this->assertAttestationQueries($queries, true);
             $actual = collect($response->json('state.spks'))->firstWhere('id', $spk['id']);
             $this->assertSame('SPK Head QA', $actual['signer']);
             $this->assertSame('000017', $actual['signerNik']);
@@ -641,6 +647,7 @@ class UsernameApprovalV3Test extends TestCase
         unset($after['paymentApproverUserIds'], $history['paymentApproverUserIds']);
         $this->assertSame($history, $after);
         $state = $this->api('createTerm', [$s['spks'][0]['id']])->assertOk()->json('state');
+        $state['terms'][0] = $this->historicalPaymentFixture($state['terms'][0]['id']);
         $t = $state['terms'][0];
         $this->assertSame(3, $t['workflowVersion']);
         $this->assertSame($this->chain(), $t['approverUserIds']);

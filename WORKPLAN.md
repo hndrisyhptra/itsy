@@ -523,3 +523,25 @@ Historical iteration; superseded by the dashboard restoration below.
 - [x] 240 PHP/4.963 assertions,244 frontend/build/check:assets/Pint/diff check lulus. NewPHP12assertions+1FE integration; dua mock actual endpoint updates dan migration assertion64 sesuai pulled Operation. Query review0 SQL/endpoint/poll/request tambahan; normal1POST/failure1POST+1GET.
 - [x] Docs SAME_ORIGIN_TRANSPORT, arsitektur/CHANGELOG/README/LARAVEL_QA dan qa/same-origin-transport-20261110.json tercatat. Tidak ada live its/migration/env/permission/Dompis changes atau workflow contract change.
 - [ ] Fix baru perlu commit/push/pull+build/check:assets pada server dan refresh halaman. Agen belum commit/push/deploy, belum periksa authenticated browser/Console/Network/SSL/proxy/load server; tidak mengklaim root cause remote telah terbukti.
+
+## Data Mandor SPK, kasbon Finance dan Payment — 11 November 2026
+
+- [x] Pengguna menyetujui konsep dan implementasi; template kasbon dibaca sebagai data. EVP dan Mgr Business Support hanya TTD fisik, lima approval aplikasi tetap.
+- [x] Backup its sebelum perubahan: `its-before-kasbon-20261111-004540.sql`, 2.096.563 byte, SHA256 `55ac43195104c27f527fb75daf042185cb873d83b8a304743e8cf71133056cdb`. Database/environment/master/Dompis tidak diubah.
+- [x] Profil Mandor versi terpisah (NIK, rekening, pemilik, bank, foto KTP/buku), enkripsi APP_KEY, upload privat terantre/progress, akses Admin/Finance per Branch dan pengesahan SPK baru dengan kelengkapan server-owned.
+- [x] Default server kasbon-v1 untuk pengajuan v3 baru; label Parsial/Final, Finance inbox sejak submit/read-only sebelum Head, issuance kasbon snapshot dari tagihan/penerima aktual, approval Finance, bukti transfer dan APM/lunas. Scan tidak wajib sebelum pembayaran kedua jenis, tetapi scan yang tersedia harus diverifikasi; scan susulan tidak mengubah pembayaran.
+- [x] Koreksi kasbon beralasan, versi/rekaman rekening lama, proof terikat versi dan fresh-proof pada reissue; task versi lama ditolak. Legacy v1/v2/request Parsial/pembayaran/keputusan tetap; adopsi dokumen lama eksplisit. Ledger, tiga termin/Final, BA PP/release tetap.
+- [x] Preview/cetak kasbon portrait berdasarkan struktur XLSX tanpa contoh identitas/angka/TTD; tujuh ruang TTD fisik kosong. Timeline, list/picker dan laporan Finance memakai status/riwayat baru tanpa membaca PII global.
+- [x] Review query: private payee 5 termasuk workspace fixture (4 service), issuance47/APM44 HTTP satu termin; regression budget75 dan larangan write PP/BOQ/actual/approval/ledger saat issuance. Bukan load benchmark; aggregate/catalog boot/command lama tetap.
+- [x] Verifikasi akhir: 254 PHP/5.390 assertions,252 frontend,build/check:assets,Pint/diff check lulus.
+- [x] Dokumen perilaku/arsitektur: docs/FINANCE_KASBON.md; bukti suite dan batas akhir dicatat di LARAVEL_QA/CHANGELOG/qa/finance-kasbon-20261111.json.
+- [ ] Operator deploy migration baru/build/restart khusus worker its dan uji browser/Finance/cetak/aaPanel. Tidak menjalankan migration live, mengganti APP_KEY/.env, commit/push atau deploy server oleh agen.
+
+## Server Error upload eviden / kolom context_id — 11 November 2026
+
+- [x] Log lokal menunjukkan SQL1054 Unknown column context_id pada INSERT upload_tasks kind evidence. Perubahan kasbon salah mengikutkan kolom untuk upload biasa sebelum migration diterapkan.
+- [x] INSERT context hanya transfer-proof; BOQ/evidence tetap berjalan pada schema lama. Private uploads503 dengan pesan migration sebelum staging/job bila belum siap; binding kasbon dan otorisasi tetap.
+- [x] Hasil akhir 256PHP/5.451assertions,252frontend,build/check:assets/Pint/diff check lulus.
+- [x] Dua regresi HTTP/worker memory: BOQ26baris+PDF diproses/preview/replay/arsip tetap pada schema tanpa kasbon; KTP/bank/transfer503 tanpa writes. Query dua enqueue24, budget50 dan0schema/migration lookup jalur lama; private readiness1query.
+- [x] Arsitektur/perilaku diperbarui, tanpa .env/APP_KEY/live its/Dompis/worker/DDL perubahan atau migration baru. Hasil akhir suite di QA/CHANGELOG dan qa/evidence-schema-compatibility-20261111.json.
+- [ ] Deploy kode perbaikan/restart worker its bila dibutuhkan di server; agen belum commit/push atau mengakses server. Migration kasbon lengkap tetap langkah operator untuk fitur baru.

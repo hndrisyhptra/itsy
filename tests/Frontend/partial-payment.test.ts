@@ -17,7 +17,7 @@ function fixture(final=false,all=true){
   const s=normalizeWorkflow(seed('D'));s.schema=3;
   for(const [i,role]of APPROVERS_V3.entries())if(!s.users.some(u=>u.role===role))s.users.push({id:'partial-role-'+i,name:'QA '+role,email:`partial-${i}@example.test`,role,active:true});
   actor(s,'Admin Konstruksi');assignPaymentApprovers(s,s.projects[0].id,Object.fromEntries(APPROVERS_V3.map(role=>[role,s.users.find(u=>u.role===role)!.id])));
-  let t=getTerm(s,createTerm(s,s.spks[0].id));t.type=final?'Final':'Parsial';t.actuals={[s.deals[0].rows[0].rowId]:{m:1,s:1}};saveTerm(s,t,true);t=getTerm(s,t.id);
+  let t=getTerm(s,createTerm(s,s.spks[0].id));delete t.paymentFlow;delete t.financePayment;t.type=final?'Final':'Parsial';t.actuals={[s.deals[0].rows[0].rowId]:{m:1,s:1}};saveTerm(s,t,true);t=getTerm(s,t.id);
   for(const role of APPROVERS_V3.slice(0,all?5:4)){actor(s,role);decide(s,t.id,'Setujui','QA');}
   actor(s,'Admin Konstruksi');return {s,t};
 }

@@ -1,5 +1,15 @@
 # Arsitektur aplikasi it's Area 3
 
+## 11 November 2026 — Compatibility fix untuk upload BOQ/eviden
+
+UploadQueue INSERT kini menambahkan `context_id` hanya pada bukti transfer. BOQ/evidence tidak bergantung pada schema kasbon, sehingga schema sebelum kasbon tetap menerima task/job yang tervalidasi. Private upload menambah satu registry lookup dan menolak503 sebelum staging jika migration belum selesai; tidak auto-migrate atau menghilangkan binding kasbon. Query lama tidak bertambah (fixture dua enqueue24query), hak/Branch/status/UUID/queue/private paths/receipts tetap. Tidak ada DDL/perubahan workflow/data live. Penyebab SQL1054 lokal, regresi real worker memory dan batas remote ada pada [UPLOAD_QUEUE_PERFORMANCE](UPLOAD_QUEUE_PERFORMANCE.md#11-november-2026--upload-eviden-sebelum-migration-kasbon) dan qa/evidence-schema-compatibility-20261111.json.
+
+## 11 November 2026 — Private Mandor / immutable Finance kasbon
+
+[FINANCE_KASBON](FINANCE_KASBON.md) mencatat pemetaan template, state machine, tiga tabel baru, extension upload context dan XOR APM/composite-term references. FinanceDocuments menyimpan ciphertext/metadata terpisah; tidak menambah PII ke workspace aggregate/boot/export/localStorage. Internal commands dan existing workspace lock membuat versi profil/issuance/file/settlement, revision/receipt/audit atomik; semua pembacaan dibatasi role serta PP Branch/workspace. Default server untuk v3 baru, adopsi lama eksplisit, marker tidak dapat dihapus melalui submit/legacy Partial request. Transfer-proof terikat kasbon saat enqueue dan saat APM; reissue memerlukan bukti baru. Tidak menambah approval EVP/Business Support atau membuat TTD.
+
+Query minimal per dokumen; profil/file batched dan terbatas, issuance47/APM44 HTTP fixture satu termin, private payee5 termasuk workspace read. Issuance tidak menulis ulang PP/BOQ/actual/approval/file/ledger. Picker memakai proyeksi JSON tambahan pada query yang sama; laporan/timeline memakai state publik. Existing full aggregate/catalog reads tetap; tidak mengklaim throughput umum. Migration disiapkan saja; no live its/archive/env/master/Dompis changes. Bukti serta batas SQLite/browser/MySQL/print/server di LARAVEL_QA dan qa/finance-kasbon-20261111.json.
+
 ## Same-origin workspace transport — 10 November 2026
 
 [SAME_ORIGIN_TRANSPORT](SAME_ORIGIN_TRANSPORT.md) memisahkan alamat publik browser dari alamat upstream Laravel. PrototypeController.show menghasilkan path named route + request baseUrl tanpa scheme/host; workspaceUrl menyusun path endpoint dikenal pada frontend. Command/state/recovery/CSV/backup tidak lagi memakai boot absolute URL yang dapat mengarah HTTP/host internal. Account URLs fresh boot juga relatif. Tidak mengubah proxy trust/CORS/.env atau menambah host situs hardcoded.

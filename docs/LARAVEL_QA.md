@@ -1,5 +1,27 @@
 # Laravel rebuild QA — 2 November 2026
 
+## Upload eviden / pre-kasbon schema compatibility — 11 November 2026
+
+**256 PHP tests /5.451 assertions,252 frontend,build/check:assets32referensi/25preload×3profil,scoped Pint dan diff check lulus.** Root cause lokal SQL1054 context_id belum ada pada INSERT upload_tasks evidence. Kode baru semula menulis kolom kasbon untuk semua upload, sementara migration baru belum diterapkan. Fix membatasi context pada transfer-proof dan menolak private uploads503 sebelum bytes/job bila migration registry belum siap. Tidak melakukan ALTER/migration otomatis atau mengabaikan binding versi.
+
+Dua tes baru menggunakan schema sebelum kasbon yang dikembalikan hanya dalam fail-closed SQLite memory: upload BOQ/evidence202, real parser26baris, worker attachment/preview/replay satu eviden, arsip unchanged; KTP/bank/transfer503 tanpa staging/job/revision/audit. Dua HTTP enqueue24query, budget50, dengan larangan context/schema/migration query pada jalur lama. Private-only readiness1registryquery. Semua tes Finance kasbon/pricing/approval/APM/Branch/cleanup/query lama tetap lulus; jumlah referensi aset tetap.
+
+Tidak ada live transaction/schema/env/APP_KEY/Dompis/daemon change atau backup workflow baru karena patch hanya kompatibilitas serialization upload. Belum melakukan unggahan browser pada its aktif atau mengakses aaPanel, migration MySQL dan load test server; tidak mengklaim server sudah terpasang patch. Build lokal selesai, perlu deploy kode dan reload worker its sesuai prosedur; migration tetap diperlukan untuk fitur kasbon lengkap. Perilaku: [UPLOAD_QUEUE_PERFORMANCE](UPLOAD_QUEUE_PERFORMANCE.md); [bukti](qa/evidence-schema-compatibility-20261111.json).
+
+
+## Kasbon Finance / Mandor SPK / pembayaran tanpa scan — 11 November 2026
+
+**254 PHP tests / 5.390 assertions, 252 frontend tests, TypeScript/Vite build, check:assets (32 manifest references /25 preload dependencies, root/subfolder/CDN tiga profil), scoped Pint dan diff check lulus.** PHP tetap fail-closed SQLite `:memory:`, disk privat palsu dan tidak meluncurkan worker detached. Empat belas tes fitur baru ditambah delapan frontend; tes struktur migration kini mencakup tiga primary key baru,107 FK pada manifest yang diperiksa dan65 migration. Fixture riwayat v3/Partial lama dibekukan eksplisit dalam memori sehingga tidak mengubah kewajiban kasbon baru.
+
+Skenario nyata dalam test: Parsial dan Final sama-sama bayar tanpa scan setelah Head/kasbon/Finance/proof; default server dan generic-command anti-bypass; scan tersedia harus diverifikasi, scan susulan setelah APM tidak mengubah settlement; full bill/APM unik/next-term gating; pengembalian beralasan, versi rekening/kasbon lama tetap, reissue membuang current proof dan menolak antrean konteks lama. Uji juga ciphertext (termasuk leading-zero NIK/rekening), tidak ada PII pada boot, role/Branch/private download, worker akses berubah, SPK client readiness palsu, input total invalid/forged payee/stale revision/hash replay, SQL failure seluruh pembayaran rollback dan FK/XOR/rollback history guards. SSR memeriksa struktur kasbon/escaping/terbilang/tujuh TTD kosong, bukan pemeriksaan visual Excel/browser.
+
+Query evidence: private payee5 termasuk pengambilan workspace (service4), issuance47/APM44 HTTP satu PP/SPK/termin, budget75; issuance melarang write ulang PP/BOQ/actual/approval/file/ledger. Bounded profile/file reads dan query picker yang sama; aggregate command/catalog lama tetap. Existing fixture20PP metadata full1330/incremental8 dan old Partial54/55/57 termasuk revision GET tetap lulus; jangan membandingkan angka dengan fixture kasbon sebagai klaim throughput umum.
+
+Backup sebelum workflow: its-before-kasbon-20261111-004540.sql,2.096.563byte,sha25655ac43195104c27f527fb75daf042185cb873d83b8a304743e8cf71133056cdb. Backup diambil read-only; restore belum diuji. Migration baru disiapkan saja, tidak menyentuh its live/.env/APP_KEY/master/akun/archive/Dompis atau daemon server. MySQL/MariaDB DDL belum diterapkan/dijalankan pada engine produksi; pemeriksaan constraint executable di SQLite bukan bukti migrasi remote. Browser login/responsif/keyboard, cetak fisik, Microsoft Excel/Word, upload/bank integration/load/aaPanel tetap belum diverifikasi untuk fitur ini. Preview/cetak kasbon HTML tersedia; native DOCX/XLSX tidak termasuk. Pelunasan dicatat manusia berdasarkan APM/proof; aplikasi tidak mengirim transfer.
+
+Lihat [FINANCE_KASBON](FINANCE_KASBON.md) untuk pemetaan template, privasi, alur, relasi, migration dan deploy, serta [bukti terstruktur](qa/finance-kasbon-20261111.json). Operator perlu backup APP_KEY/storage/database, migrate/build/check-assets lalu restart hanya worker its. Tidak ada commit/push/pull remote oleh agen.
+
+
 
 
 

@@ -13,6 +13,9 @@ trait PartialPaymentWorkflow
 
     public static function financeTaskPending(array $t): bool
     {
+        if (self::usesFinancePayment($t)) {
+            return in_array($t['status'], ['Diajukan', 'Disetujui'], true) && ($t['apmStatus'] !== 'Valid' || ($t['scan']['status'] ?? '') === 'Menunggu Verifikasi');
+        }
         if ($t['status'] !== 'Disetujui') {
             return false;
         }
@@ -30,7 +33,7 @@ trait PartialPaymentWorkflow
 
     private function partialPaymentEligible(array $term): void
     {
-        if (($term['workflowVersion'] ?? 1) !== 3 || $term['type'] !== 'Parsial' || $term['status'] !== 'Disetujui' || count($term['approvals']) !== $this->approvalCount($term) || $term['apmStatus'] === 'Valid' || $term['paid'] > 0) {
+        if (self::usesFinancePayment($term) || ($term['workflowVersion'] ?? 1) !== 3 || $term['type'] !== 'Parsial' || $term['status'] !== 'Disetujui' || count($term['approvals']) !== $this->approvalCount($term) || $term['apmStatus'] === 'Valid' || $term['paid'] > 0) {
             $this->fail('Payment khusus Termin Parsial membutuhkan lima approval lengkap dan tagihan belum dibayar.');
         }
         foreach ($this->approvalRoles($term) as $role) {

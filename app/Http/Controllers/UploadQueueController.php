@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\BoqImportStorage;
+use App\Services\FinanceDocuments;
 use App\Services\PrototypeWorkspaceService;
 use App\Services\UploadQueue;
 use App\Services\UploadWorkerLauncher;
@@ -24,8 +25,11 @@ class UploadQueueController extends Controller
 
     public function index(Request $request, PrototypeWorkspaceService $workspaces, UploadQueue $uploads)
     {
-        $input = $request->validate(['kind' => 'required|in:boq,evidence', 'document_id' => 'required|string|max:100']);
+        $input = $request->validate(['kind' => 'required|in:boq,evidence,mandor-ktp,mandor-bank,transfer-proof', 'document_id' => 'required|string|max:100']);
         $workspace = $workspaces->workspace($request);
+        if (in_array($input['kind'], FinanceDocuments::KINDS, true)) {
+            app(FinanceDocuments::class)->authorize($workspace, $input['document_id'], $input['kind'] === 'transfer-proof');
+        }
         if ($input['kind'] === 'evidence') {
             $uploads->term($workspace, $input['document_id']);
         }
@@ -40,6 +44,9 @@ class UploadQueueController extends Controller
         $workspace = $workspaces->workspace($request);
         $row = DB::table('upload_tasks')->where('id_upload_task', $task)->where('workspace_id', $workspace->id)->where('user_id', auth()->id())->first();
         abort_unless($row, 404);
+        if (in_array($row->kind, FinanceDocuments::KINDS, true)) {
+            app(FinanceDocuments::class)->authorize($workspace, $row->document_id, $row->kind === 'transfer-proof');
+        }
         if ($row->kind === 'evidence') {
             $uploads->term($workspace, $row->document_id);
         }
@@ -60,10 +67,13 @@ class UploadQueueController extends Controller
 
     public function resume(Request $request, string $task, PrototypeWorkspaceService $workspaces, UploadQueue $uploads)
     {
-        abort_unless(in_array($request->attributes->get('area3.account')['role'], ['Admin Konstruksi', 'Superadmin'], true), 403);
+        abort_unless(in_array($request->attributes->get('area3.account')['role'], ['Admin Konstruksi', 'Superadmin', 'Finance'], true), 403);
         $workspace = $workspaces->workspace($request);
         $row = DB::table('upload_tasks')->where('id_upload_task', $task)->where('workspace_id', $workspace->id)->where('user_id', auth()->id())->first();
         abort_unless($row, 404);
+        if (in_array($row->kind, FinanceDocuments::KINDS, true)) {
+            app(FinanceDocuments::class)->authorize($workspace, $row->document_id, $row->kind === 'transfer-proof');
+        }
         if ($row->kind === 'evidence') {
             $uploads->term($workspace, $row->document_id);
         }

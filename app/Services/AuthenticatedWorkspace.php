@@ -144,16 +144,17 @@ class AuthenticatedWorkspace
             'adoptApprovalOrder' => ($input === 'projects' ? $project($args[1] ?? '') : ($input === 'terms' ? $term($args[1] ?? '') : null)),
             'decideProject', 'assignProjectApprovers', 'assignPaymentApprovers', 'reviewBoq', 'finalizeBoq' => $project($input),
             'saveDeal' => $project($input['projectId'] ?? ''),
-            'saveSpk' => $deal($input['dealId'] ?? ''),
+            '_recordPayeeFile', '_setPayeeVersion' => $spk($input),
+            'saveSpkFinance', 'saveSpk' => $deal($input['dealId'] ?? ''),
             'createTerm' => $spk($input),
-            'saveTerm' => $spk($input['spkId'] ?? ''),
-            'requestPartialPayment', 'verifyPartialPayment', 'payPartialPayment', 'decide', 'recordApm', 'recordPayment', 'verifyTermScan', '_attachTermScan', '_attachTermWorkEvidence', 'removeTermWorkEvidence' => $term($input),
+            'submitFinanceTerm', 'saveTerm' => $spk($input['spkId'] ?? ''),
+            'adoptFinancePayment', '_issueKasbon', '_attachTransferProof', 'decideFinancePayment', 'requestPartialPayment', 'verifyPartialPayment', 'payPartialPayment', 'decide', 'recordApm', 'recordPayment', 'verifyTermScan', '_attachTermScan', '_attachTermWorkEvidence', 'removeTermWorkEvidence' => $term($input),
             'attestBapp', 'releaseVolume', 'createContinuation' => $bapp($input),
             default => null,
         };
         abort_unless($p && in_array($p['branch'] ?? '', $this->account()['branches'], true), 403, 'Dokumen berada di luar Branch penugasan Anda.');
         // Existing identities cannot be moved between documents/branches by changing a form payload.
-        $collection = ['saveProject' => 'projects', 'saveDeal' => 'deals', 'saveSpk' => 'spks', 'saveTerm' => 'terms'][$command] ?? null;
+        $collection = ['saveProject' => 'projects', 'saveDeal' => 'deals', 'saveSpk' => 'spks', 'saveSpkFinance' => 'spks', 'saveTerm' => 'terms', 'submitFinanceTerm' => 'terms'][$command] ?? null;
         if ($collection && ($old = collect($state[$collection])->firstWhere('id', $input['id'] ?? ''))) {
             $key = ['projects' => 'branch', 'deals' => 'projectId', 'spks' => 'dealId', 'terms' => 'spkId'][$collection];
             abort_unless(($input[$key] ?? null) === $old[$key], 422, 'Relasi atau Branch dokumen yang sudah tersimpan tidak dapat diganti.');

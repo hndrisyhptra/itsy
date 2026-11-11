@@ -1,6 +1,7 @@
 import { appUrl, boot } from './laravel';
 import { postUpload, taskUploadProgress, type UploadProgressHandler } from './upload-progress';
-export interface UploadTask {id:string;kind:'boq'|'evidence';documentId:string;name:string;status:'queued'|'processing'|'completed'|'failed';attempts:number;error:string|null;createdAt:string}
+export type UploadKind='boq'|'evidence'|'mandor-ktp'|'mandor-bank'|'transfer-proof';
+export interface UploadTask {id:string;kind:UploadKind;documentId:string;name:string;status:'queued'|'processing'|'completed'|'failed';attempts:number;error:string|null;createdAt:string}
 export const pendingUpload=(task:UploadTask)=>task.status==='queued'||task.status==='processing';
 export const uploadStatus=(task:UploadTask)=>({queued:'Dalam antrean',processing:'Sedang diproses',completed:'Selesai',failed:'Gagal'}[task.status]);
 async function json(response:Response) {
@@ -9,10 +10,10 @@ async function json(response:Response) {
   if(!response.ok)throw new Error((Object.values(data.errors??{}).flat() as string[]).join('\n')||data.message||'Antrean upload tidak dapat diakses.');
   return data;
 }
-export async function enqueueUpload(kind:'boq'|'evidence',documentId:string,file:File,revision?:number,signal?:AbortSignal,onProgress?:UploadProgressHandler):Promise<UploadTask> {
+export async function enqueueUpload(kind:UploadKind,documentId:string,file:File,revision?:number,signal?:AbortSignal,onProgress?:UploadProgressHandler,requestId?:string):Promise<UploadTask> {
   if(!boot?.account)throw new Error('Gunakan sesi login aktif untuk upload.');
-  const body=new FormData();body.set('file',file);body.set('request_id',crypto.randomUUID());body.set('document_id',documentId);if(revision!==undefined)body.set('revision',String(revision));
-  const path=kind==='boq'?'/api/uploads/boq':'/api/uploads/payments/'+encodeURIComponent(documentId)+'/evidence';
+  const body=new FormData();body.set('file',file);body.set('request_id',requestId??crypto.randomUUID());body.set('document_id',documentId);if(revision!==undefined)body.set('revision',String(revision));
+  const path=kind==='boq'?'/api/uploads/boq':kind==='evidence'?'/api/uploads/payments/'+encodeURIComponent(documentId)+'/evidence':'/api/finance/uploads/'+kind+'/'+encodeURIComponent(documentId);
   const data=await json(await postUpload(appUrl(path),body,{Accept:'application/json','X-CSRF-TOKEN':boot.csrf},onProgress,signal));
   onProgress?.(taskUploadProgress(data.task));
   window.dispatchEvent(new Event('area3:upload-queued'));
@@ -21,7 +22,7 @@ export async function enqueueUpload(kind:'boq'|'evidence',documentId:string,file
 export async function uploadTask(id:string,result=false,signal?:AbortSignal) {
   return json(await fetch(appUrl('/api/uploads/'+encodeURIComponent(id)+(result?'?result=1':'')),{credentials:'same-origin',headers:{Accept:'application/json'},signal:signal?AbortSignal.any([signal,AbortSignal.timeout(15000)]):AbortSignal.timeout(15000)}));
 }
-export async function recentUploads(kind:'boq'|'evidence',documentId:string,signal?:AbortSignal):Promise<{tasks:UploadTask[];workerOnline:boolean}> {
+export async function recentUploads(kind:UploadKind,documentId:string,signal?:AbortSignal):Promise<{tasks:UploadTask[];workerOnline:boolean}> {
   return json(await fetch(appUrl('/api/uploads?'+new URLSearchParams({kind,document_id:documentId})),{credentials:'same-origin',headers:{Accept:'application/json'},signal:signal?AbortSignal.any([signal,AbortSignal.timeout(15000)]):AbortSignal.timeout(15000)}));
 }
 export async function waitUpload(task:UploadTask,onProgress?:(message:string)=>void,signal?:AbortSignal,onTaskProgress?:UploadProgressHandler):Promise<UploadTask> {

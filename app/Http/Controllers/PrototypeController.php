@@ -32,10 +32,11 @@ class PrototypeController extends Controller
         abort_if(strlen($request->getContent()) > 2 * 1024 * 1024, 413, 'Data transaksi terlalu besar.');
         $input = $request->validate([
             'request_id' => ['required', 'uuid'], 'revision' => ['required', 'integer', 'min:0'],
-            'command' => ['required', 'string', 'in:requestPartialPayment,verifyPartialPayment,payPartialPayment,adoptApprovalOrder,removeTermWorkEvidence,saveProject,decideProject,assignProjectApprovers,assignPaymentApprovers,setNumberFormat,selectActor,verifyTermScan,importDemo,reviewBoq,finalizeBoq,saveDeal,saveSpk,createTerm,saveTerm,decide,recordApm,recordPayment,attestBapp,releaseVolume,createContinuation,updateKhs,saveUser,saveProfile,role,reset'],
+            'command' => ['required', 'string', 'in:adoptFinancePayment,submitFinanceTerm,decideFinancePayment,saveSpkFinance,requestPartialPayment,verifyPartialPayment,payPartialPayment,adoptApprovalOrder,removeTermWorkEvidence,saveProject,decideProject,assignProjectApprovers,assignPaymentApprovers,setNumberFormat,selectActor,verifyTermScan,importDemo,reviewBoq,finalizeBoq,saveDeal,saveSpk,createTerm,saveTerm,decide,recordApm,recordPayment,attestBapp,releaseVolume,createContinuation,updateKhs,saveUser,saveProfile,role,reset'],
             'args' => ['present', 'array', 'max:5'], 'result_id' => ['nullable', 'string', 'regex:/^[a-zA-Z0-9-]{3,100}$/D'],
         ]);
         $types = [
+            'adoptFinancePayment' => ['string'], 'submitFinanceTerm' => ['array'], 'decideFinancePayment' => ['string', 'string', 'string'], 'saveSpkFinance' => ['array', 'string'],
             'requestPartialPayment' => ['string'], 'verifyPartialPayment' => ['string', 'string', 'string'], 'payPartialPayment' => ['string', 'string'],
             'decideProject' => ['string', 'string', 'string'], 'assignProjectApprovers' => ['string', 'string', 'string'],
             'setNumberFormat' => ['string'], 'selectActor' => ['string'], 'verifyTermScan' => ['string', 'string', 'string'],
@@ -54,10 +55,10 @@ class PrototypeController extends Controller
         $nested = match ($input['command']) {
             'saveProject' => ['args.0.id' => 'required|string|max:100', 'args.0.schedule' => 'sometimes|array|max:5', 'args.0.schedule.*' => 'array', 'args.0.team' => 'present|array|max:100', 'args.0.team.*' => 'array', 'args.0.costs' => 'required|array', 'args.0.boq' => 'present|array|max:500', 'args.0.boq.*' => 'array', 'args.0.boqUpload' => 'sometimes|nullable|array', 'args.0.boqUpload.id' => 'required_with:args.0.boqUpload|uuid'],
             'saveDeal' => ['args.0.id' => 'required|string|max:100', 'args.0.rows' => 'required|array|max:500', 'args.0.rows.*' => 'array'],
-            'saveTerm' => ['args.0.id' => 'required|string|max:100', 'args.0.actuals' => 'present|array|max:500', 'args.0.actuals.*' => 'array'],
+            'submitFinanceTerm', 'saveTerm' => ['args.0.id' => 'required|string|max:100', 'args.0.actuals' => 'present|array|max:500', 'args.0.actuals.*' => 'array'],
             'releaseVolume' => ['args.1.*' => 'array'],
             'createContinuation' => ['args.2.*' => 'array'],
-            'saveSpk', 'updateKhs', 'saveUser' => ['args.0.id' => 'required|string|max:100'],
+            'saveSpkFinance', 'saveSpk', 'updateKhs', 'saveUser' => ['args.0.id' => 'required|string|max:100'],
             default => [],
         };
         $rules = array_merge($rules, $nested);

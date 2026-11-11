@@ -95,12 +95,32 @@ class PrototypeWorkspaceService
                     $input['args'][0]['_boqImport'] = app(BoqImportStorage::class)->read($row, $input['args'][0]['boqUpload']['id'], $project);
                 }
             }
-            if (in_array($input['command'], ['saveProject', 'saveTerm'], true) && ($input['args'][1] ?? false)) {
+            if (in_array($input['command'], ['saveSpk', 'saveSpkFinance'], true)) {
+                unset($input['args'][0]['_payeeReady']);
+                $oldSpk = collect($before['spks'])->firstWhere('id', $input['args'][0]['id'] ?? '');
+                if (($input['args'][1] ?? '') === 'attest' && ($input['command'] === 'saveSpkFinance' || ! $oldSpk || ($oldSpk['financialFlow'] ?? '') === 'kasbon-v1')) {
+                    abort_unless($oldSpk, 422, 'Simpan Draft SPK dan lengkapi data Mandor sebelum Sahkan SPK.');
+                    app(FinanceDocuments::class)->requirePayee($row, $input['args'][0]['id']);
+                    $input['args'][0]['_payeeReady'] = true;
+                }
+            }
+            if (in_array($input['command'], ['saveProject', 'saveTerm', 'submitFinanceTerm'], true) && (($input['args'][1] ?? false) || $input['command'] === 'submitFinanceTerm')) {
                 $pending = DB::table('upload_tasks')->where('workspace_id', $row->id)->where('document_id', $input['args'][0]['id'] ?? '')
-                    ->where('kind', $input['command'] === 'saveTerm' ? 'evidence' : 'boq')->whereIn('status', ['queued', 'processing'])->exists();
+                    ->where('kind', $input['command'] !== 'saveProject' ? 'evidence' : 'boq')->whereIn('status', ['queued', 'processing'])->exists();
                 abort_if($pending, 422, 'Tunggu antrean upload dokumen ini selesai sebelum mengajukan approval.');
             }
-            $state = app(PrototypeDomain::class)->execute($before, $input['command'], $input['args'], $input['result_id'] ?? null)['state'];
+            if ($input['command'] === 'recordApm' && PrototypeDomain::usesFinancePayment(collect($before['terms'])->firstWhere('id', $input['args'][0]) ?? [])) {
+                abort_if(DB::table('upload_tasks')->where('workspace_id', $row->id)->where('document_id', $input['args'][0])->where('kind', 'transfer-proof')->whereIn('status', ['queued', 'processing'])->exists(), 422, 'Tunggu antrean bukti transfer selesai sebelum APM.');
+            }
+            $domainCommand = $input['command'] === 'saveSpk' && (! $oldSpk || ($oldSpk['financialFlow'] ?? '') === 'kasbon-v1') ? 'saveSpkFinance' : $input['command'];
+            if ($input['command'] === 'saveTerm' && ($input['args'][1] ?? false)) {
+                $savedTerm = collect($before['terms'])->firstWhere('id', $input['args'][0]['id'] ?? '');
+                $savedSpk = collect($before['spks'])->firstWhere('id', $savedTerm['spkId'] ?? '');
+                if (($savedSpk['financialFlow'] ?? '') === 'kasbon-v1' || PrototypeDomain::usesFinancePayment($savedTerm ?? [])) {
+                    $domainCommand = 'submitFinanceTerm';
+                }
+            }
+            $state = app(PrototypeDomain::class)->execute($before, $domainCommand, $input['args'], $input['result_id'] ?? null)['state'];
             $balanceQuery = fn () => DB::table('volume_balances')->join('boq_components as c', 'c.id_boq_component', '=', 'volume_balances.boq_component_id')
                 ->join('boq_lines as b', 'b.id_boq', '=', 'c.boq_line_id')->join('project_plans as p', 'p.id_pp', '=', 'b.root_pp_id')
                 ->where('p.workspace_id', $row->id)->select('volume_balances.*');

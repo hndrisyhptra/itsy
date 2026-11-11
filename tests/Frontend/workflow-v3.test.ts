@@ -19,7 +19,7 @@ function actor(s:State, role:Role) { s.role=role; selectActor(s,s.users.find(u =
 function chain(s:State) { return Object.fromEntries(APPROVERS_V3.map(role => [role,s.users.find(u => u.role===role)!.id])); }
 function payment(s:State, final=false) {
   assignPaymentApprovers(s,s.projects[0].id,chain(s));
-  const id=createTerm(s,s.spks[0].id), t=getTerm(s,id); t.type=final?'Final':'Parsial';
+  const id=createTerm(s,s.spks[0].id), t=getTerm(s,id);delete t.paymentFlow;delete t.financePayment; t.type=final?'Final':'Parsial';
   t.actuals={[s.deals[0].rows[0].rowId]:{m:100,s:80}}; saveTerm(s,t,true); return getTerm(s,id);
 }
 function approve(s:State,t:Term) { for (const role of APPROVERS_V3) { actor(s,role); assert.equal(canApproveTerm(s,t),true); decide(s,t.id,'Setujui','QA'); } }

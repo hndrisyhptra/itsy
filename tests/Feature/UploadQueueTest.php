@@ -9,6 +9,7 @@ use App\Services\UploadQueue;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Tests\Concerns\AuthenticatesArea3;
@@ -51,6 +52,65 @@ class UploadQueueTest extends TestCase
         $terms = $this->api('createTerm', [$s['spks'][0]['id']])->assertOk()->json('state.terms');
 
         return collect($terms)->firstWhere('status', 'Draft')['id'];
+    }
+
+    private function beforeKasbonMigration(): void
+    {
+        $migration = require database_path('migrations/2026_11_11_000001_create_finance_kasbon_workflow.php');
+        $migration->down();
+        DB::table('migrations')->where('migration', '2026_11_11_000001_create_finance_kasbon_workflow')->delete();
+        $this->assertFalse(Schema::hasColumn('upload_tasks', 'context_id'));
+        $this->assertFalse(Schema::hasTable('finance_private_files'));
+    }
+
+    public function test_boq_and_work_evidence_complete_on_pre_kasbon_schema_without_context_or_schema_lookup(): void
+    {
+        $this->beforeKasbonMigration();
+        $term = $this->term();
+        $workspace = PrototypeWorkspace::first();
+        $archive = $workspace->getRawOriginal('state');
+        $uuid = (string) Str::uuid();
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $evidence = $this->evidence($term, $uuid)->assertAccepted()->json('task.id');
+        $boq = $this->boq()->assertAccepted()->json('task.id');
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+        $this->assertLessThanOrEqual(50, count($queries));
+        foreach ($queries as $query) {
+            $this->assertDoesNotMatchRegularExpression('/context_id|information_schema|pragma|from ["`]migrations["`]/i', $query['query']);
+        }
+        fwrite(STDERR, "\nPre-kasbon BOQ + evidence enqueue HTTP: ".count($queries)." queries (no schema probe).\n");
+        $this->evidence($term, $uuid, 0)->assertAccepted()->assertJsonPath('task.id', $evidence);
+        $this->assertDatabaseCount('jobs', 2);
+        app(UploadQueue::class)->process($evidence);
+        app(UploadQueue::class)->process($evidence);
+        app(UploadQueue::class)->process($boq);
+        $this->getJson('/api/uploads/'.$evidence)->assertOk()->assertJsonPath('task.status', 'completed');
+        $this->getJson('/api/uploads/'.$boq.'?result=1')->assertOk()->assertJsonPath('task.status', 'completed')->assertJsonCount(26, 'result.rows');
+        $this->get('/api/prototype/payments/'.$term.'/work-evidence/'.$evidence)->assertOk()->assertHeader('Content-Type', 'application/pdf');
+        $this->assertDatabaseCount('term_work_evidence', 1);
+        $this->assertSame($archive, $workspace->fresh()->getRawOriginal('state'));
+    }
+
+    public function test_private_kasbon_uploads_explain_pending_migration_before_staging_or_creating_jobs(): void
+    {
+        $this->beforeKasbonMigration();
+        $term = $this->term();
+        $spk = json_decode(DB::table('payment_terms')->where('source_id', $term)->value('document_data'), true)['spkId'];
+        $revision = PrototypeWorkspace::first()->revision;
+        $audits = DB::table('prototype_audits')->count();
+        foreach (['mandor-ktp', 'mandor-bank', 'transfer-proof'] as $kind) {
+            $this->asRole($kind === 'transfer-proof' ? 'Finance' : 'Admin Konstruksi');
+            $file = $kind === 'transfer-proof' ? UploadedFile::fake()->createWithContent('proof.pdf', "%PDF-1.4\nproof\n%%EOF") : UploadedFile::fake()->image('identity.png');
+            $this->post('/api/finance/uploads/'.$kind.'/'.($kind === 'transfer-proof' ? $term : $spk), ['file' => $file, 'request_id' => (string) Str::uuid(), 'revision' => (string) $revision], ['Accept' => 'application/json'])
+                ->assertStatus(503)->assertSee('migration kasbon')->assertDontSee('SQLSTATE');
+        }
+        $this->assertDatabaseCount('upload_tasks', 0);
+        $this->assertDatabaseCount('jobs', 0);
+        $this->assertCount(0, Storage::disk('local')->allFiles());
+        $this->assertSame($revision, PrototypeWorkspace::first()->revision);
+        $this->assertSame($audits, DB::table('prototype_audits')->count());
     }
 
     public function test_boq_returns_202_before_parsing_worker_completes_real_private_result_and_replay_is_single_job(): void

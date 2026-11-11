@@ -384,8 +384,10 @@ class RelationalWorkflowStore
             }
             $settlement = [
                 'id_apm_settlement' => $this->id($workspace->id, 'apm', $term['id']), 'term_id' => $termId,
-                'verified_scan_id' => PrototypeDomain::usesPartialPayment($term) ? null : $this->id($workspace->id, 'scan', $term['scan']['id']),
+                'verified_scan_id' => (PrototypeDomain::usesPartialPayment($term) || PrototypeDomain::usesFinancePayment($term)) ? null : $this->id($workspace->id, 'scan', $term['scan']['id']),
                 'payment_request_id' => PrototypeDomain::usesPartialPayment($term) ? $this->id($workspace->id, 'payment-request', $term['paymentRequest']['id']) : null,
+                'kasbon_id' => PrototypeDomain::usesFinancePayment($term) ? $term['kasbon']['id'] : null,
+                'transfer_file_id' => PrototypeDomain::usesFinancePayment($term) ? $term['transferProof']['id'] : null,
                 'apm_no' => $term['apm'],
                 'amount' => $payment['amount'], 'recorded_by' => $this->user($payment['actor']), 'recorded_at' => $this->dateTime($payment['at']),
             ];

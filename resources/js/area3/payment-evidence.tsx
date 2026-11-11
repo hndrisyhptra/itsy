@@ -1,3 +1,5 @@
+import { usesFinancePayment, adoptFinancePayment } from './finance-payment';
+import { FinanceKasbonPanel } from './finance-private-ui';
 import { PartialPaymentPanel } from './partial-payment-panel';
 import { usesPartialPayment } from './partial-payment';
 import { useState } from 'react';
@@ -10,11 +12,12 @@ import { Card, Field, Input, Button, Notice, Badge, Modal, DocumentPreview, atte
 
 export function PaymentEvidencePanel({ s, t }: { s: State; t: Term }) {
   const [file, setFile] = useState<File | null>(null), [note, setNote] = useState(''), [apm, setApm] = useState(t.apm), [confirm, setConfirm] = useState(false), [preview, setPreview] = useState(false), [progress,setProgress]=useState<UploadProgress|null>(null);
-  const partial=usesPartialPayment(t);
+  const financeFlow=usesFinancePayment(t),partial=usesPartialPayment(t)||financeFlow;
   const canUpload = operational(s) && t.status === 'Disetujui' && t.approvals.length === approvalCount(t) && t.scan?.status !== 'Valid' && (t.apmStatus !== 'Valid'||partial);
   const canVerify = s.role === 'Finance' && t.scan?.status === 'Menunggu Verifikasi' && (t.apmStatus !== 'Valid'||partial);
   const canPay = !partial && s.role === 'Finance' && t.scan?.status === 'Valid' && t.apmStatus !== 'Valid' && ((t.workflowVersion ?? 1) < 3 || (t.financeApproval?.decision === 'Setujui' && t.financeApproval.scanId === t.scan.id));
-  return <><PartialPaymentPanel s={s} t={t}/><Card title="TTD Basah, Scan & Verifikasi Finance" subtitle={partial?'Kelengkapan berkas terpisah dari verifikasi Payment. Scan dapat dilengkapi setelah pembayaran Parsial.':'Seluruh approval → cetak → TTD fisik → unggah scan → approval/verifikasi Finance → APM dan lunas.'}>
+  if(financeFlow&&t.status!=='Disetujui')return <FinanceKasbonPanel s={s} t={t}/>;
+  return <>{!financeFlow&&t.workflowVersion===3&&t.status==='Disetujui'&&t.apmStatus!=='Valid'&&!t.paymentRequest&&operational(s)&&!t.approverUserIds?.['Mgr Bussiness Support']&&<Card title="Gunakan alur Kasbon Finance"><Notice>Pengajuan lama ini dapat dipindahkan secara eksplisit ke alur kasbon tanpa mengulang approval pekerjaan. Pembayaran membutuhkan kasbon, persetujuan Finance, bukti transfer dan APM.</Notice><Button confirm="Gunakan alur kasbon untuk pengajuan ini? Riwayat dan lima approval tetap tersimpan." disabled={persistencePending} onClick={()=>attempt(()=>mutate(d=>adoptFinancePayment(d,t.id)),'Alur kasbon diaktifkan.')}>Gunakan Alur Kasbon</Button></Card>}{financeFlow?<FinanceKasbonPanel s={s} t={t}/>:<PartialPaymentPanel s={s} t={t}/>}<Card title="TTD Basah, Scan & Verifikasi Finance" subtitle={partial?'Kelengkapan berkas terpisah dari verifikasi Payment. Scan dapat dilengkapi setelah pembayaran Parsial maupun Final.':'Seluruh approval → cetak → TTD fisik → unggah scan → approval/verifikasi Finance → APM dan lunas.'}>
     <Notice tone="success">Berkas siap dicetak setelah seluruh persetujuan dokumen lengkap. Tanda tangan dikumpulkan di luar aplikasi.</Notice>
     <Button onClick={() => setPreview(true)}>Buka Berkas Siap Cetak</Button>
     <div className="form-grid"><Field label="Scan dokumen TTD basah (PDF/JPG/PNG, maks. 10 MB)"><input key={t.scan?.id ?? 'new-scan'} type="file" disabled={!canUpload || persistencePending} accept="application/pdf,image/jpeg,image/png" onChange={e => {setFile(e.target.files?.[0] ?? null);setProgress(null);}}/></Field><Field label="Status scan"><div className="input-like"><Badge>{t.scan?.status ?? 'Belum diunggah'}</Badge>{t.scan && <small>{t.scan.name} · {Math.ceil(t.scan.size / 1024)} KB</small>}</div></Field></div>
