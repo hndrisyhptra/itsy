@@ -14,7 +14,8 @@ trait PartialPaymentWorkflow
     public static function financeTaskPending(array $t): bool
     {
         if (self::usesFinancePayment($t)) {
-            return in_array($t['status'], ['Diajukan', 'Disetujui'], true) && ($t['apmStatus'] !== 'Valid' || ($t['scan']['status'] ?? '') === 'Menunggu Verifikasi');
+            return $t['status'] === 'Disetujui' && (($t['scan']['status'] ?? '') === 'Menunggu Verifikasi'
+                || ($t['apmStatus'] !== 'Valid' && isset($t['kasbon']) && ($t['financePayment']['status'] ?? '') !== 'Dikembalikan'));
         }
         if ($t['status'] !== 'Disetujui') {
             return false;

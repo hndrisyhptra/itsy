@@ -34,6 +34,7 @@ Route::middleware(PrivatePrototype::class)->group(function () {
         Route::post('/api/finance/uploads/{kind}/{document}', [FinanceDocumentController::class, 'upload'])->where('kind', 'mandor-ktp|mandor-bank|transfer-proof')->where('document', '[a-zA-Z0-9-]{3,100}')->middleware('throttle:prototype-scans');
         Route::get('/api/finance/files/{file}', [FinanceDocumentController::class, 'file'])->whereUuid('file');
         Route::get('/api/prototype/state', [PrototypeController::class, 'state'])->name('prototype.state');
+        Route::get('/api/prototype/revision', [PrototypeController::class, 'revision'])->name('prototype.revision')->middleware('throttle:60,1');
         Route::get('/api/prototype/negotiation/projects', [NegotiationProjectController::class, 'projects'])->middleware('throttle:120,1');
         Route::get('/api/prototype/negotiation/projects/{project}/plans', [NegotiationProjectController::class, 'plans'])->whereUuid('project')->middleware('throttle:120,1');
         Route::get('/api/prototype/payment-selection/projects', [PaymentProjectController::class, 'projects'])->middleware('throttle:120,1');

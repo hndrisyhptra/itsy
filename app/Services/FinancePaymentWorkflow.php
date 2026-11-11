@@ -11,6 +11,21 @@ trait FinancePaymentWorkflow
         return ($t['workflowVersion'] ?? 1) === 3 && ($t['paymentFlow'] ?? '') === 'kasbon-v1';
     }
 
+    public static function adminKasbonPending(array $t): bool
+    {
+        if (! self::usesFinancePayment($t) || $t['status'] !== 'Disetujui' || $t['apmStatus'] === 'Valid' || $t['paid'] > 0
+            || (isset($t['kasbon']) && ($t['financePayment']['status'] ?? '') !== 'Dikembalikan')) {
+            return false;
+        }
+        foreach (self::approvalRoles($t) as $role) {
+            if (! collect($t['approvals'])->contains(fn ($a) => $a['role'] === $role && $a['decision'] === 'Setujui' && ! empty($a['userId']) && $a['userId'] === ($t['approverUserIds'][$role] ?? ''))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     private function submitFinanceTerm(array $input): null
     {
         $this->admin();
@@ -57,7 +72,7 @@ trait FinancePaymentWorkflow
 
     private function issueKasbonSummary(string $id, array $summary): null
     {
-        $this->finance();
+        $this->admin();
         $t = $this->record('terms', $id);
         $this->financePaymentEligible($t);
         if (isset($t['kasbon']) && ($t['financePayment']['status'] ?? '') !== 'Dikembalikan') {
@@ -76,16 +91,19 @@ trait FinancePaymentWorkflow
         $t['kasbon'] = $summary;
         $t['financePayment'] = ['status' => 'Kasbon Terbit'];
         $this->put('terms', $t);
-        $this->log('Kasbon diterbitkan Finance', 'Termin '.$t['number'].' · versi '.$summary['version'], '/termin/'.$id);
+        $this->log('Kasbon diajukan Admin Konstruksi', 'Termin '.$t['number'].' · versi '.$summary['version'], '/termin/'.$id);
 
         return null;
     }
 
-    private function decideFinancePayment(string $id, string $decision, string $note): null
+    private function decideFinancePayment(string $id, string $decision, string $note, ?string $expectedKasbonId = null): null
     {
         $this->finance();
         $t = $this->record('terms', $id);
         $this->financePaymentEligible($t);
+        if ((isset($t['kasbon']['issuedRole']) || $expectedKasbonId !== null) && $expectedKasbonId !== ($t['kasbon']['id'] ?? null)) {
+            $this->fail('Versi kasbon berubah. Review kembali kasbon yang aktif sebelum memberi keputusan Finance.');
+        }
         $this->enum($decision, ['Setujui', 'Kembalikan']);
         $note = $this->text($note, 1000);
         if (! isset($t['kasbon']) || ! in_array($t['financePayment']['status'] ?? '', ['Kasbon Terbit', 'Diverifikasi'], true) || ($decision === 'Kembalikan' && ! $note) || ($decision === 'Setujui' && ($t['financePayment']['status'] ?? '') !== 'Kasbon Terbit')) {

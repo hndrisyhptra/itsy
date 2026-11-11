@@ -24,6 +24,10 @@ class FinanceKasbonTest extends TestCase
 
     private function api(string $command, array $args)
     {
+        if ($command === 'decideFinancePayment' && count($args) === 3) {
+            $args[] = $this->term($args[0])['kasbon']['id'] ?? '';
+        }
+
         return $this->postJson('/api/prototype/commands', ['command' => $command, 'args' => $args, 'revision' => PrototypeWorkspace::first()->revision, 'request_id' => (string) Str::uuid()]);
     }
 
@@ -86,14 +90,17 @@ class FinanceKasbonTest extends TestCase
     {
         $s = $this->getJson('/api/prototype/state')->json('state');
         $amount = app(PrototypeDomain::class)->load($s)->termTotal($t);
+        $payeeVersion = DB::table('mandor_payee_profiles as m')->join('work_orders as s', 's.id_spk', '=', 'm.spk_id')
+            ->where('s.workspace_id', PrototypeWorkspace::first()->id)->where('s.source_id', $t['spkId'])->max('m.version');
 
-        return ['costCenter' => 'QA-COST', 'wbs' => 'QA-WBS', 'activity' => 'Kegiatan uji', 'place' => 'Tempat QA', 'date' => '2026-11-11', 'evp' => 'Pejabat Fisik QA', 'businessSupport' => 'Pejabat Support QA', 'rows' => [['accountCode' => 'QA-001', 'accountName' => 'Akun QA', 'text' => 'Termin '.$t['number'], 'amount' => (string) $amount]]];
+        return ['payeeVersion' => max(1, (int) $payeeVersion), 'costCenter' => 'QA-COST', 'wbs' => 'QA-WBS', 'activity' => 'Kegiatan uji', 'place' => 'Tempat QA', 'date' => '2026-11-11', 'evp' => 'Pejabat Fisik QA', 'businessSupport' => 'Pejabat Support QA', 'rows' => [['accountCode' => 'QA-001', 'accountName' => 'Akun QA', 'text' => 'Termin '.$t['number'], 'amount' => (string) $amount]]];
     }
 
     private function issue(array $t): array
     {
-        $this->asRole('Finance');
+        $this->asRole('Admin Konstruksi');
         $this->write('/api/finance/terms/'.$t['id'].'/kasbon', $this->form($t))->assertOk();
+        $this->asRole('Finance');
 
         return $this->term($t['id']);
     }
@@ -141,7 +148,7 @@ class FinanceKasbonTest extends TestCase
     {
         $t = $this->setupTerm(false, 5, true);
         $this->assertSame('kasbon-v1', $t['paymentFlow']);
-        $this->assertTrue(PrototypeDomain::financeTaskPending($t));
+        $this->assertFalse(PrototypeDomain::financeTaskPending($t));
         $this->api('requestPartialPayment', [$t['id']])->assertUnprocessable();
         $this->asRole('Finance');
         $this->api('recordApm', [$t['id'], 'APM/BYPASS', true])->assertUnprocessable();
@@ -151,12 +158,15 @@ class FinanceKasbonTest extends TestCase
     public function test_finance_is_readonly_before_head_and_private_fields_cannot_be_forged(): void
     {
         $t = $this->setupTerm(false, 4);
-        $this->assertTrue(PrototypeDomain::financeTaskPending($t));
+        $this->assertFalse(PrototypeDomain::financeTaskPending($t));
         $this->assertArrayNotHasKey('kasbon', $t);
         $this->assertArrayNotHasKey('transferProof', $t);
         $this->payee($t['spkId']);
         $this->asRole('Finance');
+        $this->write('/api/finance/terms/'.$t['id'].'/kasbon', $this->form($t))->assertForbidden();
+        $this->asRole('Admin Konstruksi');
         $this->write('/api/finance/terms/'.$t['id'].'/kasbon', $this->form($t))->assertUnprocessable();
+        $this->asRole('Finance');
         $this->api('decideFinancePayment', [$t['id'], 'Setujui', ''])->assertUnprocessable();
         $this->assertDatabaseCount('finance_kasbons', 0);
         $this->asRole('PM Konstruksi');
@@ -169,7 +179,7 @@ class FinanceKasbonTest extends TestCase
     public function test_wrong_total_missing_payee_invalid_fields_stale_revision_and_replay(): void
     {
         $t = $this->setupTerm();
-        $this->asRole('Finance');
+        $this->asRole('Admin Konstruksi');
         $form = $this->form($t);
         $this->write('/api/finance/terms/'.$t['id'].'/kasbon', $form)->assertUnprocessable();
         $payee = $this->payee($t['spkId']);
@@ -181,7 +191,8 @@ class FinanceKasbonTest extends TestCase
         $this->write($path, [...$payee, 'bank' => 'Changed'], $uuid, $rev)->assertConflict();
         $this->write($path, $payee, null, $rev)->assertConflict();
         $this->write($path, [...$payee, 'nik' => '1234'])->assertUnprocessable();
-        $this->asRole('Finance');
+        $this->asRole('Admin Konstruksi');
+        $form = $this->form($t);
         $bad = $form;
         $bad['rows'][0]['amount'] = '1.00';
         $this->write('/api/finance/terms/'.$t['id'].'/kasbon', $bad)->assertUnprocessable();
@@ -211,6 +222,128 @@ class FinanceKasbonTest extends TestCase
         $docs = $this->getJson('/api/finance/terms/'.$t['id'].'/kasbon')->json('documents');
         $this->assertSame('000999999999', $docs[0]['data']['payee']['accountNumber']);
         $this->assertSame($payee['accountNumber'], $docs[1]['data']['payee']['accountNumber']);
+        $this->api('decideFinancePayment', [$t['id'], 'Setujui', 'Review versi lama', $issued['kasbon']['id']])->assertUnprocessable();
+        $this->assertSame('Kasbon Terbit', $this->term($t['id'])['financePayment']['status']);
+    }
+
+    public function test_admin_submits_after_head_with_user_requested_defaults_then_finance_reviews_without_issuing(): void
+    {
+        $t = $this->setupTerm(false, 4);
+        $this->payee($t['spkId']);
+        $this->asRole('Admin Konstruksi');
+        $this->assertFalse(PrototypeDomain::adminKasbonPending($t));
+        $form = $this->form($t);
+        unset($form['place'], $form['date'], $form['evp'], $form['businessSupport']);
+        $form['issuer'] = 'Client cannot select maker';
+        $form['issuerRole'] = 'Finance';
+        $this->write('/api/finance/terms/'.$t['id'].'/kasbon', $form)->assertUnprocessable();
+        $this->assertDatabaseCount('finance_kasbons', 0);
+        $this->asRole('Head of PMO');
+        $this->api('decide', [$t['id'], 'Setujui', 'Reviewed'])->assertOk();
+        $t = $this->term($t['id']);
+        $decisions = $t['approvals'];
+        $this->assertTrue(PrototypeDomain::adminKasbonPending($t));
+        $this->assertFalse(PrototypeDomain::financeTaskPending($t));
+        $this->asRole('Finance');
+        $this->write('/api/finance/terms/'.$t['id'].'/kasbon', $form)->assertForbidden();
+        $this->asRole('Admin Konstruksi');
+        $counter = $this->getJson('/api/prototype/revision')->assertOk()->json('revision');
+        $this->write('/api/finance/terms/'.$t['id'].'/kasbon', $form)->assertOk();
+        $this->assertDatabaseHas('finance_kasbons', ['issued_by' => $this->accounts['Admin Konstruksi']->getKey()]);
+        $t = $this->term($t['id']);
+        $this->assertSame($decisions, $t['approvals']);
+        $this->assertFalse(PrototypeDomain::adminKasbonPending($t));
+        $this->assertTrue(PrototypeDomain::financeTaskPending($t));
+        $this->assertSame('Admin Konstruksi', $t['kasbon']['issuedRole']);
+        $this->api('decideFinancePayment', [$t['id'], 'Setujui', ''])->assertForbidden();
+        $this->post('/api/finance/uploads/transfer-proof/'.$t['id'], ['file' => UploadedFile::fake()->image('proof.png'), 'revision' => PrototypeWorkspace::first()->revision, 'request_id' => (string) Str::uuid()], ['Accept' => 'application/json'])->assertForbidden();
+        $this->asRole('Finance');
+        $this->getJson('/api/prototype/revision')->assertOk()->assertExactJson(['revision' => $counter + 1]);
+        $data = $this->getJson('/api/finance/terms/'.$t['id'].'/kasbon')->assertOk()->json('documents.0.data');
+        $this->assertSame('Surabaya', $data['place']);
+        $this->assertSame(now('Asia/Jakarta')->toDateString(), $data['date']);
+        $this->assertSame('I GEDE WAHYU DANYNDRA', $data['evp']);
+        $this->assertSame("ARIZA ARBA'ATUS S", $data['businessSupport']);
+        $this->assertSame(2, $data['templateVersion']);
+        $this->assertSame('Admin Konstruksi', $data['issuerRole']);
+        $this->assertSame($this->accounts['Admin Konstruksi']->name, $data['issuer']);
+        $this->postJson('/api/prototype/commands', ['command' => 'decideFinancePayment', 'args' => [$t['id'], 'Setujui', 'Missing reviewed version'],
+            'revision' => PrototypeWorkspace::first()->revision, 'request_id' => (string) Str::uuid()])->assertUnprocessable();
+        $this->api('decideFinancePayment', [$t['id'], 'Setujui', 'Reviewed PP through kasbon'])->assertOk();
+    }
+
+    public function test_returned_kasbon_moves_back_to_admin_task_and_wrong_branch_admin_cannot_resubmit(): void
+    {
+        $t = $this->setupTerm();
+        $this->payee($t['spkId']);
+        $t = $this->issue($t);
+        $old = DB::table('finance_kasbons')->first();
+        $this->api('decideFinancePayment', [$t['id'], 'Kembalikan', 'Periksa Cost Center'])->assertOk();
+        $t = $this->term($t['id']);
+        $this->assertTrue(PrototypeDomain::adminKasbonPending($t));
+        $this->assertFalse(PrototypeDomain::financeTaskPending($t));
+        $admin = $this->asRole('Admin Konstruksi');
+        $form = $this->form($t);
+        $other = DB::table('branches')->where('name', '!=', 'DENPASAR')->value('id_branch');
+        app(AccountAccess::class)->assign($admin, 'ADMIN_KONSTRUKSI', [$other]);
+        $revision = PrototypeWorkspace::first()->revision;
+        $this->write('/api/finance/terms/'.$t['id'].'/kasbon', $form)->assertNotFound();
+        $this->assertDatabaseCount('finance_kasbons', 1);
+        $this->assertSame($revision, PrototypeWorkspace::first()->revision);
+        $this->assertEquals($old, DB::table('finance_kasbons')->first());
+    }
+
+    public function test_lazy_form_and_review_reads_skip_unused_file_catalogs_without_changing_private_permissions(): void
+    {
+        $t = $this->setupTerm();
+        $this->payee($t['spkId']);
+        $t = $this->issue($t);
+        $w = PrototypeWorkspace::first();
+        $docs = app(FinanceDocuments::class);
+        $audits = DB::table('prototype_audits')->count();
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $payee = $docs->payee($w, $t['spkId'], false);
+        $profileQueries = DB::getQueryLog();
+        DB::flushQueryLog();
+        $kasbon = $docs->kasbon($w, $t['id'], false);
+        $documentQueries = DB::getQueryLog();
+        DB::disableQueryLog();
+        $this->assertCount(3, $profileQueries);
+        $this->assertCount(3, $documentQueries);
+        foreach ([...$profileQueries, ...$documentQueries] as $q) {
+            $this->assertMatchesRegularExpression('/^select /i', $q['query']);
+            $this->assertStringNotContainsString('finance_private_files', $q['query']);
+            $this->assertStringNotContainsString('designator_package_prices', $q['query']);
+        }
+        $this->assertCount(0, $payee['files']);
+        $this->assertCount(0, $kasbon['files']);
+        $this->assertNotEmpty($payee['profile']['accountNumber']);
+        $this->assertSame('Admin Konstruksi', $kasbon['documents'][0]['data']['issuerRole']);
+        $this->getJson('/api/finance/spk/'.$t['spkId'].'/payee?profile_only=1')->assertOk()->assertJsonCount(0, 'files');
+        $this->getJson('/api/finance/terms/'.$t['id'].'/kasbon?documents_only=1')->assertOk()->assertJsonCount(0, 'files');
+        $this->asRole('PM Konstruksi');
+        $this->getJson('/api/finance/spk/'.$t['spkId'].'/payee?profile_only=1')->assertForbidden();
+        $this->getJson('/api/finance/terms/'.$t['id'].'/kasbon?documents_only=1')->assertForbidden();
+        $this->assertSame($audits, DB::table('prototype_audits')->count());
+    }
+
+    public function test_refreshing_workspace_revision_cannot_silently_accept_a_different_payee_version(): void
+    {
+        $t = $this->setupTerm();
+        $payee = $this->payee($t['spkId']);
+        $this->asRole('Admin Konstruksi');
+        $form = $this->form($t);
+        $old = DB::table('mandor_payee_profiles')->first();
+        $this->write('/api/finance/spk/'.$t['spkId'].'/payee', [...$payee, 'accountNumber' => '000555444333'])->assertOk();
+        $this->write('/api/finance/terms/'.$t['id'].'/kasbon', $form)->assertConflict();
+        $this->assertDatabaseCount('finance_kasbons', 0);
+        $form['payeeVersion'] = 2; // User explicitly reloads and checks the new recipient before retrying.
+        $this->write('/api/finance/terms/'.$t['id'].'/kasbon', $form)->assertOk();
+        $data = $this->getJson('/api/finance/terms/'.$t['id'].'/kasbon')->assertOk()->json('documents.0.data');
+        $this->assertSame('000555444333', $data['payee']['accountNumber']);
+        $this->assertSame(2, $data['payee']['version']);
+        $this->assertEquals($old, DB::table('mandor_payee_profiles')->where('id_payee', $old->id_payee)->first());
     }
 
     public function test_branch_role_worker_rechecks_and_private_query_budget(): void
@@ -237,7 +370,7 @@ class FinanceKasbonTest extends TestCase
     {
         $t = $this->setupTerm();
         $this->payee($t['spkId']);
-        $this->asRole('Finance');
+        $this->asRole('Admin Konstruksi');
         $form = $this->form($t);
         DB::enableQueryLog();
         DB::flushQueryLog();

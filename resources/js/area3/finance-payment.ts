@@ -1,10 +1,14 @@
 import { type State, type Term, type Spk, type Approval, getTerm, approvalRoles, requireFinance, requireAdmin, applyTermSave, applySpk, termTotal, now, log } from './domain';
 import { recordCommand } from './commands';
 
-export interface KasbonSummary {id:string;version:number;amount:number;issuedBy:string;issuedAt:string}
+export interface KasbonSummary {id:string;version:number;amount:number;issuedBy:string;issuedAt:string;issuedRole?:State['role']}
 export interface FinancePayment {status:'Menunggu Approval'|'Kasbon Terbit'|'Dikembalikan'|'Diverifikasi'|'Dibayar';decision?:Approval&{kasbonId:string};documentsAtPayment?:'OK'|'NOK';kasbonId?:string;transferFileId?:string}
 export const usesFinancePayment=(t:Term)=>t.workflowVersion===3&&t.paymentFlow==='kasbon-v1';
-export const financePaymentLabel=(t:Term)=>t.status==='Diajukan'?'Menunggu Approval':t.financePayment?.status==='Menunggu Approval'?'Menunggu Kasbon Finance':t.financePayment?.status??'Menunggu Kasbon Finance';
+export const financePaymentLabel=(t:Term)=>t.status==='Diajukan'?'Menunggu Approval':t.financePayment?.status==='Menunggu Approval'?'Menunggu Pengajuan Kasbon Admin':t.financePayment?.status==='Kasbon Terbit'?'Kasbon Diajukan · Review Finance':t.financePayment?.status??'Menunggu Pengajuan Kasbon Admin';
+export function adminKasbonPending(t:Term){
+  if(!usesFinancePayment(t)||t.status!=='Disetujui'||t.apmStatus==='Valid'||t.paid>0||t.kasbon&&t.financePayment?.status!=='Dikembalikan')return false;
+  return approvalRoles(t).every(role=>t.approvals.some(a=>a.role===role&&a.decision==='Setujui'&&!!a.userId&&a.userId===t.approverUserIds?.[role]));
+}
 export const submissionLabel=(t:Pick<Term,'type'>)=>t.type==='Final'?'Ajukan Payment':'Ajukan Termin';
 export function submitFinanceTerm(s:State,input:Term){
   requireAdmin(s);const old=getTerm(s,input.id);
@@ -19,8 +23,10 @@ export function financePaymentEligible(t:Term){
   if(!usesFinancePayment(t)||t.status!=='Disetujui'||t.apmStatus==='Valid'||t.paid>0)throw new Error('Payment membutuhkan seluruh approval termasuk Head dan tagihan belum dibayar.');
   for(const role of approvalRoles(t))if(!t.approvals.some(a=>a.role===role&&a.decision==='Setujui'&&a.userId&&a.userId===t.approverUserIds?.[role]))throw new Error('Kelima approval pengguna terpilih harus lengkap.');
 }
-export function decideFinancePayment(s:State,id:string,decision:'Setujui'|'Kembalikan',note:string){
-  recordCommand('decideFinancePayment',[id,decision,note]);requireFinance(s);const t=getTerm(s,id);financePaymentEligible(t);
+export function decideFinancePayment(s:State,id:string,decision:'Setujui'|'Kembalikan',note:string,expectedKasbonId?:string){
+  const t=getTerm(s,id),expected=expectedKasbonId??t.kasbon?.id;
+  recordCommand('decideFinancePayment',[id,decision,note,...(expected?[expected]:[])]);requireFinance(s);financePaymentEligible(t);
+  if(expected!==t.kasbon?.id)throw new Error('Versi kasbon berubah. Review kembali kasbon yang aktif sebelum memberi keputusan Finance.');
   if(!t.kasbon||!['Kasbon Terbit','Diverifikasi'].includes(t.financePayment?.status??'')||!['Setujui','Kembalikan'].includes(decision)||note.length>1000||(decision==='Kembalikan'&&!note.trim())||(decision==='Setujui'&&t.financePayment?.status!=='Kasbon Terbit'))throw new Error('Terbitkan kasbon terlebih dahulu; pengembalian wajib disertai catatan.');
   if(decision==='Setujui'&&t.scan&&t.scan.status!=='Valid')throw new Error('Scan sudah tersedia; verifikasi berkas terlebih dahulu sebelum Approve Payment.');
   const actor=s.users.find(u=>u.id===s.actorUserId&&u.role==='Finance'&&u.active);if(!actor)throw new Error('Akun Finance aktif diperlukan.');

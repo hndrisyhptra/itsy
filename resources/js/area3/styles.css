@@ -256,3 +256,11 @@ body{color:var(--text);background:var(--bg)}[data-theme=dark] .metric-label,[dat
 @page kasbon-portrait{size:A4 portrait;margin:12mm}
 @media print{.kasbon-document{page:kasbon-portrait;max-width:none;margin:0;padding:0}.kasbon-signatures{break-inside:avoid}.kasbon-document tr{break-inside:avoid}.kasbon-document thead{display:table-header-group}}
 .kasbon-logo{text-align:right}.kasbon-logo img{width:145px;height:auto}.kasbon-document .kasbon-signatures{table-layout:fixed}.modal-body:has(.kasbon-document){overflow:visible}
+
+/* Admin kasbon and Finance review: share existing theme and document borders. */
+.finance-review-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:16px}
+.finance-review-grid .btn{justify-content:flex-start;text-align:left;white-space:normal;min-height:44px}
+.kasbon-mandor-signature{margin:12px 0 16px auto;width:45%;min-width:200px;text-align:center;break-inside:avoid}
+.boq-mandor-preview table th,.boq-mandor-preview table td{border:1px solid var(--border);padding:5px 7px;font-size:11px}
+.boq-mandor-preview table{border-collapse:collapse}
+.demo-bar small[role="status"]{display:block;font-size:11px;margin-top:2px}

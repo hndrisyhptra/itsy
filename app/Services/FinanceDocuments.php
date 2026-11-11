@@ -14,9 +14,9 @@ class FinanceDocuments
 {
     public const KINDS = ['mandor-ktp', 'mandor-bank', 'transfer-proof'];
 
-    public function authorize(PrototypeWorkspace $w, string $id, bool $term = false, bool $write = false, bool $details = false): object
+    public function authorize(PrototypeWorkspace $w, string $id, bool $term = false, bool $write = false, bool $details = false, ?array $account = null): object
     {
-        $account = app(AuthenticatedWorkspace::class)->account();
+        $account ??= app(AuthenticatedWorkspace::class)->account();
         abort_unless(in_array($account['role'], $write ? ($term ? ['Finance'] : ['Admin Konstruksi', 'Superadmin']) : ['Admin Konstruksi', 'Superadmin', 'Finance'], true), 403);
         $q = DB::table('work_orders as s')->join('contracts as c', 'c.id_contract', '=', 's.contract_id')->join('project_plans as p', 'p.id_pp', '=', 'c.pp_id')
             ->where('s.workspace_id', $w->id)->where('c.workspace_id', $w->id)->where('p.workspace_id', $w->id)->whereIn('p.branch_id', $account['branchIds']);
@@ -41,11 +41,11 @@ class FinanceDocuments
         return $row ? json_decode(Crypt::decryptString($row->private_data), true, 512, JSON_THROW_ON_ERROR) : null;
     }
 
-    public function payee(PrototypeWorkspace $w, string $id): array
+    public function payee(PrototypeWorkspace $w, string $id, bool $includeFiles = true): array
     {
         $r = $this->authorize($w, $id);
-        $profile = DB::table('mandor_payee_profiles')->where('spk_id', $r->id_spk)->orderByDesc('version')->first();
-        $files = DB::table('finance_private_files')->where('workspace_id', $w->id)->where('spk_id', $r->id_spk)->orderByDesc('created_at')->limit(20)->get(['id_finance_file as id', 'kind', 'created_at as uploadedAt']);
+        $profile = DB::table('mandor_payee_profiles')->where('spk_id', $r->id_spk)->orderByDesc('version')->first(['private_data', 'version']);
+        $files = $includeFiles ? DB::table('finance_private_files')->where('workspace_id', $w->id)->where('spk_id', $r->id_spk)->orderByDesc('created_at')->limit(20)->get(['id_finance_file as id', 'kind', 'created_at as uploadedAt']) : collect();
 
         return ['profile' => $this->unpack($profile), 'version' => $profile->version ?? 0, 'files' => $files];
     }
@@ -53,10 +53,16 @@ class FinanceDocuments
     public function requirePayee(PrototypeWorkspace $w, string $id): array
     {
         $r = $this->authorize($w, $id);
-        $profile = DB::table('mandor_payee_profiles')->where('spk_id', $r->id_spk)->orderByDesc('version')->first();
+
+        return $this->payeeSnapshot($w, $r->id_spk);
+    }
+
+    private function payeeSnapshot(PrototypeWorkspace $w, string $spkId): array
+    {
+        $profile = DB::table('mandor_payee_profiles')->where('spk_id', $spkId)->orderByDesc('version')->first(['id_payee', 'private_data', 'version']);
         $data = $this->unpack($profile);
         Validator::make($data ?? [], ['nik' => 'required|regex:/^\d{16}$/D', 'accountNumber' => 'required|regex:/^\d{1,40}$/D', 'accountName' => 'required|string|max:150', 'bank' => 'required|string|max:100', 'ktpFileId' => 'required|uuid', 'bankFileId' => 'required|uuid'])->validate();
-        $this->validatePayeeFiles($w, $r->id_spk, $data);
+        $this->validatePayeeFiles($w, $spkId, $data);
 
         return $data + ['idPayee' => $profile->id_payee, 'version' => $profile->version];
     }
@@ -116,19 +122,21 @@ class FinanceDocuments
         });
     }
 
-    public function kasbon(PrototypeWorkspace $w, string $id): array
+    public function kasbon(PrototypeWorkspace $w, string $id, bool $includeFiles = true): array
     {
         $r = $this->authorize($w, $id, true);
         $t = json_decode($r->term_data, true, 512, JSON_THROW_ON_ERROR);
-        $rows = DB::table('finance_kasbons')->where('term_id', $r->id_payment_term)->orderByDesc('version')->limit(10)->get();
-        $files = DB::table('finance_private_files')->where('workspace_id', $w->id)->where('term_id', $r->id_payment_term)->orderByDesc('created_at')->limit(10)->get(['id_finance_file as id', 'kind', 'created_at as uploadedAt']);
+        $rows = DB::table('finance_kasbons')->where('term_id', $r->id_payment_term)->orderByDesc('version')->limit(10)->get(['id_kasbon', 'version', 'private_data']);
+        $files = $includeFiles ? DB::table('finance_private_files')->where('workspace_id', $w->id)->where('term_id', $r->id_payment_term)->orderByDesc('created_at')->limit(10)->get(['id_finance_file as id', 'kind', 'created_at as uploadedAt']) : collect();
 
         return ['documents' => $rows->map(fn ($v) => ['id' => $v->id_kasbon, 'version' => $v->version, 'data' => $this->unpack($v)])->all(), 'files' => $files, 'flow' => PrototypeDomain::usesFinancePayment($t)];
     }
 
     public function issue(PrototypeWorkspace $w, string $id, array $input): array
     {
-        $data = Validator::make($input['data'] ?? [], [
+        $defaults = ['place' => 'Surabaya', 'date' => now('Asia/Jakarta')->toDateString(), 'evp' => 'I GEDE WAHYU DANYNDRA', 'businessSupport' => "ARIZA ARBA'ATUS S"];
+        $data = Validator::make(($input['data'] ?? []) + $defaults, [
+            'payeeVersion' => 'required|integer|min:1',
             'costCenter' => 'required|string|max:100', 'wbs' => 'required|string|max:100', 'activity' => 'required|string|max:150', 'place' => 'required|string|max:100', 'date' => 'required|date_format:Y-m-d',
             'rows' => 'required|array|min:1|max:20', 'rows.*' => 'required|array:accountCode,accountName,text,amount', 'rows.*.accountCode' => 'required|string|max:50', 'rows.*.accountName' => 'required|string|max:150', 'rows.*.text' => 'required|string|max:300', 'rows.*.amount' => ['required', 'numeric', 'gt:0', 'max:999999999999.99', 'regex:/^\d+(\.\d{1,2})?$/D'],
             'evp' => 'required|string|max:150', 'businessSupport' => 'required|string|max:150',
@@ -136,12 +144,15 @@ class FinanceDocuments
         $hash = hash('sha256', json_encode([$id, $data], JSON_THROW_ON_ERROR));
 
         return $this->locked($w, function ($row) use ($id, $input, $data, $hash) {
-            $r = $this->authorize($row, $id, true, true, true);
+            $account = app(AuthenticatedWorkspace::class)->account();
+            abort_unless(in_array($account['role'], ['Admin Konstruksi', 'Superadmin'], true), 403, 'Pengajuan kasbon dibuat Admin Konstruksi setelah approval Head of PMO.');
+            $r = $this->authorize($row, $id, true, false, true, $account);
             if ($this->replay('finance_kasbons', $input['request_id'], $hash)) {
                 return app(PrototypeWorkspaceService::class)->payload($row) + ['replayed' => true];
             }
             abort_unless($row->revision === (int) $input['revision'], 409, 'Data berubah; muat ulang sebelum menerbitkan kasbon.');
             $t = json_decode($r->term_data, true, 512, JSON_THROW_ON_ERROR);
+            abort_unless(PrototypeDomain::adminKasbonPending($t), 422, 'Kasbon hanya dapat diajukan setelah lima approval termasuk Head, belum dibayar, dan belum diajukan atau sudah dikembalikan Finance.');
             $spk = json_decode($r->spk_data, true, 512, JSON_THROW_ON_ERROR);
             $p = json_decode($r->pp_data, true, 512, JSON_THROW_ON_ERROR);
             $d = json_decode($r->deal_data, true, 512, JSON_THROW_ON_ERROR);
@@ -152,7 +163,8 @@ class FinanceDocuments
                 $sum = bcadd($sum, (string) $line['amount'], 2);
             }
             abort_unless(bccomp($sum, (string) $total, 2) === 0, 422, 'Jumlah rincian kasbon harus sama dengan tagihan termin saat ini.');
-            $payee = $this->requirePayee($row, $spk['id']);
+            $payee = $this->payeeSnapshot($row, $r->id_spk);
+            abort_unless((int) $data['payeeVersion'] === (int) $payee['version'], 409, 'Data Mandor berubah. Muat ulang data penerima dan periksa rekening sebelum mengajukan kasbon kembali.');
             $signers = [];
             foreach (PrototypeDomain::approvalRoles($t) as $role) {
                 $a = collect($t['approvals'])->first(fn ($a) => $a['role'] === $role && ($a['userId'] ?? '') === ($t['approverUserIds'][$role] ?? ''));
@@ -161,10 +173,10 @@ class FinanceDocuments
             }
             $version = (int) DB::table('finance_kasbons')->where('term_id', $r->id_payment_term)->max('version') + 1;
             $kid = (string) Str::uuid();
-            $snapshot = $data + ['payee' => $payee, 'mandor' => $d['mandor'], 'unit' => $p['unit'].' · '.$p['branch'], 'project' => $p['name'], 'projectCode' => $p['projectCode'], 'ppNo' => $p['no'], 'spkNo' => $spk['no'], 'termNumber' => $t['number'], 'termType' => $t['type'], 'amount' => $total, 'signers' => $signers, 'issuer' => app(AuthenticatedWorkspace::class)->account()['name']];
+            $snapshot = $data + ['templateVersion' => 2, 'issuerRole' => $account['role'], 'payee' => $payee, 'mandor' => $d['mandor'], 'unit' => $p['unit'].' · '.$p['branch'], 'project' => $p['name'], 'projectCode' => $p['projectCode'], 'ppNo' => $p['no'], 'spkNo' => $spk['no'], 'termNumber' => $t['number'], 'termType' => $t['type'], 'amount' => $total, 'signers' => $signers, 'issuer' => $account['name']];
             DB::table('finance_kasbons')->insert(['id_kasbon' => $kid, 'term_id' => $r->id_payment_term, 'version' => $version, 'amount' => $total, 'private_data' => $this->pack($snapshot), 'issued_by' => auth()->id(), 'issued_at' => now(), 'request_uuid' => $input['request_id'], 'input_sha256' => $hash]);
 
-            return app(PrototypeWorkspaceService::class)->command($row, ['command' => '_issueKasbon', 'args' => [$id, ['id' => $kid, 'version' => $version, 'amount' => $total, 'issuedBy' => 'db-user-'.auth()->id(), 'issuedAt' => now()->toISOString()]], 'revision' => $row->revision, 'request_id' => $input['request_id']]);
+            return app(PrototypeWorkspaceService::class)->command($row, ['command' => '_issueKasbon', 'args' => [$id, ['id' => $kid, 'version' => $version, 'amount' => $total, 'issuedBy' => 'db-user-'.auth()->id(), 'issuedRole' => $account['role'], 'issuedAt' => now()->toISOString()]], 'revision' => $row->revision, 'request_id' => $input['request_id']]);
         });
     }
 

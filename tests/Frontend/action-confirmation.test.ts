@@ -134,16 +134,23 @@ test('mutation and file entry points explicitly require confirmation; existing f
     'term-work-evidence.tsx': ['removeTermWorkEvidence('],
     'management.tsx': ['saveProfile(', 'saveUser(', 'updateKhs('],
     'upload-tasks.tsx': ['resumeUpload(', 'onUse(task)'],
+    'finance-private-ui.tsx': ['uploadPrivateDocument(', 'savePrivateDocument(', 'decideFinancePayment(', 'recordApm(', 'submit()'],
   };
   for (const [file, calls] of Object.entries(cases)) {
     const source = readFileSync(new URL('../../resources/js/area3/' + file, import.meta.url), 'utf8');
     const tree = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
     const found = new Set<string>();
+    const helpers = new Map<string,string>();
+    function collectHelpers(node:ts.Node){
+      if(ts.isFunctionDeclaration(node)&&node.name&&node.body)helpers.set(node.name.text,node.body.getText(tree));
+      ts.forEachChild(node,collectHelpers);
+    }
+    collectHelpers(tree);
     function visit(node: ts.Node) {
       if (ts.isJsxElement(node) && node.openingElement.tagName.getText(tree) === 'Button') {
         const attributes = node.openingElement.attributes.properties;
         const handler = attributes.find(a => a.name?.getText(tree) === 'onClick')?.getText(tree) ?? '';
-        for (const call of calls) if (handler.includes(call)) {
+        for (const call of calls) if (handler.includes(call) || [...helpers].some(([name,body])=>handler.includes(name+'(')&&body.includes(call))) {
           found.add(call);
           const explicit = attributes.some(a => a.name?.getText(tree) === 'confirm');
           const finalYes = node.children.some(c => ts.isJsxText(c) && c.text.trim() === 'YA');
@@ -154,6 +161,11 @@ test('mutation and file entry points explicitly require confirmation; existing f
     }
     visit(tree);
     assert.deepEqual([...found].sort(), [...calls].sort(), file);
+  }
+  for(const [file,name] of [['workflow-ui.tsx','confirmProjectDecision'],['payments.tsx','confirmDecision']]){
+    const source=readFileSync(new URL('../../resources/js/area3/'+file,import.meta.url),'utf8');
+    const start=source.indexOf('async function '+name+'('),end=source.indexOf('\n  return ',start);
+    assert.ok(start>=0&&source.slice(start,end).includes('await waitForPersistence()'),file+': approval confirmation must await the server');
   }
   for (const [file, guard] of [['workflow-ui.tsx', 'await confirmAction(`Unggah BOQ'], ['term-work-evidence.tsx', 'await confirmAction(`Unggah ${selected.length}'], ['master-designator.tsx', 'await confirmAction(`Simpan data'], ['App.tsx', "await confirmAction('Keluar"]]) {
     assert.ok(readFileSync(new URL('../../resources/js/area3/' + file, import.meta.url), 'utf8').includes(guard), file);

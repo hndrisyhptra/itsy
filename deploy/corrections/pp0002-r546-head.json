@@ -1,0 +1,15 @@
+{
+  "workspaceId": "01a1be23-4385-7274-a9b7-27be80ec00f3",
+  "ppId": "147a8b59-8faf-5fde-a82a-1c4c2c8b1a2e",
+  "sourceId": "pp-94acf11c-66f3-4cff-984a-bab2f77f3352",
+  "ppNo": "0002/LG.000/TA-03R546/11-2026",
+  "ppRevision": 40,
+  "runId": "f206e455-fc77-54db-a7c2-b27ef5bf9bab",
+  "headStepId": "fc01ddff-99ff-593c-ab81-bbaf3027d878",
+  "headDecisionId": "38c09882-dc5a-59d8-aa2c-ef6d2b75e7e0",
+  "contractId": "6ce8a270-d7d3-5d11-ae93-d72cdf880254",
+  "spkId": "61b3cf61-2b9e-5cac-a26b-e1da1338809f",
+  "termId": "ea6ddfd8-4fc8-51f8-a2a7-b4ae1c13d6b3",
+  "requestId": "f0c2206c-6fe0-46b5-8490-f7e6bd8cb140",
+  "reason": "Koreksi atas permintaan pengguna: approval Head of PMO terlanjur disetujui; buka kembali tahap Head dengan empat keputusan sebelumnya dipertahankan."
+}

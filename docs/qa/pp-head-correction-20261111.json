@@ -1,0 +1,72 @@
+{
+  "date": "2026-11-11",
+  "feature": "CLI-only audited reopening of PP0002 Head approval",
+  "server_applied_by_agent": false,
+  "live_transaction_mutations": false,
+  "schema_migration_required": false,
+  "plan": "deploy/corrections/pp0002-r546-head.json",
+  "source_evidence": {
+    "attachment_sha256": "e85faa7831b410b9136a8f68480ca443de4bd972845a79a94f24090d98a353b6",
+    "server_sql_results": "Provided by user; not queried remotely by agent",
+    "pp_status": "APPROVED",
+    "pp_revision": 40,
+    "workspace_revision": "Read during CLI inspection; not inferred from PP revision",
+    "bakh_status": "Sah",
+    "spk_status": "Sah",
+    "term": "First FINAL; REJECTED/Ditolak; APM and settlement NULL in supplied result",
+    "approval_run": "First run APPROVED with five APPROVE decisions"
+  },
+  "verification": {
+    "php_tests": 263,
+    "php_assertions": 5597,
+    "new_php_tests": 7,
+    "php_database": "fail-closed SQLite :memory:",
+    "frontend_tests": 257,
+    "new_frontend_tests": 5,
+    "typescript_vite_build": "passed",
+    "asset_references": 32,
+    "preload_dependencies": 25,
+    "asset_profiles": ["root", "subfolder", "CDN"],
+    "scoped_pint": "passed",
+    "git_diff_check": "passed",
+    "cases": [
+      "Inspection has zero writes and creates no backup",
+      "Actual Superadmin, assigned Branch, active selected Head, exact graph/decisions and current revision guards",
+      "Verified private before-state backup before atomic writes",
+      "Original SQL run/decision bytes, archived workspace and downstream snapshots/ledger preserved",
+      "Four actual decisions carry into a new pending cycle, with source IDs and original actor/time",
+      "Selected Head approves again into new cycle; earlier history retained",
+      "Head rejection needs note and subsequent cycle does not carry earlier approvals again",
+      "All descendant mutation routes pause until PP Sah",
+      "CLI explicit apply, no public HTTP command, UUID/plan/operator-bound replay and changed-content conflict",
+      "Late SQL failure rolls back state/revision/receipts/audit; same-state retry succeeds",
+      "Native-JSON key ordering simulation allowed, modified note/NIK type still immutable",
+      "Frontend recorder, timeline correction notice, no active Head preview stamp and client marker forgery rejection"
+    ]
+  },
+  "query_review": {
+    "fixture": "One inspected PP, five stages, one Sah BA KH/SPK and one rejected Final term",
+    "apply_queries": 84,
+    "regression_budget": 140,
+    "additional_web_guard_sql": 0,
+    "catalog_queries": 0,
+    "descendant_boq_cost_ledger_writes": 0,
+    "load_benchmark": false
+  },
+  "local_backup": {
+    "file": "storage/app/private/backups/its-before-head-correction-20261111-064125.sql",
+    "bytes": 2118857,
+    "sha256": "415691e3c9b0a12e08a43fcdf01abb55c49b90c334dbd3fe956f016335ddcfce",
+    "scope": "its local tables/data/triggers; stored routines excluded after legacy mysql.proc error",
+    "failed_attempts": "Two attempts retained with .failed suffix; no MariaDB metadata repair",
+    "restore_tested": false,
+    "server_backup": false
+  },
+  "limits": [
+    "No direct remote phpMyAdmin/server connection or CLI correction applied by agent",
+    "No live its transactions, .env/APP_KEY, private permissions, daemons or Dompis changed",
+    "MySQL/MariaDB correction transaction not exercised; JSON ordering covered in isolated simulation",
+    "Browser/account/visual/responsive/keyboard behavior and aaPanel integration not manually verified",
+    "Operator must deploy complete marker-aware code, inspect, apply with current workspace revision, then verify SQL and actual Head account"
+  ]
+}

@@ -26,9 +26,9 @@ function fixture(final=false,all=true){
 }
 function issued(final=false){const {s,t}=fixture(final);t.kasbon={id:'server-kasbon',version:1,amount:termTotal(s,t),issuedBy:s.actorUserId!,issuedAt:new Date().toISOString()};t.financePayment={status:'Kasbon Terbit'};return {s,t};}
 
-test('Partial and Final submit the same five approvals; Finance sees early but cannot pay before Head',()=>{
-  const {s,t}=fixture(true,false);assert.equal(submissionLabel(t),'Ajukan Payment');assert.equal(submissionLabel({type:'Parsial'}),'Ajukan Termin');assert.equal(usesFinancePayment(t),true);assert.equal(financeTaskPending(t),true);assert.throws(()=>recordApm(s,t.id,'APM/HEAD'),/Approval/);
-  assert.throws(()=>decideFinancePayment(s,t.id,'Setujui',''),/approval|Head/);actor(s,'Head of PMO');decide(s,t.id,'Setujui','');assert.match(financePaymentLabel(t),/Menunggu Kasbon/);
+test('Partial and Final submit the same five approvals; Admin waits for Head before kasbon and Finance cannot pay early',()=>{
+  const {s,t}=fixture(true,false);assert.equal(submissionLabel(t),'Ajukan Payment');assert.equal(submissionLabel({type:'Parsial'}),'Ajukan Termin');assert.equal(usesFinancePayment(t),true);assert.equal(financeTaskPending(t),false);assert.throws(()=>recordApm(s,t.id,'APM/HEAD'),/Approval/);
+  assert.throws(()=>decideFinancePayment(s,t.id,'Setujui',''),/approval|Head/);actor(s,'Head of PMO');decide(s,t.id,'Setujui','');assert.match(financePaymentLabel(t),/Menunggu Pengajuan Kasbon Admin/);
 });
 
 for(const final of [false,true])test(`${final?'Final':'Partial'} requires issued kasbon, Finance decision and actual proof before full APM; late scan never pays again`,()=>{

@@ -1,5 +1,9 @@
 # Kasbon, data Mandor dan pembayaran — 11 November 2026
 
+## Otoritas terbaru — Admin mengajukan kasbon, Finance mereview
+
+**11 November 2026, perubahan berikutnya dari pengguna:** kasbon dibuat Admin Konstruksi setelah lima approval pembayaran sampai Head of PMO, lalu masuk review Finance. Finance tidak lagi menerbitkan kasbon baru. Default Surabaya/tanggal pengajuan dan dua pejabat fisik, preview berkas/BOQ Mandor serta inbox otomatis dijelaskan pada [ADMIN_KASBON_REVIEW_SYNC](ADMIN_KASBON_REVIEW_SYNC.md). Bank dan keputusan terikat versi yang ditampilkan. Snapshot lama tetap utuh. Bagian implementasi awal di bawah dipertahankan sebagai riwayat; pernyataan Finance sebagai pembuat kasbon telah digantikan.
+
 ## 11 November 2026 — Upload eviden sebelum migration kasbon
 
 Laporan Server Error ditelusuri ke log lokal: SQLSTATE42S22/1054, kolom `upload_tasks.context_id` belum ada saat INSERT upload eviden. Kesalahan pada pembaruan kasbon: kolom baru ikut ditulis untuk semua jenis upload, termasuk `boq`/`evidence` yang tidak membutuhkannya. HTTP gagal sebelum task/job berhasil dibuat, bukan deteksi worker tidak aktif atau kesalahan isi PDF.

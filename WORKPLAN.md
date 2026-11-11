@@ -545,3 +545,42 @@ Historical iteration; superseded by the dashboard restoration below.
 - [x] Dua regresi HTTP/worker memory: BOQ26baris+PDF diproses/preview/replay/arsip tetap pada schema tanpa kasbon; KTP/bank/transfer503 tanpa writes. Query dua enqueue24, budget50 dan0schema/migration lookup jalur lama; private readiness1query.
 - [x] Arsitektur/perilaku diperbarui, tanpa .env/APP_KEY/live its/Dompis/worker/DDL perubahan atau migration baru. Hasil akhir suite di QA/CHANGELOG dan qa/evidence-schema-compatibility-20261111.json.
 - [ ] Deploy kode perbaikan/restart worker its bila dibutuhkan di server; agen belum commit/push atau mengakses server. Migration kasbon lengkap tetap langkah operator untuk fitur baru.
+
+## Pemeriksaan koreksi PP0002 kembali ke Head — 11 November 2026
+
+- [x] Snapshot attachment tervalidasi Sah/v3/Support-first, lima keputusan aktual sesuai assignee; empat tahap sebelum Head dapat diidentifikasi tanpa mengubah isian PP.
+- [x] Jelaskan target Diajukan/SUBMITTED + empat approval, berbeda dari Dikembalikan/reset PM; keputusan Head terdahulu perlu tetap diaudit. Writer tidak mendukung pembatalan dengan edit JSON saja.
+- [x] Siapkan SELECT-only pemeriksaan row PP/dokumen turunan/approval SQL dan audit sumber pada /private/tmp/area3-pp-head-review. Tidak mengubah attachment, database, source behavior atau tanda tangan.
+- [ ] Tunggu konfirmasi BA KH/SPK/pembayaran dan lokasi database sebelum menyiapkan/menerapkan koreksi final yang tercatat. Belum ada rollback keputusan atau mutasi data pengguna.
+
+### Tindak lanjut konfirmasi dokumen turunan — 11 November 2026
+
+- [x] Pengguna mengonfirmasi BA KH/SPK ada dan pembayaran ditolak; melengkapi pertanyaan di atas, bukan verifikasi status SQL/APM server.
+- [x] Review validateDeal dan writer approval: PP Sah menjadi prasyarat BA KH dan keputusan lama immutable. Tidak mengganti target menjadi pengembalian ke Admin atau menghapus dokumen turunan.
+- [ ] Peroleh hasil SELECT-only PP/dokumen turunan/APM/run/step/decision pada database PP0002 sebelum merancang koreksi terkoordinasi. Belum ada command pencabutan Head atau koreksi data diterapkan.
+
+### Hasil pemeriksaan turunan yang dikirim pengguna — 11 November 2026
+
+- [x] Terima hasil BA KH/SPK Sah, termin1 Final REJECTED/Ditolak tanpa settlement/APM pada baris yang dikirim. Tidak mengubah/membatalkan dokumen tersebut.
+- [ ] Pemeriksaan terakhir identitas/revisi PP/workspace dan run/step/decision SQL; koreksi belum diterapkan. Akses database remote langsung tidak tersedia pada review ini.
+
+## Koreksi Head PP0002 setelah hasil SQL lengkap — 11 November 2026
+
+- [x] Terima run/step/decision: revisi PP40, run1 APPROVED, Head akun34. Cocokkan target IDs dengan hash aplikasi; informasi pemeriksaan yang ditunggu pada item sebelumnya sudah diterima. Revisi workspace tetap dibaca saat CLI inspeksi.
+- [x] Cadangkan tabel its lokal sebelum workflow code; hash/bytes/routines-exclusion dicatat di PP_HEAD_CORRECTION. Tidak mengubah transaksi/.env/server/Dompis.
+- [x] CLI inspeksi/apply eksplisit, guard its/Superadmin/Branch/revisi/actual Head/keputusan/graf unpaid, private backup, lock/revision/receipt/audit dan hash-bound replay. Rencana spesifik tersedia deploy/corrections/pp0002-r546-head.json.
+- [x] Pertahankan keputusan dan run lama; marker server-owned menambahkan siklus koreksi dengan empat approval sumber dan Head pending. Seluruh turunan ditahan saat PP belum Sah; rejection/resubmission tetap normal. Cap/notice/timeline konsisten tanpa TTD fiktif atau overwrite SQL histories.
+- [x]263PHP/5597assertions,257frontend,build/check-assets/Pint/diffcheck lulus. Apply84query/budget140/no catalog/no descendant/BOQ/ledger write; JSON-order/strict-values, rollback/retry, role/Branch/conflict dan semua descendant routes diuji memory. Docs/arsitektur/AGENTS/dua skills diperbarui.
+- [ ] Operator deploy kode/build lengkap, inspeksi lalu apply dengan revisi workspace terkini, refresh akun Head dan verifikasi hasil SQL/server. Agen belum commit/push/deploy atau mengoreksi data its lokal/server; tidak ada migration baru. Browser/MySQL transaction/aaPanel belum diverifikasi.
+
+
+## Kasbon Admin / review Finance / inbox otomatis — 11 November 2026
+
+- [x] Backup lokal tabel/data/triggers its sebelum workflow change, SHA/bytes dicatat; tanpa routines/restore test, bukan backup server.
+- [x] Admin Konstruksi/Superadmin Ajukan Kasbon setelah lima actual approvals sampai Head; template, canonical bill, bank/SPK, actual actor dan returned versions. Finance issuance ditolak. Default Surabaya/date/EVP/Business Support persis otoritas pengguna; TTD Mandor kosong, histori lama utuh.
+- [x] Modal review Finance PP→kasbon/lampiran/berkas privat, bank frozen beserta versi/foto; current profile eksplisit. payeeVersion dan reviewed kasbon ID menolak stale bank/keputusan. Approval/proof/APM/scan/full payment/ledger tetap.
+- [x] Preview BOQ TA Mandor semua PP/payment approval memakai selected saved PP budget, indeks metadata/rounding/M-J/null-vs-zero; tidak mereprice dokumen lama.
+- [x] Authenticated revision probe1query/15detik, state hanya saat berubah, backoff/hidden abort, dirty/editor/dialog/pending/stale protection dan20task/page tanpa private reads per row. Success setelah konfirmasi server, YA/TIDAK tetap.
+- [x]269PHP/5771assertions/270frontend,TypeScript/Vite build/check-assets31refs/24preload×3profil,scoped Pint/diffcheck lulus;6PHP/13FE baru. Query pengajuan44/budget75/APM44, lazy private3masing-masing, counter1service/2HTTPfixture; bukan load benchmark.
+- [x] [Perilaku Admin kasbon dan inbox](docs/ADMIN_KASBON_REVIEW_SYNC.md), arsitektur/QA/changelog/README/AGENTS dan empat skill diperbarui; bukti qa/admin-kasbon-review-sync-20261111.json. Tidak ada migration tambahan, env/key/live transaction/Dompis/worker/commit/deploy.
+- [ ] Operator deploy kode dan build, migration kasbon terdahulu bila belum terpasang, bersihkan cache aplikasi/reload hanya worker its bila perlu; uji akun Admin→lima approval→AdminKasbon→FinanceReview→proof/APM serta inbox dua akun/browser/print dan MySQL server. Jangan auto-apply rencana koreksi PP0002 saat deploy.

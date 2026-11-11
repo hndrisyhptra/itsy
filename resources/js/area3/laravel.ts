@@ -4,7 +4,7 @@ declare global { interface Window { __AREA3__?: LaravelBoot } }
 export const boot = typeof window === 'undefined' ? undefined : window.__AREA3__;
 export const basePath = boot?.basePath ?? '';
 export const appUrl = (path: string) => basePath + path;
-const workspacePaths = {state:'/api/prototype/state',commands:'/api/prototype/commands',csv:'/api/prototype/exports/csv',backup:'/api/prototype/backup'} as const;
+const workspacePaths = {state:'/api/prototype/state',revision:'/api/prototype/revision',commands:'/api/prototype/commands',csv:'/api/prototype/exports/csv',backup:'/api/prototype/backup'} as const;
 export const workspaceUrl = (kind: keyof typeof workspacePaths) => appUrl(workspacePaths[kind]);
 export const relativePath = (path: string) => basePath && (path === basePath || path.startsWith(basePath + '/')) ? path.slice(basePath.length) || '/' : path;
 export function exportUrl(report: string, filters: Record<string, string>): string | undefined {

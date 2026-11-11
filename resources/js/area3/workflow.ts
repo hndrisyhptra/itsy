@@ -69,6 +69,7 @@ export function saveProjectV2(s: State, input: Project, submit: boolean) {
   else { delete p.planTemplateVersion; delete p.teamText; delete p.durationDays; delete p.planBudget; delete p.planBudgetTotals; delete p.signatureRows; delete p.signatureUsers; delete p.closing; delete p.riskLevel; }
   p.approvalScheme=projectApprovalScheme(old);
   p.approvalOrderChange=old?.approvalOrderChange;
+  p.headApprovalReopen=old?.headApprovalReopen;
   const chain = validateAssignments(s, { ...p, workflowVersion: version }, submit);
   if (!['Konstruksi', 'Operation'].includes(p.unit) || !branchOptions(s).some(b => b.name === p.branch && b.active)) throw new Error('Pilih Unit Kerja dan Branch aktif.');
   if (!old && (p.parentId || p.rootId !== p.id)) throw new Error('PP lanjutan harus dibuat dari pelepasan BA PP.');

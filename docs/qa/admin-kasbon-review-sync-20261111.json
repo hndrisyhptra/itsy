@@ -1,0 +1,82 @@
+{
+  "date": "2026-11-11",
+  "feature": "Admin kasbon submission, Finance review, Mandor BOQ preview and safe inbox sync",
+  "source_of_authority": "Direct user request; supersedes initial Finance issuer only; five payment approvals unchanged",
+  "verification": {
+    "php": {
+      "command": "/Applications/XAMPP/xamppfiles/bin/php artisan test --compact",
+      "passed": 269,
+      "assertions": 5771,
+      "new_tests": 6,
+      "database": "isolated fail-closed SQLite :memory:; fake private disk"
+    },
+    "frontend": {
+      "command": "npm test",
+      "passed": 270,
+      "new_tests": 13,
+      "mode": "fixtures, SSR, fake clock and transport"
+    },
+    "build": "npm run build passed (TypeScript and Vite)",
+    "assets": {
+      "command": "npm run check:assets",
+      "manifest_references": 31,
+      "preload_dependencies": 24,
+      "profiles": 3,
+      "passed": true
+    },
+    "pint": "scoped PHP passed",
+    "diff_check": "passed"
+  },
+  "query_fixtures": {
+    "kasbon_issue_http": 44,
+    "kasbon_issue_budget": 75,
+    "apm_http": 44,
+    "default_payee_including_workspace": 5,
+    "lazy_profile_service": 3,
+    "lazy_kasbon_documents_service": 3,
+    "revision_service": 1,
+    "revision_http_auth_session_fixture": 2,
+    "mandor_preview_extra_queries": 0,
+    "finance_version_guard_extra_queries": 0,
+    "production_load_benchmark": false
+  },
+  "bounded_ui": {
+    "task_rows_per_page": 20,
+    "kasbon_versions": 10,
+    "indexed_boq_fixture_rows": 500,
+    "inbox_fixture_tasks": 1000
+  },
+  "concurrency_evidence": [
+    "payeeVersion required and checked under lock even after workspace revision recovery",
+    "displayed kasbon ID required on new Finance decision; stale ID fails",
+    "single-flight revision-only polling; visible safe lists; full state on revision increase only",
+    "hidden/route/form/dialog/pending-write pauses and stale response rejection",
+    "no draft/cache clearing or automatic POST retry"
+  ],
+  "backup": {
+    "path": "storage/app/private/backups/its-before-admin-kasbon-20261111-072634.sql",
+    "bytes": 2118857,
+    "sha256": "37dcb8d564517d06f1cab64df2eec71419dc9a1132ca8c9cba62f1137325d764",
+    "scope": "local its tables/data/triggers; routines excluded; not remote server backup",
+    "restore_tested": false
+  },
+  "runtime_changes": {
+    "new_migration": false,
+    "live_data_mutation": false,
+    "server_deployed": false,
+    "env_or_app_key_changed": false,
+    "dompis_touched": false,
+    "worker_service_changed": false,
+    "head_correction_applied": false,
+    "commit_or_push": false
+  },
+  "limits": [
+    "Browser account clicks, responsive/keyboard/native dialog and physical print not verified",
+    "aaPanel route/proxy/cache/worker and MySQL financial transaction not verified remotely",
+    "Changed refresh still uses existing Branch-scoped aggregate; not universal latency claim",
+    "Kasbon HTML preview/print, no native XLSX/DOCX export added",
+    "Bank transfer, physical signatures and file-content review remain human actions",
+    "Earlier kasbon migration remains prerequisite for new finance features"
+  ],
+  "behavior_document": "docs/ADMIN_KASBON_REVIEW_SYNC.md"
+}

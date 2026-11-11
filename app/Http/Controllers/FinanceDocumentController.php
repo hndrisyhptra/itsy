@@ -20,7 +20,7 @@ class FinanceDocumentController extends Controller
             return response()->json($docs->savePayee($w, $spk, $input));
         }
 
-        return response()->json($docs->payee($w, $spk))->header('Cache-Control', 'private, no-store');
+        return response()->json($docs->payee($w, $spk, ! $request->boolean('profile_only')))->header('Cache-Control', 'private, no-store');
     }
 
     public function kasbon(Request $request, string $term, FinanceDocuments $docs, PrototypeWorkspaceService $workspaces)
@@ -32,7 +32,7 @@ class FinanceDocumentController extends Controller
             return response()->json($docs->issue($w, $term, $input));
         }
 
-        return response()->json($docs->kasbon($w, $term))->header('Cache-Control', 'private, no-store');
+        return response()->json($docs->kasbon($w, $term, ! $request->boolean('documents_only')))->header('Cache-Control', 'private, no-store');
     }
 
     public function upload(Request $request, string $kind, string $document, PrototypeWorkspaceService $workspaces, UploadQueue $queue)

@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PrototypeWorkspace;
 use App\Services\PrototypeWorkspaceService;
+use App\Support\Area3MigrationTarget;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -27,6 +29,16 @@ class PrototypeController extends Controller
         return response()->json($service->payload($service->workspace($request)));
     }
 
+    public function revision()
+    {
+        Area3MigrationTarget::assertAllowed();
+        $revision = PrototypeWorkspace::where('owner_key', hash('sha256', 'area3-authenticated-workflow-v1'))
+            ->whereNotNull('relational_migrated_at')->value('revision');
+        abort_if($revision === null, 503, 'Workspace belum siap untuk sinkronisasi.');
+
+        return response()->json(['revision' => (int) $revision])->header('Cache-Control', 'private, no-store');
+    }
+
     public function command(Request $request, PrototypeWorkspaceService $service)
     {
         abort_if(strlen($request->getContent()) > 2 * 1024 * 1024, 413, 'Data transaksi terlalu besar.');
@@ -36,7 +48,7 @@ class PrototypeController extends Controller
             'args' => ['present', 'array', 'max:5'], 'result_id' => ['nullable', 'string', 'regex:/^[a-zA-Z0-9-]{3,100}$/D'],
         ]);
         $types = [
-            'adoptFinancePayment' => ['string'], 'submitFinanceTerm' => ['array'], 'decideFinancePayment' => ['string', 'string', 'string'], 'saveSpkFinance' => ['array', 'string'],
+            'adoptFinancePayment' => ['string'], 'submitFinanceTerm' => ['array'], 'decideFinancePayment' => ['string', 'string', 'string', 'string'], 'saveSpkFinance' => ['array', 'string'],
             'requestPartialPayment' => ['string'], 'verifyPartialPayment' => ['string', 'string', 'string'], 'payPartialPayment' => ['string', 'string'],
             'decideProject' => ['string', 'string', 'string'], 'assignProjectApprovers' => ['string', 'string', 'string'],
             'setNumberFormat' => ['string'], 'selectActor' => ['string'], 'verifyTermScan' => ['string', 'string', 'string'],

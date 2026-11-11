@@ -1,5 +1,9 @@
 # it's Area 3 — Construction Workspace
 
+**Pembaruan alur terbaru — 11 November 2026:** setelah lima approval Pembayaran sampai Head of PMO, **Admin Konstruksi mengisi dan Ajukan Kasbon**. Finance mereview PP sampai kasbon melalui modal berkas, menyetujui pembayaran, mengunggah bukti transfer dan mencatat APM. Kasbon default Surabaya/tanggal pengajuan, EVP I GEDE WAHYU DANYNDRA dan Mgr Business Support ARIZA ARBA'ATUS S, tanpa menambah approval aplikasi. Preview BOQ TA Mandor tersedia pada approval PP/Pembayaran. Inbox memeriksa pembaruan setiap15detik saat halaman daftar aktif, dengan perlindungan isian/draf. [Alur, versi, privasi, deploy dan pengujian](docs/ADMIN_KASBON_REVIEW_SYNC.md). Tidak ada migration tambahan untuk perubahan ini; migration kasbon sebelumnya tetap prasyarat. Kode belum di-deploy agen ke server. Ketentuan Finance sebagai pembuat kasbon pada catatan awal berikut telah digantikan.
+
+Koreksi khusus PP0002 yang terlanjur disetujui Head disiapkan melalui CLI inspeksi/apply dengan audit, backup privat dan siklus lama tetap utuh. Belum diterapkan pada server oleh agen. Lihat [panduan koreksi Head PP](docs/PP_HEAD_CORRECTION.md); tidak memakai edit status/keputusan SQL manual.
+
 **Pembaruan 11 November 2026:** data pribadi Mandor SPK dan kasbon Finance sudah diimplementasikan untuk pengajuan baru `kasbon-v1`; Parsial/Final boleh dibayar sebelum scan, dengan kasbon terbit, persetujuan Finance, bukti transfer dan APM. Riwayat lama tetap. Migrasi baru belum diterapkan pada its aktif; lihat [alur, tabel, privasi, deploy dan batas pengujian](docs/FINANCE_KASBON.md). Aturan lama di bawah tetap berlaku pada dokumen historis bila berbeda.
 
 Simpan/pengajuan memakai alamat API pada origin halaman yang sama agar kompatibel dengan HTTPS/proxy dan subfolder. Koneksi terputus tidak mengirim ulang simpan otomatis; periksa daftar dokumen bila hasilnya belum pasti. [Penanganan Failed to fetch dan deployment](docs/SAME_ORIGIN_TRANSPORT.md).

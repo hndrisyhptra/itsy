@@ -496,14 +496,7 @@ class RelationalWorkflowStore
             return; // Legacy identity-less decisions remain verbatim in the document record.
         }
         $roles = PrototypeDomain::storedApprovalRoles($document, $project);
-        $history = $project ? ($document['approvalHistory'] ?? $document['approvals'] ?? []) : ($document['history'] ?? $document['approvals'] ?? []);
-        $cycles = [[]];
-        foreach ($history as $decision) {
-            $cycles[array_key_last($cycles)][] = $decision;
-            if ($decision['decision'] !== 'Setujui') {
-                $cycles[] = [];
-            }
-        }
+        $cycles = ProjectHeadReopen::cycles($document, $project);
         foreach ($cycles as $i => $decisions) {
             if (! $decisions && ! in_array($document['status'], ['Diajukan', 'Sah', 'Disetujui'], true)) {
                 continue;
@@ -528,7 +521,7 @@ class RelationalWorkflowStore
                     $saved = DB::table('approval_decisions')->where('id_approval_decision', $decisionId)->first();
                     if ($saved && $saved->decision_data !== $data['decision_data']) {
                         // JSON serialization may differ across drivers; compare values.
-                        if (json_decode($saved->decision_data, true) !== $decision) {
+                        if (Arr::sortRecursive(json_decode($saved->decision_data, true)) !== Arr::sortRecursive($decision)) {
                             throw new RuntimeException('Riwayat keputusan approval tidak boleh ditimpa.');
                         }
                     } elseif (! $saved) {

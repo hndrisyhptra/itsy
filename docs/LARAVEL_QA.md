@@ -1,5 +1,35 @@
 # Laravel rebuild QA — 2 November 2026
 
+## Kasbon Admin / review Finance / inbox otomatis — 11 November 2026
+
+**269 PHP tests / 5.771 assertions,270 frontend,TypeScript/Vite build dan check:assets31manifest/24preload×3profil lulus.** Scoped Pint serta diff check lulus. Enam PHP baru dan13frontend baru; bootstrap tetap fail-closed SQLite memory/fake disk, tidak memakai its aktif. Commands: PHP XAMPP artisan test --compact, npm test, npm run build, npm run check:assets.
+
+Regresi memeriksa Admin hanya setelah lima selected actual approvals, Finance penerbitan403, actual maker/defaults, Branch dan returned/reissue history, payeeVersion berubah409 meski workspace diperbarui, keputusan Finance mengikat versi kasbon yang direview, bank/foto frozen vs profil terkini lazy, APM/full bill/proof/scan gating dan legacy output. BOQ preview menguji PP lanjutan/harga tersimpan/M-J independen/nol/exclusion/pembulatan/500baris tanpa find per baris;1000tugas dibatasi20DOM. Revision endpoint hanya1query counter (2HTTP pada fixture auth/session), tidak menerima workspace client, tidak membuat workspace/memuat aggregate/master/private tables. Fake-clock/transport menguji interval15detik/visibility/backoff/abort/single request/focus, state hanya saat counter berubah, route/dirty-note/modal/pending-write/stale-response/confirmed-write race dan cache/draft preservation. YA/TIDAK tetap sebelum mutasi; toast sukses PP/payment menunggu server.
+
+Pengajuan kasbon44HTTPquery (budget75), APM44; private profil default5 termasuk workspace fixture, lazy profil/kasbon3service masing-masing, tanpa katalog file yang tidak dipakai; versi/read-only BOQ/HTML review tidak menambah query. Batas ini bukti fixture, bukan latency/throughput/global-load claim. Daftar20, kasbon10versi dan file bounded; payload aggregate pada refresh yang benar-benar berubah tetap batas arsitektur lama.
+
+Backup its lokal tabel/data/triggers berhasil/sha diverifikasi; routines tidak masuk, restore tidak diuji, bukan backup server. Tidak ada migration baru, runtime mutation/.env/APP_KEY/private-permission/live worker/Dompis/deploy. Tidak menjalankan koreksi PP0002. Kasbon memakai preview/cetak HTML; transfer bank dan TTD/review dilakukan manusia. Browser akun/responsif/keyboard/modal/cetak fisik, deployment aaPanel/route cache/worker dan transaksi MySQL server belum diverifikasi. [Perilaku dan deploy](ADMIN_KASBON_REVIEW_SYNC.md), [bukti](qa/admin-kasbon-review-sync-20261111.json).
+
+## CLI koreksi Head PP0002 / siklus administratif — 11 November 2026
+
+**263 PHP tests/5.597 assertions,257 frontend,TypeScript/Vite build,check:assets32manifest/25preload×3profil,scoped Pint dan diff check lulus.** Tujuh PHP dan lima frontend baru; semua test tetap fail-closed SQLite memory/disk palsu. CLI default tidak menulis/file backup kosong; apply memerlukan Superadmin/Branch/revisi/identitas/Head aktif/graf belum dibayar. Verifikasi mencakup immutable keputusan asli, salinan empat keputusan dengan sumber/tanggal sama, run1 utuh/run2 pending lalu keputusan baru Head, marker yang tidak dapat dibuat client, note-required rejection dan restart siklus tanpa carry-over ulang, hash-bound replay, konflik/akun/revisi, late SQL failure rollback/retry dan seluruh rute mutasi turunan. Snapshot/relasi/ledger/arsip lama dibandingkan sebelum-sesudah. Key-order JSON native MySQL disimulasikan, tetapi perubahan nilai note/tipe NIK tetap ditolak tanpa write keputusan.
+
+Apply fixture satu PP84query (budget140); larangan baca katalog Designator/KHS/Paket dan write BOQ/biaya/kontrak/SPK/termin/ledger terpenuhi. Gerbang per command menambah0SQL/endpoint; bukan throughput/latensi/load benchmark. CLI --help tersedia. Server SQL yang diberikan pengguna memetakan target tetapi bukan eksekusi agen. Tidak menjalankan dry-run/apply terhadap PP server atau mengubah its aktif; tidak ada migration/.env/APP_KEY/Dompis/daemon change. File backup lokal tabel/data/triggers berhasil dan hash terverifikasi; routines gagal karena mysql.proc metadata lama, tidak termasuk dump berhasil, restore belum diuji.
+
+Browser akun/visual/responsif/keyboard, MySQL/MariaDB correction transaction dan CLI aaPanel belum diverifikasi. Tidak ada approval/TTD/pembayaran simulasi ditambahkan ke runtime. Kode/rencana perlu deploy lengkap sebelum operator melakukan inspeksi/apply; status server belum dinyatakan berubah. Panduan: [PP_HEAD_CORRECTION](PP_HEAD_CORRECTION.md); [bukti](qa/pp-head-correction-20261111.json).
+
+## Hasil SQL turunan PP0002 dibagikan pengguna — 11 November 2026
+
+Baris yang dibagikan menunjukkan PP APPROVED, BA KH/SPK Sah dan termin1 FINAL REJECTED/Ditolak, nomor APM/nilai settlement NULL. Ini bukti hasil pengguna pada cakupan baris tersebut; bukan query yang dijalankan agen atau bukti seluruh settlement database. Pemeriksaan identitas/revisi PP serta approval run/step/decision masih diperlukan. Tidak ada perubahan kode/data/schema/query runtime; suite tidak diulang dan koreksi Head belum diuji/diterapkan.
+
+## Follow-up PP0002 memiliki BA KH/SPK dan pembayaran ditolak — 11 November 2026
+
+Konfirmasi pengguna diterima; status SQL dokumen turunan/APM belum diperiksa. Review statis validateDeal menemukan syarat PP Sah/BOQ Final; RelationalWorkflowStore.approvals mempertahankan keputusan immutable. Penolakan pembayaran tidak membatalkan dokumen induk. Diagnostic tiga SELECT belum dijalankan; tidak ada koreksi JSON/database atau kode runtime. Suite tidak diulang untuk catatan ini; hasil suite upload sebelumnya tidak membuktikan kelayakan pembatalan Head. Tidak ada query runtime tambahan/bukti performa baru.
+
+## Review snapshot PP0002 / Head accidental approval — 11 November 2026
+
+Read-only review terhadap attachment PP0002: JSON valid, lima Setujui sesuai urutan/assignee v3 Support-first, approvalHistory identik dengan approvals. Target pending Head memerlukan empat approval aktif dan Diajukan/SUBMITTED; bukan alur Kembalikan. Immutable SQL decisions/history membuat edit status JSON saja tidak memadai. SELECT-only diagnostic disiapkan, belum dijalankan; downstream BA KH/SPK/termin dan server belum diverifikasi. Attachment/DB/kode workflow tidak berubah; tidak menjalankan suite lagi karena tidak ada perubahan perilaku. Status koreksi masih pending, lihat WORKPLAN/CHANGELOG; jangan mengartikan review ini sebagai keberhasilan mengembalikan PP.
+
 ## Upload eviden / pre-kasbon schema compatibility — 11 November 2026
 
 **256 PHP tests /5.451 assertions,252 frontend,build/check:assets32referensi/25preload×3profil,scoped Pint dan diff check lulus.** Root cause lokal SQL1054 context_id belum ada pada INSERT upload_tasks evidence. Kode baru semula menulis kolom kasbon untuk semua upload, sementara migration baru belum diterapkan. Fix membatasi context pada transfer-proof dan menolak private uploads503 sebelum bytes/job bila migration registry belum siap. Tidak melakukan ALTER/migration otomatis atau mengabaikan binding versi.

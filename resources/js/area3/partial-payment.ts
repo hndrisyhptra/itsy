@@ -10,7 +10,7 @@ export interface PartialPaymentRequest {
 export const usesPartialPayment=(t:Term)=>t.workflowVersion===3&&t.type==='Parsial'&&t.paymentFlow==='partial-payment-v1';
 export const documentStatus=(t:Term):'OK'|'NOK'=>t.scan?'OK':'NOK';
 export function financeTaskPending(t:Term) {
-  if(usesFinancePayment(t))return ['Diajukan','Disetujui'].includes(t.status)&&(t.apmStatus!=='Valid'||t.scan?.status==='Menunggu Verifikasi');
+  if(usesFinancePayment(t))return t.status==='Disetujui'&&(t.scan?.status==='Menunggu Verifikasi'||t.apmStatus!=='Valid'&&!!t.kasbon&&t.financePayment?.status!=='Dikembalikan');
   if(t.status!=='Disetujui')return false;
   if(usesPartialPayment(t))return (t.apmStatus!=='Valid'&&['Diajukan','Diverifikasi'].includes(t.paymentRequest?.status??''))||t.scan?.status==='Menunggu Verifikasi';
   return (t.workflowVersion??1)>=2&&t.apmStatus!=='Valid'&&['Menunggu Verifikasi','Valid'].includes(t.scan?.status??'');

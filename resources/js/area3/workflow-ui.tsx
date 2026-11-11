@@ -1,3 +1,4 @@
+import { BoqMandorPreviewButton } from './boq-mandor-preview';
 import { useEffect, useRef, useState } from 'react';
 import { UploadTasks } from './upload-tasks';
 import { applyAutomaticBoqPricing, usesAutomaticBoqPricing } from './boq-pricing';
@@ -7,9 +8,9 @@ import { uploadTask, type UploadTask } from './upload-queue';
 import { Upload } from 'lucide-react';
 import { DEFAULT_PP_NUMBER_FORMAT } from './workflow';
 import { type State, type Project, type Approval, type Role, projectApprovalScheme, usesBusinessSupport, APPROVERS_V3, approvalRoles, selectedApprover, assignPaymentApprovers, uid, money, num, boqTotal, operational, branchOptions, decideProject, canApproveProject, assignProjectApprovers, setNumberFormat } from './domain';
-import { mutate, uploadBoq } from './store';
+import { mutate, uploadBoq, waitForPersistence, persistencePending } from './store';
 import { boot, appUrl } from './laravel';
-import { Link, Card, Field, Input, Button, Table, Notice, Badge, attempt, confirmAction, ActionLink } from './ui';
+import { Link, Card, Field, Input, Button, Table, Notice, Badge, attempt, confirmAction, ActionLink, toast } from './ui';
 
 export function BoqDraftEditor({ s, p:input, onChange, disabled, onBusy }: { s:State; p:Project; onChange:(p:Project)=>void; disabled:boolean; onBusy?:(value:boolean)=>void }) {
   const automatic=usesAutomaticBoqPricing(s,input),p=applyAutomaticBoqPricing(s,input);
@@ -76,9 +77,11 @@ function FuturePaymentApprovers({s,p}:{s:State;p:Project}) {
 export function ProjectApprovalPanel({ s, p }: { s: State; p: Project }) {
   const [note, setNote] = useState(''), [pm, setPm] = useState(p.pmUserId ?? ''), [manager, setManager] = useState(p.managerUserId ?? '');
   const legacy = (p.workflowVersion ?? 1) < 2, roles = approvalRoles(p,true);
+  async function confirmProjectDecision(decision:Approval['decision']){if(persistencePending)return;try{mutate(d=>decideProject(d,p.id,decision,note));await waitForPersistence();setNote('');toast('Keputusan PP tersimpan.');}catch(e){toast(e instanceof Error?e.message:String(e),true);}}
   return <Card title={legacy ? 'Riwayat Project Plan' : 'Approval Project Plan'} subtitle={legacy ? 'Dokumen historis tetap dipertahankan.' : roles.join(' → ')}>
-    <SubmissionRejectionNotice document={p} history={p.approvalHistory}/>
-    {!legacy && <><div className="form-grid">{roles.map(role => <ApproverSelect key={role} s={s} branch={p.branch} role={role} label={role} value={selectedApprover(p,role)} onChange={() => {}} disabled/>)}</div><Notice>Status PP: {p.status} · {p.approvals?.length ?? 0}/{roles.length} disetujui. SPK tersedia setelah seluruh approval lengkap.</Notice>{canApproveProject(s, p) && <><Field label="Catatan / alasan pengembalian atau penolakan"><textarea value={note} onChange={e => setNote(e.target.value)}/></Field><div className="actions">{(['Tolak', 'Kembalikan', 'Setujui'] as Approval['decision'][]).map(decision => <Button confirm={`${decision} Project Plan ${p.no}? Keputusan akan dicatat atas akun Anda.`} key={decision} primary={decision === 'Setujui'} onClick={() => attempt(() => mutate(d => decideProject(d, p.id, decision, note)), 'Keputusan PP tersimpan.')}>{decision} PP</Button>)}</div></>}</>}
+    <SubmissionRejectionNotice document={p} history={p.approvalHistory}/><div className="actions"><BoqMandorPreviewButton s={s} p={p}/></div>
+    {p.headApprovalReopen && <Notice tone="warning">Approval Head dibuka ulang: {p.headApprovalReopen.reason} Keputusan Head terdahulu tetap menjadi riwayat dan tidak berlaku sebagai persetujuan pada siklus koreksi.</Notice>}
+    {!legacy && <><div className="form-grid">{roles.map(role => <ApproverSelect key={role} s={s} branch={p.branch} role={role} label={role} value={selectedApprover(p,role)} onChange={() => {}} disabled/>)}</div><Notice>Status PP: {p.status} · {p.approvals?.length ?? 0}/{roles.length} disetujui. SPK tersedia setelah seluruh approval lengkap.</Notice>{canApproveProject(s, p) && <><Field label="Catatan / alasan pengembalian atau penolakan"><textarea value={note} onChange={e => setNote(e.target.value)}/></Field><div className="actions">{(['Tolak', 'Kembalikan', 'Setujui'] as Approval['decision'][]).map(decision => <Button confirm={`${decision} Project Plan ${p.no}? Keputusan akan dicatat atas akun Anda.`} key={decision} primary={decision === 'Setujui'} disabled={persistencePending} onClick={()=>void confirmProjectDecision(decision)}>{decision} PP</Button>)}</div></>}</>}
     {legacy && s.schema < 3 && <><div className="form-grid"><ApproverSelect s={s} branch={p.branch} role="PM Konstruksi" label="PM Konstruksi" value={pm} onChange={setPm} disabled={!operational(s)}/><ApproverSelect s={s} branch={p.branch} role="Manager Konstruksi" label="Manager Konstruksi" value={manager} onChange={setManager} disabled={!operational(s)}/></div>{operational(s) && <Button confirm="Simpan penanggung jawab Project Plan ini?" onClick={() => attempt(() => mutate(d => assignProjectApprovers(d,p.id,pm,manager)), 'Penanggung jawab tersimpan.')}>Simpan Penanggung Jawab</Button>}</>}
     {!!p.approvalHistory?.length && <Table headers={['Approver', 'Keputusan', 'Catatan', 'Waktu']}>{p.approvalHistory.map((a, i) => <tr key={i}><td>{a.actorName ?? a.userId}<small>{a.role}</small></td><td>{a.decision}</td><td>{a.note}</td><td>{new Date(a.at).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}</td></tr>)}</Table>}
     {s.schema >= 3 && ((p.workflowVersion ?? 1) < 3||usesBusinessSupport(p)) && p.status === 'Sah' && <FuturePaymentApprovers s={s} p={p}/>}
@@ -92,8 +95,10 @@ export function SubmissionRejectionNotice({document,history=[]}:{document:{statu
 }
 
 export function ProjectInbox({ s }: { s: State }) {
+  const [page,setPage]=useState(1);
   const waiting = s.projects.filter(p => canApproveProject(s, p));
-  return <Card title="Approval Project Plan" subtitle="Hanya PP yang ditugaskan ke akun pengguna aktif muncul sebagai tugas."><Table headers={['No PP / Project', 'Branch', 'BOQ Owner', 'Approval', 'Aksi']}>{waiting.map(p => <tr key={p.id}><td><b>{p.no}</b><small>{p.projectCode} · {p.name}</small></td><td>{p.branch}</td><td>{money(p.parentId ? p.budget : boqTotal(p))}</td><td><Badge>{p.status}</Badge> {p.approvals?.length ?? 0}/{approvalRoles(p,true).length}</td><td><Link className="btn primary" to={'/project-plan/' + p.id}>Tinjau PP</Link></td></tr>)}</Table>{!waiting.length && <p className="muted">Tidak ada PP menunggu persetujuan pengguna ini.</p>}</Card>;
+  const pages=Math.max(1,Math.ceil(waiting.length/20)),current=Math.min(page,pages);
+  return <Card title="Approval Project Plan" subtitle="Hanya PP yang ditugaskan ke akun pengguna aktif muncul sebagai tugas."><Table headers={['No PP / Project', 'Branch', 'BOQ Owner', 'Approval', 'Aksi']}>{waiting.slice((current-1)*20,current*20).map(p => <tr key={p.id}><td><b>{p.no}</b><small>{p.projectCode} · {p.name}</small></td><td>{p.branch}</td><td>{money(p.parentId ? p.budget : boqTotal(p))}</td><td><Badge>{p.status}</Badge> {p.approvals?.length ?? 0}/{approvalRoles(p,true).length}</td><td><div className="actions"><Link className="btn primary" to={'/project-plan/' + p.id}>Tinjau PP</Link><BoqMandorPreviewButton s={s} p={p}/></div></td></tr>)}</Table>{!waiting.length && <p className="muted">Tidak ada PP menunggu persetujuan pengguna ini.</p>}<div className="table-foot"><span>{waiting.length} PP · {current}/{pages}</span><div className="actions"><Button disabled={current===1} onClick={()=>setPage(current-1)}>Sebelumnya</Button><Button disabled={current===pages} onClick={()=>setPage(current+1)}>Berikutnya</Button></div></div></Card>;
 }
 
 export function NumberingSettings({ s }: { s: State }) {

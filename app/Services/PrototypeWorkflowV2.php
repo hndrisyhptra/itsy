@@ -202,6 +202,9 @@ trait PrototypeWorkflowV2
         }
         $p['approvals'] = [];
         $p['approvalHistory'] = $old['approvalHistory'] ?? [];
+        if (isset($old['headApprovalReopen'])) {
+            $p['headApprovalReopen'] = $old['headApprovalReopen'];
+        }
         $p['status'] = $submit ? 'Diajukan' : 'Draft';
         $this->put('projects', $p);
         $this->state['events'][0]['title'] = $submit ? 'PP diajukan ke PM terpilih' : 'Draft PP dan BOQ disimpan';

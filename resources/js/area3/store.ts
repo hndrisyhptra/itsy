@@ -4,6 +4,7 @@ import { paymentStartAction } from './payment-selection';
 import { seed } from './seed';
 import { boot, appUrl, workspaceUrl } from './laravel';
 import { type Command, setCommandRecorder } from './commands';
+import { assertHeadReopenCommand } from './head-reopen';
 import type { MasterEntity, MasterCatalog } from './master-data';
 import { enqueueUpload, uploadTask, waitUpload, type UploadKind } from './upload-queue';
 import { postUpload, type UploadProgressHandler } from './upload-progress';
@@ -17,6 +18,24 @@ let active: Promise<void> | undefined;
 export let persistenceError = '';
 export let persistencePending = false;
 const emit = () => listeners.forEach(fn => fn());
+export const confirmedRevision=()=>revision;
+
+export async function inboxRevision(signal:AbortSignal):Promise<number>{
+  const response=await fetch(workspaceUrl('revision'),{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'},signal:AbortSignal.any([signal,AbortSignal.timeout(10000)])});
+  if(!response.ok)throw new Error('Sinkronisasi inbox belum tersedia.');
+  return (await response.json()).revision;
+}
+
+export async function refreshInboxState(signal:AbortSignal,eligible:()=>boolean):Promise<void>{
+  if(!boot||persistencePending||!eligible())return;
+  const expected=revision;
+  const response=await fetch(workspaceUrl('state'),{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'},signal:AbortSignal.any([signal,AbortSignal.timeout(15000)])});
+  if(!response.ok)throw new Error('Data inbox belum dapat dimuat.');
+  const data=await response.json();
+  if(!Number.isSafeInteger(data.revision)||!data.state||typeof data.state!=='object')throw new Error('Respons sinkronisasi tidak valid.');
+  if(signal.aborted||persistencePending||revision!==expected||!eligible()||data.revision<revision)return;
+  confirmed=data.state;state=structuredClone(confirmed);revision=data.revision;csrf=data.csrf??csrf;emit();
+}
 if (typeof window !== 'undefined') window.addEventListener('beforeunload', event => {
   if (!persistencePending) return;
   event.preventDefault();
@@ -159,7 +178,7 @@ export function mutate<T>(fn: (draft: State) => T): T {
   if (persistencePending) throw new Error('Tunggu konfirmasi transaksi Laravel sebelumnya.');
   const next = structuredClone(state);
   let command: Command | undefined;
-  setCommandRecorder(value => { if (command) throw new Error('Satu transaksi hanya boleh menjalankan satu perintah.'); command=value; });
+  setCommandRecorder(value => { if (command) throw new Error('Satu transaksi hanya boleh menjalankan satu perintah.'); assertHeadReopenCommand(next,value.command,value.args); command=value; });
   let result: T;
   try { result=fn(next); } finally { setCommandRecorder(); }
   if (!command && next.role !== state.role) command={command:'role',args:[next.role]};

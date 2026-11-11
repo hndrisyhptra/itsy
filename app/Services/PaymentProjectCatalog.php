@@ -68,7 +68,7 @@ final class PaymentProjectCatalog
                     'APPROVED' => 'Disetujui', 'SUBMITTED' => 'Diajukan', 'RETURNED' => 'Dikembalikan', 'REJECTED' => 'Ditolak', default => 'Draft'
                 },
                 'version' => (int) $t->workflow_version, 'apmStatus' => $t->apm_status ?? '', 'scanStatus' => $t->scan_status ?? '', 'financeApproved' => ! empty($t->finance_at),
-                ...($t->payment_flow === 'kasbon-v1' ? ['financePaymentStatus' => ($t->finance_payment_status === 'Menunggu Approval' && $t->status === 'APPROVED') ? 'Menunggu Kasbon Finance' : ($t->finance_payment_status ?? 'Menunggu Kasbon Finance')] : []),
+                ...($t->payment_flow === 'kasbon-v1' ? ['financePaymentStatus' => ($t->finance_payment_status === 'Menunggu Approval' && $t->status === 'APPROVED') ? 'Menunggu Pengajuan Kasbon Admin' : ($t->finance_payment_status ?? 'Menunggu Pengajuan Kasbon Admin')] : []),
                 ...($t->payment_flow === 'partial-payment-v1' ? ['partialPaymentStatus' => $t->payment_status] : []),
             ])->all();
             $latest = $history ? $history[array_key_last($history)] : null;

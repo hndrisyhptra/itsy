@@ -20,6 +20,7 @@ class PrototypeDomain
     public function execute(array $state, string $command, array $args, ?string $resultId = null): array
     {
         $this->state = $state;
+        ProjectHeadReopen::assertCommandAllowed($state, $command, $args);
         $result = match ($command) {
             'saveProject' => ($state['schema'] ?? 1) >= 2 ? $this->saveProjectV2($this->object($args[0] ?? null), (bool) ($args[1] ?? false)) : $this->saveProject($this->object($args[0] ?? null), (bool) ($args[1] ?? false)),
             'decideProject' => $this->decideProject($args[0] ?? '', $args[1] ?? '', $args[2] ?? ''),
@@ -43,7 +44,7 @@ class PrototypeDomain
             '_attachTransferProof' => $this->attachTransferProof($args[0] ?? '', $this->object($args[1] ?? null)),
             'adoptFinancePayment' => $this->adoptFinancePayment($args[0] ?? ''),
             'submitFinanceTerm' => $this->submitFinanceTerm($this->object($args[0] ?? null)),
-            'decideFinancePayment' => $this->decideFinancePayment($args[0] ?? '', $args[1] ?? '', $args[2] ?? ''),
+            'decideFinancePayment' => $this->decideFinancePayment($args[0] ?? '', $args[1] ?? '', $args[2] ?? '', $args[3] ?? null),
             'saveSpk' => $this->saveSpk($this->object($args[0] ?? null), $args[1] ?? 'save'),
             'createTerm' => $this->createTerm($args[0] ?? '', $resultId),
             'saveTerm' => $this->saveTerm($this->object($args[0] ?? null), (bool) ($args[1] ?? false)),
