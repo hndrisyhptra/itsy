@@ -1,9 +1,9 @@
+import { rupiahNumber, monetaryRound, moneyLine } from './currency';
 import type { Project, Deal, Spk } from './domain';
 import { bakhDocumentDate } from './bakh-content';
 
 const filled=(value?:string)=>value?.trim()||'…';
-const round=(value:number)=>Math.round((value+Number.EPSILON)*100)/100;
-const number=new Intl.NumberFormat('id-ID',{maximumFractionDigits:2});
+const number=rupiahNumber;
 export const SPK_TEXT={
   title:'SURAT PERINTAH KERJA (SPK)',
   coordination:'Untuk menghindari hal-hal yang tidak sesuai dengan kelancara tugas, Saudara dapat berkordinasi dengan Waspang PT. Telkom Akses saudara ',
@@ -11,13 +11,13 @@ export const SPK_TEXT={
 };
 /** Shared form-prop presentation only: no identity inference, catalog reads or state changes. */
 export function spkDocumentData(project:Project,deal:Deal,spk:Spk){
+  const round=(n:number)=>monetaryRound(n,deal);
   let material=0,total=0;
   for(const row of deal.rows){
-    const m=row.m?row.qm*row.pm:0,s=row.s?row.qs*row.ps:0;
-    material+=round(m);total+=round(m+s);
+    material+=moneyLine(row.m?row.qm:0,row.pm,0,0,deal);total+=moneyLine(row.m?row.qm:0,row.pm,row.s?row.qs:0,row.ps,deal);
   }
   material=round(material);total=round(total);
-  // Follow the existing per-line combined rounding; allocate the cent remainder to Jasa.
+  // Legacy keeps its cent remainder; new policy rounds each M/J component to whole rupiah.
   const service=round(total-material),date=bakhDocumentDate(spk.date),start=bakhDocumentDate(spk.start),end=bakhDocumentDate(spk.end);
   const job=filled(project.name),branch=filled(project.branch),mandor=filled(deal.mandor);
   return {

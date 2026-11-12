@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\PrototypeWorkspace;
+use App\Support\WholeRupiah;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -159,9 +160,14 @@ class FinanceDocuments
             $domain = app(PrototypeDomain::class)->load(['deals' => [$d], 'spks' => [$spk]]);
             $total = $domain->termTotal($t);
             $sum = '0';
-            foreach ($data['rows'] as $line) {
+            foreach ($data['rows'] as &$line) {
+                if (($t['moneyPolicy'] ?? '') === WholeRupiah::POLICY) {
+                    $line['amount'] = bcdiv((string) $line['amount'], '1', 0);
+                }
+                abort_if(bccomp((string) $line['amount'], '0', 2) <= 0, 422, 'Nominal kasbon setelah pemotongan harus positif.');
                 $sum = bcadd($sum, (string) $line['amount'], 2);
             }
+            unset($line);
             abort_unless(bccomp($sum, (string) $total, 2) === 0, 422, 'Jumlah rincian kasbon harus sama dengan tagihan termin saat ini.');
             $payee = $this->payeeSnapshot($row, $r->id_spk);
             abort_unless((int) $data['payeeVersion'] === (int) $payee['version'], 409, 'Data Mandor berubah. Muat ulang data penerima dan periksa rekening sebelum mengajukan kasbon kembali.');

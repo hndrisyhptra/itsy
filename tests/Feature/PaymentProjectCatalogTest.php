@@ -9,6 +9,7 @@ use App\Services\PaymentProjectCatalog;
 use App\Services\PaymentSelection;
 use App\Services\PrototypeDomain;
 use App\Services\RelationalWorkflowStore;
+use App\Support\WholeRupiah;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -169,6 +170,23 @@ class PaymentProjectCatalogTest extends TestCase
         $list = $this->getJson(self::URL.'/'.$group->json('items.0.id').'/orders')->assertOk();
         $this->assertEquals(.01, $list->json('items.0.amount'));
         $this->assertEquals(app(PrototypeDomain::class)->load($s)->dealTotal($s['deals'][0]), $list->json('items.0.amount'));
+    }
+
+    public function test_whole_rupiah_order_amount_matches_domain_with_the_same_four_query_budget(): void
+    {
+        $s = $this->source();
+        $s['deals'][0]['moneyPolicy'] = WholeRupiah::POLICY;
+        $s['deals'][0]['rows'] = [array_replace($s['deals'][0]['rows'][0], ['m' => true, 's' => true, 'qm' => .015, 'qs' => .015, 'pm' => 100, 'ps' => 100])];
+        $this->replace($s);
+        $account = app(AuthenticatedWorkspace::class)->account();
+        $project = DB::table('projects')->where('project_code', $s['projects'][0]['projectCode'])->value('id_project');
+        DB::enableQueryLog();
+        $result = app(PaymentProjectCatalog::class)->orders($account, $project, 1);
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+        $this->assertQueries($queries, 4);
+        $this->assertEquals(2, $result['items'][0]['amount']);
+        $this->assertEquals(app(PrototypeDomain::class)->load($s)->dealTotal($s['deals'][0]), $result['items'][0]['amount']);
     }
 
     public function test_role_validation_empty_storage_and_literal_wildcards_fail_closed_without_creating_workspaces(): void

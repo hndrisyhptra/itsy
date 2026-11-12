@@ -1,5 +1,23 @@
 # Laravel rebuild QA — 2 November 2026
 
+## Pemotongan data tersimpan (bukan half-up) — 12 November 2026
+
+**280PHP/5877assertions,280frontend,TypeScript/Vite build,check:assets31referensi/24preload×3profil dan scoped Pint/diff check lulus.** Lima PHP konversi baru dan satu frontend baru; vector/current-save/format expectations berpindah ke truncation, policy half-up lama tetap dipisahkan. SQLite memory fail-closed/fake disk; tidak memakai its aktif.
+
+Regresi memverifikasi SQL+JSON/proyeksi/snapshot tersimpan, source m/s dan budget rows, audit encrypted before/after/hash, preview tanpa writes, idempotent replay/revision, SQL failure setelah sejumlah updates rollback seluruh data/audit/revisi lalu retry, archive/decisions/number/quantity/source Excel/leading NIK/rekening tetap, nominal positif kurang dari Rp1 ditolak, migration data sebelum/sesudah type conversion dan rollback yang tidak membuang audit. KHS input .99 tersimpan sebagai integer; per-component PHP/BigInt/Word/terbilang truncation tanpa increment. Finance/APM/scans/queue/private version/Branch/caps tetap lulus; katalog SPK tetap4servicequeries, web0query baru.
+
+Maintenance konversi membaca empat koleksi dokumen operasional per workspace (tanpa event/BA PP/account/master catalog/file lookup per record), proyeksi/JSON kolom terpilih halaman200 dan workspace20; indeks/override memory, audit+update hanya changed rows. Query/biaya tetap meningkat bersama jumlah data dan bukan benchmark produksi. CLI --help tersedia; default plan bersifat read-only, apply hanya eksplisit/migration dan its-only. MySQL DDL/integration, browser akun/modal/responsif/keyboard, desktop Word dan cetak fisik/server belum diverifikasi.
+
+Backup lokal tabel/data/triggers2.119.431byte SHA2562d2ec7bbbc44bf5be03c1799db61749d3a1de6647a528ce23af1cad1cf24e647, routines/restore tidak diuji, bukan backup server. Tidak apply/migrate/preflight data aktif/server, env/APP_KEY/permissions/Dompis/worker/source workbook/commit/deploy tidak diubah. [Perilaku dan operator](TRUNCATE_STORED_MONEY.md), [bukti](qa/truncate-stored-money-20261112.json).
+
+## Rupiah bulat / BIGINT / rincian matriks — 11 November 2026
+
+**275 PHP tests/5837 assertions,279 frontend,TypeScript/Vite build,check:assets31manifest/24preload×3profil,scoped Pint dan diff check lulus.** Enam PHP/sembilan frontend baru. XAMPP artisan test --compact dan npm test memakai SQLite memory fail-closed/fake disk/SSR/fixtures; its aktif tidak dimigrasi.
+
+Regresi:14kolom uang BIGINT/nullable, source/volume tetap presisi,1030master exact, preflight pecahan berhenti sebelum DDL, retry setelah data direkonsiliasi hanya dalam fixture, trigger restore/XOR/FK/APM, pending snapshot cents meski approved_amount NULL, CLI baca-saja. BCMath/BigInt per-component half-up untuk policy baru, owner/anggaran/SPK/BARP/volume totals sama, legacy sen tetap tersimpan/terhitung, preview/terbilang tanpa desimal, raw price ceiling dicek sebelum rounding, ledger3desimal. Policy-aware SQL catalog tetap4servicequeries, preflight kosong11SELECT +200snapshot/halaman; tidak menyebutnya benchmark. Modal kontributor scope/Branch/Region/unique ID/open-close/root dedupe/payment actual/exact route/search/1000PP/20DOM/escaping;0query/endpoint tambahan dan tidak ada private data request. Current-format/save expectations berubah sesuai user, legacy tests dipertahankan.
+
+Backup lokal tabel/data/triggers hash tercatat; routines/restore/backup server tidak diuji. Belum deploy/migration/preflight SQL its aktif, env/key/permission/Dompis/worker/source workbook tidak diubah. MySQL/MariaDB DDL, browser akun/visual/responsif/dark/keyboard/klik, desktop Word dan cetak fisik belum diverifikasi. [Perilaku dan deployment](WHOLE_RUPIAH_DASHBOARD_DETAILS.md), [bukti terstruktur](qa/whole-rupiah-dashboard-20261111.json).
+
 ## Kasbon Admin / review Finance / inbox otomatis — 11 November 2026
 
 **269 PHP tests / 5.771 assertions,270 frontend,TypeScript/Vite build dan check:assets31manifest/24preload×3profil lulus.** Scoped Pint serta diff check lulus. Enam PHP baru dan13frontend baru; bootstrap tetap fail-closed SQLite memory/fake disk, tidak memakai its aktif. Commands: PHP XAMPP artisan test --compact, npm test, npm run build, npm run check:assets.

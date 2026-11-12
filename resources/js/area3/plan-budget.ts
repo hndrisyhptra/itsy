@@ -1,3 +1,4 @@
+import { WHOLE_RUPIAH, HALF_RUPIAH, wholeRupiah } from './currency';
 import type { State, Project, Role } from './domain';
 import { ppTemplate } from './plan-template';
 import { canReviseSubmission } from './workflow';
@@ -8,7 +9,7 @@ export interface MaterialPlanRow { id:string; name:string; qty:number; unit:stri
 export interface BopPlanRow { id:string; description:string; unit:string; qty:number; total:number }
 export interface UsagePlanRow { id:string; category:BudgetCategory; component?:'m'|'s'; term?:string; date?:string; amount:number }
 export interface SignaturePlanRow { id:string; label:'Dibuat Oleh'|'Diperiksa Oleh'|'Disetujui Oleh'; role:Role; job:string }
-export interface PlanBudget { version:1|2; mandor:MandorPlanRow[]; materials:MaterialPlanRow[]; bop:BopPlanRow[]; permit:number; bopLimit?:number|null; bopReference?:string; usage:UsagePlanRow[] }
+export interface PlanBudget { moneyPolicy?:typeof WHOLE_RUPIAH|typeof HALF_RUPIAH; version:1|2; mandor:MandorPlanRow[]; materials:MaterialPlanRow[]; bop:BopPlanRow[]; permit:number; bopLimit?:number|null; bopReference?:string; usage:UsagePlanRow[] }
 export interface OwnerPlanRow { rowId:string; code:string; name:string; unit:string; m:number|null; s:number|null; qm:number; qs:number }
 export const categories: Record<BudgetCategory,string> = {mandor:'Jasa Mandor',material:'Material Non Stock',bop:'BOP',permit:'Perizinan (Preliminary) Reimburse'};
 export const printRoles:Role[]=['Admin Konstruksi','PM Konstruksi','Admin Area','Mgr Deployment','Mgr Bussiness Support','Mgr Project Support','Head of PMO'];
@@ -24,10 +25,10 @@ export function ownerPlanRows(s:State,p:Project):OwnerPlanRow[] {
 export const cents = (v:number) => Math.sign(v)*Math.round((Math.abs(v)+Number.EPSILON)*100);
 const amount = (v:number) => cents(v)/100;
 /** Integer scales match Laravel BCMath: quantity 3 decimals, price 2, half-up per component. */
-export function lineAmount(q:number,p:number):number {
+export function lineAmount(q:number,p:number,whole:boolean|'half'=false):number {
   if(!Number.isFinite(q)||!Number.isFinite(p)||Math.abs(q*1000)>Number.MAX_SAFE_INTEGER||Math.abs(p*100)>Number.MAX_SAFE_INTEGER)return NaN;
   const product=BigInt(Math.round(q*1000))*BigInt(Math.round(p*100)),sign=product<0n?-1n:1n;
-  return Number(sign*((product*sign+500n)/1000n))/100;
+  return whole?Number(sign*((product*sign+(whole==='half'?50000n:0n))/100000n)):Number(sign*((product*sign+500n)/1000n))/100;
 }
 export function ratioPercent(value:number,base:number):number|null {
   if(!base||!Number.isFinite(value)||!Number.isFinite(base)||!Number.isSafeInteger(cents(value))||!Number.isSafeInteger(cents(base)))return null;
@@ -39,14 +40,17 @@ export function draftPlanBudget(s:State,p:Project):PlanBudget {
   const mandorByRow=new Map(previous?.mandor.map(row=>[row.rowId,row])??[]);
   const version=canReviseSubmission(p)?2:previous?.version??2;
   const b:PlanBudget={version,mandor:ownerPlanRows(s,p).map(row=>mandorByRow.get(row.rowId)??{rowId:row.rowId,qtyM:row.qm,qtyS:row.qs,priceM:0,priceS:0}),materials:previous?.materials??[],bop:previous?.bop??[],permit:previous?.permit??p.costs.permit,usage:previous?.usage??[],...(!canReviseSubmission(p)&&previous?{...(previous.bopLimit!==undefined?{bopLimit:previous.bopLimit}:{}),...(previous.bopReference!==undefined?{bopReference:previous.bopReference}:{})}:{})};
+  const moneyValue=(n:number)=>!Number.isFinite(n)||n<0||n>1e12||Math.abs(n*100-Math.round(n*100))>0.0001?n:wholeRupiah(n);
+  if(p.moneyPolicy===WHOLE_RUPIAH){b.moneyPolicy=WHOLE_RUPIAH;b.mandor=b.mandor.map(r=>({...r,priceM:moneyValue(r.priceM),priceS:moneyValue(r.priceS)}));b.materials=b.materials.map(r=>({...r,price:moneyValue(r.price)}));b.bop=b.bop.map(r=>({...r,total:moneyValue(r.total)}));b.permit=moneyValue(b.permit);}
   if(version===2)b.usage=automaticBudgetUsage(budgetSummary(s,p,b));
   return b;
 }
 export function budgetSummary(s:State,p:Project,b=draftPlanBudget(s,p)) {
+  const whole=b.moneyPolicy===HALF_RUPIAH?'half':b.moneyPolicy===WHOLE_RUPIAH;
   const owners=ownerPlanRows(s,p),sum=(values:number[])=>values.reduce((n,v)=>n+cents(v),0)/100;
-  const ownerM=sum(owners.map(r=>lineAmount(r.qm,r.m??0))),ownerS=sum(owners.map(r=>lineAmount(r.qs,r.s??0)));
-  const mandorM=sum(b.mandor.map(r=>lineAmount(r.qtyM,r.priceM))),mandorS=sum(b.mandor.map(r=>lineAmount(r.qtyS,r.priceS)));
-  const material=sum(b.materials.map(r=>lineAmount(r.qty,r.price))),bop=sum(b.bop.map(r=>r.total)),permit=b.permit;
+  const ownerM=sum(owners.map(r=>lineAmount(r.qm,r.m??0,whole))),ownerS=sum(owners.map(r=>lineAmount(r.qs,r.s??0,whole)));
+  const mandorM=sum(b.mandor.map(r=>lineAmount(r.qtyM,r.priceM,whole))),mandorS=sum(b.mandor.map(r=>lineAmount(r.qtyS,r.priceS,whole)));
+  const material=sum(b.materials.map(r=>lineAmount(r.qty,r.price,whole))),bop=sum(b.bop.map(r=>r.total)),permit=b.permit;
   const mandor=amount(mandorM+mandorS),total=amount(mandor+material+bop),grossProfit=amount(ownerS-total);
   const usage={mandor:0,material:0,bop:0,permit:0};
   const usageRows=b.version===2||canReviseSubmission(p)?automaticBudgetUsage({mandorM,mandorS,material,bop,permit}):b.usage;
@@ -82,6 +86,7 @@ export function validatePlanBudget(s:State,p:Project,submit:boolean) {
 }
 
 export function applyBudgetPlan(s:State,p:Project,submit=false,strict=false):Project {
+  if(strict&&p.moneyPolicy===WHOLE_RUPIAH&&p.planBudget){const raw={...p,moneyPolicy:undefined};validatePlanBudget(s,{...raw,planBudget:draftPlanBudget(s,raw)},submit);}
   if(strict&&p.planBudget){const ids=new Set(ownerPlanRows(s,p).map(r=>r.rowId)),rows=p.planBudget.mandor;if(rows.length!==ids.size||new Set(rows.map(r=>r.rowId)).size!==ids.size||rows.some(r=>!ids.has(r.rowId)))throw new Error('Designator BOQ Mandor harus sesuai BOQ Plan.');}
   const b=draftPlanBudget(s,strict?{...p,status:'Draft'}:p), result={...p,planBudget:b,riskLevel:p.riskLevel??'',risk:p.riskLevel??'',communication:ppTemplate.communicationRows.map(row=>row.join(' | ')).join('\n'),quality:ppTemplate.quality.join('\n'),closing:ppTemplate.closing,signatureRows:p.signatureRows??defaultSignatureRows()};
   const totals=strict?validatePlanBudget(s,result,submit):budgetSummary(s,result,b);

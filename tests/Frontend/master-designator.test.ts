@@ -21,7 +21,7 @@ test('each master table supplies real edit/delete callbacks with labeled icon to
   }
   const price=renderToStaticMarkup(createElement(MasterDataTable,{entity:'khs',catalog,rows:catalog.prices,canManage:true,onEdit:()=>{},onDelete:()=>{}}));assert.match(price,/Rp/);assert.match(price,/0<\/td>/);assert.match(price,/<th[^>]*>Komponen<\/th>/);
 });
-test('master price form separates designator/package, locks saved relations and permits zero with two decimal input',()=>{
+test('master price form separates designator/package, locks saved relations and permits zero with whole-rupiah input',()=>{
   const html=renderToStaticMarkup(createElement(MasterFields,{entity:'khs',catalog,editing:true,disabled:false,data:{designator_id:1,package_id:10,price:0},onChange:()=>{}}));
-  assert.equal((html.match(/<select[^>]*disabled/g)??[]).length,2);assert.match(html,/min="0"/);assert.match(html,/step="0.01"/);assert.match(html,/value="0"/);assert.match(html,/M-FO/);assert.match(html,/Paket 10/);
+  assert.equal((html.match(/<select[^>]*disabled/g)??[]).length,2);assert.match(html,/min="0"/);assert.match(html,/step="1"/);assert.match(html,/value="0"/);assert.match(html,/M-FO/);assert.match(html,/Paket 10/);
 });

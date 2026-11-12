@@ -1,0 +1,77 @@
+{
+  "date": "2026-11-11",
+  "feature": "Whole rupiah storage/presentation and dashboard matrix drilldown",
+  "authority": "User explicitly confirmed no decimal previews and database type change",
+  "tests": {
+    "php": 275,
+    "assertions": 5837,
+    "new_php_tests": 6,
+    "frontend": 279,
+    "new_frontend_tests": 9,
+    "database": "fail-closed SQLite :memory:, fake disk",
+    "frontend_mode": "SSR, fixture, pure model tests",
+    "build": "TypeScript and Vite passed",
+    "assets": {
+      "references": 31,
+      "preload_dependencies": 24,
+      "profiles": 3,
+      "passed": true
+    },
+    "scoped_pint": "passed",
+    "diff_check": "passed"
+  },
+  "schema": {
+    "migration": "2026_11_11_000002_use_whole_rupiah_columns",
+    "type": "BIGINT signed",
+    "money_columns": 14,
+    "tables": 10,
+    "live_applied": false,
+    "nullable_fk_triggers_preserved": true,
+    "fractional_sql_and_pending_snapshot_preflight": "before first DDL; refuse, no rounding UPDATE",
+    "raw_excel_quantity_percent_history": "preserved"
+  },
+  "policy": {
+    "marker": "idr-whole-v1",
+    "scope": "new/explicit editable v3 saves only, immutable issued/submitted history retained",
+    "rounding": "half-up per M/J component per line, BCMath/BigInt",
+    "format": "zero monetary fraction digits incl Word/words",
+    "legacy": "cent arithmetic retained, presentation whole"
+  },
+  "query_evidence": {
+    "dashboard_extra_sql": 0,
+    "dashboard_new_endpoints": 0,
+    "private_reads_on_click": 0,
+    "spk_catalog_service": 4,
+    "empty_preflight_selects": 11,
+    "pending_snapshot_page_size": 200,
+    "production_load_test": false,
+    "model_rows": 1000,
+    "modal_page_rows": 20
+  },
+  "backup": {
+    "path": "storage/app/private/backups/its-before-whole-rupiah-20261111-094804.sql",
+    "bytes": 2119431,
+    "sha256": "de70421ce9ed2b9d761b59b2f014f9eb8deeef7da288e3841892bef7d5eeedaa",
+    "contents": "local its tables/data/triggers; no routines",
+    "restore_tested": false,
+    "remote_backup": false
+  },
+  "runtime": {
+    "live_mutations": false,
+    "live_migration": false,
+    "live_currency_preflight": false,
+    "server_deploy": false,
+    "env_appkey_changed": false,
+    "dompis_touched": false,
+    "worker_changed": false,
+    "source_workbook_changed": false,
+    "commit_push": false
+  },
+  "unverified": [
+    "MySQL/MariaDB DDL on server",
+    "browser account/visual/responsive/dark/keyboard click interactions",
+    "desktop Word and physical print",
+    "production latency/load"
+  ],
+  "behavior_document": "docs/WHOLE_RUPIAH_DASHBOARD_DETAILS.md"
+}

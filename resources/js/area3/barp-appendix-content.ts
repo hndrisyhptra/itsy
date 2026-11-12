@@ -1,8 +1,9 @@
+import { rupiahNumber } from './currency';
 import type { State,Project,Deal,Spk,Term } from './domain';
 import { termVolumeData } from './term-volume';
 import { barpDocumentData } from './barp-content';
 import { paymentSigner } from './barp-signers';
-const number=new Intl.NumberFormat('id-ID',{maximumFractionDigits:2});
+const number=rupiahNumber;
 const volume=new Intl.NumberFormat('id-ID',{maximumFractionDigits:3});
 export const BARP_APPENDIX_TITLE='LAMPIRAN BERITA ACARA REKONSILIASI PEKERJAAN';
 export const BARP_APPENDIX_WIDTHS=[3,9,23,5,5,5,5,5,6,8,7,9,10];

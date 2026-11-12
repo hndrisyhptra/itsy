@@ -57,7 +57,7 @@ test('zero stays visible, deselected components stay blank and the canonical cen
   let data = spkAppendixData(s, p, d), letter = spkDocumentData(p, d, spk);
   assert.equal(data.total, dealTotal(d));
   assert.deepEqual([data.material, data.service, data.total], [letter.material, letter.service, letter.total]);
-  assert.deepEqual(data.rows.map(r => r.cells[10]), ['0,01', '0']);
+  assert.deepEqual(data.rows.map(r => r.cells[10]), ['0', '0']);
   d.rows[0].m = false; d.rows[0].ps = 0;
   d.rows.push({ ...d.rows[0], rowId: 'excluded', m: false, s: false });
   data = spkAppendixData(s, p, d);

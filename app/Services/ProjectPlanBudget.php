@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\WholeRupiah;
 use Illuminate\Validation\ValidationException;
 
 final class ProjectPlanBudget
@@ -12,11 +13,14 @@ final class ProjectPlanBudget
 
     public static function apply(array $p, array $owners, bool $submit): array
     {
+        $whole = WholeRupiah::enabled($p);
+        $number = fn ($n, $volume = false) => ! $volume && $whole ? WholeRupiah::round(self::number($n)) : self::number($n, $volume);
+        $product = fn ($q, $price) => self::product($q, $price, $whole);
         $input = $p['planBudget'] ?? [];
         if (! is_array($input)) {
             self::fail('Form anggaran tidak valid.');
         }
-        $b = ['version' => 2, 'mandor' => [], 'materials' => [], 'bop' => [], 'usage' => [], 'permit' => self::number($input['permit'] ?? $p['costs']['permit'] ?? 0)];
+        $b = ['version' => 2, 'mandor' => [], 'materials' => [], 'bop' => [], 'usage' => [], 'permit' => $number($input['permit'] ?? $p['costs']['permit'] ?? 0)];
         $rows = $input['mandor'] ?? array_map(fn ($r) => ['rowId' => $r['rowId'], 'qtyM' => $r['qm'], 'qtyS' => $r['qs'], 'priceM' => 0, 'priceS' => 0], $owners);
         if (! is_array($rows) || ! array_is_list($rows) || count($rows) !== count($owners) || count(array_unique(array_column($rows, 'rowId'))) !== count($owners)) {
             self::fail('Designator BOQ Mandor harus sesuai BOQ Plan.');
@@ -24,8 +28,8 @@ final class ProjectPlanBudget
         $mandorByRow = array_column($rows, null, 'rowId');
         $totals = array_fill_keys(['ownerM', 'ownerS', 'mandorM', 'mandorS', 'material', 'bop'], 0.0);
         foreach ($owners as $owner) {
-            $totals['ownerM'] = self::add($totals['ownerM'], self::product($owner['qm'], $owner['m'] ?? 0));
-            $totals['ownerS'] = self::add($totals['ownerS'], self::product($owner['qs'], $owner['s'] ?? 0));
+            $totals['ownerM'] = self::add($totals['ownerM'], $product($owner['qm'], $owner['m'] ?? 0));
+            $totals['ownerS'] = self::add($totals['ownerS'], $product($owner['qs'], $owner['s'] ?? 0));
             $row = $mandorByRow[$owner['rowId']] ?? null;
             if (! is_array($row)) {
                 self::fail('Designator BOQ Mandor tidak ditemukan.');
@@ -37,20 +41,24 @@ final class ProjectPlanBudget
             if ($r['qtyM'] > $owner['qm'] || $r['qtyS'] > $owner['qs'] || $r['priceM'] > ($owner['m'] ?? 0) || $r['priceS'] > ($owner['s'] ?? 0)) {
                 self::fail('Harga atau volume BOQ Mandor melebihi BOQ Plan per komponen.');
             }
+            if ($whole) {
+                $r['priceM'] = WholeRupiah::round($r['priceM']);
+                $r['priceS'] = WholeRupiah::round($r['priceS']);
+            }
             $b['mandor'][] = $r;
-            $totals['mandorM'] = self::add($totals['mandorM'], self::product($r['qtyM'], $r['priceM']));
-            $totals['mandorS'] = self::add($totals['mandorS'], self::product($r['qtyS'], $r['priceS']));
+            $totals['mandorM'] = self::add($totals['mandorM'], $product($r['qtyM'], $r['priceM']));
+            $totals['mandorS'] = self::add($totals['mandorS'], $product($r['qtyS'], $r['priceS']));
         }
         foreach (self::rows($input['materials'] ?? []) as $row) {
-            $r = ['id' => $row['id'], 'name' => self::text($row['name'] ?? '', 1000), 'qty' => self::number($row['qty'] ?? null, true), 'unit' => self::text($row['unit'] ?? '', 100), 'price' => self::number($row['price'] ?? null)];
+            $r = ['id' => $row['id'], 'name' => self::text($row['name'] ?? '', 1000), 'qty' => $number($row['qty'] ?? null, true), 'unit' => self::text($row['unit'] ?? '', 100), 'price' => $number($row['price'] ?? null)];
             if ($submit && (! $r['name'] || ! $r['unit'] || ! $r['qty'])) {
                 self::fail('Lengkapi Material Non Stock, satuan dan volume positif.');
             }
             $b['materials'][] = $r;
-            $totals['material'] = self::add($totals['material'], self::product($r['qty'], $r['price']));
+            $totals['material'] = self::add($totals['material'], $product($r['qty'], $r['price']));
         }
         foreach (self::rows($input['bop'] ?? []) as $row) {
-            $r = ['id' => $row['id'], 'description' => self::text($row['description'] ?? '', 1000), 'unit' => self::text($row['unit'] ?? '', 100), 'qty' => self::number($row['qty'] ?? null, true), 'total' => self::number($row['total'] ?? null)];
+            $r = ['id' => $row['id'], 'description' => self::text($row['description'] ?? '', 1000), 'unit' => self::text($row['unit'] ?? '', 100), 'qty' => $number($row['qty'] ?? null, true), 'total' => $number($row['total'] ?? null)];
             if ($submit && (! $r['description'] || ! $r['unit'] || ! $r['qty'])) {
                 self::fail('Lengkapi uraian BOP, satuan dan jumlah positif.');
             }
@@ -99,6 +107,9 @@ final class ProjectPlanBudget
             }
         }
         $p['signatureRows'] = array_map(fn ($r) => ['id' => $r['id'], 'label' => $r['label'], 'role' => $r['role'], 'job' => self::text($r['job'] ?? '', 250)], $signatureRows);
+        if ($whole) {
+            $b['moneyPolicy'] = WholeRupiah::POLICY;
+        }
         $p['planBudget'] = $b;
         $p['planBudgetTotals'] = $totals;
         $p['costs'] = array_intersect_key($totals, array_flip(['mandor', 'material', 'bop', 'permit']));
@@ -148,9 +159,9 @@ final class ProjectPlanBudget
         return trim($v);
     }
 
-    private static function product(float|int $q, float|int $p): float
+    private static function product(float|int $q, float|int $p, bool $whole = false): float
     {
-        return (float) bcdiv(bcadd(bcmul(sprintf('%.3F', $q), sprintf('%.2F', $p), 6), '0.005', 6), '1', 2);
+        return WholeRupiah::round(bcmul(sprintf('%.3F', $q), sprintf('%.2F', $p), 6), $whole);
     }
 
     private static function add(float $a, float $b): float

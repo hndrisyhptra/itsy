@@ -1,3 +1,4 @@
+import { rupiahNumber } from './currency';
 import type { State, Project, Deal } from './domain';
 
 const weekday = new Intl.DateTimeFormat('id-ID', { weekday: 'long', timeZone: 'UTC' });
@@ -59,7 +60,7 @@ export function bakhDocumentData(project: Project, deal: Deal) {
   };
 }
 
-const rupiah = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 });
+const rupiah=rupiahNumber;
 export function bakhAppendixRows(state: State, project: Project, deal: Deal) {
   const root = project.rootId === project.id ? project : state.projects.find(p => p.id === project.rootId);
   const sourceRows = new Map(root?.boq.map(row => [row.id, row]) ?? []);

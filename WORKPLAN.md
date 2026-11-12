@@ -584,3 +584,25 @@ Historical iteration; superseded by the dashboard restoration below.
 - [x]269PHP/5771assertions/270frontend,TypeScript/Vite build/check-assets31refs/24preload×3profil,scoped Pint/diffcheck lulus;6PHP/13FE baru. Query pengajuan44/budget75/APM44, lazy private3masing-masing, counter1service/2HTTPfixture; bukan load benchmark.
 - [x] [Perilaku Admin kasbon dan inbox](docs/ADMIN_KASBON_REVIEW_SYNC.md), arsitektur/QA/changelog/README/AGENTS dan empat skill diperbarui; bukti qa/admin-kasbon-review-sync-20261111.json. Tidak ada migration tambahan, env/key/live transaction/Dompis/worker/commit/deploy.
 - [ ] Operator deploy kode dan build, migration kasbon terdahulu bila belum terpasang, bersihkan cache aplikasi/reload hanya worker its bila perlu; uji akun Admin→lima approval→AdminKasbon→FinanceReview→proof/APM serta inbox dua akun/browser/print dan MySQL server. Jangan auto-apply rencana koreksi PP0002 saat deploy.
+
+
+## Rupiah bulat / tipe uang / rincian dashboard — 11 November 2026
+
+- [x] Klarifikasi pengguna mencakup tipe database dan preview berkas. Backup lokal tabel/data/triggers its sebelum workflow, bytes/hash pada dokumen; bukan backup server, routines/restore belum diuji.
+- [x] Formatter tunggal rupiah/Word/terbilang tanpa pecahan; policy idr-whole-v1 server-owned pada editable/new v3, BCMath/BigInt half-up per komponen. Raw ceiling dicek sebelum rounding, harga/form/budget/kasbon/ledger gates tetap. Legacy locked cents/paid/decision/archive/provenance tidak ditulis ulang.
+- [x] Migration its-only14kolom/10tabel BIGINT, preflight semua kolom+pending snapshot sebelum DDL, CLI check read-only, trigger/null/FK/XOR preserved.0live schema/data mutation.
+- [x] Enam angka matriks Branch/Region/TOTAL klik modal sesuai scope/unique ID/classification/root/payment contributors; search/page20, ID→PP dan exact detail links. Indexed model/memo,0SQL/API/private reads.
+- [x]275PHP/5837assertions/279FE/build/check-assets31refs/24preload×3/Pint/diffcheck lulus.6PHP/9FE baru, legacy tests tetap; preflight11SELECT baseline+pages200, catalog4query, model1000PP/20DOM, bukan benchmark.
+- [x] [Perilaku, SQL, arsitektur dan deploy](docs/WHOLE_RUPIAH_DASHBOARD_DETAILS.md), CHANGELOG/QA/README/AGENTS/skills dan qa/whole-rupiah-dashboard-20261111.json dicatat.
+- [ ] Operator backup server/maintenance/deploy/build/check/migrate dan verifikasi schema/data/akun/klikmodal/Word/print/MySQL. Jika data cents, rekonsiliasi terpisah dahulu; jangan paksa ALTER/reset/import ulang. Agen belum migrate/preflight its aktif, env/key/worker/Dompis/sourcefile/commit/deploy tidak diubah.
+
+
+## Koreksi: potong pecahan nilai tersimpan — 12 November 2026
+
+- [x] Otoritas pengguna menggantikan half-up dengan pemotongan menuju nol, termasuk data tersimpan. Backup lokal read-only its sebelum perubahan, hash/bytes/routines-exclusion dicatat; bukan backup server.
+- [x] idr-trunc-v1 PHP/TS/format/Word/terbilang, source totals/katalog/budget/inputs konsisten; policy half-up lama tetap dikenali. Ceiling asli, quantity/percent/null/nol dan workflow gates tetap.
+- [x] Migration data000001a sebelum BIGINT000002, SQL+snapshot aktif+private kasbon, before/after audit terenkripsi, transaksi/lock/revisi/idempotence/rollback-retry. Total otomatis dihitung dari sumber; paid/APM bukan transfer baru. Konflik zero-positive/kasbon/pembayaran menghentikan sebelum update. SourceExcel/arsip/decisions/files tetap.
+- [x] CLI plan read-only/its-only; pending migration mendukung server yang sudah/belum menjalankan BIGINT. Tidak apply pada its aktif/server. Dokumentasi [TRUNCATE_STORED_MONEY](docs/TRUNCATE_STORED_MONEY.md), arsitektur, QA, changelog, README, AGENTS, skills dan relasi tambahan dicatat.
+- [ ] Operator backup server, maintenance tanpa writer/worker its, inspeksi/migrate/build/cache dan cek ulang berkas/pembayaran/SQL. Browser/Word/print/MySQL DDL/remote belum diverifikasi. Jangan mengubah APP_KEY atau reset/import ulang untuk melewati konflik.
+
+- [x] Verifikasi akhir koreksi truncation:280PHP/5877assertions,280frontend,build/check-assets31refs/24preload×3/Pint/diff check lulus;5PHP/1FE baru. Audit before/after terenkripsi, rollback SQL terlambat/retry, fresh migration sebelum tipe dan konversi populated fixture sesudah tipe diuji. Hasil bukan verifikasi browser/Word/print/DDL MySQL server.

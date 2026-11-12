@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Support\WholeRupiah;
+
 /** New workflow; legacy document decisions remain unchanged. */
 trait PrototypeWorkflowV2
 {
@@ -94,6 +96,7 @@ trait PrototypeWorkflowV2
         }
         $version = ($old['workflowVersion'] ?? 1) >= 2 ? $old['workflowVersion'] : (($this->state['schema'] ?? 1) >= 3 ? 3 : 2);
         if ($version >= 3) {
+            $p['moneyPolicy'] = WholeRupiah::POLICY;
             $p = ProjectPlanTemplate::apply($p, $submit);
         }
         $scheme = $old && (! empty($old['approvalHistory']) || ! empty($old['approvals']))
@@ -140,7 +143,7 @@ trait PrototypeWorkflowV2
             }
         }
         if ($automaticPrices) {
-            $p['budget'] = $this->boqTotal(['boq' => $rows]);
+            $p['budget'] = $this->boqTotal(['boq' => $rows, 'moneyPolicy' => $p['moneyPolicy'] ?? null]);
         }
         if ($version >= 3) {
             $source = ! empty($old['parentId']) ? $this->record('projects', $old['rootId'])['boq'] : $rows;

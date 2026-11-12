@@ -1,5 +1,9 @@
 # Buku saku relasi database its Area 3
 
+## Tambahan audit konversi — 12 November 2026
+
+Migration000001a menambah currency_conversion_runs (PK id_currency_run; conversion_key unik) dan currency_conversion_changes (PK id_currency_change; run_id→currency_conversion_runs.id_currency_run). Keduanya mencatat konversi uang satu kali dengan before/after terenkripsi, tanpa mengganti tabel workflow. [Aturan, kolom dan bukti](TRUNCATE_STORED_MONEY.md). Buku PDF/Word lama tetap snapshot arsitektur pada tanggal penerbitannya; belum diregenerasi untuk tambahan ini.
+
 Edisi 5 November 2026. Struktur diperiksa langsung dari metadata database aktif **its** dalam transaksi baca saja: **61 tabel, 497 kolom, 61 primary key, dan 106 foreign key**. FK gabungan dihitung satu relasi. Tidak ada pembacaan isi akun/transaksi atau perubahan database dalam pekerjaan dokumentasi ini.
 
 Tambahan alur setelah penyusunan buku: pengajuan PP/termin versi 3 yang ditolak kini dapat diperbaiki Admin dan diajukan ulang dari PM. Struktur tabel/106 FK tetap sama; baca [aturan penolakan dan pengajuan ulang](APPROVAL_RESUBMISSION.md) bersama buku untuk rincian perilaku terbaru.

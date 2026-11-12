@@ -1,18 +1,20 @@
+import { WHOLE_RUPIAH, HALF_RUPIAH } from './currency';
 import { Plus, Trash2 } from 'lucide-react';
 import { canReviseSubmission, type State, type Project, type Role, money, num, dateLabel, uid, usesBusinessSupport, selectedApprover } from './domain';
-import { type PlanBudget, type SignaturePlanRow, categories, defaultSignatureRows, printRoles, ownerPlanRows, draftPlanBudget, budgetSummary, cents, lineAmount, ratioPercent, usageLabel } from './plan-budget';
+import { type PlanBudget, type SignaturePlanRow, categories, defaultSignatureRows, printRoles, ownerPlanRows, draftPlanBudget, budgetSummary, cents, lineAmount as budgetLineAmount, ratioPercent, usageLabel } from './plan-budget';
 import { ppTemplate } from './plan-template';
 import { Table, Notice, Button, Field, Input } from './ui';
 
 const percentage=(value:number,base:number)=>{const percent=ratioPercent(value,base);return percent===null?'—':`${num(percent)}%`;};
 function AmountInput({label,value,disabled,onChange,volume=false,max}:{label:string;value:number;disabled:boolean;onChange:(n:number)=>void;volume?:boolean;max?:number}) {
-  return <input aria-label={label} className="number-input" type="number" min="0" max={max} step={volume?'0.001':'0.01'} disabled={disabled} value={Number.isFinite(value)?value:''} onChange={e=>onChange(e.target.value===''?0:Number(e.target.value))}/>;
+  return <input aria-label={label} className="number-input" type="number" min="0" max={max} step={volume?'0.001':'1'} disabled={disabled} value={Number.isFinite(value)?value:''} onChange={e=>onChange(e.target.value===''?0:Number(e.target.value))}/>;
 }
 const priceCell=(value:number|null)=>value===null?'—':money(value);
 function VolumeLabel({m,s,qm,qs}:{m:number|null;s:number|null;qm:number;qs:number}){return m!==null&&s!==null&&qm!==qs?<>M {num(qm)} / J {num(qs)}</>:<>{num(m!==null?qm:qs)}</>;}
 
 export function BudgetPlanSection({s,p,editable=false,onChange,printing=false}:{s:State;p:Project;editable?:boolean;onChange?:(p:Project)=>void;printing?:boolean}) {
   const b=draftPlanBudget(s,p), totals=!canReviseSubmission(p)&&p.planBudgetTotals?p.planBudgetTotals:budgetSummary(s,p,b),owners=ownerPlanRows(s,p), change=<K extends keyof PlanBudget>(key:K,value:PlanBudget[K])=>onChange?.({...p,planBudget:{...b,[key]:value}});
+  const lineAmount=(q:number,price:number)=>budgetLineAmount(q,price,b.moneyPolicy===HALF_RUPIAH?'half':b.moneyPolicy===WHOLE_RUPIAH);
   const updateMandor=(i:number,key:'priceM'|'priceS'|'qtyM'|'qtyS',value:number)=>change('mandor',b.mandor.map((r,k)=>k===i?{...r,[key]:value}:r));
   return <div className="plan-budget-section"><h3>IV. KEBUTUHAN ANGGARAN DAN PERKIRAAN MARGIN</h3><h4>1. Kebutuhan Jasa Mandor (BoQ) dari gambar rencana kerja (APD)</h4><h4>BoQ TA - Telkom / Owner Project</h4>{!printing&&<Notice>Tabel Owner mengikuti BOQ Plan dan alokasi PP ini. Harga serta volume sumber tidak diubah di sini.</Notice>}<Table className="budget-boq-table" headers={['Designator','Uraian Pekerjaan','Satuan','Material','Jasa','Volume','Jml_Mat','Jml_Jasa','Total Harga']}>{owners.map(row=><tr key={row.rowId}><td className="budget-designator"><b>{row.code}</b></td><td className="budget-description">{row.name}</td><td>{row.unit}</td><td className="numeric">{priceCell(row.m)}</td><td className="numeric">{priceCell(row.s)}</td><td className="numeric"><VolumeLabel {...row}/></td><td className="numeric">{priceCell(row.m===null?null:lineAmount(row.qm,row.m))}</td><td className="numeric">{priceCell(row.s===null?null:lineAmount(row.qs,row.s))}</td><td className="numeric">{money((cents(lineAmount(row.qm,row.m??0))+cents(lineAmount(row.qs,row.s??0)))/100)}</td></tr>)}</Table><dl className="budget-owner-summary" aria-label="Total BoQ Owner"><div><dt>Material</dt><dd>{money(totals.ownerM)}</dd></div><div><dt>Jasa</dt><dd>{money(totals.ownerS)}</dd></div><div className="budget-owner-grand-total"><dt>Total</dt><dd>{money(totals.ownerTotal)}</dd></div></dl>
     <h4>BoQ TA - Mandor</h4><Table className="budget-boq-table" headers={['Designator','Uraian Pekerjaan','Satuan','Material','Jasa','Volume','Jml_Mat','Jml_Jasa','Total Harga','% Perbandingan HSS TA-Telkom']}>{owners.map((owner,i)=>{

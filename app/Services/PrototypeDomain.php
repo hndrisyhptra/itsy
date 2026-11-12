@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\WholeRupiah;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -196,9 +197,9 @@ class PrototypeDomain
         array_unshift($this->state['events'], ['id' => 'evt-'.Str::uuid(), 'title' => $title, 'detail' => $detail, 'route' => $route, 'actor' => $this->state['role'], 'at' => now()->toISOString()]);
     }
 
-    private function roundAmount(string $value): float
+    private function roundAmount(string $value, array $document = []): float
     {
-        return (float) bcdiv(bcadd($value, '0.005', 6), '1', 2);
+        return WholeRupiah::amount($value, $document);
     }
 
     private function product(float|int $qty, float|int $price): string
@@ -211,7 +212,8 @@ class PrototypeDomain
         $sum = '0';
         foreach ($deal['rows'] as $r) {
             $line = bcadd($this->product($r['m'] ? $r['qm'] : 0, $r['pm']), $this->product($r['s'] ? $r['qs'] : 0, $r['ps']), 6);
-            $sum = bcadd($sum, (string) $this->roundAmount($line), 2);
+            $amount = WholeRupiah::enabled($deal) ? $this->roundAmount($this->product($r['m'] ? $r['qm'] : 0, $r['pm']), $deal) + $this->roundAmount($this->product($r['s'] ? $r['qs'] : 0, $r['ps']), $deal) : $this->roundAmount($line);
+            $sum = bcadd($sum, (string) $amount, 2);
         }
 
         return (float) $sum;
@@ -224,7 +226,8 @@ class PrototypeDomain
         foreach ($deal['rows'] as $r) {
             $actual = $term['actuals'][$r['rowId']] ?? ['m' => 0, 's' => 0];
             $line = bcadd($this->product($r['m'] ? $actual['m'] : 0, $r['pm']), $this->product($r['s'] ? $actual['s'] : 0, $r['ps']), 6);
-            $sum = bcadd($sum, (string) $this->roundAmount($line), 2);
+            $amount = WholeRupiah::enabled($term) ? $this->roundAmount($this->product($r['m'] ? $actual['m'] : 0, $r['pm']), $term) + $this->roundAmount($this->product($r['s'] ? $actual['s'] : 0, $r['ps']), $term) : $this->roundAmount($line);
+            $sum = bcadd($sum, (string) $amount, 2);
         }
 
         return (float) $sum;
@@ -235,7 +238,8 @@ class PrototypeDomain
         $sum = '0';
         foreach ($p['boq'] as $r) {
             $line = bcadd($this->product($r['qty'], $r['m'] ?? 0), $this->product($r['qty'], $r['s'] ?? 0), 6);
-            $sum = bcadd($sum, (string) $this->roundAmount($line), 2);
+            $amount = WholeRupiah::enabled($p) ? $this->roundAmount($this->product($r['qty'], $r['m'] ?? 0), $p) + $this->roundAmount($this->product($r['qty'], $r['s'] ?? 0), $p) : $this->roundAmount($line);
+            $sum = bcadd($sum, (string) $amount, 2);
         }
 
         return (float) $sum;
@@ -552,10 +556,10 @@ class PrototypeDomain
                         $this->fail('Referensi BOQ TA - Mandor '.$component.' '.$code.' belum tersedia.');
                     }
                     if ($sph > $threshold) {
-                        $this->fail('SPH '.$component.' '.$code.' melebihi threshold BOQ TA - Mandor (maksimal Rp'.number_format($threshold, 2, ',', '.').' per satuan).');
+                        $this->fail('SPH '.$component.' '.$code.' melebihi threshold BOQ TA - Mandor (maksimal Rp'.number_format($threshold, 0, ',', '.').' per satuan).');
                     }
                     if ($price > $threshold) {
-                        $this->fail('Harga kesepakatan '.$component.' '.$code.' melebihi threshold BOQ TA - Mandor (maksimal Rp'.number_format($threshold, 2, ',', '.').' per satuan).');
+                        $this->fail('Harga kesepakatan '.$component.' '.$code.' melebihi threshold BOQ TA - Mandor (maksimal Rp'.number_format($threshold, 0, ',', '.').' per satuan).');
                     }
                 }
                 $this->number($r[$c === 'm' ? 'offerM' : 'offerS'] ?? -1);
@@ -613,6 +617,21 @@ class PrototypeDomain
             }
             $d['start'] = $period['start'];
             $d['end'] = $period['end'];
+        }
+        unset($d['moneyPolicy']);
+        if (($old['status'] ?? '') === 'Terbit') {
+            if (isset($old['moneyPolicy'])) {
+                $d['moneyPolicy'] = $old['moneyPolicy'];
+            }
+        } elseif (($this->state['schema'] ?? 1) >= 3) {
+            $d['moneyPolicy'] = WholeRupiah::POLICY;
+            $this->validateDeal($d, false); // Check raw inputs against ceilings before rounding.
+            foreach ($d['rows'] as &$r) {
+                foreach (['pm', 'ps', 'sphM', 'sphS', 'offerM', 'offerS'] as $key) {
+                    $r[$key] = WholeRupiah::round($this->number($r[$key] ?? -1));
+                }
+            }
+            unset($r);
         }
         $d = BakhSigner::sync($this->state, $d, $action !== 'save');
         $this->validateDeal($d, $action !== 'save');
@@ -713,6 +732,7 @@ class PrototypeDomain
             $t['workflowVersion'] = $version;
             $t['pmUserId'] = $chain['PM Konstruksi'];
             if ($version >= 3) {
+                $t['moneyPolicy'] = WholeRupiah::POLICY;
                 $t['paymentFlow'] = 'kasbon-v1';
                 $t['financePayment'] = ['status' => 'Menunggu Approval'];
                 $t['approvalScheme'] = 'project-support-first';
@@ -737,6 +757,9 @@ class PrototypeDomain
         $t = $this->record('terms', $input['id'] ?? '');
         if (! $this->canReviseSubmission($t)) {
             $this->fail('Termin terkunci pada status ini.');
+        }
+        if (($t['workflowVersion'] ?? 1) >= 3) {
+            $t['moneyPolicy'] = WholeRupiah::POLICY;
         }
         $t['type'] = $this->enum($input['type'] ?? '', ['Parsial', 'Final']);
         if ($t['number'] === 3 && $t['type'] !== 'Final') {
@@ -1004,7 +1027,8 @@ class PrototypeDomain
                     $this->fail('Volume lanjutan melebihi volume dilepas yang masih tersedia.');
                 }
                 $total += $v;
-                $budget = bcadd($budget, $this->product($v, $r[$c] ?? 0), 6);
+                $part = $this->product($v, $r[$c] ?? 0);
+                $budget = bcadd($budget, ($this->state['schema'] ?? 1) >= 3 ? (string) WholeRupiah::round($part) : $part, 6);
             }
         }
         if ($total <= 0) {
@@ -1014,7 +1038,7 @@ class PrototypeDomain
         if ($this->existing('projects', $id)) {
             $this->fail('ID PP sudah digunakan.');
         }
-        $p = ['id' => $id, 'no' => $no, 'name' => $parent['name'].' — Lanjutan', 'unit' => $parent['unit'], 'branch' => $parent['branch'], 'projectCode' => $parent['projectCode'], 'budget' => $this->roundAmount($budget), 'date' => now('Asia/Jakarta')->toDateString(), 'status' => 'Draft', 'parentId' => $parent['id'], 'rootId' => $root['id'], 'sourceBapp' => $bappId, 'allocations' => $allocations, 'intro' => $notes, 'team' => [], 'schedule' => $parent['schedule'], 'costs' => ['mandor' => 0, 'material' => 0, 'bop' => 0, 'permit' => 0], 'risk' => '', 'communication' => '', 'quality' => '', 'boqStatus' => 'Final', 'boq' => [], 'created' => now('Asia/Jakarta')->toDateString()];
+        $p = ['moneyPolicy' => ($this->state['schema'] ?? 1) >= 3 ? WholeRupiah::POLICY : null, 'id' => $id, 'no' => $no, 'name' => $parent['name'].' — Lanjutan', 'unit' => $parent['unit'], 'branch' => $parent['branch'], 'projectCode' => $parent['projectCode'], 'budget' => WholeRupiah::round($budget, ($this->state['schema'] ?? 1) >= 3), 'date' => now('Asia/Jakarta')->toDateString(), 'status' => 'Draft', 'parentId' => $parent['id'], 'rootId' => $root['id'], 'sourceBapp' => $bappId, 'allocations' => $allocations, 'intro' => $notes, 'team' => [], 'schedule' => $parent['schedule'], 'costs' => ['mandor' => 0, 'material' => 0, 'bop' => 0, 'permit' => 0], 'risk' => '', 'communication' => '', 'quality' => '', 'boqStatus' => 'Final', 'boq' => [], 'created' => now('Asia/Jakarta')->toDateString()];
         if (($this->state['schema'] ?? 1) >= 2) {
             $p = array_merge($p, ['workflowVersion' => 2, 'unit' => $parent['unit'] === 'Operation' ? 'Operation' : 'Konstruksi', 'pmUserId' => $parent['pmUserId'] ?? '', 'managerUserId' => $parent['managerUserId'] ?? '', 'approvals' => [], 'approvalHistory' => []]);
             if (($this->state['schema'] ?? 1) >= 3) {

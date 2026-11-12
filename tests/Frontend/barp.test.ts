@@ -55,7 +55,7 @@ test('current-stage BARP excludes preceding approved terms and reconciles Materi
   if(!row.m)assert.equal(data.materialText,'');if(row.s&&row.ps===0)assert.equal(data.serviceText,'0');
   assert.match(data.title,/TAHAP 2$/);assert.doesNotMatch(data.price,/dikerjakan 100%|diterbitkan BAPP/);
  }
- assert.equal(rupiahWords(1000000000.05),'Satu Miliar Koma Nol Lima Rupiah');assert.equal(rupiahWords(1000),'Seribu Rupiah');
+ assert.equal(rupiahWords(1000000000.05),'Satu Miliar Rupiah');assert.equal(rupiahWords(1000),'Seribu Rupiah');
 });
 
 test('BARP Word and official print are separately gated, and approval must match the selected account for every role',()=>{

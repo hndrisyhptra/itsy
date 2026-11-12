@@ -1,3 +1,4 @@
+import { WHOLE_RUPIAH } from './currency';
 import { type State, type Project, boqTotal, canReviseSubmission } from './domain';
 
 export const AUTO_KHS_NOTE = 'Harga BOQ otomatis mengikuti Master KHS. Harga Excel disimpan sebagai pembanding.';
@@ -17,5 +18,5 @@ export function applyAutomaticBoqPricing(s:State,p:Project):Project {
     const k=catalog.get(row.khsId);
     return k?.active?{...row,m:k.m,s:k.s,version:k.version,reviewed:true,note:AUTO_KHS_NOTE}:{...row,reviewed:false};
   });
-  return {...p,boq,boqPricingPolicy:AUTO_KHS_POLICY,budget:boqTotal({...p,boq})};
+  return {...p,boq,moneyPolicy:WHOLE_RUPIAH,boqPricingPolicy:AUTO_KHS_POLICY,budget:boqTotal({...p,boq,moneyPolicy:WHOLE_RUPIAH})};
 }

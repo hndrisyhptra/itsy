@@ -1,3 +1,4 @@
+import { WHOLE_RUPIAH } from './currency';
 import { usesFinancePayment } from './finance-payment';
 import { usesPartialPayment } from './partial-payment';
 import { applyBudgetPlan } from './plan-budget';
@@ -65,6 +66,7 @@ export function saveProjectV2(s: State, input: Project, submit: boolean) {
   requireAdmin(s); const p = structuredClone(input), old = s.projects.find(x => x.id === p.id);
   if (old && !canReviseSubmission(old)) throw new Error('PP terkunci pada status ini.');
   const version = (old?.workflowVersion ?? 1) >= 2 ? old!.workflowVersion! : s.schema >= 3 ? 3 : 2;
+  p.moneyPolicy=version>=3?WHOLE_RUPIAH:undefined;
   if (version >= 3) Object.assign(p, applyPlanTemplate(p, true, submit));
   else { delete p.planTemplateVersion; delete p.teamText; delete p.durationDays; delete p.planBudget; delete p.planBudgetTotals; delete p.signatureRows; delete p.signatureUsers; delete p.closing; delete p.riskLevel; }
   p.approvalScheme=projectApprovalScheme(old);

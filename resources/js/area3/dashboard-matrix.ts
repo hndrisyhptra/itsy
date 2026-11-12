@@ -3,11 +3,14 @@ import { type State, type Project, type Deal, type Spk, type Term, boqTotal, rou
 export interface MatrixTotals { projects:number; open:number; closed:number; plans:number; realized:number; total:number; missingCodes:number }
 export interface MatrixBranch { id:string; name:string; regionId:string; regionName:string; totals:MatrixTotals }
 export interface MatrixRegion { id:string; name:string; branches:MatrixBranch[]; totals:MatrixTotals }
+export interface MatrixPlanDetail { id:string; no:string; name:string; code:string; branch:string; branchId:string; regionId:string; status:Project['status']; parentId?:string; closed:boolean; realized:number; total:number }
+export interface MatrixPaymentDetail { id:string; planId:string; spkNo:string; number:number; type:Term['type']; apm:string; amount:number }
+export interface DashboardMatrixData { regions:MatrixRegion[]; totals:MatrixTotals; plans:MatrixPlanDetail[]; payments:MatrixPaymentDetail[] }
 const normalized=(value:string)=>value.trim().toUpperCase();
 const empty=():MatrixTotals=>({projects:0,open:0,closed:0,plans:0,realized:0,total:0,missingCodes:0});
 
 /** Read model of authorized saved rows only. Classification sees all visible PP, even when a Branch is selected. */
-export function dashboardMatrix(s:State,branch=''):{regions:MatrixRegion[];totals:MatrixTotals} {
+export function dashboardMatrix(s:State,branch=''):DashboardMatrixData {
   const branches=new Map<string,MatrixBranch>();
   for(const b of s.branches??[]){
     const key=normalized(b.name);if(!key)continue;
@@ -25,13 +28,16 @@ export function dashboardMatrix(s:State,branch=''):{regions:MatrixRegion[];total
   for(const d of s.deals){const p=plans.get(d.projectId);if(!p)continue;p.deals.push(d);deals.set(d.id,{deal:d,spks:[]});}
   const orders=new Map<string,{spk:Spk;terms:Term[];closed:boolean}>();
   for(const v of s.spks){const d=deals.get(v.dealId);if(!d)continue;d.spks.push(v);orders.set(v.id,{spk:v,terms:[],closed:false});}
-  const settled=new Map<string,boolean>();
+  const settled=new Map<string,boolean>(),payments:MatrixPaymentDetail[]=[];
   for(const t of s.terms){
     const order=orders.get(t.spkId);if(!order)continue;
     order.terms.push(t);const d=deals.get(order.spk.dealId)!.deal;
     const amount=termTotalForDeal(d,t),paid=Number.isFinite(t.paid)?Math.max(0,round(t.paid)):0;
     settled.set(t.id,t.status==='Disetujui'&&t.apmStatus==='Valid'&&amount>0&&paid>=amount);
-    if(order.spk.status==='Sah'&&t.status==='Disetujui')plans.get(d.projectId)!.realized+=paid;
+    if(order.spk.status==='Sah'&&t.status==='Disetujui'){
+      plans.get(d.projectId)!.realized+=paid;
+      if(paid>0)payments.push({id:t.id,planId:d.projectId,spkNo:order.spk.no,number:t.number,type:t.type,apm:t.apm,amount:paid});
+    }
   }
   for(const order of orders.values()){
     const last=order.terms.reduce<Term|undefined>((previous,t)=>!previous||t.number>previous.number?t:previous,undefined);
@@ -45,7 +51,7 @@ export function dashboardMatrix(s:State,branch=''):{regions:MatrixRegion[];total
   }
   const regions=new Map<string,MatrixRegion>();
   const branchCodes=new Map<string,Set<string>>(),regionCodes=new Map<string,Set<string>>(),allCodes=new Set<string>();
-  const totals=empty();
+  const totals=empty(),details:MatrixPlanDetail[]=[];
   for(const [key,b] of branches){
     if(branch&&key!==normalized(branch))continue;
     let region=regions.get(b.regionId);
@@ -58,11 +64,12 @@ export function dashboardMatrix(s:State,branch=''):{regions:MatrixRegion[];total
     const code=normalized(p.projectCode);
     if(code){branchCodes.get(key)!.add(code);regionCodes.get(r.id)!.add(code);allCodes.add(code);}
     const boq=p.parentId?0:boqTotal(p);
+    details.push({id:p.id,no:p.no,name:p.name,code,branch:p.branch,branchId:b.id,regionId:r.id,status:p.status,parentId:p.parentId,closed:!!code&&codes.get(code)!.closed,realized:round(realized),total:boq});
     for(const sum of [b.totals,r.totals,totals]){sum.plans++;sum.realized+=realized;sum.total+=boq;if(!code)sum.missingCodes++;}
   }
   function finish(sum:MatrixTotals,ids:Set<string>){sum.projects=ids.size;sum.closed=[...ids].filter(code=>codes.get(code)!.closed).length;sum.open=sum.projects-sum.closed;sum.realized=round(sum.realized);sum.total=round(sum.total);}
   for(const [key,b] of branches)if(branchCodes.has(key))finish(b.totals,branchCodes.get(key)!);
   for(const r of regions.values()){finish(r.totals,regionCodes.get(r.id)!);r.branches.sort((a,b)=>a.name.localeCompare(b.name,'id'));}
   finish(totals,allCodes);
-  return {regions:[...regions.values()].sort((a,b)=>a.id==='unassigned'?1:b.id==='unassigned'?-1:a.name.localeCompare(b.name,'id')),totals};
+  return {regions:[...regions.values()].sort((a,b)=>a.id==='unassigned'?1:b.id==='unassigned'?-1:a.name.localeCompare(b.name,'id')),totals,plans:details,payments:payments.filter(t=>branchCodes.has(normalized(plans.get(t.planId)!.project.branch)))};
 }

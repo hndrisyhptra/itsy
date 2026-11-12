@@ -29,7 +29,7 @@ test('budget recap derives positive source amounts without installments, dates o
   assert.deepEqual(p.planBudget!.mandor,before.planBudget!.mandor);
   assert.equal(p.planBudget!.usage[0].date,'2026-02-30');
   saveProject(s,p,true);const saved=getProject(s,p.id);
-  assert.equal(saved.status,'Diajukan');assert.deepEqual(saved.planBudget!.usage,vector.automaticUsage);
+  assert.equal(saved.status,'Diajukan');assert.deepEqual(saved.planBudget!.usage,vector.automaticUsage.map((r:{amount:number})=>({...r,amount:Math.round(r.amount)})));
   assert.equal(saved.approvals!.length,0);
 });
 
@@ -104,7 +104,7 @@ test('deleting or editing print rows does not bypass five PP approvals and no un
 test('budget form exposes template columns and working row actions; risk text is fixed and curve is removed',()=>{
   const {s,p}=fixture(),result=applyBudgetPlan(s,p);
   const budget=renderToStaticMarkup(createElement(BudgetPlanSection,{s,p:result,editable:true,onChange:()=>{}}));
-  for(const label of ['BoQ TA - Telkom / Owner Project','BoQ TA - Mandor','Jml_Mat','Jml_Jasa','Tambah Material','Tambah BOP','Uraian Pekerjaan','Satuan','195,05','90,25'])assert.ok(budget.includes(label),label);
+  for(const label of ['BoQ TA - Telkom / Owner Project','BoQ TA - Mandor','Jml_Mat','Jml_Jasa','Tambah Material','Tambah BOP','Uraian Pekerjaan','Satuan','195','90,25'])assert.ok(budget.includes(label),label);
   assert.doesNotMatch(budget,/Termin Bayar|Tanggal Penggunaan|Tambah Waktu Penggunaan|Nilai Penggunaan/);
   assert.equal((budget.match(/>Uraian Pekerjaan<\/th>/g)??[]).length,2);
   assert.equal((budget.match(/class="budget-description"/g)??[]).length,2);

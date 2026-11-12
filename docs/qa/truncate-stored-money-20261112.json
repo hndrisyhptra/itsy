@@ -1,0 +1,94 @@
+{
+  "date": "2026-11-12",
+  "feature": "Truncate stored monetary fractions; explicitly supersedes half-up",
+  "authority": "User explicitly requests stored values cut toward zero and asks to continue",
+  "policy": {
+    "new": "idr-trunc-v1",
+    "historical_half": "idr-whole-v1",
+    "rule": "input/unit price and component monetary results truncate toward zero; derived totals from truncated source; recorded paid/APM cut, not replaced by a new transfer",
+    "excluded": [
+      "quantities",
+      "percentages",
+      "calendar/date",
+      "IDs/NIK/bank strings",
+      "original Excel/source comparisons",
+      "workspace archive",
+      "prior decisions/receipts/audit/files"
+    ]
+  },
+  "migrations": {
+    "data": "2026_11_11_000001a_truncate_stored_currency",
+    "types": "2026_11_11_000002_use_whole_rupiah_columns",
+    "order": "data after kasbon and before BIGINT; pending data migration also runs when type migration is already recorded",
+    "new_audit_tables": [
+      "currency_conversion_runs",
+      "currency_conversion_changes"
+    ],
+    "before_after": "encrypted with unchanged APP_KEY; patch hash",
+    "live_applied": false,
+    "rollback": "refuse when converted audit or new-policy documents exist"
+  },
+  "verification": {
+    "php_passed": 280,
+    "assertions": 5877,
+    "new_php_tests": 5,
+    "frontend_passed": 280,
+    "new_frontend_tests": 1,
+    "database": "fail-closed isolated SQLite :memory:",
+    "frontend": "fixtures/SSR",
+    "build": "TypeScript/Vite passed",
+    "assets": {
+      "references": 31,
+      "preload_dependencies": 24,
+      "profiles": 3,
+      "passed": true
+    },
+    "pint": "scoped passed",
+    "diff_check": "passed",
+    "coverage": [
+      "SQL and matching active JSON money conversion",
+      "encrypted before/after audit, exact identity/quantity/provenance/archive/decision preservation",
+      "read-only preview and idempotent apply/revision",
+      "late SQL failure rollback of money/audit/revision and retry",
+      "fresh migration before type migration; populated conversion fixture after type migration",
+      "sub-rupiah positive amount refuses before UPDATE",
+      "master .99 normalization and truncation/legacy-half parity"
+    ]
+  },
+  "query_review": {
+    "web_extra_queries": 0,
+    "spk_catalog_service_fixture": 4,
+    "conversion_document_collections_per_workspace": 4,
+    "projection_page_rows": 200,
+    "workspace_page_rows": 20,
+    "lookup_strategy": "indexed relationships; no per-record account/private-file/catalog reads",
+    "write_cost": "scales with changed records and encrypted audit rows",
+    "production_benchmark": false,
+    "workspace_columns": "id only for plan; id and revision for apply lock; archived state never selected"
+  },
+  "backup": {
+    "path": "storage/app/private/backups/its-before-truncate-rupiah-20261111-102406.sql",
+    "bytes": 2119431,
+    "sha256": "2d2ec7bbbc44bf5be03c1799db61749d3a1de6647a528ce23af1cad1cf24e647",
+    "scope": "local its tables/data/triggers; routines excluded",
+    "restore_tested": false,
+    "remote_backup": false
+  },
+  "runtime": {
+    "live_conversion_or_migration": false,
+    "live_conversion_plan": false,
+    "env_appkey_changed": false,
+    "dompis_touched": false,
+    "worker_started": false,
+    "attachment_modified": false,
+    "commit_push_deploy": false
+  },
+  "limits": [
+    "MySQL/MariaDB DDL and remote deployment not verified",
+    "Browser account, responsive, keyboard, Word and physical print not verified",
+    "Conflicting active kasbon/payment sums or positive-to-zero amounts require reconciliation before conversion",
+    "Bank transfer and original proof remain external/manual and unchanged",
+    "Maintenance must exclude other writers; MySQL DDL is not fully transactional"
+  ],
+  "behavior_document": "docs/TRUNCATE_STORED_MONEY.md"
+}

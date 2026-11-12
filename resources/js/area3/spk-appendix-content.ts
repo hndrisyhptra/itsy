@@ -1,11 +1,12 @@
+import { rupiahNumber, monetaryRound, moneyLine } from './currency';
 import type { State, Project, Deal } from './domain';
 
-const rupiah = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 });
+const rupiah=rupiahNumber;
 const volume = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 3 });
-const round = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
 
 /** Presentation of the selected agreement only; reference indexes never supply prices/volumes. */
 export function spkAppendixData(state: State, project: Project, deal: Deal) {
+  const round=(n:number)=>monetaryRound(n,deal);
   const root = project.rootId === project.id ? project : state.projects.find(p => p.id === project.rootId);
   const source = new Map(root?.boq.map(row => [row.id, row.khsId]) ?? []);
   const catalog = new Map(state.khs.map(item => [item.id, item]));
@@ -14,8 +15,8 @@ export function spkAppendixData(state: State, project: Project, deal: Deal) {
   for (const row of deal.rows) {
     if (!row.m && !row.s) continue;
     const item = catalog.get(source.get(row.rowId) ?? '');
-    const m = row.m ? round(row.qm * row.pm) : 0;
-    const combined = round((row.m ? row.qm * row.pm : 0) + (row.s ? row.qs * row.ps : 0));
+    const m = row.m ? moneyLine(row.qm,row.pm,0,0,deal) : 0;
+    const combined = moneyLine(row.m?row.qm:0,row.pm,row.s?row.qs:0,row.ps,deal);
     // Same cent allocation as the main SPK letter; M + J always equals the domain line total.
     const s = round(combined - m);
     material += m; total += combined;

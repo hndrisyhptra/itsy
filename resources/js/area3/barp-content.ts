@@ -1,10 +1,10 @@
+import { rupiahNumber, monetaryRound, moneyLine } from './currency';
 import type { Project, Deal, Spk, Term } from './domain';
 import { approvalRoles,selectedApprover } from './domain';
 import { bakhDocumentDate } from './bakh-content';
 import type { BarpData } from './barp-form';
 const filled=(s?:string)=>s?.trim()||'…';
-const round=(n:number)=>Math.round((n+Number.EPSILON)*100)/100;
-const number=new Intl.NumberFormat('id-ID',{maximumFractionDigits:2});
+const number=rupiahNumber;
 const words=['Nol','Satu','Dua','Tiga','Empat','Lima','Enam','Tujuh','Delapan','Sembilan','Sepuluh','Sebelas'];
 function integerWords(n:number):string {
   if(n<12)return words[n];
@@ -19,8 +19,7 @@ function integerWords(n:number):string {
 }
 export function rupiahWords(value:number){
   if(!Number.isFinite(value)||value<0||value>Number.MAX_SAFE_INTEGER)throw new Error('Nilai BARP tidak valid.');
-  const [whole,cents]=round(value).toFixed(2).split('.');
-  return `${integerWords(Number(whole))}${cents==='00'?'':` Koma ${[...cents].map(n=>words[Number(n)]).join(' ')}`} Rupiah`;
+  return `${integerWords(Math.trunc(value))} Rupiah`;
 }
 export function canExportBarp(term:Term){return ['Diajukan','Disetujui'].includes(term.status);}
 export function canPrintBarp(term:Term){return term.status==='Disetujui'&&approvalRoles(term).every(role=>term.approvals.some(a=>a.role===role&&a.decision==='Setujui'&&((term.workflowVersion??1)<2||a.userId===selectedApprover(term,role))));}
@@ -34,18 +33,18 @@ export function historicalBarp(deal:Deal,spk:Spk):BarpData {
   return {version:1,date:'',place:spk.place,start:spk.start,end:spk.end,location:deal.location??'',sto:'',homepass:null,waspang:spk.supervisor,mandor:deal.mandor,headName:spk.signerSource==='pp-head-pmo'?spk.signer:'',headNik:spk.signerSource==='pp-head-pmo'?spk.signerNik??'':'',headUserId:spk.signerSource==='pp-head-pmo'?spk.signerUserId??'':''};
 }
 export function barpDocumentData(project:Project,deal:Deal,spk:Spk,term:Term){
+  const round=(n:number)=>monetaryRound(n,term);
   const b=term.barp??historicalBarp(deal,spk),date=bakhDocumentDate(b.date),start=bakhDocumentDate(b.start),end=bakhDocumentDate(b.end);
   let material=0,total=0,contract=0;
   for(const row of deal.rows){
-    const m=row.m?(term.actuals[row.rowId]?.m??0)*row.pm:0,j=row.s?(term.actuals[row.rowId]?.s??0)*row.ps:0;
-    material+=round(m);total+=round(m+j);contract+=round((row.m?row.qm*row.pm:0)+(row.s?row.qs*row.ps:0));
+    material+=moneyLine(row.m?(term.actuals[row.rowId]?.m??0):0,row.pm,0,0,term);total+=moneyLine(row.m?(term.actuals[row.rowId]?.m??0):0,row.pm,row.s?(term.actuals[row.rowId]?.s??0):0,row.ps,term);contract+=moneyLine(row.m?row.qm:0,row.pm,row.s?row.qs:0,row.ps,deal);
   }
   material=round(material);total=round(total);contract=round(contract);
   const service=round(total-material),amount=`Rp ${number.format(total)},- (${rupiahWords(total)})`,job=filled(project.name),mandor=filled(b.mandor);
   return {
-    title:`BERITA ACARA REKON PEKERJAAN - TAHAP ${term.number}`,job,mandor,location:filled(b.version>=2?b.job:b.location),objectLabel:b.version>=2?'PEKERJAAN':'LOKASI',sto:b.sto.trim(),homepass:b.homepass===null?'':number.format(b.homepass),
+    title:`BERITA ACARA REKON PEKERJAAN - TAHAP ${term.number}`,job,mandor,location:filled(b.version>=2?b.job:b.location),objectLabel:b.version>=2?'PEKERJAAN':'LOKASI',sto:b.sto.trim(),homepass:b.homepass===null?'':String(b.homepass),
     opening:`Pada hari ini ${date?.weekday??'…'} tanggal ${date?.full??'…'}, telah dilakukan rekonsiliasi terhadap pelaksanaan pekerjaan ${job}, antara PT. Telkom Akses selanjutnya disebut TELKOM AKSES dengan ${mandor} selanjutnya disebut MANDOR, dengan kesepakatan sebagai berikut:`,
-    price:`TELKOM AKSES dan Mandor sepakat bahwa harga borongan berdasarkan hasil rekonsiliasi proyek periode tanggal ${start?.full??'…'} sampai ${end?.full??'…'} untuk tahap ${term.number} adalah sebesar ${amount}, dengan porsi nilai tahap ini ${contract>0?number.format(round(total/contract*100)):'0'}% dari nilai SPK. Rincian sebagai berikut:`,
+    price:`TELKOM AKSES dan Mandor sepakat bahwa harga borongan berdasarkan hasil rekonsiliasi proyek periode tanggal ${start?.full??'…'} sampai ${end?.full??'…'} untuk tahap ${term.number} adalah sebesar ${amount}, dengan porsi nilai tahap ini ${contract>0?new Intl.NumberFormat('id-ID',{maximumFractionDigits:2}).format(Math.round(total/contract*10000)/100):'0'}% dari nilai SPK. Rincian sebagai berikut:`,
     stageScope:`Harga Berdasarkan Surat Perintah Kerja — volume tahap ${term.number} :`,
     reconHeading:`Nilai Rekonsiliasi Tahap ${term.number} untuk Pengajuan Pembayaran`,
     reconText:`TELKOM AKSES dan Mandor sepakat bahwa nilai hasil rekonsiliasi tahap ${term.number} yang diajukan untuk pembayaran adalah sebesar ${amount}. Dengan rincian sebagai berikut:`,

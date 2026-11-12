@@ -54,9 +54,11 @@ final class PaymentProjectCatalog
         // Domain rounds the combined M/J amount per source BOQ row, then sums those lines.
         $amounts = [];
         if ($visible->isNotEmpty()) {
-            $lines = DB::table('contract_components as cc')->join('boq_components as bc', 'bc.id_boq_component', '=', 'cc.boq_component_id')->join('boq_lines as l', 'l.id_boq', '=', 'bc.boq_line_id')
+            $truncate = DB::getDriverName() === 'sqlite' ? 'CAST(cc.quantity * cc.agreed_price AS INTEGER)' : 'TRUNCATE(cc.quantity * cc.agreed_price, 0)';
+            $policy = DB::connection()->getQueryGrammar()->wrap('price_contract.document_data->moneyPolicy');
+            $lines = DB::table('contract_components as cc')->join('boq_components as bc', 'bc.id_boq_component', '=', 'cc.boq_component_id')->join('boq_lines as l', 'l.id_boq', '=', 'bc.boq_line_id')->join('contracts as price_contract', 'price_contract.id_contract', '=', 'cc.contract_id')
                 ->whereIn('cc.contract_id', $visible->pluck('contract_id'))->groupBy('cc.contract_id', 'l.id_boq')
-                ->select('cc.contract_id')->selectRaw('ROUND(SUM(cc.quantity * cc.agreed_price), 2) as amount');
+                ->select('cc.contract_id')->selectRaw("CASE WHEN MAX($policy) = 'idr-trunc-v1' THEN SUM($truncate) WHEN MAX($policy) = 'idr-whole-v1' THEN SUM(ROUND(cc.quantity * cc.agreed_price, 0)) ELSE ROUND(SUM(cc.quantity * cc.agreed_price), 2) END as amount");
             $amounts = DB::query()->fromSub($lines, 'line_amounts')->groupBy('contract_id')
                 ->select('contract_id')->selectRaw('SUM(amount) as amount')->pluck('amount', 'contract_id')->all();
         }

@@ -33,8 +33,8 @@ test('current KHS replaces stale price/review/version and manual total without c
   const {s,p}=fixture(),before=JSON.stringify(p);p.budget=1;
   const priced=applyAutomaticBoqPricing(s,p),r=priced.boq[0];
   assert.equal(r.m,100);assert.equal(r.s,20);assert.equal(r.excelM,700);assert.equal(r.excelS,0);assert.equal(r.version,s.khs[0].version);assert.equal(r.reviewed,true);assert.equal(r.note,AUTO_KHS_NOTE);
-  assert.equal(priced.budget,240.6);assert.equal(priced.budget,boqTotal(priced));assert.equal(JSON.stringify({...p,budget:0}),before);
-  saveProject(s,p,false);const saved=getProject(s,p.id);assert.equal(saved.budget,240.6);assert.equal(saved.boq[0].excelM,700);assert.equal(saved.boq[0].note,AUTO_KHS_NOTE);
+  assert.equal(priced.budget,240);assert.equal(priced.budget,boqTotal(priced));assert.equal(JSON.stringify({...p,budget:0}),before);
+  saveProject(s,p,false);const saved=getProject(s,p.id);assert.equal(saved.budget,240);assert.equal(saved.boq[0].excelM,700);assert.equal(saved.boq[0].note,AUTO_KHS_NOTE);
 });
 
 test('quantity changes, deletions and replacement BOQ recalculate total; zero and null components stay distinct',()=>{
@@ -51,7 +51,7 @@ test('BOQ editor shows automatic pricing and preserves comparison columns withou
   const html=renderToStaticMarkup(createElement(BoqDraftEditor,{s,p,onChange:()=>{},disabled:false}));
   assert.match(html,/Harga BOQ otomatis mengikuti Master KHS di database/);assert.match(html,/Material Excel \/ KHS/);
   assert.doesNotMatch(html,/Isi alasan dan konfirmasikan|aria-label="Alasan selisih|type="checkbox"/);
-  assert.match(html,/Total Nilai pada Header PP/);assert.match(html,/240,6/);
+  assert.match(html,/Total Nilai pada Header PP/);assert.match(html,/240/);
 });
 
 test('submitted/approved snapshots and continuation allocations do not get repriced by the form helper',()=>{

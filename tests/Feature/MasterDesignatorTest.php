@@ -82,10 +82,10 @@ class MasterDesignatorTest extends TestCase
         $this->assertNull($khs['s']);
         $this->change('designator', ['code' => 'M-QA', 'item_name' => 'Material QA Updated', 'unit' => 'M', 'designator_type_id' => 1], $d)->assertOk();
         $this->change('paket-khs', ['code' => 'PK-QA', 'name' => 'Paket QA Updated', 'description' => 'Updated'], $pkg)->assertOk();
-        $updated = $this->change('khs', ['designator_id' => $d, 'package_id' => $pkg, 'price' => '12.25'], $price)->assertOk();
+        $updated = $this->change('khs', ['designator_id' => $d, 'package_id' => $pkg, 'price' => '12.99'], $price)->assertOk();
         $khs = collect($updated->json('state.khs'))->firstWhere('id', 'db-price-'.$price);
         $this->assertSame(4, $khs['version']);
-        $this->assertEquals(12.25, $khs['m']);
+        $this->assertEquals(12, $khs['m']);
         $this->change('designator', [], $d, 'delete')->assertUnprocessable();
         $this->change('paket-khs', [], $pkg, 'delete')->assertUnprocessable();
         $deleted = $this->change('khs', [], $price, 'delete')->assertOk();
@@ -99,7 +99,7 @@ class MasterDesignatorTest extends TestCase
         $this->assertDatabaseCount('command_receipts', 9);
         $audit = DB::table('master_data_changes')->where('entity', 'khs')->where('action', 'update')->first();
         $this->assertEquals(0, json_decode($audit->before_data, true)['price']);
-        $this->assertEquals(12.25, json_decode($audit->after_data, true)['price']);
+        $this->assertEquals(12, json_decode($audit->after_data, true)['price']);
         foreach (['/master-designator/designator', '/master-designator/khs', '/master-designator/paket-khs', '/master-khs'] as $url) {
             $this->get($url)->assertOk();
         }

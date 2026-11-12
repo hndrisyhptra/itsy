@@ -250,10 +250,11 @@ class MasterDesignatorService
                 'designator_type_id' => ['required', 'integer', Rule::exists('designator_types', 'id_designator_type')->where('is_active', true)->whereNull('deleted_at')]],
             'paket-khs' => ['code' => ['required', 'string', 'max:255', $uniqueCode], 'name' => 'required|string|max:255', 'description' => 'nullable|string|max:5000'],
             'khs' => ['designator_id' => ['required', 'integer', Rule::exists('designators', 'id_designator')->whereIn('designator_type_id', [1, 2])->whereNull('deleted_at')],
-                'package_id' => ['required', 'integer', Rule::exists('packages', 'id_package')->whereNull('deleted_at')], 'price' => 'required|numeric|min:0|max:9999999999999.99|decimal:0,2'],
+                'package_id' => ['required', 'integer', Rule::exists('packages', 'id_package')->whereNull('deleted_at')], 'price' => ['required', 'numeric', 'min:0', 'max:9999999999999', 'decimal:0,2']],
         };
         $fields = Validator::make($data, $rules)->validate();
         if ($entity === 'khs') {
+            $fields['price'] = bcdiv((string) $fields['price'], '1', 0);
             if ($before && ((int) $fields['designator_id'] !== (int) $before->designator_id || (int) $fields['package_id'] !== (int) $before->package_id)) {
                 throw ValidationException::withMessages(['master' => 'Relasi harga tersimpan tidak dapat diganti. Tambah KHS baru untuk pasangan lain.']);
             }

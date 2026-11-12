@@ -9,7 +9,7 @@ export function boqMandorPreviewRows(s:State,p:Project) {
   return (p.planBudget?.mandor??[]).map(r=>{
     const owner=owners.get(r.rowId), material=!!owner&&owner.m!==null,service=!!owner&&owner.s!==null;
     return {...r,code:owner?.code??r.rowId,description:owner?.name??'',unit:owner?.unit??'',material,service,
-      amountM:material?lineAmount(r.qtyM,r.priceM):0,amountS:service?lineAmount(r.qtyS,r.priceS):0};
+      amountM:material?lineAmount(r.qtyM,r.priceM,p.planBudget?.moneyPolicy==='idr-whole-v1'?'half':p.planBudget?.moneyPolicy==='idr-trunc-v1'):0,amountS:service?lineAmount(r.qtyS,r.priceS,p.planBudget?.moneyPolicy==='idr-whole-v1'?'half':p.planBudget?.moneyPolicy==='idr-trunc-v1'):0};
   });
 }
 

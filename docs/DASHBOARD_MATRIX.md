@@ -1,5 +1,9 @@
 # Matriks dashboard Region → Branch — 9 November 2026
 
+## Rincian angka dan rupiah bulat — 11 November 2026
+
+Setiap angka Branch/subtotal Region/TOTAL kini membuka modal kontributor sesuai scope/filter, pencarian dan20baris/halaman. JMLH/OPEN/CLOSE unik per kode; PP termasuk draf/lanjutan; Realisasi berupa termin dibayar; Total Nilai hanya sumber root. Tidak ada SQL/API baru/private-data query. Rupiah tampil bulat; dokumen baru memakai policy pembulatan per komponen, sejarah sen tidak ditulis ulang. [Perilaku, migration dan bukti terbaru](WHOLE_RUPIAH_DASHBOARD_DETAILS.md) menggantikan keterangan tampilan lama di bawah. Inbox auto-sync sebelumnya juga sudah menggantikan kebutuhan refresh manual berulang.
+
 Permintaan pengguna menambahkan tabel pada dashboard awal, bukan mengganti tiga kartu/enam ringkasan yang ada. Tabel **Matriks Project per Region** mengelompokkan Branch berdasarkan relasi master `branches.region_id → regions.id_region`. Klik tombol Region untuk menutup/membuka Branch; subtotal tetap terlihat. Kondisi awal terbuka, tombol mendukung fokus/Enter/Space melalui native button, `aria-expanded` dan `aria-controls`. Tabel bergaris, angka rata kanan dan gulir horizontal berada di panel. Warna mengikuti tema #9FA1FF. Dropdown Branch dashboard juga menyaring matriks.
 
 ## Definisi angka
