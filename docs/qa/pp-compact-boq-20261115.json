@@ -1,0 +1,116 @@
+{
+  "date": "2026-11-15",
+  "scope": "Only the two PP BOQs, user confirmed closing table remains as-is",
+  "tests": {
+    "php": 280,
+    "assertions": 5880,
+    "frontend": 289,
+    "build": "pass",
+    "assets": {
+      "manifest": 32,
+      "preloads": 25,
+      "profiles": 3
+    }
+  },
+  "queryReview": {
+    "additionalSql": 0,
+    "additionalApi": 0,
+    "captureComplexity": "Existing O(rendered DOM), no catalog or account lookup"
+  },
+  "screen": [
+    {
+      "container": 668,
+      "table": 668,
+      "scrollWidth": 668,
+      "clientWidth": 668,
+      "font": "9px",
+      "padding": "3px 4px"
+    },
+    {
+      "container": 668,
+      "table": 668,
+      "scrollWidth": 668,
+      "clientWidth": 668,
+      "font": "9px",
+      "padding": "3px 4px"
+    }
+  ],
+  "fixtures": {
+    "standard": {
+      "docxSha256": "69fe9c5ecf9ad224a79d26ce341f8fcc8f4a7939bc1a08ff25f1e807473ade46",
+      "zipXmlValid": true,
+      "allTextAndAmountsUnchanged": true,
+      "closingXmlByteIdentical": true,
+      "compactBoqTables": 2,
+      "boqWordFontPoints": 6,
+      "boqWordCellMarginsTwips": {
+        "vertical": 25,
+        "horizontal": 40
+      },
+      "renderedPages": 3,
+      "changedPagesVisuallyInspected": [
+        2,
+        3
+      ],
+      "page1HashIdenticalToPreviouslyInspectedHeader": true,
+      "pdf": {
+        "standard.pdf": {
+          "pages": 4,
+          "nonblank": true
+        },
+        "standard-nested.pdf": {
+          "pages": 4,
+          "nonblank": true
+        },
+        "standard-compact-boq-release/standard.pdf": {
+          "pages": 3,
+          "nonblank": true
+        }
+      }
+    },
+    "long": {
+      "docxSha256": "0f5ccd5bdb51b9e3c6782a4f5f122f70ded0ef7b097970de97d83fd4d60b8015",
+      "zipXmlValid": true,
+      "allTextAndAmountsUnchanged": true,
+      "closingXmlByteIdentical": true,
+      "compactBoqTables": 2,
+      "boqWordFontPoints": 6,
+      "boqWordCellMarginsTwips": {
+        "vertical": 25,
+        "horizontal": 40
+      },
+      "renderedPages": 4,
+      "changedPagesVisuallyInspected": [
+        2,
+        3,
+        4
+      ],
+      "page1HashIdenticalToPreviouslyInspectedHeader": true,
+      "pdf": {
+        "long.pdf": {
+          "pages": 5,
+          "nonblank": true
+        },
+        "long-nested.pdf": {
+          "pages": 5,
+          "nonblank": true
+        },
+        "long-compact-boq-release/long.pdf": {
+          "pages": 4,
+          "nonblank": true
+        }
+      }
+    }
+  },
+  "newSimulation": false,
+  "limits": [
+    "Live server and accounts",
+    "Desktop Microsoft Word",
+    "Native print dialog and physical print"
+  ],
+  "pdfViewportWidths": [
+    375,
+    768,
+    1440
+  ]
+}

@@ -23,7 +23,7 @@ test('Header is first, BOQ second and total is read-only Rp0 before upload; head
   const html=renderToStaticMarkup(createElement(ProjectEditor,{s,id:'new'}));
   assert.match(html,/aria-selected="true" class="active"><span>1<\/span>Header PP/);
   assert.match(html,/<span>2<\/span>BOQ Plan/);assert.match(html,/Informasi Project Plan/);
-  assert.match(html,/aria-label="Total Nilai BOQ Plan otomatis" readOnly="" value="Rp 0"/);
+  assert.match(html,/aria-label="Total Nilai Anggaran PP otomatis" readOnly="" value="Rp 0"/);
   assert.doesNotMatch(html,/Upload BOQ Plan<\/h3>/);
   saveProject(s,p,false);const saved=getProject(s,p.id);assert.equal(saved.budget,0);assert.equal(saved.boq.length,0);assert.equal(saved.boqPricingPolicy,'khs-auto-v1');
   assert.equal(saved.status,'Draft');assert.equal(saved.boqStatus,'Belum diimpor');assert.ok(saved.no);

@@ -4,11 +4,12 @@ import { readFileSync } from 'node:fs';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { seed } from '../../resources/js/area3/seed';
-import { type Project, type State, type Role, APPROVERS_V3, normalizeWorkflow, saveProject, getProject, decideProject, selectActor } from '../../resources/js/area3/domain';
+import { type Project, type State, type Role, APPROVERS_V3, normalizeWorkflow, saveProject, getProject, decideProject, selectActor, money } from '../../resources/js/area3/domain';
 import { applyPlanTemplate } from '../../resources/js/area3/plan-template';
-import { applyBudgetPlan, budgetSummary, lineAmount, ratioPercent, draftPlanBudget } from '../../resources/js/area3/plan-budget';
+import { applyBudgetPlan, budgetSummary, lineAmount, ratioPercent, draftPlanBudget, projectPlanHeaderTotal } from '../../resources/js/area3/plan-budget';
 import { BudgetPlanSection, RiskQualitySection, signaturePerson } from '../../resources/js/area3/plan-budget-ui';
 import { DocumentPreview } from '../../resources/js/area3/ui';
+import { ProjectEditor } from '../../resources/js/area3/projects';
 
 const vector=JSON.parse(readFileSync(new URL('../Fixtures/pp-budget-vector.json',import.meta.url),'utf8'));
 function fixture() {
@@ -31,6 +32,7 @@ test('budget recap derives positive source amounts without installments, dates o
   saveProject(s,p,true);const saved=getProject(s,p.id);
   assert.equal(saved.status,'Diajukan');assert.deepEqual(saved.planBudget!.usage,vector.automaticUsage.map((r:{amount:number})=>({...r,amount:Math.round(r.amount)})));
   assert.equal(saved.approvals!.length,0);
+  assert.equal(projectPlanHeaderTotal(saved),202);assert.equal(saved.budget,3000);
 });
 
 test('source edits refresh the automatic recap and remove categories when their total becomes zero',()=>{
@@ -44,6 +46,14 @@ test('source edits refresh the automatic recap and remove categories when their 
   const recap=html.match(/<div class="table-scroll budget-recap-table">([\s\S]*?)<\/table><\/div>/)![1];
   assert.ok(recap.includes('Jasa Mandor'));assert.ok(recap.includes('Material BOQ Mandor'));
   assert.doesNotMatch(recap,/Material Non Stock|>BOP<|Preliminary/);
+  assert.match(recap,new RegExp(`Total Anggaran</td><td class="numeric">${money(190)}</td>`));
+  assert.equal(projectPlanHeaderTotal(next),190);
+  s.projects=[next];
+  const editor=renderToStaticMarkup(createElement(ProjectEditor,{s,id:next.id}));
+  assert.ok(editor.includes(`aria-label="Total Nilai Anggaran PP otomatis" readOnly="" value="${money(190)}"`));
+  assert.doesNotMatch(editor,/Total Nilai otomatis terisi setelah BOQ|Otomatis dari BOQ Plan langkah/);
+  const empty=structuredClone(next);empty.planBudget!.mandor.forEach(row=>{row.priceM=row.priceS=0;});
+  assert.equal(projectPlanHeaderTotal(applyBudgetPlan(s,empty)),0);
 });
 
 test('submitted historical budget version 1 keeps its original installment rows and totals unchanged',()=>{
@@ -52,6 +62,9 @@ test('submitted historical budget version 1 keeps its original installment rows 
   assert.equal(budget.version,1);assert.deepEqual(budget.usage,p.planBudget!.usage);
   const html=renderToStaticMarkup(createElement(BudgetPlanSection,{s,p,printing:true}));
   assert.ok(html.includes('Termin Bayar / Reimburse'));assert.ok(html.includes('historis'));assert.equal(JSON.stringify(p),before);
+  // Two Mandor installments each display the category total; count their amounts only once.
+  assert.ok(html.includes(`<td colSpan="5">Total Anggaran</td><td class="numeric">${money(202.08)}</td></tr></tbody></table>`));
+  assert.equal(projectPlanHeaderTotal(p),202.08);assert.equal(JSON.stringify(p),before);
   p.status='Ditolak';assert.equal(draftPlanBudget(s,p).version,2);
 });
 
@@ -104,6 +117,7 @@ test('deleting or editing print rows does not bypass five PP approvals and no un
 test('budget form exposes template columns and working row actions; risk text is fixed and curve is removed',()=>{
   const {s,p}=fixture(),result=applyBudgetPlan(s,p);
   const budget=renderToStaticMarkup(createElement(BudgetPlanSection,{s,p:result,editable:true,onChange:()=>{}}));
+  const before=JSON.stringify(result);
   for(const label of ['BoQ TA - Telkom / Owner Project','BoQ TA - Mandor','Jml_Mat','Jml_Jasa','Tambah Material','Tambah BOP','Uraian Pekerjaan','Satuan','195','90,25'])assert.ok(budget.includes(label),label);
   assert.doesNotMatch(budget,/Termin Bayar|Tanggal Penggunaan|Tambah Waktu Penggunaan|Nilai Penggunaan/);
   assert.equal((budget.match(/>Uraian Pekerjaan<\/th>/g)??[]).length,2);
@@ -113,6 +127,14 @@ test('budget form exposes template columns and working row actions; risk text is
   for(const text of ['KOMUNIKASI DAN DOKUMENTASI','MANAJEMEN KUALITAS','PENUTUP','Lensa Pro/Group Chat','Officer 1 Project Deployment Area Jawa Bali'])assert.ok(risk.includes(text),text);
   assert.doesNotMatch(risk,/Tambah Penandatangan|Hapus Penandatangan/);
   const preview=renderToStaticMarkup(createElement(DocumentPreview,{state:s,kind:'Project Plan',project:result,onClose:()=>{}}));
-  assert.doesNotMatch(preview,/Kurva S|pp-kurva-s-reference|ANDRA UTAMA|AMRAN QURAISY|HENDRA CAHYA|APPROVED/);
+  assert.doesNotMatch(preview,/Kurva S|pp-kurva-s-reference|ANDRA UTAMA|AMRAN QURAISY|HENDRA CAHYA|Persetujuan aplikasi/);
+  assert.doesNotMatch(preview,/Dibuat, Diperiksa dan Disetujui|Baris EVP: persetujuan otomatis|Status persetujuan aplikasi tidak menggantikan tanda tangan fisik|Dokumen prototipe\. Tanda tangan fisik tidak dibuat otomatis/);
   assert.match(preview,/pp-signature-print/);assert.match(preview,/IV\. KEBUTUHAN ANGGARAN/);assert.match(preview,/VIII\. PENUTUP/);assert.match(preview,/budget-recap-table/);assert.doesNotMatch(preview,/Termin Bayar \/ Reimburse/);
+  for(const html of [budget,preview]) {
+    const recap=html.match(/<div class="table-scroll budget-recap-table">([\s\S]*?)<\/table><\/div>/)![1];
+    assert.ok(recap.includes(`Subtotal (IV.1 + IV.2 + IV.3)</td><td class="numeric">${money(195.05)}</td>`));
+    assert.ok(recap.endsWith(`Total Anggaran</td><td class="numeric">${money(202.08)}</td><td>Jumlah seluruh rincian, termasuk perizinan bila ada</td></tr></tbody>`));
+  }
+  assert.equal(result.planBudgetTotals!.cogs,195.05);assert.equal(result.planBudgetTotals!.margin,90.25);assert.equal(JSON.stringify(result),before);
+  assert.ok(preview.includes(`<th scope="row">Total Nilai (Rp)</th><td>:</td><td>${money(202.08).replace(/^Rp\s*/,'')}</td>`));
 });

@@ -1,5 +1,49 @@
 # Catatan perubahan it's Area 3
 
+## 15 November 2026 — Ringkaskan tabel BOQ Owner dan Mandor PP
+
+- Pengguna mengonfirmasi tabel penutup sudah sesuai; hanya dua tabel BOQ yang dirapikan. Preview memakai font/padding kecil dan proporsi kolom terpisah, kode panjang membungkus, nominal tidak dipaksa pecah digit. Print/Word BOQ6pt dengan margin sel lebih rapat; input editor dan tabel penutup tetap.
+- Word capture menandai dua tabel BOQ, helper margin opsional mempertahankan default semua tabel lain. Seluruh teks/nominal dan XML closing pada fixture sama sebelum/sesudah.0SQL/API/lookup/backend/schema/migration/live write/backup DB baru/env/worker/Dompis/commit/push/deploy; capture tetap linear terhadap isi DOM.
+- 280PHP/5880assertions,289frontend/build/assets32manifest/25preload×3profil lulus. Existing native Word tests diperluas. Preview850px: dua tabel668px tanpa horizontal overflow, screenshot diperiksa. Native DOCX CRC/XML/render3/4halaman;5halaman berubah diperiksa dan2Header hash-identik dengan render yang sudah diperiksa. PDF browser current/nested4/5pages/3viewport nonblank. Server/desktop Word/native print dialog/cetak fisik belum diuji.
+- [Perilaku](PP_WORD_PRINT.md), arsitektur/WORKPLAN/QA/PP_BUDGET_TEMPLATE dan [bukti](qa/pp-compact-boq-20261115.json) dicatat tanpa menimpa audit lama.
+
+## 15 November 2026 — Total Nilai Header PP dari Total Anggaran poin5
+
+- Header form/summary pengajuan/preview/Word/PDF mengikuti baris Total Anggaran terakhir IV.5 termasuk perizinan; helper penjumlahan sama dengan tabel, otomatis berubah saat rincian diedit dan Rp0 saat belum terisi. Ganti notice lama yang menyebut Header mengikuti BOQ.
+- Rincian tersimpan tetap canonical Laravel; tidak ada field total client/duplikat atau perubahan project_plans.budget (BOQ/alokasi), COGS/margin/ledger/dashboard/approval/tagihan. Legacy tanpa planBudget tetap.0SQL/API tambahan/satu pass/memori konstan, tanpa schema/migration/live rewrite/env/worker/Dompis/backup DB baru/commit/push/deploy.
+- 280PHP/5880assertions,289frontend/build/assets32refs/25preload×3profil lulus. Existing semantic tests diperluas untuk Header/saved draft/zero/edit/legacy dan recap palsu. Native Word4/5pages CRC/XML/Header=recap;2changed pages diperiksa dan7lainnya hash-identik dengan render yang sudah diperiksa. PDF4/6pages current/nested/3viewport nonblank. Server/desktop Word/native print dialog/cetak fisik belum diuji.
+- [Aturan dan storage](PP_HEADER_BOQ_KHS.md), PP_BUDGET_TEMPLATE/ARCHITECTURE/WORKPLAN/QA/README/AGENTS/skills dan [bukti](qa/pp-header-recap-20261115.json) dicatat; audit lama tetap.
+
+## 15 November 2026 — Baris Total Anggaran di akhir tabel PP poin5
+
+- Tambah Total Anggaran pada baris terakhir form/preview/Word/PDF, menjumlahkan seluruh rincian termasuk perizinan. Baris lama versi2 menjadi Subtotal (IV.1 + IV.2 + IV.3); COGS/margin tetap di luar reimbursement. Versi1 historis menjumlahkan nominal setiap termin satu kali, bukan category totals yang berulang.
+- Presentasi saja, satu pass/memori konstan/0SQL/API tambahan; tanpa schema/migration/backend write/its aktif/env/worker/Dompis/backup DB baru/commit/push/deploy. Data dan formula tersimpan tetap; tidak menjalankan konversi rupiah terdahulu.
+- 280PHP/5877assertions,289frontend,TypeScript/Vite build,assets32manifest/25preload×3profil lulus. Perluas existing semantic tests tanpa tes baru yang meniru implementasi. Native Word CRC/XML/render4+5pages/all9PNG diperiksa, PDF current/nested4/6pages/3viewport nonblank dan jumlah tepat. Server/desktop Microsoft Word/native print dialog/cetak fisik belum diuji.
+- [Perilaku](PP_BUDGET_TEMPLATE.md), arsitektur/WORKPLAN/QA dan [bukti](qa/pp-budget-total-20261115.json) dicatat; audit sebelumnya dipertahankan.
+
+## 15 November 2026 — Hapus tiga teks pada preview dan Word PP
+
+- Hapus heading “Dibuat, Diperiksa dan Disetujui” khusus preview, catatan “Baris EVP: persetujuan otomatis; tanggal referensi satu hari sebelum BA KH paling awal. Status persetujuan aplikasi tidak menggantikan tanda tangan fisik.” dan footer “Dokumen prototipe. Tanda tangan fisik tidak dibuat otomatis.” dari sumber preview. DOCX/PDF otomatis mengikuti DOM yang sama; heading editor tetap.
+- Tabel penandatangan/empat akun/EVP/date/cap-preview/blank wet-TTD, lima approval, nominal dan data tersimpan tidak berubah.0SQL/API tambahan, tanpa schema/migration/live DB/env/worker/Dompis/commit/push/deploy. Tidak mengambil backup baru untuk perubahan presentasi tanpa writes; audit lama dipertahankan.
+- **280PHP/5877assertions,289frontend,TypeScript/Vite build,assets32manifest/25preload×3profil dan diff check lulus.** Tambah assertion absennya tiga teks pada test preview yang sudah ada; tanpa tes baru yang hanya meniru implementasi. Headless production-module fixture4/36BOQ: DOCX CRC/XML valid4/5halaman, seluruh9PNG Word diperiksa; PDF current/nested4/6halaman serta375/768/1440 nonblank, ketiga teks hilang dan EVP tetap ada. Akun server/native print dialog/desktop Microsoft Word/cetak fisik belum diuji.
+- [Perilaku/arsitektur](PP_WORD_PRINT.md), [bukti tindak lanjut](qa/pp-clean-copy-20261115.json), WORKPLAN/QA/README/AGENTS dan panduan desain diperbarui. Pekerjaan dimulai13November, penyelesaian audit15November setelah pengguna meminta lanjut.
+
+## 13 November 2026 — Unduh Word Project Plan dan perbaikan PDF kosong
+
+- Tambah Unduh Word (.docx) dengan konfirmasi/busy/retry pada preview PP current+legacy. Snapshot DOM khusus PP dibekukan saat klik, modul dimuat lazy dan dikonversi ke native editable OOXML; seluruh Header–Jadwal/Anggaran–Penutup termasuk EVP/date, angka/prose mengikuti preview tanpa rumus/identitas baru. Native tables/borders/repeated headers/merged cells/widths/UTF escaping/safe filename; cap/status TTD dibuang, area basah kosong dan lima baris TTD dijaga bersama.
+- Reproduksi print lama: ancestor main-shell tersembunyi oleh selector .app>*:not(.modal-backdrop), dokumen0px. Perbaiki rantai ancestor document modal, sembunyikan siblings/toolbar dan lepaskan body/modal overflow/height, termasuk nested review. PP saja A4 portrait; BA KH portrait/lampiran landscape tetap. BOQ print font/padding rapat dan nominal tidak dipecah tengah digit pada fixture.
+- 0SQL/API/akun lookup/backend write/migration/new runtime dependency. Proses O(rendered DOM)/memory sesuai isi; lazy module6,20kB/gzip2,71kB adalah ukuran build, bukan uji beban. Tidak mengubah data/approval/nominal/ledger/archive/private files/env/worker/Dompis atau menjalankan migration konversi lama; tanpa backup baru untuk presentasi tanpa write, belum commit/push/deploy.
+- **280PHP/5877assertions,289frontend,TypeScript/Vite build,assets32manifest/25preload×3profil dan diff check lulus.**5FE baru dan penyesuaian scope BA KH. Independent ZIP CRC/XML + headless production-module capture/DOM unchanged: native Word4/5halaman (seluruh9PNG diperiksa), PDF current+nested4/6halaman nonblank/I–VIII/TTD blank;375/768/1440 tetap4halaman. BA KH orientation guard lolos. QA memakai fixture/profile sementara/network intercepted, bukan akun live; sandbox launch awal gagal, retry berizin berhasil.
+- [Perilaku/arsitektur/query/deploy](PP_WORD_PRINT.md), [bukti](qa/pp-word-print-20261113.json), QA/WORKPLAN/README/AGENTS/skills dicatat. Print-dialog native/server, desktop Microsoft Word, Safari/Firefox dan cetak fisik belum diuji.
+
+## 13 November 2026 — Baris EVP otomatis pada form dan preview PP
+
+- Sesuai permintaan pengguna, tambahkan baris tetap Disetujui Oleh I GEDE WAHYU DANYNDRA/NIK730371/EVP Area Jawa Bali setelah baris akun penutup PP. Tidak dapat diedit/dihapus. Form Disetujui otomatis, preview APPROVED/Persetujuan otomatis selalu tampil termasuk Draft/ditolak; dibedakan dari keputusan akun. Cetak tetap menyembunyikan seluruh cap/status TTD untuk ruang tanda tangan basah.
+- Pengguna mengonfirmasi tanggal referensi satu hari kalender sebelum BA KH tersimpan paling awal pada exact PP, termasuk Draft tersimpan; invalid/milik PP lain/root/kode ID Project sama tidak menjadi fallback. Tanpa BA KH, tanggal kosong/menunggu. UTC calendar menjaga bulan/tahun/kabisat; tidak mengubah tanggal keputusan pengguna/BA KH.
+- Helper presentasi satu scan O(BA KH)/memori konstan dari state akun/Branch yang telah dimuat,0SQL/API tambahan/per-row account lookup. Tidak menambah Role/akun/assignee/approval keenam, command/schema/migration/snapshot/archive write atau membuka workflow; alur lima keputusan aktual tetap. Tidak ada backup baru karena presentasi murni dan tidak ada mutasi database; konversi nominal terdahulu tidak dijalankan.
+- **280PHP/5877assertions,284frontend,TypeScript/Vite build/check-assets31manifest/24preload×3profil dan diff check lulus.** Empat frontend regression baru untuk form/preview/read-only/order/calendar/exactPP/missing/invaliddates serta state/history/routing pada lima status. Regresi akun menguji cap aktual terpisah dari EVP dan lima print cells. Backend tetap isolated SQLite memory; browser/responsif/visual print/cetak fisik/server belum diverifikasi. Tidak menyentuh its aktif/Dompis/.env/worker/commit/push/deploy.
+- [Perilaku dan arsitektur/query](PP_EVP_SIGNATORY.md), [bukti](qa/pp-evp-signatory-20261113.json), QA/WORKPLAN/README/AGENTS dan dua skills diperbarui tanpa menimpa audit sebelumnya.
+
 ## 12 November 2026 — Potong pecahan, konversi SQL+snapshot dan audit sebelum/sesudah
 
 - Pengguna memperjelas nilai tersimpan juga berubah dan pecahan dihilangkan, bukan half-up. Policy idr-trunc-v1 memakai bcdiv/Math.trunc/BigInt division; tampilan/Word/terbilang sama. idr-whole-v1 tetap dikenali tersendiri. Validasi ceiling input asli tetap; KHS CRUD/bulk import dan kasbon baru menormalisasi hasil potong, nol/exclusion/quantity/percent/status workflow tidak disamakan.

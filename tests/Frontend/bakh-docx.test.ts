@@ -77,7 +77,7 @@ test('historical signer, missing values and continuation references follow the s
   assert.ok(doc.includes(s.khs.find(k => k.id === p.boq[0].khsId)!.code));
 });
 
-test('Word buttons appear only in the two BA KH previews and retain normal print actions', () => {
+test('BA KH Word actions remain scoped to their two previews alongside the separate PP Word export', () => {
   const { s, p, d } = fixture();
   for (const [kind, label] of [['BA Kesepakatan Harga', 'Unduh BA KH sebagai Word DOCX'], ['Lampiran Negosiasi Harga', 'Unduh Lampiran BA KH sebagai Word DOCX']]) {
     const html = renderToStaticMarkup(createElement(DocumentPreview, { state: s, project: p, deal: d, kind, onClose: () => {} }));
@@ -85,7 +85,8 @@ test('Word buttons appear only in the two BA KH previews and retain normal print
     assert.match(html, /aria-busy="false"/);
   }
   const other = renderToStaticMarkup(createElement(DocumentPreview, { state: s, project: p, kind: 'Project Plan', onClose: () => {} }));
-  assert.doesNotMatch(other, /Unduh Word/);
+  assert.doesNotMatch(other, /Unduh (?:Lampiran )?BA KH sebagai Word DOCX/);
+  assert.match(other, /Unduh Project Plan sebagai Word DOCX/);
 });
 
 test('1000-row attachment indexes references once without per-row catalog finds or truncating records', () => {

@@ -35,7 +35,7 @@ test('old approved PP requires explicit future assignments and new payment selec
   assert.equal(term.approvalScheme,'project-support-first');assert.deepEqual(approvalRoles(term),APPROVERS_V3);assert.equal(JSON.stringify(p.approvalHistory),before);
 });
 
-test('new closing preview has exactly four requested positions in order, genuine stamps and empty print cells',()=>{
+test('new closing preview has four account positions plus the fixed EVP row, genuine account stamps and empty print cells',()=>{
   const {s,p,chain}=fixture();p.workflowVersion=3;p.approvalScheme='project-support';p.status='Sah';p.approverUserIds=chain(APPROVERS_V3);
   p.approvals=APPROVERS_V3.map(role=>({role,userId:p.approverUserIds![role],actorName:s.users.find(u=>u.id===p.approverUserIds![role])!.name,decision:'Setujui',note:'QA',at:'2026-11-06T01:00:00Z'}));
   p.signatureRows=[{id:'signature-custom',label:'Dibuat Oleh',role:'Admin Konstruksi',job:'CLIENT OVERRIDE'}];
@@ -43,9 +43,9 @@ test('new closing preview has exactly four requested positions in order, genuine
   const jobs=['Officer 1 Project Deployment Area Jawa Bali','Mgr Project Support Area Jawa Bali','Mgr Deployment Area Jawa Bali','Head of PMO Area Jawa Bali'];
   const indices=jobs.map(job=>closing.indexOf(job));assert.ok(indices.every(i=>i>=0));assert.deepEqual(indices,[...indices].sort((a,b)=>a-b));
   assert.deepEqual(defaultSignatureRows().map(r=>r.role),['PM Konstruksi','Mgr Project Support','Mgr Deployment','Head of PMO']);
-  assert.equal((closing.match(/>APPROVED</g)??[]).length,4);assert.equal((closing.match(/class="pp-signature-print" aria-hidden="true"><\/div>/g)??[]).length,4);
+  assert.equal((closing.match(/aria-label="Disetujui di aplikasi oleh /g)??[]).length,4);assert.equal((closing.match(/class="pp-signature-print" aria-hidden="true"><\/div>/g)??[]).length,5);
   assert.doesNotMatch(closing,/Admin Area|Mgr Bussiness Support|CLIENT OVERRIDE/);
-  p.status='Ditolak';const rejected=renderToStaticMarkup(createElement(RiskQualitySection,{s,p,printing:true}));assert.doesNotMatch(rejected,/>APPROVED</);
+  p.status='Ditolak';const rejected=renderToStaticMarkup(createElement(RiskQualitySection,{s,p,printing:true}));assert.doesNotMatch(rejected,/aria-label="Disetujui di aplikasi oleh /);
 });
 
 

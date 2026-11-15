@@ -51,13 +51,13 @@ export function BoqDraftEditor({ s, p:input, onChange, disabled, onBusy }: { s:S
     </div>
     {boot?.account&&<UploadTasks kind="boq" documentId={p.id} onUse={!disabled&&!loading?task=>void useResult(task):undefined}/>}
     {!!unresolved && <Notice tone="warning">{unresolved} komponen memiliki selisih harga. Isi alasan dan konfirmasikan penggunaan harga KHS sebelum mengajukan PP. Draf tetap dapat disimpan.</Notice>}
-    {automatic && <Notice>Harga BOQ otomatis mengikuti Master KHS di database. Selisih harga Excel disimpan sebagai pembanding dan tidak memerlukan alasan atau konfirmasi. Total Nilai pada Header PP mengikuti BOQ ini.</Notice>}
+    {automatic && <Notice>Harga BOQ otomatis mengikuti Master KHS di database. Selisih harga Excel disimpan sebagai pembanding dan tidak memerlukan alasan atau konfirmasi. BOQ Owner mengikuti harga KHS; Total Nilai pada Header PP mengikuti Total Anggaran poin 5.</Notice>}
     <Table headers={['Designator / Paket','Satuan','Volume','Material Excel / KHS','Jasa Excel / KHS','Jumlah KHS',automatic?'Harga / Aksi':'Review / Aksi']}>{p.boq.map(r=>{
       const k=catalog.get(r.khsId),mismatch=!automatic && !!p.boqUpload && !!k && (r.excelM!==k.m || r.excelS!==k.s);
       return <tr key={r.id}><td><b>{k?.code}</b><small>{k?.name} · {k?.package}</small>{r.sourceRow && <small>Baris Excel {r.sourceRow} · {r.sourceCode}</small>}</td><td>{k?.unit}</td><td><input aria-label={'Volume '+k?.code} type="number" min="0.001" step="0.001" disabled={disabled||loading} value={r.qty} onChange={e=>update(r.id,{qty:Number(e.target.value)})}/></td><td className="numeric">{price(p.boqUpload?r.excelM:k?.m)}{k?.m != null && <small>KHS {price(k?.m)}</small>}</td><td className="numeric">{price(p.boqUpload?r.excelS:k?.s)}{k?.s != null && <small>KHS {price(k?.s)}</small>}</td><td className="numeric">{money(moneyLine(r.qty,k?.m??0,r.qty,k?.s??0,p))}</td><td>{mismatch && <><Input aria-label={'Alasan selisih '+k?.code} disabled={disabled||loading} value={r.note} onChange={note=>update(r.id,{note,reviewed:false})}/><label><input type="checkbox" disabled={disabled||loading||!r.note.trim()} checked={r.reviewed&&!!r.note.trim()} onChange={e=>update(r.id,{reviewed:e.target.checked,version:k?.version??r.version,m:k?.m??null,s:k?.s??null})}/> Gunakan harga KHS</label></>}<Button confirm="Hapus komponen BOQ ini dari draf?" disabled={disabled||loading} danger onClick={()=>changeRows(p.boq.filter(x=>x.id!==r.id))}>Hapus</Button></td></tr>;
     })}</Table>
     <div className="total-row">BOQ Owner ({num(p.boq.length)} komponen)<strong>{money(boqTotal(p))}</strong></div>
-    {!!p.boq.length && <Notice>BOQ sudah terisi. Total Nilai pada Header PP dan BOQ Owner pada Anggaran &amp; Margin otomatis mengikuti harga KHS.</Notice>}
+    {!!p.boq.length && <Notice>BOQ sudah terisi. BOQ Owner pada Anggaran &amp; Margin otomatis mengikuti harga KHS. Lengkapi anggaran Mandor, Material Non Stock, BOP dan perizinan; Total Nilai pada Header PP mengikuti Total Anggaran poin 5.</Notice>}
   </>;
 }
 

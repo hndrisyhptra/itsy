@@ -1,0 +1,133 @@
+{
+  "date": "2026-11-15",
+  "work_started": "2026-11-13",
+  "feature": "Remove requested three PP preview/Word closing texts",
+  "removed": [
+    "Dibuat, Diperiksa dan Disetujui",
+    "Baris EVP: persetujuan otomatis; tanggal referensi satu hari sebelum BA KH paling awal. Status persetujuan aplikasi tidak menggantikan tanda tangan fisik.",
+    "Dokumen prototipe. Tanda tangan fisik tidak dibuat otomatis."
+  ],
+  "scope": [
+    "current PP preview",
+    "native DOCX captured from same DOM",
+    "browser print/PDF"
+  ],
+  "preserved": [
+    "editor heading",
+    "signature table",
+    "four account identities",
+    "EVP identity/date",
+    "preview marks",
+    "empty printed wet-signature cells",
+    "five actual approval stages",
+    "all saved data"
+  ],
+  "verification": {
+    "php": 280,
+    "assertions": 5877,
+    "frontend": 289,
+    "build": "passed",
+    "assets": {
+      "references": 32,
+      "preload_dependencies": 25,
+      "profiles": 3
+    },
+    "new_tests": 0,
+    "existing_full_preview_assertion_extended": true,
+    "docx_pages": [
+      4,
+      5
+    ],
+    "word_pngs_rendered_and_inspected": 9,
+    "pdf_pages": [
+      4,
+      6
+    ],
+    "headless_widths": [
+      375,
+      768,
+      1440
+    ],
+    "diff_check": "passed",
+    "fixture_runtime": "isolated headless Chrome with production module, network intercepted; bundled LibreOffice render_docx.py; independent Python ZIP/XML/PDF readers"
+  },
+  "artifact_proof": {
+    "standard": {
+      "bytes": 121099,
+      "sha256": "0c172ad06bee916ceb3d12ee8d8c9d10cc390136410091e9cc263bd9c86545d3",
+      "forbidden_text_absent": true,
+      "evp_present": true,
+      "xml_crc_valid": true
+    },
+    "long": {
+      "bytes": 311240,
+      "sha256": "942ee8a0327170ec77aec8b5dfd8277db63c6888ed7ac227c83a86c387e70365",
+      "forbidden_text_absent": true,
+      "evp_present": true,
+      "xml_crc_valid": true
+    },
+    "standard-pdf": {
+      "pages": 4,
+      "forbidden_text_absent": true,
+      "nonblank": true,
+      "evp_present": true
+    },
+    "standard-nested-pdf": {
+      "pages": 4,
+      "forbidden_text_absent": true,
+      "nonblank": true,
+      "evp_present": true
+    },
+    "long-pdf": {
+      "pages": 6,
+      "forbidden_text_absent": true,
+      "nonblank": true,
+      "evp_present": true
+    },
+    "long-nested-pdf": {
+      "pages": 6,
+      "forbidden_text_absent": true,
+      "nonblank": true,
+      "evp_present": true
+    },
+    "width-375-pdf": {
+      "pages": 4,
+      "forbidden_text_absent": true,
+      "nonblank": true,
+      "evp_present": true
+    },
+    "width-768-pdf": {
+      "pages": 4,
+      "forbidden_text_absent": true,
+      "nonblank": true,
+      "evp_present": true
+    },
+    "width-1440-pdf": {
+      "pages": 4,
+      "forbidden_text_absent": true,
+      "nonblank": true,
+      "evp_present": true
+    }
+  },
+  "query_review": {
+    "new_sql": 0,
+    "new_api": 0,
+    "new_lookup": false,
+    "complexity_unchanged": true,
+    "performance_benchmark": false
+  },
+  "runtime": {
+    "live_its_write": false,
+    "migration": false,
+    "env_change": false,
+    "worker_start": false,
+    "dompis_change": false,
+    "new_backup": "not needed: presentation-only/no workflow or storage changes",
+    "commit_push_deploy": false
+  },
+  "limits": [
+    "Desktop Microsoft Word/native print dialog/live server account/physical print not tested",
+    "QA uses synthetic local fixture only; no test data inserted into its"
+  ],
+  "behavior_document": "docs/PP_WORD_PRINT.md"
+}

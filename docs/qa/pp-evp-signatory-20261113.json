@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-13",
+  "feature": "Fixed automatic administrative EVP row in PP closing form and preview",
+  "authority": {
+    "request": "Always add EVP row and auto mark approve",
+    "confirmed_date": "One calendar day before earliest saved BA KH date of same PP"
+  },
+  "identity": {
+    "name": "I GEDE WAHYU DANYNDRA",
+    "nik": "730371",
+    "job": "EVP Area Jawa Bali",
+    "label": "Disetujui Oleh"
+  },
+  "behavior": {
+    "form": "Disetujui otomatis",
+    "preview": "APPROVED / Persetujuan otomatis on all PP statuses",
+    "print": "blank physical signature area; stamp/status hidden",
+    "account_approval_stages": 5,
+    "evp_account_decision_created": false,
+    "reference_date": "earliest valid saved exact-PP BA KH YYYY-MM-DD (including saved Draft) minus one UTC calendar day",
+    "missing_date": "empty; Menunggu tanggal BA KH",
+    "snapshot_or_history_write": false
+  },
+  "query_review": {
+    "new_sql_queries": 0,
+    "new_api_requests": 0,
+    "algorithm": "one scan of authorized loaded BA KH; constant extra memory; no sort or per-row catalog/account lookup",
+    "benchmark": false
+  },
+  "verification": {
+    "php_passed": 280,
+    "assertions": 5877,
+    "frontend_passed": 284,
+    "new_frontend_tests": 4,
+    "build": "TypeScript/Vite passed",
+    "assets": {
+      "manifest_references": 31,
+      "preload_dependencies": 24,
+      "profiles": 3,
+      "passed": true
+    },
+    "diff_check": "passed",
+    "test_database": "fail-closed SQLite :memory:",
+    "coverage": [
+      "fixed identity and append order/read-only form",
+      "automatic versus genuine current-cycle account stamps",
+      "empty print-container structure and shared print CSS",
+      "earliest exact-PP date including saved drafts and reversed order",
+      "invalid/missing/other-PP dates and no fallback",
+      "month/year/leap boundary and supported date limits",
+      "unchanged state/actual decisions/history/next approval on all five PP statuses"
+    ]
+  },
+  "runtime": {
+    "new_migration": false,
+    "live_database_write": false,
+    "previous_money_migration_run": false,
+    "new_backup": "not needed for pure presentation/no workflow persistence change",
+    "env_changed": false,
+    "dompis_touched": false,
+    "worker_started": false,
+    "commit_push_deploy": false
+  },
+  "limits": [
+    "Browser account/responsive/keyboard/visual print not verified",
+    "Physical signatures, printing and server deployment not verified",
+    "EVP marker is administrative automation requested by user; not an actual account approval or signature"
+  ],
+  "behavior_document": "docs/PP_EVP_SIGNATORY.md"
+}

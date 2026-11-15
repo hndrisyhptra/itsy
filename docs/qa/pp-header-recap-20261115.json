@@ -1,0 +1,97 @@
+{
+  "date": "2026-11-15",
+  "scope": "Header PP presentation from the same canonical/saved IV.5 usage, no SQL budget rewrite",
+  "tests": {
+    "php": 280,
+    "assertions": 5880,
+    "frontend": 289,
+    "build": "pass",
+    "assets": {
+      "manifest": 32,
+      "preloads": 25,
+      "profiles": 3
+    }
+  },
+  "queryReview": {
+    "additionalSql": 0,
+    "additionalApi": 0,
+    "headerTime": "O(usage rows)",
+    "extraMemory": "O(1)"
+  },
+  "fixtures": {
+    "standard": {
+      "headerAndRecap": "880.572",
+      "docxSha256": "e146c2a8ae6d6323a8d227c7093e4fa02c24f749b4abbdd26fb1931f1499755d",
+      "zipXmlValid": true,
+      "renderedPages": 4,
+      "changedPagesVisuallyInspected": [
+        1
+      ],
+      "otherPagesIdenticalToPreviouslyInspectedRender": [
+        2,
+        3,
+        4
+      ],
+      "pdf": {
+        "standard.pdf": {
+          "pages": 4,
+          "nonblank": true,
+          "headerMatchesRecap": true
+        },
+        "standard-nested.pdf": {
+          "pages": 4,
+          "nonblank": true,
+          "headerMatchesRecap": true
+        },
+        "standard-header-recap/standard.pdf": {
+          "pages": 4,
+          "nonblank": true,
+          "headerMatchesRecap": true
+        }
+      }
+    },
+    "long": {
+      "headerAndRecap": "4.880.572",
+      "docxSha256": "40fb129e2a28066645f451a5be8c7bb394806c1588ee753f9942e8dd9b6456c3",
+      "zipXmlValid": true,
+      "renderedPages": 5,
+      "changedPagesVisuallyInspected": [
+        1
+      ],
+      "otherPagesIdenticalToPreviouslyInspectedRender": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "pdf": {
+        "long.pdf": {
+          "pages": 6,
+          "nonblank": true,
+          "headerMatchesRecap": true
+        },
+        "long-nested.pdf": {
+          "pages": 6,
+          "nonblank": true,
+          "headerMatchesRecap": true
+        },
+        "long-header-recap/long.pdf": {
+          "pages": 5,
+          "nonblank": true,
+          "headerMatchesRecap": true
+        }
+      }
+    }
+  },
+  "newSimulation": false,
+  "limits": [
+    "Live server/account integration",
+    "Desktop Microsoft Word",
+    "Native print dialog and physical print"
+  ],
+  "pdfViewportWidths": [
+    375,
+    768,
+    1440
+  ]
+}

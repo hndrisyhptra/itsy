@@ -1,5 +1,9 @@
 # Urutan approval Project Support — 6 November 2026
 
+## Pembaruan 13 November 2026 — Baris EVP tetap
+
+Tabel penutup kini menambahkan **Disetujui Oleh: I GEDE WAHYU DANYNDRA / 730371 / EVP Area Jawa Bali** setelah baris akun. Form Disetujui otomatis; preview APPROVED/Persetujuan otomatis selalu ada sebagai penanda administratif, terpisah dari lima keputusan akun. Tanggal referensi satu hari sebelum BA KH valid tersimpan paling awal milik exact PP (termasuk Draft tersimpan); kosong bila belum ada. Saat cetak sel TTD tetap kosong. Tidak ada perubahan keputusan/tanggal approval/SQL/migration. Aturan empat baris dan cap dari akun di bawah tetap berlaku pada baris akun; penanda EVP adalah tambahan yang diminta pengguna. [Rincian dan arsitektur/query](PP_EVP_SIGNATORY.md).
+
 PP dan Pembayaran memakai urutan lima akun terpilih berikut:
 
 1. PM Konstruksi

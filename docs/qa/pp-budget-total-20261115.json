@@ -1,0 +1,86 @@
+{
+  "date": "2026-11-15",
+  "scope": "Local isolated React fixtures, production build Word export; no live DB/account writes",
+  "tests": {
+    "php": 280,
+    "assertions": 5877,
+    "frontend": 289,
+    "build": "pass",
+    "assets": {
+      "manifest": 32,
+      "preloads": 25,
+      "profiles": 3
+    }
+  },
+  "queryReview": {
+    "additionalSql": 0,
+    "additionalApi": 0,
+    "recapTime": "O(usage rows)",
+    "extraMemory": "O(1)"
+  },
+  "fixtures": {
+    "standard": {
+      "docxSha256": "d1106a594a4adf400069b7332961f80a7296ca530c9548d1c8be6eea7b3fb6f1",
+      "nativeZipXmlValid": true,
+      "subtotal": "780.572",
+      "grandTotal": "880.572",
+      "sumOfDetailAmounts": 880572,
+      "cogsUnchanged": true,
+      "docxRenderedPagesInspected": 4,
+      "pdf": {
+        "standard.pdf": {
+          "pages": 4,
+          "nonblank": true,
+          "grandTotalPresent": true
+        },
+        "standard-nested.pdf": {
+          "pages": 4,
+          "nonblank": true,
+          "grandTotalPresent": true
+        },
+        "standard-budget-total/standard.pdf": {
+          "pages": 4,
+          "nonblank": true,
+          "grandTotalPresent": true
+        }
+      }
+    },
+    "long": {
+      "docxSha256": "661d2abdda9938082d5798b49854c3a6cde69a0cb841a6d90d3523635ba4434e",
+      "nativeZipXmlValid": true,
+      "subtotal": "4.780.572",
+      "grandTotal": "4.880.572",
+      "sumOfDetailAmounts": 4880572,
+      "cogsUnchanged": true,
+      "docxRenderedPagesInspected": 5,
+      "pdf": {
+        "long.pdf": {
+          "pages": 6,
+          "nonblank": true,
+          "grandTotalPresent": true
+        },
+        "long-nested.pdf": {
+          "pages": 6,
+          "nonblank": true,
+          "grandTotalPresent": true
+        },
+        "long-budget-total/long.pdf": {
+          "pages": 5,
+          "nonblank": true,
+          "grandTotalPresent": true
+        }
+      }
+    }
+  },
+  "limits": [
+    "Server/live account integration",
+    "Desktop Microsoft Word",
+    "Native print dialog and physical print"
+  ],
+  "newSimulation": false,
+  "pdfViewportWidths": [
+    375,
+    768,
+    1440
+  ]
+}

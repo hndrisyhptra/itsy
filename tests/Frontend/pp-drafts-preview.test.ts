@@ -60,16 +60,16 @@ test('preview stamp follows actual current-cycle approvals only; returned/reject
   p.approverUserIds=Object.fromEntries(APPROVERS_V3.map(role=>[role,s.users.find(u=>u.role===role)!.id]));saveProject(s,p,true);
   let saved=getProject(s,p.id);
   const html=()=>renderToStaticMarkup(createElement(DocumentPreview,{state:s,kind:'Project Plan',project:saved,onClose:()=>{}}));
-  assert.doesNotMatch(html(),/>APPROVED</);
+  assert.doesNotMatch(html(),/aria-label="Disetujui di aplikasi oleh /);
   for(const [i,role]of APPROVERS_V3.entries()){
     s.role=role;selectActor(s,s.users.find(u=>u.role===role)!.id);decideProject(s,p.id,'Setujui','QA');saved=getProject(s,p.id);
-    assert.equal((html().match(/>APPROVED</g)??[]).length,i+1-(i>=1?1:0)); // Admin Area is an approval stage, omitted from the closing table.
+    assert.equal((html().match(/aria-label="Disetujui di aplikasi oleh /g)??[]).length,i+1-(i>=1?1:0)); // Admin Area is an approval stage, omitted from the closing table.
   }
   assert.equal(saved.status,'Sah');assert.match(html(),/pp-signature-print/);
   const before=JSON.stringify(saved);renderToStaticMarkup(createElement(RiskQualitySection,{s,p:saved,printing:true}));assert.equal(JSON.stringify(saved),before);
   const row=saved.signatureRows!.find(row=>row.role==='PM Konstruksi')!;
   const fake=structuredClone(saved);fake.approvals![0].userId='different-user';assert.equal(signaturePerson(s,fake,row).approved,false);
-  for(const status of ['Draft','Dikembalikan','Ditolak']as const){fake.status=status;fake.approvals=structuredClone(saved.approvals);const h=renderToStaticMarkup(createElement(RiskQualitySection,{s,p:fake,printing:true}));assert.doesNotMatch(h,/>APPROVED</);}
+  for(const status of ['Draft','Dikembalikan','Ditolak']as const){fake.status=status;fake.approvals=structuredClone(saved.approvals);const h=renderToStaticMarkup(createElement(RiskQualitySection,{s,p:fake,printing:true}));assert.doesNotMatch(h,/aria-label="Disetujui di aplikasi oleh /);}
 });
 
 test('print stylesheet hides approval/status preview and shows an empty wet-signature container',()=>{

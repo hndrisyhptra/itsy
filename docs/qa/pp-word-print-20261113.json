@@ -1,0 +1,310 @@
+{
+  "date": "2026-11-13",
+  "feature": "PP native Word download and nonblank print/PDF",
+  "implementation": {
+    "word": "lazy native OOXML from scoped cloned current preview DOM, capture before import",
+    "formats": "editable paragraphs/tables; bordered/repeated headers/colspan; A4 portrait",
+    "signature_cells": "empty; no account/EVP stamps or statuses",
+    "state_write": false,
+    "new_runtime_dependencies": false,
+    "confirmation_busy_retry": true,
+    "old_blank_cause": "app child selector hid main-shell ancestor; reproduced first-document height 0",
+    "print_fix": "retain ancestor path/nested modal and hide siblings; release body/modal clipping; PP-only named page"
+  },
+  "query_review": {
+    "new_sql": 0,
+    "new_api": 0,
+    "per_row_catalog_lookup": false,
+    "complexity": "capture/model/ZIP proportional to rendered DOM/content; no business recalculation",
+    "lazy_chunk_kb": 6.2,
+    "lazy_chunk_gzip_kb": 2.71,
+    "production_benchmark": false
+  },
+  "verification": {
+    "php_passed": 280,
+    "assertions": 5877,
+    "frontend_passed": 289,
+    "new_frontend_tests": 5,
+    "build": "TypeScript/Vite passed",
+    "assets": {
+      "manifest_references": 32,
+      "actual_preload_dependencies": 25,
+      "profiles": 3,
+      "passed": true
+    },
+    "diff_check": "passed",
+    "database": "fail-closed SQLite :memory:",
+    "browser": "isolated headless Chrome temporary profile, SSR fixture, intercepted local assets, production PP module",
+    "word_renderer": "bundled LibreOffice render_docx.py",
+    "word_pngs_inspected": 9,
+    "standard_pdf_pngs_inspected": 4,
+    "live_browser_account": false
+  },
+  "browser_proof": {
+    "originalFirstDocumentHeight": 0,
+    "standardExport": {
+      "blocks": 54,
+      "bytes": 122029,
+      "unchanged": true
+    },
+    "standard": {
+      "documents": [
+        {
+          "height": 878.015625,
+          "width": 1440,
+          "hiddenAncestor": false
+        },
+        {
+          "height": 2653.578125,
+          "width": 1440,
+          "hiddenAncestor": false
+        }
+      ],
+      "signatureMarks": [
+        "none",
+        "none",
+        "none",
+        "none",
+        "none"
+      ]
+    },
+    "standard-nested": {
+      "documents": [
+        {
+          "height": 878.015625,
+          "width": 1440,
+          "hiddenAncestor": false
+        },
+        {
+          "height": 2653.578125,
+          "width": 1440,
+          "hiddenAncestor": false
+        }
+      ],
+      "signatureMarks": [
+        "none",
+        "none",
+        "none",
+        "none",
+        "none"
+      ]
+    },
+    "longExport": {
+      "blocks": 54,
+      "bytes": 312170,
+      "unchanged": true
+    },
+    "long": {
+      "documents": [
+        {
+          "height": 878.015625,
+          "width": 1440,
+          "hiddenAncestor": false
+        },
+        {
+          "height": 4163.578125,
+          "width": 1440,
+          "hiddenAncestor": false
+        }
+      ],
+      "signatureMarks": [
+        "none",
+        "none",
+        "none",
+        "none",
+        "none"
+      ]
+    },
+    "long-nested": {
+      "documents": [
+        {
+          "height": 878.015625,
+          "width": 1440,
+          "hiddenAncestor": false
+        },
+        {
+          "height": 4163.578125,
+          "width": 1440,
+          "hiddenAncestor": false
+        }
+      ],
+      "signatureMarks": [
+        "none",
+        "none",
+        "none",
+        "none",
+        "none"
+      ]
+    },
+    "bakh-main": {
+      "height": 583.25
+    },
+    "bakh-landscape": {
+      "height": 399.8125
+    }
+  },
+  "pdf_proof": {
+    "standard": {
+      "pages": 4,
+      "page_text_lengths": [
+        1268,
+        1727,
+        1449,
+        1169
+      ],
+      "all_sections": true,
+      "signature_stamps_absent": true,
+      "portrait": true
+    },
+    "standard-nested": {
+      "pages": 4,
+      "page_text_lengths": [
+        1268,
+        1727,
+        1449,
+        1169
+      ],
+      "all_sections": true,
+      "signature_stamps_absent": true,
+      "portrait": true
+    },
+    "long": {
+      "pages": 6,
+      "page_text_lengths": [
+        1264,
+        3577,
+        3395,
+        1453,
+        1259,
+        738
+      ],
+      "all_sections": true,
+      "signature_stamps_absent": true,
+      "portrait": true
+    },
+    "long-nested": {
+      "pages": 6,
+      "page_text_lengths": [
+        1264,
+        3577,
+        3395,
+        1453,
+        1259,
+        738
+      ],
+      "all_sections": true,
+      "signature_stamps_absent": true,
+      "portrait": true
+    },
+    "width-375": {
+      "pages": 4,
+      "page_text_lengths": [
+        1268,
+        1727,
+        1449,
+        1169
+      ],
+      "all_sections": true,
+      "signature_stamps_absent": true,
+      "portrait": true
+    },
+    "width-768": {
+      "pages": 4,
+      "page_text_lengths": [
+        1268,
+        1727,
+        1449,
+        1169
+      ],
+      "all_sections": true,
+      "signature_stamps_absent": true,
+      "portrait": true
+    },
+    "width-1440": {
+      "pages": 4,
+      "page_text_lengths": [
+        1268,
+        1727,
+        1449,
+        1169
+      ],
+      "all_sections": true,
+      "signature_stamps_absent": true,
+      "portrait": true
+    },
+    "standard-word-final/standard": {
+      "pages": 4,
+      "page_text_lengths": [
+        1270,
+        2269,
+        1380,
+        734
+      ],
+      "all_sections": true,
+      "signature_stamps_absent": true,
+      "portrait": true
+    },
+    "long-word-final/long": {
+      "pages": 5,
+      "page_text_lengths": [
+        1266,
+        3872,
+        3350,
+        2039,
+        1370
+      ],
+      "all_sections": true,
+      "signature_stamps_absent": true,
+      "portrait": true
+    },
+    "bakh-main": {
+      "pages": 1,
+      "landscape": false,
+      "nonblank": true
+    },
+    "bakh-landscape": {
+      "pages": 1,
+      "landscape": true,
+      "nonblank": true
+    }
+  },
+  "docx_proof": {
+    "standard": {
+      "bytes": 122029,
+      "sha256": "707f6f585e363d3e90fe03e12a57b02361cf9531e865dea9613e743416341e15",
+      "parts": 5,
+      "tables": 11,
+      "signature_rows": 5,
+      "signature_cells_empty": true,
+      "crc_xml_valid": true
+    },
+    "long": {
+      "bytes": 312170,
+      "sha256": "f5fc36975eeea2e4f77f64f95391b180c79a5f8f303dbcba677b046314252839",
+      "parts": 5,
+      "tables": 11,
+      "signature_rows": 5,
+      "signature_cells_empty": true,
+      "crc_xml_valid": true
+    }
+  },
+  "qa_location": "/private/tmp/area3-pp-word-qa; fixture artifacts only, not runtime or user documents",
+  "runtime": {
+    "migration": false,
+    "live_its_write": false,
+    "previous_currency_conversion_run": false,
+    "new_backup": "not needed: presentation/export only, no workflow persistence changes",
+    "env_appkey_changed": false,
+    "dompis_touched": false,
+    "worker_started": false,
+    "commit_push_deploy": false
+  },
+  "limits": [
+    "Live account/Branch/download handler and native print-dialog on server untested",
+    "Microsoft Word desktop, Safari/Firefox and physical print untested",
+    "Word and PDF have independent pagination; no pixel-identical promise",
+    "Full long/nested/width PDF text/dimensions checked; standard PDF4PNG and all native Word9PNG visually inspected",
+    "No throughput or production memory benchmark"
+  ],
+  "behavior_document": "docs/PP_WORD_PRINT.md"
+}

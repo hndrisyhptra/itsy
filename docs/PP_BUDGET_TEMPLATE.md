@@ -1,5 +1,21 @@
 # Anggaran, margin dan penutup Project Plan
 
+## Perapian BOQ preview dan unduhan — 15 November 2026
+
+Kedua tabel BoQ Owner/Mandor pada preview, cetak/PDF dan Word kini lebih kecil: font/padding rapat, proporsi kolom terpisah dan kode panjang membungkus tanpa mengubah teks/nominal. Input editor tetap pada ukuran sebelumnya. Pengguna mengonfirmasi tabel persetujuan penutup tetap sesuai; tidak dikembalikan/diubah. Header mengikuti Total Anggaran IV.5 seperti sebelumnya. [Ukuran, arsitektur, verifikasi dan batas](PP_WORD_PRINT.md).
+
+## Header mengikuti Total Anggaran — 15 November 2026
+
+Total Nilai (Rp) Header PP kini mengambil **baris Total Anggaran terakhir IV.5**, termasuk perizinan bila ada, memakai helper yang sama dengan tabel. Form/summary/preview/Word/PDF konsisten; Rp0 sebelum rincian biaya terisi. Laravel tetap menjadi sumber rincian canonical saat simpan, tanpa field total client atau duplikat tersimpan. Proyeksi SQL BOQ/alokasi, COGS/subtotal/margin dan riwayat transaksi tidak diubah. [Pemetaan Header, penyimpanan dan bukti](PP_HEADER_BOQ_KHS.md). Aturan di bawah yang memisahkan subtotal dari grand total tetap berlaku.
+
+## Total seluruh rincian poin IV.5 — 15 November 2026
+
+Form, preview, cetak/PDF dan DOCX PP menambahkan baris terakhir **Total Anggaran**, yaitu jumlah setiap nominal rincian tabel satu kali, termasuk Perizinan bila ada. Baris total lama pada rekap versi2 diberi nama **Subtotal (IV.1 + IV.2 + IV.3)** untuk membedakan biaya proyek dari jumlah termasuk reimbursement. Contoh: subtotal Rp780.572 + perizinan Rp100.000 = Total Anggaran Rp880.572. Heading poin5, COGS, Gross Profit dan margin tetap memakai formula biaya proyek semula; perizinan tidak dimasukkan ulang ke COGS.
+
+Pada tabel historis versi1, total terakhir menghitung setiap `usage.amount`, bukan menjumlahkan kolom total kategori yang dapat berulang pada beberapa termin. Baris tersimpan, jadwal dan snapshot historis tidak berubah. Jumlah dihitung sekali dengan skala integer `cents` yang sudah digunakan aplikasi, kemudian format rupiah yang sama; tidak mengubah kebijakan pemotongan uang/volume. Tabel kosong menghasilkan Rp0.
+
+Presentasi saja di BudgetPlanSection: satu reduce O(jumlah rincian)/memori konstan dari data terotorisasi yang sudah dimuat,0SQL/API tambahan, tanpa backend/schema/migration/penulisan its atau backup DB baru. Word menangkap tabel preview yang sama tanpa kalkulasi ekspor terpisah.280PHP/5877assertions,289frontend/build/assets lulus; assertion existing mencakup total dengan/tanpa perizinan, dua termin kategori sama, posisi terakhir, preview/form dan COGS/margin/snapshot tetap. Fixture native Word4/5halaman (seluruh9PNG diperiksa), PDF4/6halaman current/nested dan375/768/1440 nonblank. [Bukti](qa/pp-budget-total-20261115.json). Akun server, desktop Microsoft Word, native print dialog dan cetak fisik belum diuji. Penjelasan historis di bawah dipertahankan; “total poin5” untuk rumus margin berarti subtotal biaya proyek, bukan grand total baru termasuk perizinan.
+
 ## Pembaruan terkini — 9 November 2026
 
 PP baru dimulai **1. Header PP → 2. BOQ Plan**. Pada PP induk v3 yang masih editable, harga langsung mengikuti KHS SQL tanpa alasan/konfirmasi selisih; Header Total Nilai baca saja dan dihitung dari BOQ, Rp0 sebelum upload. Header lengkap cukup untuk draf; pengajuan tetap perlu BOQ/nilai positif dan seluruh persyaratan. Dokumen terkunci/v1/v2 serta alokasi lanjutan tetap dipertahankan. Migration CHECK draf Rp0 telah disiapkan, belum diterapkan agen pada its aktif. [Perilaku, migration, arsitektur/query dan bukti](PP_HEADER_BOQ_KHS.md). Penjelasan lama di bawah tetap menjadi catatan historis bila berbeda.

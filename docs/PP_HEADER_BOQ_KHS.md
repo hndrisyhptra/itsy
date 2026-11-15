@@ -1,5 +1,15 @@
 # Header PP → BOQ Plan dan harga KHS otomatis — 9 November 2026
 
+## Otoritas Header terbaru — 15 November 2026
+
+Sesuai permintaan pengguna, **Total Nilai (Rp) pada Header PP mengikuti baris Total Anggaran terakhir poin IV.5**, termasuk perizinan bila ada. Ini menggantikan pemetaan tampilan Header dari BOQ Owner pada ketentuan9November di bawah. Urutan Header→BOQ, harga KHS otomatis, validasi draft/pengajuan, penomoran dan approval tetap.
+
+`budgetRecapTotal` menjumlahkan setiap `planBudget.usage[].amount` satu kali dengan skala integer yang sudah dipakai, dan dipakai bersama oleh tabel poin5 serta `projectPlanHeaderTotal`. Form menghitung rencana editable melalui applyBudgetPlan; Header/summary pengajuan/preview/Word/PDF memakai total tersebut. Saat belum ada rincian hasilnya Rp0; upload BOQ saja belum mengisi biaya Mandor. Perubahan Mandor/Non Stock/BOP/perizinan langsung memperbarui Header. PP lanjutan memakai rincian anggarannya sendiri, bukan anggaran root. Data terkunci dibaca dari rincian tersimpan tanpa repricing/snapshot rewrite. Dokumen lama tanpa planBudget mempertahankan nilai lamanya.
+
+**Penyimpanan:** rincian poin5 sudah dikanonisasi Laravel saat save/submit dan disimpan pada document_data. Tidak menambah field Header dari client atau menyimpan duplikat total. `project_plans.budget` tetap proyeksi BOQ/alokasi untuk dashboard/ledger/lanjutan; tidak diubah menjadi total biaya, tidak ada backfill. Header setelah reload mengambil rincian server tersebut. COGS tetap IV.1+IV.2+IV.3 di luar reimbursement; rumus margin dan seluruh tagihan/approval/APM tidak berubah.
+
+Review query:0SQL/API tambahan, satu passO(usage rows)/memori konstan, tanpa master/account lookup, schema/migration/live write atau backup DB baru untuk presentasi.280PHP/5880assertions/289frontend/build/assets32manifest/25preload×3profil lulus. Existing semantic regressions memeriksa form/preview/saved draft/zero/edit/legacy repeated category dan BOQ unchanged; PHP memastikan recap palsu tetap diganti canonical source. Native Word4/5halaman CRC/XML valid: Header=recap Rp880.572/Rp4.880.572;2halaman Header diperiksa visual,7halaman lain identik hash dengan render yang sebelumnya diperiksa. PDF current/nested4/6halaman dan375/768/1440 nonblank. [Bukti](qa/pp-header-recap-20261115.json). Akun server/desktop Word/native print dialog/cetak fisik belum diuji.
+
 Permintaan pengguna terbaru menggantikan BOQ-first, Total Nilai manual positif saat Header, serta alasan/konfirmasi selisih untuk PP induk v3 yang masih dapat diperbaiki. Aturan historis v1/v2 dan dokumen terkunci tidak diganti.
 
 ## Form dan penyimpanan

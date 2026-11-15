@@ -33,9 +33,8 @@ export function tableRow(cells: Cell[], widths: number[], header = false, fontSi
   }).join('')}</w:tr>`;
 }
 
-export function table(rows: string[], widths: number[], borders: boolean) {
+export function table(rows: string[], widths: number[], borders: boolean, cellMargins = { vertical: 55, horizontal: 65 }) {
   const width = widths.reduce((a, b) => a + b, 0);
   const border = ['top', 'left', 'bottom', 'right', 'insideH', 'insideV'].map(side => `<w:${side} w:val="${borders ? 'single' : 'nil'}" w:sz="4" w:color="444444"/>`).join('');
-  return `<w:tbl><w:tblPr><w:tblW w:w="${width}" w:type="dxa"/><w:tblLayout w:type="fixed"/><w:tblBorders>${border}</w:tblBorders><w:tblCellMar><w:top w:w="55" w:type="dxa"/><w:left w:w="65" w:type="dxa"/><w:bottom w:w="55" w:type="dxa"/><w:right w:w="65" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>${widths.map(w => `<w:gridCol w:w="${w}"/>`).join('')}</w:tblGrid>${rows.join('')}</w:tbl>`;
+  return `<w:tbl><w:tblPr><w:tblW w:w="${width}" w:type="dxa"/><w:tblLayout w:type="fixed"/><w:tblBorders>${border}</w:tblBorders><w:tblCellMar><w:top w:w="${cellMargins.vertical}" w:type="dxa"/><w:left w:w="${cellMargins.horizontal}" w:type="dxa"/><w:bottom w:w="${cellMargins.vertical}" w:type="dxa"/><w:right w:w="${cellMargins.horizontal}" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>${widths.map(w => `<w:gridCol w:w="${w}"/>`).join('')}</w:tblGrid>${rows.join('')}</w:tbl>`;
 }
-

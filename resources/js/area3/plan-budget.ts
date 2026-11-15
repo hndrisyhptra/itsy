@@ -24,6 +24,10 @@ export function ownerPlanRows(s:State,p:Project):OwnerPlanRow[] {
 }
 export const cents = (v:number) => Math.sign(v)*Math.round((Math.abs(v)+Number.EPSILON)*100);
 const amount = (v:number) => cents(v)/100;
+/** Point IV.5 grand total, counting each detail once, including permit reimbursement. */
+export const budgetRecapTotal = (b:Pick<PlanBudget,'usage'>) => b.usage.reduce((sum,row)=>sum+cents(row.amount),0)/100;
+/** Header presentation uses the saved/canonical recap; legacy plans without it keep their own value. */
+export const projectPlanHeaderTotal = (p:Project) => p.planBudget ? budgetRecapTotal(p.planBudget) : p.budget;
 /** Integer scales match Laravel BCMath: quantity 3 decimals, price 2, half-up per component. */
 export function lineAmount(q:number,p:number,whole:boolean|'half'=false):number {
   if(!Number.isFinite(q)||!Number.isFinite(p)||Math.abs(q*1000)>Number.MAX_SAFE_INTEGER||Math.abs(p*100)>Number.MAX_SAFE_INTEGER)return NaN;

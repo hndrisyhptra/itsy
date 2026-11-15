@@ -606,3 +606,59 @@ Historical iteration; superseded by the dashboard restoration below.
 - [ ] Operator backup server, maintenance tanpa writer/worker its, inspeksi/migrate/build/cache dan cek ulang berkas/pembayaran/SQL. Browser/Word/print/MySQL DDL/remote belum diverifikasi. Jangan mengubah APP_KEY atau reset/import ulang untuk melewati konflik.
 
 - [x] Verifikasi akhir koreksi truncation:280PHP/5877assertions,280frontend,build/check-assets31refs/24preload×3/Pint/diff check lulus;5PHP/1FE baru. Audit before/after terenkripsi, rollback SQL terlambat/retry, fresh migration sebelum tipe dan konversi populated fixture sesudah tipe diuji. Hasil bukan verifikasi browser/Word/print/DDL MySQL server.
+
+
+## Baris EVP pada penutup PP — 13 November 2026
+
+- [x] Pengguna meminta row selalu Disetujui Oleh I GEDE WAHYU DANYNDRA/730371/EVP Area Jawa Bali dan automatic approve; mengonfirmasi tanggal satu hari sebelum BA KH tersimpan paling awal pada exact PP.
+- [x] Tambah row presentasi tetap setelah baris akun; readonly/nonremovable, form status otomatis/preview APPROVED/Persetujuan otomatis, print status/cap kosong. Lima actual account decisions dan tanggal/history/role/routing tetap, tidak menjadi tahap keenam.
+- [x] Helper minimum valid date exact PP termasuk Draft tersimpan, minus satu UTC calendar day; tanpa fallback root/sibling/projectcode/hari ini, kosong bila belum ada BA KH. Satu scanO(n)/constant memory/0SQL/API, tanpa schema/snapshot/write/live its mutation.
+- [x]280PHP/5877assertions,284frontend,build/check-assets31refs/24preload×3profil/diff check lulus.4FE baru: row/form/preview/print structure, chronology/calendar/missingdate/identityscope dan unchanged state/routing/allstatuses. Backend tests tetap SQLite memory.
+- [x] Catat docs/PP_EVP_SIGNATORY.md, arsitektur/CHANGELOG/QA/README/AGENTS/two skills dan qa/pp-evp-signatory-20261113.json. Tidak perlu migration/backup data baru untuk fitur presentasi; tidak menjalankan konversi rupiah/migration terdahulu.
+- [ ] Operator deploy kode/build dan periksa akun/375–1440px/keyboard/preview/cetak/BA KH dates pada server. Tidak ada browser/physical-print/server check atau commit/push/deploy oleh agen.
+
+
+## Unduh Word PP / perbaikan PDF kosong — 13 November 2026
+
+- [x] Tambah tombol Word PP current+legacy dengan YA/TIDAK/running/busy/error; clone ref preview sebelum lazy import, native OOXML paragraphs/tables dari isi terotorisasi, tanpa perhitungan/akun/query ulang. SeluruhI–VIII/EVP/date ikut; cap/status TTD tidak ikut dan area basah kosong.
+- [x] Reproduksi0px print lama; perbaiki path ancestor/nested review/siblings/body/modal clipping. PP-only named A4 portrait; tabel BOQ ringkas/numeric wrapping dan TTD dijaga bersama. BA KH portrait/appendix landscape tetap pada fixture.
+- [x]280PHP/5877assertions,289FE/build/assets32refs/25preload×3profil/diff check lulus.5FE baru. Headless PDF4/6halaman ordinary+nested +375/768/1440, CRC/XML native +Word LibreOffice4/5halaman/all9PNG dan standard PDFall4PNG diperiksa.0SQL/API/schema/live rewrite, module6,20kB/gzip2,71kB bukan benchmark.
+- [x] Catat PP_WORD_PRINT/arsitektur/CHANGELOG/QA/README/AGENTS/skills dan qa/pp-word-print-20261113.json. Tidak mengambil backup DB/migrate/convert monetary/start worker/change env/Dompis/commit/push/deploy.
+- [ ] Operator deploy kode+build aset dan uji tombol/download/print-dialog pada akun server, desktop Microsoft Word/Safari/Firefox serta cetak fisik. Tidak memerlukan migration baru untuk fitur presentasi ini.
+
+
+## Tiga teks penutup PP dihapus — 15 November 2026
+
+- [x] Hapus heading penandatangan dari preview (editor tetap), catatan otomatis EVP dan footer prototipe yang disebut pengguna. DOM-based DOCX serta PDF mengikuti penghapusan yang sama.
+- [x] Pertahankan tabel akun/EVP/date/preview stamps/blank wet TTD dan lima tahap approval;0SQL/API/storage/schema/performance-path change. Tidak ada live data/env/worker/Dompis/migration/deploy.
+- [x]280PHP/5877assertions/289FE/build/assets32refs/25preload×3/diff check lulus. Existing assertion diperluas; fixture HTML/DOCX/PDF tanpa teks, CRC/XML valid, Word4/5halaman/all9PNG diperiksa dan PDF4/6halaman/width375/768/1440 nonblank. Tidak menanam data uji di its.
+- [x] Catat CHANGELOG/QA/PP_WORD_PRINT/PP_EVP/ARCHITECTURE/README/AGENTS/design skill serta qa/pp-clean-copy-20261115.json; audit lama tidak diganti.
+- [ ] Operator deploy kode+build; verifikasi akun server/native print dialog/Microsoft Word/cetak fisik. Perubahan ini tidak memerlukan migration; agen belum commit/push/deploy.
+
+
+## Total Anggaran PP poin5 — 15 November 2026
+
+- [x] Tambah baris terakhir Total Anggaran pada form/preview/Word/PDF; jumlah seluruh rincian termasuk permit. Total lama versi2 menjadi subtotal biaya proyek, COGS/margin tetap. Versi1 menjumlahkan amount tiap termin sekali dan tidak menulis ulang jadwal/snapshot.
+- [x] Query review0SQL/API, satu passO(usage rows)/memori konstan. Tanpa backend/schema/migration/live rewrite/backup baru/env/worker/Dompis/konversi rupiah lama.
+- [x] 280PHP/5877assertions,289FE/build/assets32refs/25preload×3profil lulus. Existing semantic regressions diperluas;2native DOCX CRC/XML/render4+5pages/all9PNG inspected, PDF4/6pages current/nested/3viewport nonblank dan grand total tepat.
+- [x] Catat PP_BUDGET_TEMPLATE/ARCHITECTURE/CHANGELOG/LARAVEL_QA dan qa/pp-budget-total-20261115.json tanpa menimpa audit sebelumnya.
+- [ ] Operator deploy kode+build dan verifikasi akun server/desktop Word/native print dialog/cetak fisik. Tidak ada migration baru atau commit/push/deploy oleh agen untuk perubahan ini.
+
+
+## Header PP dari Total Anggaran poin5 — 15 November 2026
+
+- [x] Shared helper tabel/Header; form/summary/preview/Word/PDF memakai jumlah seluruh usage termasuk permit. Zero awal, edit source langsung ikut, notice BOQ/Header diperbaiki, legacy tanpa planBudget fallback historis.
+- [x] Rincian tetap canonical Laravel/save/reload. Tidak mengubah SQL budget BOQ/alokasi, COGS/margin/ledger/dashboard/tagihan/approval/riwayat;0SQL/API tambahan/satu pass/memori konstan/tanpa schema/migration/live write/backup baru.
+- [x] 280PHP/5880assertions/289FE/build/assets32refs/25preload×3profil lulus. Semantic regressions lama diperluas;2native DOCX4/5pages CRC/XML/Header=recap,2changed pages inspected+7hash-identik dengan render inspected sebelumnya. PDF current/nested4/6pages/3viewport nonblank.
+- [x] Catat PP_HEADER_BOQ_KHS/PP_BUDGET_TEMPLATE/ARCHITECTURE/CHANGELOG/QA/README/AGENTS/skills dan qa/pp-header-recap-20261115.json, audit sebelumnya dipertahankan.
+- [ ] Operator deploy kode+build dan uji akun server/desktop Word/native print dialog/cetak fisik. Tidak ada migration baru atau commit/push/deploy oleh agen.
+
+
+## Perapian BOQ PP saja — 15 November 2026
+
+- [x] Pengguna mengklarifikasi tabel penutup tidak perlu dikembalikan. Pertahankan isi/format penutup dan Header dari IV.5.
+- [x] Ringkaskan dua BOQ preview/print/Word: font/padding lebih kecil, fixed grid/kolom terpisah, designator wrap dan nominal utuh. Input editor tetap. Capture memberi compactBoq; margin OOXML opsional/default exporter lain tetap.
+- [x] Query review0SQL/API/backend/schema/live write/backup baru, capture tetap O(rendered DOM). Tidak mengubah data/nominal/approval/env/worker/Dompis/migration.
+- [x] 280PHP/5880assertions/289FE/build/assets32refs/25preload×3profil lulus. Preview850px tabel668px tanpa overflow, screenshot diperiksa; native ZIP/XML/text sama/closing byte-identik, Word3/4pages (5changed inspected+2Header hash-identik), PDF current/nested4/5pages/3viewport nonblank.
+- [x] Catat PP_WORD_PRINT/PP_BUDGET_TEMPLATE/ARCHITECTURE/CHANGELOG/QA dan qa/pp-compact-boq-20261115.json tanpa menimpa audit.
+- [ ] Operator deploy kode+build dan verifikasi akun server/desktop Word/native print dialog/cetak fisik. Tidak ada migration baru atau commit/push/deploy oleh agen.

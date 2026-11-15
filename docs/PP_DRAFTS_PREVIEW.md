@@ -1,5 +1,13 @@
 # Draft PP, cap preview dan penghapusan batas BOP — 5 November 2026
 
+## Pembaruan 13 November 2026 — Word PP dan PDF tidak kosong
+
+Preview PP menyediakan native editable DOCX dari seluruh isi yang ditampilkan, dengan konfirmasi dan kolom TTD kosong. CSS cetak kini menjaga ancestor modal dokumen agar preview di editor/main-shell/nested review tidak ikut tersembunyi. PP-only A4 portrait, approval/status/tanggal/penyimpanan tetap. [Perilaku dan verifikasi Word/PDF](PP_WORD_PRINT.md).
+
+## Pembaruan 13 November 2026 — Baris EVP tetap
+
+Tabel penutup kini menambahkan **Disetujui Oleh: I GEDE WAHYU DANYNDRA / 730371 / EVP Area Jawa Bali** setelah baris akun. Form Disetujui otomatis; preview APPROVED/Persetujuan otomatis selalu ada sebagai penanda administratif, terpisah dari lima keputusan akun. Tanggal referensi satu hari sebelum BA KH valid tersimpan paling awal milik exact PP (termasuk Draft tersimpan); kosong bila belum ada. Saat cetak sel TTD tetap kosong. Tidak ada perubahan keputusan/tanggal approval/SQL/migration. Aturan empat baris dan cap dari akun di bawah tetap berlaku pada baris akun; penanda EVP adalah tambahan yang diminta pengguna. [Rincian dan arsitektur/query](PP_EVP_SIGNATORY.md).
+
 ## Pembaruan terkini — 9 November 2026
 
 PP baru dimulai **1. Header PP → 2. BOQ Plan**. Pada PP induk v3 yang masih editable, harga langsung mengikuti KHS SQL tanpa alasan/konfirmasi selisih; Header Total Nilai baca saja dan dihitung dari BOQ, Rp0 sebelum upload. Header lengkap cukup untuk draf; pengajuan tetap perlu BOQ/nilai positif dan seluruh persyaratan. Dokumen terkunci/v1/v2 serta alokasi lanjutan tetap dipertahankan. Migration CHECK draf Rp0 telah disiapkan, belum diterapkan agen pada its aktif. [Perilaku, migration, arsitektur/query dan bukti](PP_HEADER_BOQ_KHS.md). Penjelasan lama di bawah tetap menjadi catatan historis bila berbeda.

@@ -1,5 +1,49 @@
 # Laravel rebuild QA — 2 November 2026
 
+## Dua BOQ PP lebih ringkas — 15 November 2026
+
+**280PHP/5880assertions,289frontend,TypeScript/Vite build,assets32manifest/25preload×3profil lulus.** PHP tetap isolated fail-closed SQLite memory. Existing Word tests memeriksa compact9/10kolom, native font6pt/grid10544twip/repeated header/text escaping/margin25/40 serta default margin55/65 tabel penutup. Tidak menambah tes baru yang hanya meniru tampilan.
+
+Headless production-module fixture4/36BOQ, profil sementara/network intercepted: screenshot dua tabel preview diperiksa, pada viewport850 masing-masing table/container/scroll/clientWidth668px, font9px/padding3/4. ZIP CRC/XML valid; seluruh teks/nominal sama dan native closing table byte-identik dengan sebelum perapian. Native Word3/4pages:5changed page PNG diperiksa,2Header hash-identik dengan render yang sebelumnya diperiksa. PDF browser4/5pages current+nested serta375/768/1440 nonblank; stamps print tetap tersembunyi. [Bukti/hash](qa/pp-compact-boq-20261115.json).
+
+Pengguna mengklarifikasi penutup tidak perlu dikembalikan; tidak ada perubahan baris/identitas/approval atau Header IV.5.0SQL/API/query tambahan, capture complexity tetap linear, tanpa schema/migration/live data/env/worker/Dompis/backup DB baru/commit/push/deploy. Fixture bukan uji beban atau jaminan semua panjang teks; akun server/desktop Microsoft Word/native print dialog/cetak fisik belum diuji.
+
+## Header PP dari Total Anggaran IV.5 — 15 November 2026
+
+**280PHP/5880assertions,289frontend,TypeScript/Vite build,assets32manifest/25preload×3profil lulus.** PHP fail-closed isolated SQLite memory. Existing tests diperluas untuk Header readonly/Rp0, sumber biaya berubah→Header ikut, save→readback recap/Header sesuai, BOQ budget tetap, historical repeated categories tanpa double count dan fallback dokumen tanpa planBudget; preview Header=baris total, COGS/margin/snapshot tetap. PHP menambah3assertions bahwa canonical usage tetap berjumlah202.08 meskipun incoming recap kosong/rusak/palsu.
+
+Headless fixture/profile sementara/network intercepted membuat native Word4/5pages, CRC/XML valid; Header dan recap sama Rp880.572/Rp4.880.572. Kedua halaman1 diperiksa visual,7halaman lainnya hash-identik dengan9PNG render sebelumnya yang sudah diperiksa. PDF current/nested4/6pages dan375/768/1440 nonblank dan Header sesuai.0SQL/API/backend code/schema/migration/live rewrite/env/worker/Dompis/backup DB baru/commit/push/deploy; jumlah diambil dari rincian canonical yang sudah tersimpan, bukan mengubah proyeksi BOQ. [Aturan](PP_HEADER_BOQ_KHS.md), [bukti/hash](qa/pp-header-recap-20261115.json). Server/desktop Word/native print dialog/cetak fisik belum diuji.
+
+## Total akhir tabel anggaran PP — 15 November 2026
+
+**280PHP/5877assertions,289frontend,TypeScript/Vite build dan assets32manifest/25preload×3profil lulus.** PHP tetap fail-closed isolated SQLite memory. Existing budget tests memeriksa total termasuk perizinan pada form/preview, total tanpa permit, posisi baris terakhir, dua installment kategori Mandor yang tidak menggandakan total, serta COGS/margin/snapshot tidak berubah. Tidak ada backend path/query baru;0SQL/API tambahan, satu passO(usage rows)/memori konstan.
+
+Fixture4/36BOQ membuat DOCX melalui modul build produksi dengan headless profile sementara/network intercepted: subtotal Rp780.572/Rp4.780.572 dan total termasuk permit Rp880.572/Rp4.880.572 tepat. ZIP CRC/XML independen valid, native Word dirender4/5halaman dan semua9PNG diperiksa. PDF current/nested4/6halaman serta375/768/1440 nonblank; total hadir. Export tidak mengubah DOM. [Bukti/hash](qa/pp-budget-total-20261115.json). Data fixture tidak disimpan ke its. Tidak ada schema/migration/live data/env/worker/Dompis/backup DB baru/commit/push/deploy; server/desktop Word/native print dialog/cetak fisik tetap belum diuji.
+
+## Penghapusan tiga teks penutup PP — 15 November 2026
+
+**280PHP/5877assertions,289frontend,TypeScript/Vite build,assets32manifest/25preload×3profil/diff check lulus.** Assertion pada existing full-preview regression memeriksa ketiga teks tidak muncul; tidak ada backend change/test schema baru. PHP tetap fail-closed SQLite memory.
+
+Fixture React4/36BOQ memanggil modul build produksi pada headless profile sementara/network intercepted: preview HTML,2DOCX dan7PDF (current/nested/width375/768/1440) tidak mengandung heading/catatan/footer yang diminta; EVP/NIK tetap ada dan semua PDF nonblank. DOCX CRC/XML dibaca independen, native Word dirender ulang4/5halaman, seluruh9PNG diperiksa; tabel/TTD kosong/identitas/rupiah/prose lain tetap. Heading editor sengaja tetap sesuai scope preview/download.0SQL/API/schema/migration/live data/.env/worker/Dompis/backup baru/commit/push/deploy. Desktop Microsoft Word, native print dialog, akun server dan cetak fisik tetap belum diverifikasi. [Perilaku](PP_WORD_PRINT.md), [bukti/hash](qa/pp-clean-copy-20261115.json).
+
+## Unduhan Word PP dan PDF nonblank — 13 November 2026
+
+**280PHP/5877assertions,289frontend,TypeScript/Vite build,check:assets32manifest/25preload×3profil dan diff check lulus.**5FE baru: native ZIP/relationships/styles/portrait/escaping/Unicode/repeated headers/merged cells/blank TTD, numeric presentation/widths, safe filename/empty-preview guard, confirmation-protected scoped PP toolbar current+legacy/no state mutation dan print ancestor/overflow/named PP page. BA KH test kini menolak tombol BA KH di PP sambil mengizinkan PP Word sendiri. PHP tetap fail-closed SQLite memory; tidak ada PHP change/Pint requirement baru.
+
+Headless Chrome dengan profile sementara/network-intercepted fixture SSR komponen React sebenarnya, bukan login ke its: selector lama mereproduksi height0; fixed PDF mencakupI–VIII/EVP dan cap/context luar tidak tercetak.4BOQ→4halaman,36BOQ→6halaman; ordinary+nested review sama. Lebar375/768/1440 semuanya4halaman A4 portrait. BA KH main1portrait dan appendix1landscape tetap. Standard PDF seluruh4PNG diperiksa, long/nested/widths diperiksa seluruh teks halaman/dimensi/nonblank. Native print dialog/download filesystem chooser/akun server tidak diuji.
+
+Modul build produksi pp-docx dipanggil pada DOM fixture untuk2DOCX, capture tidak mengubah DOM. Python ZIP.testzip +ElementTree membaca semua5parts masing-masing,5signature cells kosong, tidak ada APPROVED/images/macros/external resources. Bundled LibreOffice render_docx.py menghasilkan4+5halaman; seluruh9PNG dibuka/diperiksa. Header lebar colon/narasi, angka, tabel BOQ, repeated headers, body/risiko/kualitas/closing dan TTD utuh. Microsoft Word desktop dan cetak fisik belum diverifikasi. Ekspor adalah isi preview, bukan perhitungan ulang atau klaim approval EVP aktual.
+
+0SQL/API tambahan, tanpa per-row catalog/account lookup/migration/schema/live transaction/nominal conversion/archive/env/worker/Dompis/deploy changes. Capture/model/ZIP memory O(isi); lazy PP module6,20kB/gzip2,71kB, bukan load benchmark. Artefak QA sementara di/private/tmp/area3-pp-word-qa (bukan berkas pengguna/runtime). Sandbox browser awal ditolak, pengujian ulang dengan izin memakai profil terpisah berhasil; renderer awal sebelum file tersedia gagal source-not-found, final setelah capture berhasil. Tidak mengambil backup DB baru untuk presentasi tanpa write. [Perilaku](PP_WORD_PRINT.md), [bukti/hashes](qa/pp-word-print-20261113.json).
+
+## Baris EVP otomatis dan tanggal sebelum BA KH — 13 November 2026
+
+**280PHP tests/5877assertions,284frontend tests,TypeScript/Vite build,check:assets31manifest/24preload×3profil dan diff check lulus.** Commands: PHP XAMPP artisan test --compact, npm test, npm run build, npm run check:assets. Empat frontend tests baru; tidak ada backend feature/schema change atau tes yang mengakses its aktif. PHP tetap fail-closed SQLite memory.
+
+Regresi menguji nama/NIK/jabatan yang diberikan pengguna, row selalu setelah Head/read-only, form status otomatis versus preview APPROVED/Persetujuan otomatis, struktur sel print kosong, minimum tanggal valid BA KH exact-PP (termasuk Draft tersimpan dan urutan terbalik), sibling/root/kode sama tidak dipakai, missing/invalid date tidak memakai current/Header date. Batas bulan/tahun/kabisat/tahun0001 dan ISO timestamp invalid tertangani. Pada Draft/Diajukan/Dikembalikan/Ditolak/Sah, marker administratif tunggal tidak mengubah state/approvals/history/nextApprovalRole; empat cap akun tetap mengikuti actual selected current-cycle decisions. CSS media print tetap menyembunyikan cap/status dan menampilkan ruang basah kosong.
+
+Helper presentasi memakai satu scan state deals yang sudah Branch-scoped/O(n)/memori konstan,0SQL/API/account lookup tambahan. Tidak ada migration/SQL write/backfill/nominal conversion/approval palsu/live worker/.env/Dompis/commit/push/deploy. Tidak mengambil backup database baru untuk perubahan presentasi tanpa write/workflow change. Penanda EVP otomatis sesuai permintaan, bukan persetujuan akun atau TTD fisik; status Sah/Finance/APM tetap dari keputusan aktual. Browser akun/375–1440px/keyboard/visual print/cetak fisik/server belum diverifikasi; SSR/CSS bukan klaim visual browser. [Perilaku](PP_EVP_SIGNATORY.md), [bukti terstruktur](qa/pp-evp-signatory-20261113.json).
+
 ## Pemotongan data tersimpan (bukan half-up) — 12 November 2026
 
 **280PHP/5877assertions,280frontend,TypeScript/Vite build,check:assets31referensi/24preload×3profil dan scoped Pint/diff check lulus.** Lima PHP konversi baru dan satu frontend baru; vector/current-save/format expectations berpindah ke truncation, policy half-up lama tetap dipisahkan. SQLite memory fail-closed/fake disk; tidak memakai its aktif.

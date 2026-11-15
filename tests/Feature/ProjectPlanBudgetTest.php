@@ -95,6 +95,8 @@ class ProjectPlanBudgetTest extends TestCase
             $this->assertEquals($fixture['automaticUsage'], $result['planBudget']['usage']);
             $this->assertEquals(195.05, $result['planBudgetTotals']['cogs']);
             $this->assertEquals(7.03, $result['planBudgetTotals']['usage']['permit']);
+            // Header and point IV.5 use these canonical details, never the incoming recap.
+            $this->assertEquals(202.08, array_sum(array_column($result['planBudget']['usage'], 'amount')));
             foreach ($result['planBudget']['usage'] as $row) {
                 $this->assertArrayNotHasKey('term', $row);
                 $this->assertArrayNotHasKey('date', $row);
