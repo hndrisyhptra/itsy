@@ -1,5 +1,8 @@
 # it's Area 3 — Development rules
 
+## SPK Surabaya and issue date — 15 November 2026
+User now explicitly requests fixed Surabaya for the SPK letter as well as BA KH. Follow latest docs/SPK_TEMPLATE_WORD.md, superseding earlier SPK saved-place/date presentation and BA-only scope for this document. PHP/TS helpers canonicalize new/draft place and date on save/generate/attest: retain valid earlier issue dates; empty/invalid/late dates use the SPK's own valid work start. No read-time today/BA KH/PP date substitution. Form place readonly/date max; shared HTML/print/Word model applies the same presentation even to historical reads without rewriting Terbit/Sah stored snapshots. Keep old-record attestation/Sah locks, work period/number/identity/amount/approval/payee/ledger unchanged. Existing work_orders fields/JSON need no migration,0new SQL/API/lookup. Record tests/query/render limits and chronological audits.
+
 ## Surabaya only for BA Negosiasi signing city — 15 November 2026
 Follow latest docs/BAKH_TEMPLATE.md: user fixes only city above main BA KH signatures to Surabaya in readonly form/all previews/print/Word, including historical reads; date remains saved BA date. New/draft saves canonicalize server-owned signingPlace, ignoring client city. Preserve legacy place separately for blankSpk compatibility; never force other documents/work location/Witel to Surabaya. Issued snapshots remain immutable/no bulk backfill, output uses explicit fixed-city authority. Existing contracts.document_data needs no migration;0new SQL/API/lookup, retain workflow guards/audit and actual QA/render limits.
 

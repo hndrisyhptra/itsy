@@ -29,7 +29,7 @@ test('new BA KH and cached drafts use PP dates in the form, save, generate and a
     assert.equal(d.start,'2000-01-01');const pp=structuredClone(p);saveDeal(s,d,action);
     assert.equal(getDeal(s,d.id).start,'2026-11-30');assert.equal(getDeal(s,d.id).end,'2026-12-13');assert.deepEqual(p,pp);
     const saved=getDeal(s,d.id);assert.equal(saved.signingPlace,'Surabaya');assert.equal(saved.place,existing?legacyPlace:'');
-    assert.equal(blankSpk(s,d.id).place,existing?legacyPlace:'');
+    assert.equal(blankSpk(s,d.id).place,'Surabaya');
   }
 });
 

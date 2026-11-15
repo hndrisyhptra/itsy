@@ -10,6 +10,8 @@ import { createSpkDocx, spkWordFilename, SPK_DOCX_MIME } from '../../resources/j
 import { SPK_WORD_PARTS } from '../../resources/js/area3/spk-word-template';
 import { DocumentPreview } from '../../resources/js/area3/ui';
 import { docxParts } from './helpers/docx-parts';
+import { spkIssueDate, syncSpkIssuance } from '../../resources/js/area3/spk-issuance';
+import { SpkIssueFields } from '../../resources/js/area3/contracts';
 import { spkLogoAssetUrl } from '../../resources/js/area3/spk-assets';
 
 const logo=new Uint8Array(readFileSync(new URL('../../resources/js/area3/assets/spk-telkom-akses.png',import.meta.url)));
@@ -30,7 +32,7 @@ test('SPK model maps the saved form and Mandor agreement, preserves historical s
   const {s,p,d,spk}=fixture(),before=JSON.stringify(s);
   d.signer='Head lain';d.start='2020-01-01';d.end='2020-01-02';
   const source=JSON.stringify(s),data=spkDocumentData(p,d,spk);
-  assert.equal(data.number,spk.no);assert.equal(data.placeDate,'Tempat SPK QA, 7 November 2026');
+  assert.equal(data.number,spk.no);assert.equal(data.placeDate,'Surabaya, 7 November 2026');
   assert.equal(data.mandor,d.mandor);assert.equal(data.address,spk.address);assert.equal(data.signer,spk.signer);
   assert.equal(data.position,spk.position.toUpperCase());
   assert.ok(data.opening.includes('30 November 2026 s/d 13 Desember 2026'));
@@ -93,7 +95,7 @@ test('missing or invalid fields stay unfilled; escaped XML and literal slot-like
   const {p,d,spk}=fixture();
   Object.assign(spk,{date:'2026-02-30',start:'',end:'bad',signer:'',position:'',phone:'',address:'<script>é & 中文 😀</script>\n{{SPK_NO}}\u0000'});
   const data=spkDocumentData(p,d,spk);assert.equal(data.signer,'…');assert.equal(data.position,'…');assert.equal(data.phone,'…');
-  assert.equal(data.placeDate,'Tempat SPK QA, …');assert.ok(data.opening.includes('Tanggal … s/d …'));
+  assert.equal(data.placeDate,'Surabaya, …');assert.ok(data.opening.includes('Tanggal … s/d …'));
   const xml=docxParts(createSpkDocx(p,d,spk,logo))['word/document.xml'];
   assert.match(xml,/&lt;script&gt;é &amp; 中文 😀&lt;\/script&gt;/);assert.match(xml,/\{\{SPK_NO\}\}/);
   assert.match(xml,/<w:br\/>/);assert.doesNotMatch(xml,/<script>|\u0000|Head lain/);
@@ -111,4 +113,21 @@ test('long inputs use source-derived compact spacing without truncation; 1000 ag
   assert.ok(xml.includes(p.name.trim()));assert.ok(xml.includes(spk.address.trim()));assert.match(xml,/w:line="320"/);
   assert.equal((xml.match(/<w:tr(?:\s|>)/g)??[]).length,3);
   assert.ok(createSpkDocx(p,d,spk,logo).length<500000);
+});
+
+
+test('SPK city and issue date follow shared calendar vectors and readonly city/date max without mutating historical records',()=>{
+  const vectors=JSON.parse(readFileSync(new URL('../Fixtures/spk-issuance.json',import.meta.url),'utf8'));
+  for(const row of vectors){
+    const input={place:'CLIENT CITY',date:row.date,start:row.start};
+    const before=JSON.stringify(input),next=syncSpkIssuance(input);
+    assert.equal(next.place,'Surabaya');assert.equal(next.date,row.expected);assert.equal(spkIssueDate(row.date,row.start),row.expected);assert.equal(JSON.stringify(input),before);
+  }
+  const {p,d,spk}=fixture();Object.assign(spk,{status:'Sah',place:'LOP LAMA QA',date:'2026-11-11',start:'2026-10-28',end:'2026-11-03'});
+  const before=JSON.stringify(spk),data=spkDocumentData(p,d,spk);
+  assert.equal(data.placeDate,'Surabaya, 28 Oktober 2026');assert.equal(JSON.stringify(spk),before);
+  const doc=docxParts(createSpkDocx(p,d,spk,logo))['word/document.xml'];assert.match(doc,/Surabaya, 28 Oktober 2026/);assert.doesNotMatch(doc,/LOP LAMA QA/);
+  const html=renderToStaticMarkup(createElement(SpkIssueFields,{spk,disabled:false,onDateChange:()=>{}}));
+  assert.match(html,/aria-label="Tempat penerbitan SPK" readOnly="" value="Surabaya"/);
+  assert.match(html,/aria-label="Tanggal SPK" type="date" max="2026-10-28" value="2026-10-28"/);
 });

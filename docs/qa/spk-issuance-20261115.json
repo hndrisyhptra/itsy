@@ -1,0 +1,60 @@
+{
+  "date": "2026-11-15",
+  "scope": "SPK letter fixed Surabaya; issue date <= own work start; form/preview/print/native Word",
+  "tests": {
+    "php": 281,
+    "assertions": 5959,
+    "frontend": 290,
+    "build": "pass",
+    "pint": "pass",
+    "assets": {
+      "manifest": 32,
+      "preloads": 25,
+      "profiles": 3
+    }
+  },
+  "queryReview": {
+    "addedSql": 0,
+    "addedApi": 0,
+    "helperCases": 10,
+    "helperQueryCount": 0,
+    "complexity": "Scalar O(1), existing document lookups and SQL projections unchanged"
+  },
+  "sourceUnchanged": true,
+  "fixtures": [
+    {
+      "name": "late-Sah",
+      "placeDate": "Surabaya, 28 Oktober 2026",
+      "sourceUnchanged": true,
+      "periodUnchanged": true,
+      "amount": 114563000,
+      "nativeZipXmlValid": true,
+      "docxSha256": "09842bd184bae6c5b6212cba30344ea284e779723943487e47824cc1ad20ab4a",
+      "pdfPages": 1,
+      "renderedPagesVisuallyInspected": 1
+    },
+    {
+      "name": "earlier-Draft",
+      "placeDate": "Surabaya, 25 Oktober 2026",
+      "sourceUnchanged": true,
+      "periodUnchanged": true,
+      "amount": 114563000,
+      "nativeZipXmlValid": true,
+      "docxSha256": "c3d1e189d3039bb410d1855997bed25be0829b772cc993b108874c4f05755c75",
+      "pdfPages": 1,
+      "renderedPagesVisuallyInspected": 1
+    }
+  ],
+  "backup": {
+    "file": "area3-before-spk-issuance-20261115-151201.sqlite",
+    "bytes": 233472,
+    "sha256": "055a820c9169cc2419f9a109e8f7e1cb32c79f51da8f587176ba1a55f209f74a",
+    "scope": "Read-only backup of demo SQLite; active MySQL unchanged"
+  },
+  "newSimulation": false,
+  "limits": [
+    "Live MySQL/server integration for this change",
+    "Authenticated browser and native browser print dialog",
+    "Desktop Microsoft Word and physical print"
+  ]
+}

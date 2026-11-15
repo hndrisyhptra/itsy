@@ -668,6 +668,8 @@ class PrototypeDomain
                 $this->fail('SPK terbit terkunci; hanya pengesahan dokumen tersedia.');
             }
             $v = $old;
+        } else {
+            $v = SpkIssuance::sync($v);
         }
         $d = $this->record('deals', $v['dealId'] ?? '');
         if ($d['status'] !== 'Sah') {

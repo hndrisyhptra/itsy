@@ -6,6 +6,7 @@ import { type PartialPaymentRequest, usesPartialPayment, assertPartialApmReady, 
 export { requestPartialPayment, verifyPartialPayment } from './partial-payment';
 import { blankBarp, saveBarp, type BarpData } from './barp-form';
 import { syncSpkSigner } from './spk-signer';
+import { syncSpkIssuance } from './spk-issuance';
 import { applyBudgetPlan } from './plan-budget';
 import { bakhPeriod, syncBakhPeriod } from './bakh-schedule';
 import { syncBakhSigner } from './bakh-signer';
@@ -174,13 +175,13 @@ export function saveDeal(s: State, input: Deal, action: 'save' | 'generate' | 'a
   d.status = action === 'attest' ? 'Sah' : action === 'generate' ? 'Terbit' : 'Draft';
   if (old) s.deals[s.deals.indexOf(old)] = d; else s.deals.push(d); log(s, action === 'attest' ? 'BA KH disahkan' : action === 'generate' ? 'BA KH diterbitkan' : 'Negosiasi disimpan', d.no, `/ba-kh/${d.id}`); return d.id;
 }
-export function blankSpk(s: State, dealId: string): Spk { const d = getDeal(s, dealId); return syncSpkSigner(s,{ id: uid('spk'), dealId, no: contractNumber(getProject(s,d.projectId).no,'02'), status: 'Draft', date: today(), start: d.start, end: d.end, place: d.place, address: '', supervisor: '', phone: '', signer: d.signer, position: '', evidence: '' }); }
+export function blankSpk(s: State, dealId: string): Spk { const d = getDeal(s, dealId); return syncSpkSigner(s,syncSpkIssuance({ id: uid('spk'), dealId, no: contractNumber(getProject(s,d.projectId).no,'02'), status: 'Draft', date: today(), start: d.start, end: d.end, place: d.place, address: '', supervisor: '', phone: '', signer: d.signer, position: '', evidence: '' })); }
 export function saveSpk(s: State, input: Spk, action: 'save' | 'generate' | 'attest' = 'save') {
   recordCommand('saveSpk', [input, action]);return applySpk(s,input,action);
 }
 export function applySpk(s:State,input:Spk,action:'save'|'generate'|'attest'='save'){
   requireAdmin(s); const v = syncSpkSigner(s,syncSpkNumber(s,structuredClone(input))); const old = s.spks.find(x => x.id === v.id); v.evidence = old?.evidence ?? '';
-  if (old?.status === 'Sah') throw new Error('SPK sah tidak dapat diubah.'); if (old?.status === 'Terbit') { if (action !== 'attest') throw new Error('SPK terbit terkunci; hanya pengesahan dokumen tersedia.'); Object.assign(v, structuredClone(old)); } const d = getDeal(s, v.dealId); if (d.status !== 'Sah') throw new Error('SPK hanya dari BA KH sah.');
+  if (old?.status === 'Sah') throw new Error('SPK sah tidak dapat diubah.'); if (old?.status === 'Terbit') { if (action !== 'attest') throw new Error('SPK terbit terkunci; hanya pengesahan dokumen tersedia.'); Object.assign(v, structuredClone(old)); } else {Object.assign(v,syncSpkIssuance(v));} const d = getDeal(s, v.dealId); if (d.status !== 'Sah') throw new Error('SPK hanya dari BA KH sah.');
   if (s.spks.some(x => x.id !== v.id && (x.dealId === v.dealId || x.no === v.no.trim()))) throw new Error('BA KH sudah memiliki SPK atau nomor SPK duplikat.');
   if (!v.no.trim()) throw new Error('Nomor SPK wajib diisi.');
   if (action !== 'save' && v.signerSource === 'pp-head-pmo' && (!v.signerUserId || !v.signer)) throw new Error('Head of PMO terpilih pada PP belum memiliki identitas penandatangan yang valid.');

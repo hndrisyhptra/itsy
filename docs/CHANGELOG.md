@@ -1,5 +1,12 @@
 # Catatan perubahan it's Area 3
 
+## 15 November 2026 — SPK otomatis Surabaya dan tanggal sebelum awal pekerjaan
+
+- Tempat penerbitan SPK readonly Surabaya pada form, preview, Word dan cetak/PDF. Tanggal surat yang kosong/invalid/melewati awal pekerjaan otomatis memakai awal pekerjaan SPK; tanggal lebih awal tetap. Contoh 11 November dengan periode 28 Oktober–3 November tampil Surabaya, 28 Oktober 2026. Nama proyek/Branch/alamat/periode/signer/nominal tetap.
+- Laravel/TS menyelaraskan new/draft save/generate/attest dan cache lama. Terbit/Sah stored snapshot tidak ditulis ulang; output historis memakai presentasi baru. Aturan SPK ini merupakan permintaan baru setelah pembatasan Surabaya khusus BA KH pada catatan sebelumnya; dokumen lain tetap. Tanpa migration/endpoint/SQL/lookup tambahan, helper scalar O(1) dengan sepuluh vektor kalender nol query.
+- Backup demo SQLite privat233472byte sebelum edit; its aktif/env/worker/Dompis tidak diubah, tanpa commit/push/deploy.281PHP/5959assertions,290frontend/build/Pint/assets32refs/25preload×3profil lulus. Dua native Word CRC/XML valid, masing-masing1halaman dan seluruh2PNG diperiksa; HTML/Word/date/source assertions lulus. Browser akun/live MySQL/server/desktop Word/native print/cetak fisik belum diuji khusus perubahan ini.
+- [Perilaku](SPK_TEMPLATE_WORD.md), SPK_SIGNER_WORD/ARCHITECTURE/WORKPLAN/QA/AGENTS/workflow skill dan [bukti](qa/spk-issuance-20261115.json) dicatat; audit lama dipertahankan.
+
 ## 15 November 2026 — Tempat penandatanganan BA Negosiasi menjadi Surabaya
 
 - Baris kota di atas TTD surat BA KH otomatis Surabaya dengan tanggal BA tersimpan, berlaku preview/cetak/Word dan pembacaan historis. Form tempat readonly. Pekerjaan/lokasi/Witel, tanggal, signers, lampiran dan dokumen lain tetap.

@@ -1,5 +1,17 @@
 # Preview dan unduh Word SPK Mandor — 7 November 2026
 
+## Pembaruan 15 November 2026 — Surabaya dan tanggal penerbitan
+
+Atas permintaan pengguna, baris tempat/tanggal pada surat SPK selalu memakai **Surabaya**. Form tempat menjadi baca saja; preview, cetak/PDF dan Word memakai model yang sama. Nama kegiatan pada perihal/tabel, Branch, alamat Mandor dan periode pekerjaan tidak diganti menjadi nama kota.
+
+Tanggal penerbitan paling lambat sama dengan **tanggal mulai pekerjaan SPK itu sendiri**. Tanggal valid yang lebih awal dipertahankan; tanggal kosong, tidak valid atau melewati awal pekerjaan otomatis memakai tanggal mulai tersebut. Contoh tanggal surat 11 November dengan periode 28 Oktober–3 November menjadi **Surabaya, 28 Oktober 2026**. Jika awal pekerjaan tidak valid, helper tidak mengarang tanggal/hari ini; validasi periode formal yang sudah ada tetap berlaku.
+
+Laravel `SpkIssuance` dan helper TypeScript `spk-issuance.ts` menyelaraskan new/draft pada save/generate/attest, termasuk cache/payload lama. Tempat dari client diabaikan. Field `place`/`date` memakai snapshot `work_orders.document_data` dan proyeksi tanggal yang sudah ada, tanpa migration. Terbit/Sah tidak ditulis ulang: attestation Terbit mempertahankan snapshot lama, Sah tetap terkunci. Output historis juga menggunakan Surabaya dan tanggal tampilan yang dibatasi awal pekerjaan sesuai permintaan ini, tanpa mengubah tanggal/riwayat yang tersimpan. Aturan ini menggantikan pemetaan langsung `spk.place/date` di baseline di bawah; identitas Head dan semua workflow guards tetap.
+
+Review performa: helper scalar O(1), tanpa SQL/endpoint/catalog lookup tambahan; sepuluh vektor kalender lintas PHP/TS terukur nol query helper. Existing authorization, revision/receipt/audit dan incremental projection tetap. Backup demo SQLite privat `area3-before-spk-issuance-20261115-151201.sqlite` (233.472 byte) dibuat read-only sebelum perubahan; its aktif tidak diubah.
+
+Verifikasi: **281 tes PHP/5.959 assertions, 290 frontend, build TypeScript/Vite, Pint dan pemeriksaan aset lulus**. New/draft save/generate/attest memaksa kota/tanggal yang benar meski input client lama; Terbit/Sah tetap terlindungi. Dua fixture Word native dan HTML memakai tanggal awal/lebih awal, CRC/XML valid; kedua dokumen dirender satu halaman dan seluruh dua PNG diperiksa. Sumber fixture, periode, nominal dan signer tetap. Browser terautentikasi, integrasi MySQL/server, dialog cetak browser, Microsoft Word desktop dan cetak fisik belum diuji untuk perubahan ini. [Bukti](qa/spk-issuance-20261115.json).
+
 Pembaruan identitas/Word 7 November 2026: SPK baru/draf v3 memakai nama/jabatan/NIK Head of PMO terpilih secara otomatis; surat dan Lampiran SPK sama-sama menyediakan Word, termasuk NIK. Terbit/Sah mempertahankan snapshot. Lihat [SPK_SIGNER_WORD.md](SPK_SIGNER_WORD.md); aturan identitas manual di bawah merupakan baseline sebelum pembaruan ini.
 
 **Preview SPK** sekarang memakai surat sesuai SPK Mandor.docx yang diberikan pengguna, dengan tombol **Unduh Word (.docx)** dan Cetak/Simpan PDF. Tampilan utama berupa surat A4 vertikal: logo Telkom Akses di kanan atas, judul/nomor, tanggal/tempat, penerima dan alamat, perihal, instruksi/periode kerja, tabel nilai, koordinasi Waspang, ketentuan K3 dan penandatangan Telkom Akses. Lampiran rincian harga tetap merupakan preview tersendiri; kini mengikuti [template Lampiran SPK](SPK_APPENDIX_TEMPLATE.md) dengan Nama Proyek/Vol.

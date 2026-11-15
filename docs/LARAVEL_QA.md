@@ -1,5 +1,13 @@
 # Laravel rebuild QA — 2 November 2026
 
+## Tempat dan tanggal SPK otomatis — 15 November 2026
+
+**281 PHP/5959 assertions,290 frontend,TypeScript/Vite build,Pint dan assets32manifest/25preload×3profil lulus.** PHP tetap fail-closed SQLite memory. Sepuluh vektor PHP/TS menguji tanggal lebih awal/sama/terlambat/kosong/invalid/tahun kabisat/pergantian tahun, helper query log kosong. Enam new/draft save/generate/attest paths memaksa Surabaya dan tanggal awal walaupun client mengirim kota/tanggal lama. Terbit attestation mempertahankan old place/date, Sah tetap terkunci; frontend date max/readonly place/source immutability serta HTML/Word konsisten.
+
+Dua fixture native dari generator aplikasi: Sah dengan tanggal terlambat menjadi Surabaya,28Oktober2026; Draft dengan tanggal lebih awal tetap Surabaya,25Oktober2026. Periode keduanya tetap28Oktober–3November, nominal dan signer tetap. ZIP CRC dan semua XML/relationships diperiksa independen, PDF renderer masing-masing1halaman serta keduaPNG diperiksa. Tidak menguji browser terautentikasi/native print dialog/live MySQL/server/Microsoft Word desktop/cetak fisik. [Bukti/hash](qa/spk-issuance-20261115.json).
+
+Review query0SQL/API/lookup tambahan, normalisasi scalar O(1); tidak mengklaim uji beban. New/draft memakai field/proyeksi existing, output historis tidak menulis ulang snapshot. Backup demo SQLite read-only sebelum edit; its aktif tidak diubah, tanpa migration/env/worker/Dompis/commit/push/deploy. Tidak menambah simulasi runtime atau membuat tanda tangan.
+
 ## Kota Surabaya khusus BA Negosiasi — 15 November 2026
 
 **280PHP/5906assertions,289frontend,TypeScript/Vite build,Pint dan assets32manifest/25preload×3profil lulus.** PHP tetap isolated fail-closed SQLite memory. Existing tests diperluas untuk canonical signingPlace meskipun client mengirim kota lain, legacy place kosong pada dokumen baru tetap formal valid, legacy place tersimpan/SPK/PP dipertahankan, Terbit snapshot tidak berubah; form readonly dan preview/Word memakai Surabaya dengan tanggal BA. Enam new/draft save/generate/attest paths menghasilkan0SQL domain; tidak ada query/API baru atau lookup per komponen.

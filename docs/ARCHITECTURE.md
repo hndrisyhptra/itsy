@@ -1,5 +1,13 @@
 # Arsitektur aplikasi it's Area 3
 
+## 15 November 2026 — Tempat dan tanggal penerbitan SPK
+
+SpkIssuance (PHP) dan spk-issuance.ts (TS) menetapkan Surabaya serta membatasi tanggal penerbitan pada awal pekerjaan SPK sendiri. Tanggal lebih awal tetap, kosong/invalid/terlambat memakai awal yang valid; tidak ada fallback hari ini pada pembacaan. Blank/cached form dan domain save memakai helper; SpkIssueFields menyediakan tempat readonly serta batas date input. Laravel mengulang normalisasi sebelum validasi pada new/draft save/generate/attest sehingga payload client tidak dapat melewati aturan.
+
+SpkDocument dan native Word memakai spkDocumentData yang sama. Output Terbit/Sah juga mengikuti kota/tanggal presentasi baru sesuai permintaan eksplisit, tetapi stored snapshot tidak dimutasi saat GET/download/attestation. Terbit attestation tetap memakai seluruh old record; Sah terkunci. Tidak mengubah periode/PP/BA KH, nomor, signer/NIK, nominal/ledger, payee privat atau approval. Existing work_orders.document_data/proyeksi tanggal menyimpan new/draft; tidak perlu schema/migration/backfill/archive rewrite.
+
+Query review: scalar O(1), nol SQL/API/lookup tambahan; sepuluh vektor helper lintas bahasa memiliki query log kosong. Lookup dokumen dan jalur atomik revision/receipt/audit tetap; tidak mengklaim latency/throughput server. Backup demo SQLite privat sebelum edit, its aktif/env/worker/Dompis tidak disentuh.281 PHP/5959 assertions,290 frontend/build/Pint/assets lulus. Dua native Word CRC/XML valid, masing-masing satu halaman dan kedua PNG diperiksa; model HTML/Word, source immutability dan kalender terverifikasi. [Perilaku/batas](SPK_TEMPLATE_WORD.md), [bukti](qa/spk-issuance-20261115.json). Browser akun/live MySQL/server/desktop Word/native print/cetak fisik belum diuji untuk perubahan ini.
+
 ## 15 November 2026 — Kota tetap untuk BA Negosiasi
 
 bakh-place.ts menyediakan konstanta ringan Surabaya untuk BakhPlaceField readonly dan model bakhDocumentData. Main HTML/print/Word memakai model yang sama; tanggal dokumen tetap. PrototypeDomain/saveDeal TS menetapkan signingPlace server-owned untuk new/draft save/generate/attest. Contracts.document_data memakai JSON projection existing, tidak ada schema/API baru. Terbit attestation tetap memakai old snapshot, Sah terkunci; semua output BA membaca kota tetap yang secara eksplisit diminta tanpa bulk rewriting historical snapshots.

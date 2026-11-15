@@ -672,3 +672,12 @@ Historical iteration; superseded by the dashboard restoration below.
 - [x] 280PHP/5906assertions/289FE/build/Pint/assets32refs/25preload×3profil lulus;2native DOCX CRC/XML/render1/1pages/all2PNG, exact city/date/location/Witel/source assertions.
 - [x] Catat BAKH_TEMPLATE/BAKH_WORD_EXPORT/ARCHITECTURE/CHANGELOG/QA/AGENTS/workflow skill dan qa/bakh-surabaya-20261115.json tanpa mengganti audit lama.
 - [ ] Operator deploy kode+build dan uji browser akun/live server/MySQL/desktop Word/native print/cetak fisik. Tidak ada migration baru atau commit/push/deploy oleh agen.
+
+## Surabaya dan tanggal penerbitan SPK — 15 November 2026
+
+- [x] Backup demo SQLite privat233472byte read-only sebelum edit, tanpa mengubah its aktif.
+- [x] Tempat SPK readonly Surabaya; tanggal kosong/invalid/melewati awal pekerjaan memakai tanggal mulai SPK, tanggal lebih awal tetap. Form/cache/domain PHP/TS serta preview/Word/print mengikuti aturan yang sama.
+- [x] New/draft disimpan melalui field/proyeksi existing; Terbit/Sah stored snapshot tetap, output historis mengikuti presentasi baru. Periode/nomor/signer/NIK/nominal/approval/ledger/payee tetap. Tanpa schema/migration/archive rewrite.
+- [x] Query review scalar O(1),0SQL/API/lookup tambahan;10vektor kalender helper0queries.281PHP/5959assertions,290FE/build/Pint/assets32refs/25preload×3profil lulus;2native DOCX CRC/XML/render1+1halaman/semua2PNG diperiksa, model HTML/Word/source tetap.
+- [x] Catat SPK_TEMPLATE_WORD/SPK_SIGNER_WORD/ARCHITECTURE/CHANGELOG/LARAVEL_QA/AGENTS/workflow skill dan qa/spk-issuance-20261115.json tanpa menimpa audit.
+- [ ] Operator deploy kode+build dan uji browser akun/live MySQL/server/desktop Word/native print/cetak fisik. Tidak ada migration baru atau commit/push/deploy oleh agen.

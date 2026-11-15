@@ -5,6 +5,9 @@ description: Implement its Area 3 Project Plan, BOQ, mandor contracting, assigne
 
 # area3-business-workflow
 
+## SPK issuance city and date — 15 November 2026
+User additionally authorizes Surabaya for SPK; follow latest docs/SPK_TEMPLATE_WORD.md. Canonical PHP/TS new/draft save/generate/attest uses fixed place and issue date no later than its own work start, retaining earlier valid dates and deriving empty/invalid/late dates from valid start. Form readonly city/date max; HTML/print/Word share the model. Historical output uses this presentation without changing Terbit/Sah snapshots/decisions. Keep work periods, BA KH/PP data, signers/NIK, amounts, ledger and all guards. No new SQL/API/migration; audit query/helper/calendar/issued-preservation/render evidence with real limitations.
+
 ## BA KH signing city — 15 November 2026
 Main BA Negosiasi uses fixed Surabaya with saved BA date in readonly form/preview/Word/print, including historical reads. Follow docs/BAKH_TEMPLATE.md. New/draft signingPlace is server-owned; legacy place remains separate for SPK defaults. Do not rewrite issued snapshots or change other document places/work location/Witel, prices, dates or workflow gates.0new SQL/API/schema; record canonical-client-override, blank-input, legacy/SPK preservation and Word rendering evidence.
 

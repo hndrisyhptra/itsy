@@ -1,5 +1,7 @@
 # Identitas Head of PMO dan Word pada dua preview SPK
 
+Pembaruan 15 November 2026: surat SPK memakai tempat tetap Surabaya dan tanggal penerbitan paling lambat awal pekerjaan SPK, termasuk preview/Word/form. New/draft diselaraskan Laravel; pembacaan output historis tidak menulis ulang snapshot. Ini tidak mengganti signer/NIK/jabatan atau menambah tanda tangan otomatis. Aturan dan bukti terkini: [SPK_TEMPLATE_WORD.md](SPK_TEMPLATE_WORD.md).
+
 Pembaruan 7 November 2026: header proyek pada tabel form dan Lampiran SPK langsung menampilkan **nama kegiatan PP** di atas **VOL**, tanpa label NAMA PROYEK. Preview surat SPK dan Lihat Lampiran SPK sama-sama menampilkan nama, jabatan serta NIK penandatangan dan tombol **Unduh Word (.docx)**. Surat memakai A4 portrait, lampiran A4 landscape. Ini identitas penandatangan, bukan tanda tangan elektronik atau persetujuan otomatis; ruang TTD fisik tetap kosong.
 
 ## Sumber dan penyimpanan identitas

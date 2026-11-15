@@ -4,11 +4,29 @@ namespace Tests\Feature;
 
 use App\Services\ContractNumber;
 use App\Services\PrototypeDomain;
+use App\Services\SpkIssuance;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class ContractNumberTest extends TestCase
 {
+    public function test_spk_issuance_calendar_vectors_keep_earlier_dates_and_cap_at_own_work_start_without_queries(): void
+    {
+        $vectors = json_decode(file_get_contents(base_path('tests/Fixtures/spk-issuance.json')), true);
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        foreach ($vectors as $vector) {
+            $input = ['date' => $vector['date'], 'start' => $vector['start'], 'place' => 'CLIENT CITY'];
+            $result = SpkIssuance::sync($input);
+            $this->assertSame('Surabaya', $result['place']);
+            $this->assertSame($vector['expected'], $result['date']);
+            $this->assertSame('CLIENT CITY', $input['place']);
+        }
+        $this->assertSame([], DB::getQueryLog());
+        DB::disableQueryLog();
+    }
+
     private function fixture(bool $spk = false): array
     {
         $state = json_decode(file_get_contents(database_path('demo/'.($spk ? 'D' : 'C').'.json')), true);
@@ -48,6 +66,10 @@ class ContractNumberTest extends TestCase
     {
         foreach ([false, true] as $spk) {
             [$state, $doc] = $this->fixture($spk);
+            if ($spk) {
+                $doc['date'] = '2100-12-31';
+                $doc['place'] = 'CLIENT CITY';
+            }
             $collection = $spk ? 'spks' : 'deals';
             $expected = $spk ? '0002-02/LG.000/TA-03R546/11-2026' : '0002-01/LG.000/TA-03R546/11-2026';
             foreach (['save', 'generate', 'attest'] as $action) {
@@ -62,6 +84,11 @@ class ContractNumberTest extends TestCase
                     $this->assertSame($expected, $after[$collection][0]['no']);
                     $this->assertSame($action === 'save' ? 'Draft' : ($action === 'generate' ? 'Terbit' : 'Sah'), $after[$collection][0]['status']);
                     $this->assertSame($state['projects'], $after['projects']);
+                    if ($spk) {
+                        $this->assertSame('Surabaya', $after[$collection][0]['place']);
+                        $this->assertSame($doc['start'], $after[$collection][0]['date']);
+                        $this->assertSame($state['deals'], $after['deals']);
+                    }
                 }
             }
         }
@@ -78,9 +105,13 @@ class ContractNumberTest extends TestCase
             $input = $doc;
             $input['no'] = 'CLIENT/RENUMBER';
             $input['evidence'] = 'Bukti pengesahan baru';
+            $input['place'] = 'CLIENT CITY';
+            $input['date'] = '2100-12-31';
             $after = app(PrototypeDomain::class)->execute($state, $spk ? 'saveSpk' : 'saveDeal', [$input, 'attest'])['state'];
             $this->assertSame($doc['no'], $after[$collection][0]['no']);
             $this->assertSame($doc['evidence'], $after[$collection][0]['evidence']);
+            $this->assertSame($doc['place'], $after[$collection][0]['place']);
+            $this->assertSame($doc['date'], $after[$collection][0]['date']);
             try {
                 app(PrototypeDomain::class)->execute($after, $spk ? 'saveSpk' : 'saveDeal', [$input, 'save']);
                 $this->fail('Sah document must remain locked');
