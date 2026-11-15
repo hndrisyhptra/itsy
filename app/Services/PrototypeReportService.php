@@ -65,7 +65,7 @@ class PrototypeReportService
                 $v = $allSpks[$t['spkId']];
                 $d = $deals[$v['dealId']];
                 $amount = $domain->termTotal($t);
-                $rows[] = [$allProjects[$d['projectId']]['no'], $v['no'], $d['mandor'], $t['number'], $t['type'], $amount, $t['paid'], $t['status'] === 'Disetujui' ? round($amount - $t['paid'], 2) : 0, $t['status'], $t['apmStatus']];
+                $rows[] = [$allProjects[$d['projectId']]['no'], $v['no'], $d['mandor'], $t['number'], $t['type'], $amount, $t['paid'], $t['status'] === 'Disetujui' ? round($domain->paymentDue($t) - $t['paid'], 2) : 0, $t['status'], $t['apmStatus']];
             }
         } elseif ($report === 'Approval Performance') {
             $headers = ['Role', 'Setujui', 'Dikembalikan', 'Ditolak', 'Menunggu', 'Rata-rata Respon (jam)'];
@@ -94,7 +94,7 @@ class PrototypeReportService
                 $ts = $terms->filter(fn ($t) => $vs->contains('id', $t['spkId']) && $t['status'] === 'Disetujui');
                 $billed = $ts->sum(fn ($t) => $domain->termTotal($t));
                 $paid = $ts->sum('paid');
-                $rows[] = [$name, $vs->count(), $vs->sum(fn ($v) => $domain->dealTotal($deals[$v['dealId']])), $billed, $paid, round($billed - $paid, 2)];
+                $rows[] = [$name, $vs->count(), $vs->sum(fn ($v) => $domain->dealTotal($deals[$v['dealId']])), $billed, $paid, round($ts->sum(fn ($t) => $domain->paymentDue($t)) - $paid, 2)];
             }
         } elseif ($report === 'Remaining BOQ Volume') {
             $headers = ['Root PP', 'Designator', 'Komponen', 'Satuan', 'Volume Root', 'Available', 'Reserved', 'Committed', 'Accepted'];

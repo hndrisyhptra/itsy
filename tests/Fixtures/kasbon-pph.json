@@ -1,0 +1,8 @@
+[
+  {"id":"material-unchanged","material":100000,"service":0,"gross":100000,"net":100000,"withheld":0},
+  {"id":"service-only","material":0,"service":200000,"gross":200000,"net":195000,"withheld":5000},
+  {"id":"mixed","material":100000,"service":200000,"gross":300000,"net":295000,"withheld":5000},
+  {"id":"truncate-net","material":100000,"service":200001,"gross":300001,"net":295000,"withheld":5001},
+  {"id":"small-service","material":1000,"service":1,"gross":1001,"net":1000,"withheld":1},
+  {"id":"zero","material":0,"service":0,"gross":0,"net":0,"withheld":0}
+]

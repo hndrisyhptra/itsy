@@ -32,7 +32,7 @@ trait SettlementApprovalWorkflow
         if (! self::usesSettlementPayment($t) || ! $this->canReviseSubmission($t) || $t['paid'] > 0 || $t['apmStatus'] === 'Valid') {
             $this->fail('Kasbon baru hanya dapat diajukan bersama draf pembayaran yang belum dibayar.');
         }
-        if (! Str::isUuid($summary['id'] ?? '') || bccomp((string) ($summary['amount'] ?? -1), (string) $this->termTotal($t), 2) !== 0) {
+        if (! Str::isUuid($summary['id'] ?? '') || ! $this->kasbonSummaryMatches($t, $summary)) {
             $this->fail('Kasbon harus sama dengan nilai tagihan termin.');
         }
         $project = $this->record('projects', $this->record('deals', $this->record('spks', $t['spkId'])['dealId'])['projectId']);

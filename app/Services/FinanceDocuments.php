@@ -183,8 +183,9 @@ class FinanceDocuments
             $spk = json_decode($r->spk_data, true, 512, JSON_THROW_ON_ERROR);
             $p = json_decode($r->pp_data, true, 512, JSON_THROW_ON_ERROR);
             $d = json_decode($r->deal_data, true, 512, JSON_THROW_ON_ERROR);
-            $domain = app(PrototypeDomain::class)->load(['deals' => [$d], 'spks' => [$spk]]);
-            $total = $domain->termTotal($t);
+            $settlementQuote = KasbonSettlement::quote($d, $t);
+            $total = $settlementQuote['net'];
+            abort_if($total <= 0, 422, 'Nilai bersih pengajuan kasbon harus positif.');
             $sum = '0';
             foreach ($data['rows'] as &$line) {
                 if (($t['moneyPolicy'] ?? '') === WholeRupiah::POLICY) {
@@ -194,7 +195,7 @@ class FinanceDocuments
                 $sum = bcadd($sum, (string) $line['amount'], 2);
             }
             unset($line);
-            abort_unless(bccomp($sum, (string) $total, 2) === 0, 422, 'Jumlah rincian kasbon harus sama dengan tagihan termin saat ini.');
+            abort_unless(bccomp($sum, (string) $total, 2) === 0, 422, 'Jumlah rincian kasbon harus sama dengan nilai pengajuan kasbon saat ini.');
             $payee = $this->payeeSnapshot($row, $r->id_spk);
             abort_unless((int) $data['payeeVersion'] === (int) $payee['version'], 409, 'Data Mandor berubah. Muat ulang data penerima dan periksa rekening sebelum mengajukan kasbon kembali.');
             $settlement = PrototypeDomain::usesSettlementPayment($t);
@@ -219,10 +220,10 @@ class FinanceDocuments
             }
             $version = (int) DB::table('finance_kasbons')->where('term_id', $r->id_payment_term)->max('version') + 1;
             $kid = (string) Str::uuid();
-            $snapshot = $data + ['templateVersion' => $settlement ? 3 : 2, 'issuerRole' => $account['role'], 'payee' => $payee, 'mandor' => $d['mandor'], 'unit' => $p['unit'].' · '.$p['branch'], 'project' => $p['name'], 'projectCode' => $p['projectCode'], 'ppNo' => $p['no'], 'spkNo' => $spk['no'], 'termNumber' => $t['number'], 'termType' => $t['type'], 'amount' => $total, 'signers' => $signers, 'issuer' => $account['name']];
+            $snapshot = $data + ['templateVersion' => $settlement ? 3 : 2, 'issuerRole' => $account['role'], 'payee' => $payee, 'mandor' => $d['mandor'], 'unit' => $p['unit'].' · '.$p['branch'], 'project' => $p['name'], 'projectCode' => $p['projectCode'], 'ppNo' => $p['no'], 'spkNo' => $spk['no'], 'termNumber' => $t['number'], 'termType' => $t['type'], 'amount' => $total, 'settlement' => $settlementQuote, 'signers' => $signers, 'issuer' => $account['name']];
             DB::table('finance_kasbons')->insert(['id_kasbon' => $kid, 'term_id' => $r->id_payment_term, 'version' => $version, 'amount' => $total, 'private_data' => $this->pack($snapshot), 'issued_by' => auth()->id(), 'issued_at' => now(), 'request_uuid' => $input['request_id'], 'input_sha256' => $hash]);
 
-            return app(PrototypeWorkspaceService::class)->command($row, ['command' => $settlement ? '_submitSettlementKasbon' : '_issueKasbon', 'args' => [$id, ['id' => $kid, 'version' => $version, 'amount' => $total, 'issuedBy' => 'db-user-'.auth()->id(), 'issuedRole' => $account['role'], ...($settlement ? ['settlementUserId' => $data['settlementUserId']] : []), 'issuedAt' => now()->toISOString()]], 'revision' => $row->revision, 'request_id' => $input['request_id']]);
+            return app(PrototypeWorkspaceService::class)->command($row, ['command' => $settlement ? '_submitSettlementKasbon' : '_issueKasbon', 'args' => [$id, ['id' => $kid, 'version' => $version, 'amount' => $total, 'settlement' => $settlementQuote, 'issuedBy' => 'db-user-'.auth()->id(), 'issuedRole' => $account['role'], ...($settlement ? ['settlementUserId' => $data['settlementUserId']] : []), 'issuedAt' => now()->toISOString()]], 'revision' => $row->revision, 'request_id' => $input['request_id']]);
         });
     }
 

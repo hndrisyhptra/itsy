@@ -1,0 +1,141 @@
+{
+  "date": "2026-11-16",
+  "authority": "Only saved Mandor service is reduced 2.5%; Material unchanged. User confirmed cashbon AND transfer/APM net, gross retained.",
+  "policy": "mandor-service-pph25-v1",
+  "examples": {
+    "material": 100000,
+    "service": 200000,
+    "gross": 300000,
+    "net": 295000
+  },
+  "php": {
+    "passed": 300,
+    "assertions": 6581,
+    "database": "fail-closed SQLite :memory:"
+  },
+  "frontend": {
+    "passed": 304
+  },
+  "build": "passed",
+  "pint": "passed",
+  "assets": {
+    "manifest_references": 36,
+    "preload_dependencies": 28,
+    "profiles": 3
+  },
+  "query_evidence": {
+    "quote": 0,
+    "list_service": 4,
+    "list_fixture_pending_payments": 100,
+    "page_size": 20,
+    "lookahead": 1,
+    "issue_http_one_term": 44,
+    "apm_http_one_term": 44,
+    "seven_approvals_http": [
+      54,
+      56,
+      57,
+      58,
+      59,
+      60,
+      66
+    ],
+    "limitation": "Query counts on isolated fixtures, not MySQL throughput or universal latency evidence."
+  },
+  "browser": {
+    "requests": [
+      {
+        "q": "",
+        "branch": "",
+        "status": "all",
+        "page": "1"
+      },
+      {
+        "q": "",
+        "branch": "",
+        "status": "paid",
+        "page": "1"
+      },
+      {
+        "q": "",
+        "branch": "SURABAYA",
+        "status": "all",
+        "page": "1"
+      },
+      {
+        "q": "not-found",
+        "branch": "SURABAYA",
+        "status": "all",
+        "page": "1"
+      },
+      {
+        "q": "",
+        "branch": "",
+        "status": "all",
+        "page": "1"
+      },
+      {
+        "q": "",
+        "branch": "",
+        "status": "all",
+        "page": "1"
+      },
+      {
+        "q": "",
+        "branch": "",
+        "status": "all",
+        "page": "1"
+      }
+    ],
+    "errors": [],
+    "widths": [
+      {
+        "viewport": 768,
+        "document": 768,
+        "table": 1100
+      },
+      {
+        "viewport": 375,
+        "document": 375,
+        "table": 1100
+      }
+    ],
+    "filters": true,
+    "retry": true,
+    "isolatedMockApi": true
+  },
+  "word": [
+    {
+      "name": "mixed",
+      "sha256": "10533cba5587cacd64fe823c93a77c84c08aa05f0c49d810e38e608add35bf32",
+      "word_pages": 1,
+      "zip_crc_xml": "valid",
+      "visually_checked_pages": 1,
+      "net": "295.000",
+      "no_tax_row": true
+    },
+    {
+      "name": "material-only",
+      "sha256": "2668cdd23f0c02f2cc2a2e1344c271f90a495b74f903a43228aca3ced5d8bc9b",
+      "word_pages": 1,
+      "zip_crc_xml": "valid",
+      "visually_checked_pages": 1,
+      "net": "100.000",
+      "no_tax_row": true
+    }
+  ],
+  "backup": {
+    "type": "demo SQLite only",
+    "bytes": 233472,
+    "mode": "0600"
+  },
+  "live_database_writes": false,
+  "schema_migration_required": false,
+  "history": "Existing issued/paid gross cashbons and all decisions untouched; explicit new issue/reissue freezes new quote.",
+  "limits": [
+    "Browser uses isolated mock API; actual authenticated Laravel endpoint tested in memory separately",
+    "No aaPanel deployment or live MySQL load/DDL tests",
+    "No Microsoft Word desktop or physical print verification",
+    "Bank transfer and tax remittance remain external human operations"
+  ]
+}

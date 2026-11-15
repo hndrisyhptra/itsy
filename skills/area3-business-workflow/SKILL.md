@@ -3,6 +3,10 @@ name: area3-business-workflow
 description: Implement its Area 3 Project Plan, BOQ, mandor contracting, assigned two-stage approvals, scan verification and full APM settlement, APM gating, BA PP and continuation state transitions.
 ---
 
+## Net Mandor service kasbon and Finance list — 16 November 2026
+Follow docs/KASBON_PPH_PAYMENT_LIST.md and latest AGENTS: new explicit kasbon issue/reissue freezes actual Mandor Jasa less2.5%, Material intact, final net truncated, gross retained; no deduction row on cashbon output. Old issued/paid policies remain. Net paid/APM/outstanding/next-term/closure/report parity, seven genuine approvals/private proof/version/Branch/UUID/revision gates and quote validation are mandatory. Finance/Settlement-only20+1 metadata list uses4servicequeries, scoped PPbranch, safe revision refresh and no PII/decryption/aggregate loading. No new migration/live rewrite. Record actual tests, Word render, browser QA vs live/server limits.
+
+
 # area3-business-workflow
 
 ## PP bundle and seven kasbon approvals — 15 November 2026

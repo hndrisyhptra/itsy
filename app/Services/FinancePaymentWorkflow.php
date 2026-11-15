@@ -6,6 +6,18 @@ use Illuminate\Support\Str;
 
 trait FinancePaymentWorkflow
 {
+    public function paymentDue(array $t): float
+    {
+        return KasbonSettlement::due($t, $this->termTotal($t));
+    }
+
+    public function kasbonSummaryMatches(array $t, array $summary): bool
+    {
+        $deal = $this->record('deals', $this->record('spks', $t['spkId'])['dealId']);
+
+        return KasbonSettlement::matches($deal, $t, $summary, $this->termTotal($t));
+    }
+
     public static function usesFinancePayment(array $t): bool
     {
         return ($t['workflowVersion'] ?? 1) === 3 && in_array($t['paymentFlow'] ?? '', ['kasbon-v1', 'kasbon-settlement-v2'], true);
@@ -84,7 +96,7 @@ trait FinancePaymentWorkflow
         if (isset($t['kasbon']) && ($t['financePayment']['status'] ?? '') !== 'Dikembalikan') {
             $this->fail('Kasbon telah diterbitkan; kembalikan dengan catatan sebelum revisi.');
         }
-        if (! Str::isUuid($summary['id'] ?? '') || bccomp((string) ($summary['amount'] ?? -1), (string) $this->termTotal($t), 2) !== 0) {
+        if (! Str::isUuid($summary['id'] ?? '') || ! $this->kasbonSummaryMatches($t, $summary)) {
             $this->fail('Kasbon harus sesuai tagihan termin.');
         }
         if (isset($t['kasbon'])) {
@@ -202,7 +214,7 @@ trait FinancePaymentWorkflow
         }
         if (($t['financePayment']['status'] ?? '') !== 'Diverifikasi' || ($t['financePayment']['decision']['decision'] ?? '') !== 'Setujui'
             || ($t['financePayment']['decision']['kasbonId'] ?? '') !== ($t['kasbon']['id'] ?? null) || empty($t['transferProof']['id']) || ($t['transferProof']['kasbonId'] ?? '') !== ($t['kasbon']['id'] ?? null)
-            || bccomp((string) ($t['kasbon']['amount'] ?? -1), (string) $this->termTotal($t), 2) !== 0) {
+            || ! $this->kasbonSummaryMatches($t, $t['kasbon'] ?? [])) {
             $this->fail('Kasbon terbit, persetujuan Finance sesuai kasbon dan bukti transfer wajib sebelum APM.');
         }
     }

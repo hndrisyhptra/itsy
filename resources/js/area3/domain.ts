@@ -2,6 +2,7 @@ import { usesContractBundle, assertBundleEditable, type ContractBundle } from '.
 import { WHOLE_RUPIAH, wholeRupiah, moneyLine } from './currency';
 export { money } from './currency';
 import { money } from './currency';
+import { paymentDue } from './kasbon-settlement';
 import { usesFinancePayment, assertFinanceApmReady, type KasbonSummary, type FinancePayment } from './finance-payment';
 import { type PartialPaymentRequest, usesPartialPayment, assertPartialApmReady, documentStatus } from './partial-payment';
 export { requestPartialPayment, verifyPartialPayment } from './partial-payment';
@@ -95,7 +96,7 @@ export function nextTermReason(s: State, spkId: string): string {
   if (terms.length >= 3) return 'Maksimal tiga termin per SPK.';
   const previous = terms.at(-1);
   if (previous && previous.status !== 'Disetujui') return `Termin ${previous.number} belum mendapat approval lengkap.`;
-  if(previous&&(s.schema>=3||usesPartialPayment(previous)||usesFinancePayment(previous))&&previous.paid!==termTotal(s,previous))return 'Payment termin sebelumnya harus lunas sebelum termin berikutnya.';
+  if(previous&&(s.schema>=3||usesPartialPayment(previous)||usesFinancePayment(previous))&&previous.paid!==paymentDue(previous,termTotal(s,previous)))return 'Payment termin sebelumnya harus lunas sebelum termin berikutnya.';
   if (previous && previous.apmStatus !== 'Valid') return `Termin ${previous.number + 1} belum dapat dibuat karena Nomor APM Termin ${previous.number} belum valid.`;
   return '';
 }
@@ -252,13 +253,13 @@ function settleApm(s:State,termId:string,apm:string,valid:boolean) {
   if (!/^[A-Za-z0-9][A-Za-z0-9/._-]{4,59}$/.test(apm.trim())) throw new Error('Nomor APM 5–60 karakter: huruf, angka, / . _ atau -.');
   if (valid && s.terms.some(x => x.id !== t.id && x.apmStatus === 'Valid' && x.apm.toUpperCase() === apm.trim().toUpperCase())) throw new Error('Nomor APM sudah digunakan.');
   if (!valid && s.terms.some(x => x.spkId === t.spkId && x.number > t.number)) throw new Error('APM tidak dapat dibatalkan setelah termin berikutnya dibuat.');
-  if ((t.workflowVersion ?? 1) >= 2) { const amount = round(termTotal(s, t) - t.paid); if (amount <= 0) throw new Error('Tagihan sudah lunas.'); t.paid = termTotal(s, t); t.paymentHistory.push({ amount, ref: apm.trim(), at: now() }); }
+  if ((t.workflowVersion ?? 1) >= 2) { const amount = round(paymentDue(t,termTotal(s,t)) - t.paid); if (amount <= 0) throw new Error('Tagihan sudah lunas.'); t.paid = paymentDue(t,termTotal(s,t)); t.paymentHistory.push({ amount, ref: apm.trim(), at: now() }); }
   if(partial){t.paymentRequest!.status='Dibayar';t.paymentRequest!.apm=apm.trim();t.paymentRequest!.paidAt=now();t.paymentRequest!.paidBy=s.actorUserId;t.paymentRequest!.documentsAtPayment=documentStatus(t);}
   if(financePayment){t.financePayment!.status='Dibayar';t.financePayment!.documentsAtPayment=documentStatus(t);t.financePayment!.kasbonId=t.kasbon!.id;t.financePayment!.transferFileId=t.transferProof!.id;}
   t.apm = apm.trim(); t.apmStatus = valid ? 'Valid' : 'Perlu Koreksi'; log(s, 'APM dicatat', t.apm, '/termin/' + t.id);
 }
 export function recordPayment(s: State, termId: string, amount: number, ref: string) {
-  recordCommand('recordPayment', [termId, amount, ref]); requireFinance(s); const t = getTerm(s, termId); if (t.status !== 'Disetujui' || t.apmStatus !== 'Valid') throw new Error('Pembayaran membutuhkan termin approved dan APM valid.'); if (!Number.isFinite(amount) || round(amount) <= 0 || Math.abs(amount * 100 - Math.round(amount * 100)) > 0.000001 || round(t.paid + amount) > termTotal(s, t) || !ref.trim()) throw new Error('Nilai pembayaran harus positif, tidak melebihi outstanding, dan memiliki referensi.'); t.paid = round(t.paid + amount); t.paymentHistory.push({ amount: round(amount), ref: ref.trim(), at: now() }); log(s, 'Pembayaran dicatat', `${ref} · ${money(amount)}`, `/termin/${t.id}`); }
+  recordCommand('recordPayment', [termId, amount, ref]); requireFinance(s); const t = getTerm(s, termId); if (t.status !== 'Disetujui' || t.apmStatus !== 'Valid') throw new Error('Pembayaran membutuhkan termin approved dan APM valid.'); if (!Number.isFinite(amount) || round(amount) <= 0 || Math.abs(amount * 100 - Math.round(amount * 100)) > 0.000001 || round(t.paid + amount) > paymentDue(t,termTotal(s,t)) || !ref.trim()) throw new Error('Nilai pembayaran harus positif, tidak melebihi outstanding, dan memiliki referensi.'); t.paid = round(t.paid + amount); t.paymentHistory.push({ amount: round(amount), ref: ref.trim(), at: now() }); log(s, 'Pembayaran dicatat', `${ref} · ${money(amount)}`, `/termin/${t.id}`); }
 export function attestBapp(s: State, id: string, no: string, _legacyEvidence?: string) {
   recordCommand('attestBapp', [id, no]); requireAdmin(s); const b = s.bapps.find(b => b.id === id)!; if (b.status === 'Sah') throw new Error('BA PP sudah disahkan.'); const t = getTerm(s, b.termId); if (t.type !== 'Final' || t.status !== 'Disetujui' || t.approvals.length !== approvalCount(t)) throw new Error('Termin Final belum approved lengkap.'); if (!no.trim()) throw new Error('Nomor BA PP wajib diisi.'); b.no = no.trim(); b.evidence ??= ''; b.status = 'Sah'; log(s, 'BA PP difinalisasi', b.no, `/ba-pp/${b.id}`); }
 export function releaseVolume(s: State, id: string, quantities: Record<string, { m: number; s: number }>) {

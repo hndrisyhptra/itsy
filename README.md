@@ -1,5 +1,7 @@
 # it's Area 3 — Construction Workspace
 
+**16 November 2026:** Kasbon baru dan transfer/APM otomatis memakai Material utuh +97,5%Jasa Mandor aktual, tanpa rincian potongan pada berkas. Bruto dan kasbon terbit/paid lama tetap. **Pembayaran → List Payment** tersedia khusus Mgr Finance & Settlement/Finance untuk ringkasan, pencarian LOP, filter Branch/status dan detail. Tidak ada migration baru. [Perilaku, penyimpanan dan verifikasi](docs/KASBON_PPH_PAYMENT_LIST.md).
+
 **Alur baru — 15 November 2026**
 
 PP baru disimpan bersama draf BA KH dan SPK, lalu **Ajukan Paket** melalui SPK untuk lima approval. Pembayaran baru mengisi **kasbon sebelum pengajuan**, kemudian PM → Admin Area → Mgr Project Support → Mgr Deployment → Head of PMO → **Mgr Finance & Settlement** → Finance; bukti transfer dan APM sesudah Finance. Kasbon menyediakan Word/PDF dengan TTD kosong dan cap hanya pada preview. Riwayat/pembayaran lama tetap memakai alur tersimpan. Migration role/CHECK baru harus dijalankan saat deploy, lalu siapkan akun Settlement beserta Branch; belum diterapkan agen ke its aktif/server. [Alur, data, deployment dan verifikasi](docs/BUNDLE_SETTLEMENT_APPROVAL.md).

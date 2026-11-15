@@ -1,5 +1,13 @@
 # Arsitektur aplikasi it's Area 3
 
+## 16 November 2026 — Kasbon net Jasa Mandor dan List Payment Finance
+
+- Potongan2,5% hanya Jasa Mandor aktual; Material utuh. Pengguna mengonfirmasi transfer/APM memakai net dan bruto tetap. Quote server-owned/versioned disimpan bersama kasbon; rincian/total/terbilang/Word/cetak hanya net tanpa baris PPh. Kasbon terbit/paid lama tidak dihitung ulang.
+- APM/payed history menyimpan net; status Lunas/next-term/CLOSE/timeline/outstanding/CSV memakai payable versioned, bruto/BOQ/BARP/ledger volume tetap. Full approval/Finance/bukti/scan/Branch/UUID/revision tetap wajib.
+- Pembayaran → List Payment khusus Mgr Finance & Settlement/Finance: ringkasan pengajuan/ID/sudah-belum/nilai, search LOP/dokumen/APM, filter Branch/status, tahap approval/berkas, detail,20+1baris dan refresh revisi aman. Tidak menambah menu utama atau membuka bank/PII.
+- Query quote0SQL; daftar4servicequery untuk fixture100pending, tanpa full aggregate/dekripsi/per-row query; issue/APM44query fixture.300PHP/6581assertions,304frontend/build/Pint/assets36refs/28preloads×3profil lulus.2Word/2PNG diperiksa; browser QA filter/retry/375/768/1440/dark lulus. Bukan load benchmark atau browser akun live.
+- Backupdemo233472byte/0600; tanpa migration baru/live its/env/Dompis/commit/push/deploy. [Perilaku/arsitektur/batas](KASBON_PPH_PAYMENT_LIST.md), [bukti](qa/kasbon-pph-payment-list-20261116.json).
+
 ## 16 November 2026 — Label BARP langsung Final dan kota server-owned
 
 `barp-labels.ts` menjadi helper ringan untuk kondisi nomor1+Final dan kota Surabaya, tanpa memuat template Word. Main HTML/nativeOOXML memakai barp-content; filename/toolbar memakai aturan sama. Lampiran memproyeksikan ledger existing menjadi11kolom untuk Final satu kali (actual pertama saja, lebar gabungan15%), atau tetap13kolom untuk cicilan. Headers/widths/recaps/note dibagi oleh HTML dan Word, sehingga colspan dan grid konsisten; nilai/ledger tidak dimutasi.

@@ -726,7 +726,7 @@ class PrototypeDomain
             $this->fail('Maksimal tiga termin dan tidak ada termin setelah Final.');
         }
         $previous = end($terms);
-        if ($previous && (($this->state['schema'] ?? 1) >= 3 || self::usesPartialPayment($previous) || self::usesFinancePayment($previous)) && bccomp((string) $previous['paid'], (string) $this->termTotal($previous), 2) !== 0) {
+        if ($previous && (($this->state['schema'] ?? 1) >= 3 || self::usesPartialPayment($previous) || self::usesFinancePayment($previous)) && bccomp((string) $previous['paid'], (string) $this->paymentDue($previous), 2) !== 0) {
             $this->fail('Payment termin sebelumnya harus lunas sebelum termin berikutnya.');
         }
         if ($previous && ($previous['status'] !== 'Disetujui' || count($previous['approvals']) !== $this->approvalCount($previous) || $previous['apmStatus'] !== 'Valid')) {
@@ -912,11 +912,11 @@ class PrototypeDomain
         $t['apm'] = $apm;
         $t['apmStatus'] = $valid ? 'Valid' : 'Perlu Koreksi';
         if (($t['workflowVersion'] ?? 1) >= 2) {
-            $value = (float) bcsub((string) $this->termTotal($t), (string) $t['paid'], 2);
+            $value = (float) bcsub((string) $this->paymentDue($t), (string) $t['paid'], 2);
             if ($value <= 0) {
                 $this->fail('Tagihan sudah lunas.');
             }
-            $t['paid'] = $this->termTotal($t);
+            $t['paid'] = $this->paymentDue($t);
             $t['paymentHistory'][] = ['amount' => $value, 'ref' => $apm, 'at' => now()->toISOString(), 'actor' => $this->state['actorUserId'] ?? '', 'source' => 'APM'];
         }
         if ($partial) {
@@ -947,7 +947,7 @@ class PrototypeDomain
         if ($t['status'] !== 'Disetujui' || $t['apmStatus'] !== 'Valid') {
             $this->fail('Pembayaran membutuhkan approval lengkap dan APM valid.');
         }
-        if ($value <= 0 || abs($value * 100 - round($value * 100)) > 0.000001 || ! $ref || bccomp(bcadd((string) $t['paid'], (string) $value, 2), (string) $this->termTotal($t), 2) > 0) {
+        if ($value <= 0 || abs($value * 100 - round($value * 100)) > 0.000001 || ! $ref || bccomp(bcadd((string) $t['paid'], (string) $value, 2), (string) $this->paymentDue($t), 2) > 0) {
             $this->fail('Nominal pembayaran tidak valid/melebihi outstanding atau referensi kosong.');
         }
         $t['paid'] = (float) bcadd((string) $t['paid'], (string) $value, 2);

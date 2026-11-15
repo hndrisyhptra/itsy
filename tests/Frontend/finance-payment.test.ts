@@ -10,8 +10,21 @@ import { paymentPosition } from '../../resources/js/area3/project-timeline';
 import { paymentStage,paymentLatest } from '../../resources/js/area3/payment-selection';
 import { KasbonDocument,kasbonTerbilang,type KasbonData } from '../../resources/js/area3/kasbon-document';
 import { setCommandRecorder } from '../../resources/js/area3/commands';
+import {kasbonQuote} from '../../resources/js/area3/kasbon-settlement';
+import {dashboardSummary} from '../../resources/js/area3/dashboard-summary';
 
 function actor(s:State,role:Role){s.role=role;selectActor(s,s.users.find(u=>u.active&&u.role===role)!.id);}
+
+test('net kasbon settles through actual Finance/APM without changing gross, repeating payment or blocking the next term',()=>{
+ const {s,t}=issued();t.moneyPolicy='idr-trunc-v1';
+ const gross=termTotal(s,t),quote=kasbonQuote(s.deals[0],t);assert.ok(quote.net<gross);
+ t.kasbon={...t.kasbon!,amount:quote.net,settlement:quote};decideFinancePayment(s,t.id,'Setujui','Reviewed');
+ t.transferProof={id:'proof',kasbonId:t.kasbon.id,uploadedBy:s.actorUserId!,uploadedAt:new Date().toISOString()};
+ recordApm(s,t.id,'APM/NET/001');assert.equal(t.paid,quote.net);assert.equal(t.paymentHistory.at(-1)!.amount,quote.net);assert.equal(termTotal(s,t),gross);
+ assert.equal(dashboardSummary(s).outstanding,0);assert.equal(dashboardSummary(s).paid,quote.net);
+ actor(s,'Admin Konstruksi');assert.equal(nextTermReason(s,t.spkId),'');
+ actor(s,'Finance');assert.throws(()=>recordApm(s,t.id,'APM/NET/DUP'),/belum dibayar/);
+});
 function fixture(final=false,all=true){
   const s=normalizeWorkflow(seed('D'));s.schema=3;
   for(const [i,role]of APPROVERS_V3.entries())if(!s.users.some(u=>u.role===role))s.users.push({id:'finance-role-'+i,name:'QA '+role,email:`finance-${i}@example.test`,role,active:true});

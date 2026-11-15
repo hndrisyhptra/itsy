@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\PrototypeWorkspace;
 use App\Services\AccountAccess;
 use App\Services\FinanceDocuments;
+use App\Services\KasbonSettlement;
 use App\Services\PrototypeDomain;
 use App\Services\RelationalWorkflowStore;
 use App\Services\UploadQueue;
@@ -136,7 +137,8 @@ class FinanceKasbonTest extends TestCase
     private function form(array $t): array
     {
         $s = $this->getJson('/api/prototype/state')->json('state');
-        $amount = app(PrototypeDomain::class)->load($s)->termTotal($t);
+        $spk = collect($s['spks'])->firstWhere('id', $t['spkId']);
+        $amount = KasbonSettlement::quote(collect($s['deals'])->firstWhere('id', $spk['dealId']), $t)['net'];
         $payeeVersion = DB::table('mandor_payee_profiles as m')->join('work_orders as s', 's.id_spk', '=', 'm.spk_id')
             ->where('s.workspace_id', PrototypeWorkspace::first()->id)->where('s.source_id', $t['spkId'])->max('m.version');
 
@@ -166,10 +168,15 @@ class FinanceKasbonTest extends TestCase
             $file = $this->upload('transfer-proof', $t['id']);
             $this->api('recordApm', [$t['id'], 'APM/QA/001', true])->assertOk();
             $paid = $this->term($t['id']);
+            $domain = app(PrototypeDomain::class)->load($this->getJson('/api/prototype/state')->json('state'));
+            $this->assertGreaterThan($paid['paid'], $domain->termTotal($paid), 'Mandor service withholding does not change the gross bill.');
+            $this->assertEquals($paid['paid'], $domain->paymentDue($paid));
+            $this->assertSame('mandor-service-pph25-v1', $paid['kasbon']['settlement']['policy']);
             $this->assertSame('Dibayar', $paid['financePayment']['status']);
             $this->assertSame('NOK', $paid['financePayment']['documentsAtPayment']);
             $this->assertEquals($paid['kasbon']['amount'], $paid['paid']);
             $settlement = (array) DB::table('apm_settlements')->first();
+            $this->assertEquals($paid['paid'], $settlement['amount'], 'APM records the net transfer, not the gross invoice.');
             $this->assertSame($file, $settlement['transfer_file_id']);
             $this->assertSame($paid['kasbon']['id'], $settlement['kasbon_id']);
             $this->assertNull($settlement['verified_scan_id']);

@@ -6,5 +6,5 @@ export type KasbonInput={settlementUserId?:string;costCenter:string;wbs:string;a
 export function kasbonInput(amount:number,previous?:KasbonData):KasbonInput {
   return {settlementUserId:previous?.settlementUserId??'',costCenter:previous?.costCenter??'',wbs:previous?.wbs??'',activity:previous?.activity??'',place:previous?.place??KASBON_DEFAULTS.place,date:today(),
     evp:previous?.evp??KASBON_DEFAULTS.evp,businessSupport:previous?.businessSupport??KASBON_DEFAULTS.businessSupport,
-    rows:previous?.rows.map(r=>({...r,amount:String(r.amount)}))??[{accountCode:'',accountName:'',text:'',amount:String(amount)}]};
+    rows:previous?.rows.reduce((n,r)=>n+Number(r.amount),0)===amount?previous.rows.map(r=>({...r,amount:String(r.amount)})):[{accountCode:'',accountName:'',text:'',amount:String(amount)}]};
 }

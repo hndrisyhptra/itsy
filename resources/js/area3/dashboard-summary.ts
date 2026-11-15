@@ -1,3 +1,4 @@
+import { paymentDue } from './kasbon-settlement';
 import { type State, boqTotal, canApproveProject, canApproveTerm, dealTotal, round, termTotal } from './domain';
 
 /** Include Branches without transactions; Laravel already scopes the master list to the account. */
@@ -28,7 +29,7 @@ export function dashboardSummary(s: State, branch = '') {
     totalBoq: sum(projects.filter(p => !p.parentId && p.boqStatus === 'Final').map(boqTotal)),
     billed: sum(approved.map(t => termTotal(s, t))),
     paid: sum(approved.map(t => t.paid)),
-    outstanding: sum(approved.map(t => Math.max(0, round(termTotal(s, t) - t.paid)))),
+    outstanding: sum(approved.map(t => Math.max(0, round(paymentDue(t,termTotal(s,t)) - t.paid)))),
     pendingApprovals: pendingTerms.length + projects.filter(p => canApproveProject(s, p)).length,
   };
 }

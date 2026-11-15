@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\PrototypeWorkspace;
 use App\Services\AuthenticatedWorkspace;
+use App\Services\KasbonSettlement;
 use App\Services\NegotiationProjectCatalog;
 use App\Services\PrototypeDomain;
 use App\Services\PrototypeWorkspaceService;
@@ -36,9 +37,17 @@ class BundleSettlementTest extends TestCase
         return $this->state()['terms'][0];
     }
 
+    private function netAmount(array $t): float
+    {
+        $s = $this->state();
+        $v = collect($s['spks'])->firstWhere('id', $t['spkId']);
+
+        return KasbonSettlement::quote(collect($s['deals'])->firstWhere('id', $v['dealId']), $t)['net'];
+    }
+
     private function kasbon(array $t): array
     {
-        return ['settlementUserId' => 'db-user-'.$this->accounts['Mgr Finance & Settlement']->getKey(), 'payeeVersion' => 1, 'costCenter' => 'QA CC', 'wbs' => 'QA WBS', 'activity' => 'QA kasbon', 'place' => 'Surabaya', 'date' => '2026-11-15', 'evp' => 'I GEDE WAHYU DANYNDRA', 'rows' => [['accountCode' => 'QA1', 'accountName' => 'QA Account', 'text' => 'QA Work', 'amount' => (string) app(PrototypeDomain::class)->load($this->state())->termTotal($t)]]];
+        return ['settlementUserId' => 'db-user-'.$this->accounts['Mgr Finance & Settlement']->getKey(), 'payeeVersion' => 1, 'costCenter' => 'QA CC', 'wbs' => 'QA WBS', 'activity' => 'QA kasbon', 'place' => 'Surabaya', 'date' => '2026-11-15', 'evp' => 'I GEDE WAHYU DANYNDRA', 'rows' => [['accountCode' => 'QA1', 'accountName' => 'QA Account', 'text' => 'QA Work', 'amount' => (string) $this->netAmount($t)]]];
     }
 
     private function submitKasbon(array $t, ?array $form = null)

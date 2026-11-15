@@ -153,7 +153,7 @@ final class TruncateStoredMoney
                     if ($t['status'] === 'Disetujui') {
                         $overrides['payment_terms'][$store->id($w->id, 'terms', $t['id'])] = ['approved_amount' => $bill];
                     }
-                    if (isset($t['kasbon']) && $t['apmStatus'] !== 'Valid' && $t['paid'] <= 0 && $t['kasbon']['amount'] != $domain->termTotal($t)) {
+                    if (isset($t['kasbon']) && $t['apmStatus'] !== 'Valid' && $t['paid'] <= 0 && ! $domain->kasbonSummaryMatches($t, $t['kasbon'])) {
                         throw new RuntimeException('Konversi dihentikan: kasbon dan tagihan termin '.$t['id'].' perlu direkonsiliasi.');
                     }
                     if (! empty($t['paymentHistory']) && array_sum(array_column($t['paymentHistory'], 'amount')) != $t['paid']) {

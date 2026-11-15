@@ -1,6 +1,7 @@
+import type { KasbonSettlement } from './kasbon-settlement';
 import type { Role, Term, Approval } from './domain';
 import { bakhDocumentDate } from './bakh-content';
-export interface KasbonData {templateVersion?:2|3;settlementUserId?:string;issuerRole?:Role;costCenter:string;wbs:string;activity:string;place:string;date:string;evp:string;businessSupport:string;rows:{accountCode:string;accountName:string;text:string;amount:string}[];payee:{nik:string;accountNumber:string;accountName:string;bank:string;version?:number;ktpFileId?:string;bankFileId?:string};mandor:string;unit:string;project:string;projectCode:string;ppNo:string;spkNo:string;termNumber:number;termType:string;amount:number;signers:Partial<Record<Role,{name:string;userId:string}>>;issuer:string}
+export interface KasbonData {settlement?:KasbonSettlement;templateVersion?:2|3;settlementUserId?:string;issuerRole?:Role;costCenter:string;wbs:string;activity:string;place:string;date:string;evp:string;businessSupport:string;rows:{accountCode:string;accountName:string;text:string;amount:string}[];payee:{nik:string;accountNumber:string;accountName:string;bank:string;version?:number;ktpFileId?:string;bankFileId?:string};mandor:string;unit:string;project:string;projectCode:string;ppNo:string;spkNo:string;termNumber:number;termType:string;amount:number;signers:Partial<Record<Role,{name:string;userId:string}>>;issuer:string}
 const words=['','satu','dua','tiga','empat','lima','enam','tujuh','delapan','sembilan','sepuluh','sebelas'];
 function integerWords(n:number):string {
   if(n<12)return words[n];if(n<20)return integerWords(n-10)+' belas';if(n<100)return integerWords(Math.floor(n/10))+' puluh '+integerWords(n%10);

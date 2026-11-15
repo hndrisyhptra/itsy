@@ -1,5 +1,9 @@
 # Paket PP dan kasbon sebelum tujuh approval
 
+## 16 November 2026 — Net Jasa Mandor pada kasbon baru
+
+Kasbon/transfer/APM baru memakai Material +97,5%Jasa Mandor aktual, bruto tetap tersimpan. Semua tujuh approval/version binding tetap; kasbon terbit/paid tanpa policy baru mempertahankan nominalnya. Payable net melunasi pengajuan tanpa outstanding pajak/blocked next-term. List Payment hanya Finance/Settlement mengikuti Branch. Lihat [KASBON_PPH_PAYMENT_LIST](KASBON_PPH_PAYMENT_LIST.md) untuk canonical quote, data, akses, query dan bukti; tidak perlu migration baru.
+
 ## Otoritas 15 November 2026
 
 Pengguna mengubah PP menjadi satu pengajuan bersama BA KH dan SPK. Untuk pembayaran, pengguna mengonfirmasi kasbon **diisi sebelum pengajuan pertama**, kemudian PM → Admin Area → Mgr Project Support → Mgr Deployment → Head of PMO → Mgr Finance & Settlement → Finance. Ketentuan ini menggantikan kasbon setelah Head untuk dokumen baru. Dokumen lama tetap memakai marker/alur tersimpan; tidak ada adopsi massal pengajuan berjalan, penggantian keputusan, akun atau pembayaran historis.

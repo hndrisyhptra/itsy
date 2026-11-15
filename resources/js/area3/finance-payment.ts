@@ -1,7 +1,8 @@
 import { type State, type Term, type Spk, type Approval, getTerm, approvalRoles, requireFinance, requireAdmin, applyTermDecision, applyTermSave, applySpk, termTotal, now, log } from './domain';
+import { paymentDue, kasbonQuoteMatches, type KasbonSettlement } from './kasbon-settlement';
 import { recordCommand } from './commands';
 
-export interface KasbonSummary {settlementUserId?:string;id:string;version:number;amount:number;issuedBy:string;issuedAt:string;issuedRole?:State['role']}
+export interface KasbonSummary {settlement?:KasbonSettlement;settlementUserId?:string;id:string;version:number;amount:number;issuedBy:string;issuedAt:string;issuedRole?:State['role']}
 export interface FinancePayment {status:'Menunggu Approval'|'Kasbon Terbit'|'Dikembalikan'|'Diverifikasi'|'Dibayar';decision?:Approval&{kasbonId:string};documentsAtPayment?:'OK'|'NOK';kasbonId?:string;transferFileId?:string}
 export const usesFinancePayment=(t:Term)=>t.workflowVersion===3&&['kasbon-v1','kasbon-settlement-v2'].includes(t.paymentFlow??'');
 export const financePaymentLabel=(t:Term)=>usesSettlementPayment(t)&&['Draft','Dikembalikan','Ditolak'].includes(t.status)?'Lengkapi kasbon & ajukan ulang dari PM':t.status==='Diajukan'?'Menunggu Approval':t.financePayment?.status==='Menunggu Approval'?'Menunggu Pengajuan Kasbon Admin':t.financePayment?.status==='Kasbon Terbit'?'Kasbon Diajukan · Review Finance':t.financePayment?.status??'Menunggu Pengajuan Kasbon Admin';
@@ -39,7 +40,7 @@ export function decideFinancePayment(s:State,id:string,decision:'Setujui'|'Kemba
 export function assertFinanceApmReady(s:State,t:Term){
   financePaymentEligible(t);
   if(t.scan&&t.scan.status!=='Valid')throw new Error('Scan sudah tersedia; verifikasi berkas sebelum APM.');
-  if(t.financePayment?.status!=='Diverifikasi'||t.financePayment.decision?.decision!=='Setujui'||t.financePayment.decision.kasbonId!==t.kasbon?.id||!t.transferProof?.id||t.transferProof.kasbonId!==t.kasbon?.id||t.kasbon.amount!==termTotal(s,t))throw new Error('Kasbon terbit, persetujuan Finance sesuai kasbon dan bukti transfer wajib sebelum APM.');
+  if(t.financePayment?.status!=='Diverifikasi'||t.financePayment.decision?.decision!=='Setujui'||t.financePayment.decision.kasbonId!==t.kasbon?.id||!t.transferProof?.id||t.transferProof.kasbonId!==t.kasbon?.id||t.kasbon.amount!==paymentDue(t,termTotal(s,t))||!kasbonQuoteMatches(s.deals.find(d=>d.id===s.spks.find(v=>v.id===t.spkId)!.dealId)!,t))throw new Error('Kasbon terbit, persetujuan Finance sesuai kasbon dan bukti transfer wajib sebelum APM.');
 }
 
 export function adoptFinancePayment(s:State,id:string){

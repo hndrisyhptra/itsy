@@ -1,0 +1,9 @@
+{
+  "revision": 5, "page": 1, "hasMore": true,
+  "summary": {"total": 24,"projects": 18,"paid": 9,"unpaid": 15,"paidAmount": 285450000,"unpaidAmount": 463750000},
+  "items": [
+    {"id":"qa-term-1","ppId":"qa-pp-1","ppNo":"0001/LG.000/TA-03R501/11-2026","projectCode":"R5-SBY-FTTH-10407336","name":"Pengadaan dan pemasangan jaringan akses FTTH Surabaya Timur","spkNo":"0001-02/LG.000/TA-03R501/11-2026","mandor":"Mandor QA Surabaya","branch":"SURABAYA","number":1,"type":"Final","amount":29500000,"paid":false,"paidAmount":0,"approval":"Menunggu Mgr Finance & Settlement","documents":"NOK","scanStatus":null,"apm":null,"paidAt":null,"submittedAt":"2026-11-16T04:00:00Z"},
+    {"id":"qa-term-2","ppId":"qa-pp-2","ppNo":"0002/LG.000/TA-03R502/11-2026","projectCode":"R5-DPS-QE-10024178","name":"Modernisasi jaringan serat optik kawasan Denpasar","spkNo":"0002-02/LG.000/TA-03R502/11-2026","mandor":"Mandor QA Denpasar","branch":"DENPASAR","number":2,"type":"Parsial","amount":18050000,"paid":true,"paidAmount":18050000,"approval":"Approval lengkap","documents":"OK","scanStatus":"Valid","apm":"APM/QA/2026/1002","paidAt":"2026-11-16T03:30:00Z","submittedAt":"2026-11-12T04:00:00Z"},
+    {"id":"qa-term-3","ppId":"qa-pp-3","ppNo":"0003/LG.000/TA-03R428/11-2026","projectCode":"R4-SMG-RECOVERY-10089342","name":"Recovery jaringan akses dan penggantian perangkat optik Semarang","spkNo":"0003-02/LG.000/TA-03R428/11-2026","mandor":"Mandor QA Semarang","branch":"SEMARANG","number":1,"type":"Parsial","amount":42750000,"paid":false,"paidAmount":0,"approval":"Menunggu Head of PMO","documents":"OK","scanStatus":"Menunggu Verifikasi","apm":null,"paidAt":null,"submittedAt":"2026-11-15T04:00:00Z"}
+  ]
+}

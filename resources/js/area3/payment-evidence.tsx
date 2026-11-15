@@ -1,3 +1,4 @@
+import { paymentDue } from './kasbon-settlement';
 import { usesFinancePayment, adoptFinancePayment } from './finance-payment';
 import { FinanceKasbonPanel } from './finance-private-ui';
 import { PartialPaymentPanel } from './partial-payment-panel';
@@ -26,12 +27,12 @@ export function PaymentEvidencePanel({ s, t }: { s: State; t: Term }) {
     {t.scan?.note && <Notice tone="warning">Catatan Finance: {t.scan.note}</Notice>}
     {canVerify && <><Field label="Catatan verifikasi / alasan koreksi"><textarea value={note} onChange={e => setNote(e.target.value)}/></Field><div className="actions"><Button confirm="Kembalikan scan untuk dikoreksi sesuai catatan?" onClick={() => attempt(() => mutate(d => verifyTermScan(d, t.id, 'Perlu Koreksi', note)), 'Scan dikembalikan untuk koreksi.')}>Kembalikan Scan</Button><Button confirm="Setujui dan verifikasi scan dokumen ini?" primary onClick={() => attempt(() => mutate(d => verifyTermScan(d, t.id, 'Valid', note)), 'Scan diverifikasi Finance.')}>Setujui & Verifikasi Scan</Button></div></>}
     {(t.workflowVersion ?? 1) >= 3 && <><Notice tone={t.financeApproval ? 'success' : 'warning'}>Approval Finance: {t.financeApproval ? `${t.financeApproval.actorName} · disetujui setelah pemeriksaan scan` : t.scan?.status === 'Perlu Koreksi' ? 'Scan perlu koreksi; unggah ulang untuk diperiksa Finance.' : 'Menunggu scan TTD fisik dan verifikasi Finance.'}</Notice>{!!t.financeHistory?.length && <div className="stack">{t.financeHistory.map((a,i) => <small key={i}>{a.actorName} · {a.decision} · {new Date(a.at).toLocaleString('id-ID',{timeZone:'Asia/Jakarta'})} · {a.note}</small>)}</div>}</>}
-    <div className="summary-strip"><span>Tagihan <b>{money(termTotal(s, t))}</b></span><span>Terbayar <b>{money(t.paid)}</b></span><span>Outstanding <b>{money(termTotal(s, t) - t.paid)}</b></span></div>
+    <div className="summary-strip"><span>Tagihan <b>{money(termTotal(s, t))}</b></span><span>Terbayar <b>{money(t.paid)}</b></span><span>Outstanding <b>{money(paymentDue(t,termTotal(s,t)) - t.paid)}</b></span></div>
     {!partial&&<><Field label="Nomor APM" hint="Nomor APM unik menandai seluruh tagihan termin telah dibayar."><Input disabled={!canPay} value={apm} onChange={setApm}/></Field>
     <Button primary disabled={!canPay || !apm.trim()} onClick={() => setConfirm(true)}>Catat APM & Tandai Lunas</Button>
     </>}
     {t.apmStatus === 'Valid' && <Notice tone="success">Lunas · APM {t.apm}. Pembayaran dicatat sesuai APM; aplikasi tidak mengirim transfer bank.</Notice>}
-    {confirm && <Modal title="Catat APM dan pelunasan?" onClose={() => setConfirm(false)}><p>APM {apm} akan mencatat pelunasan {money(termTotal(s, t) - t.paid)}. Pastikan scan telah diperiksa dan pembayaran telah dilakukan.</p><div className="modal-actions"><Button onClick={() => setConfirm(false)}>TIDAK</Button><Button primary onClick={() => { const ok = attempt(() => { mutate(d => recordApm(d, t.id, apm)); return true; }, 'APM tersimpan dan tagihan lunas.'); if (ok) setConfirm(false); }}>YA</Button></div></Modal>}
+    {confirm && <Modal title="Catat APM dan pelunasan?" onClose={() => setConfirm(false)}><p>APM {apm} akan mencatat pelunasan {money(paymentDue(t,termTotal(s,t)) - t.paid)}. Pastikan scan telah diperiksa dan pembayaran telah dilakukan.</p><div className="modal-actions"><Button onClick={() => setConfirm(false)}>TIDAK</Button><Button primary onClick={() => { const ok = attempt(() => { mutate(d => recordApm(d, t.id, apm)); return true; }, 'APM tersimpan dan tagihan lunas.'); if (ok) setConfirm(false); }}>YA</Button></div></Modal>}
     {preview && <DocumentPreview state={s} kind={t.type === 'Parsial' ? 'BA Rekonsiliasi Pekerjaan – Termin' : 'Persiapan BA Penyelesaian Pekerjaan'} spk={getSpk(s, t.spkId)} term={t} onClose={() => setPreview(false)}/>}
   </Card></>;
 }

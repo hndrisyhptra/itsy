@@ -1,5 +1,9 @@
 # Kasbon, data Mandor dan pembayaran — 11 November 2026
 
+## 16 November 2026 — Kasbon/transfer bersih dan List Payment
+
+Khusus penerbitan kasbon baru/ulang, Material tetap utuh dan Jasa Mandor dipotong2,5% sesuai konfirmasi pengguna. Kasbon/transfer/APM net; bruto tetap untuk rekonsiliasi. Tanpa rincian potongan pada form/preview/Word/cetak. Paid/riwayat/APM/next-term/outstanding/CLOSE memakai payable versioned; tidak mengubah kasbon terbit/paid lama. Halaman Pembayaran → List Payment hanya Finance/Settlement, Branch scoped dan bounded. [Aturan penyimpanan, akses, query, deploy dan verifikasi](KASBON_PPH_PAYMENT_LIST.md) menggantikan aturan full-gross kasbon di bawah untuk policy baru saja. Tidak ada migration baru/live rewrite.
+
 ## 15 November 2026 — Kasbon sebelum tujuh approval
 
 Pengguna mengonfirmasi kasbon Admin diisi sebelum pengajuan pembayaran pertama. New kasbon-settlement-v2: PM → Admin Area → Project Support → Deployment → Head → Mgr Finance & Settlement → Finance7, lalu bukti transfer/APM. New template3 mengganti Business Support dengan akun Settlement terpilih aktif/Branch, tanpa TTD Mandor, cap keputusan terikat versi hanya preview dan native Word/PDF blank signature. Dokumen lama tetap alur/marker/identitas tersimpan. [Aturan, peran private, schema, deployment dan bukti](BUNDLE_SETTLEMENT_APPROVAL.md) menggantikan kasbon-setelah-Head hanya untuk dokumen baru. Migration role/order3 belum dijalankan agen pada its aktif/server.
