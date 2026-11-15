@@ -1,12 +1,12 @@
 import { useSyncExternalStore } from 'react';
-import { type State, type BoqRow, type BoqUpload, now, createTerm } from './domain';
+import { type State, type BoqRow, type BoqUpload, now, createSettlementTerm } from './domain';
 import { paymentStartAction } from './payment-selection';
 import { seed } from './seed';
 import { boot, appUrl, workspaceUrl } from './laravel';
 import { type Command, setCommandRecorder } from './commands';
 import { assertHeadReopenCommand } from './head-reopen';
 import type { MasterEntity, MasterCatalog } from './master-data';
-import { enqueueUpload, uploadTask, waitUpload, type UploadKind } from './upload-queue';
+import { enqueueUpload, uploadTask, waitUpload, UploadTaskFailedError, type UploadKind } from './upload-queue';
 import { postUpload, type UploadProgressHandler } from './upload-progress';
 const listeners = new Set<() => void>();
 const DRAFT_PREFIX = 'area3-laravel-draft-' + (boot?.account ? boot.account.id + '-' : '');
@@ -90,7 +90,7 @@ export async function startPaymentFromSpk(spkId:string):Promise<string> {
   const action=paymentStartAction(state,spkId);
   if(action.action==='open')return action.termId;
   if(action.action!=='create')throw new Error(action.reason||'SPK belum dapat digunakan.');
-  const id=mutate(s=>createTerm(s,spkId));
+  const id=mutate(s=>createSettlementTerm(s,spkId));
   await waitForPersistence();
   if(!state.terms.some(t=>t.id===id&&t.spkId===spkId))throw new Error('Draf belum dikonfirmasi. Muat ulang daftar sebelum mencoba kembali.');
   return id;
@@ -214,5 +214,10 @@ export async function uploadPrivateDocument(kind:UploadKind,documentId:string,fi
   const requestId=requests.get(key)??crypto.randomUUID();requests.set(key,requestId);
   try{const task=await enqueueUpload(kind,documentId,file,revision,undefined,onProgress,requestId);
     await waitUpload(task,undefined,undefined,onProgress);await refreshState();requests.delete(key);return task;
-  }catch(error){window.dispatchEvent(new Event('area3:upload-queued'));throw error;}
+  }catch(error){
+    // Only a confirmed terminal task can get a fresh ID on the next explicit attempt.
+    // Network/polling uncertainty must keep the original idempotency key.
+    if(error instanceof UploadTaskFailedError)requests.delete(key);
+    window.dispatchEvent(new Event('area3:upload-queued'));throw error;
+  }
 }

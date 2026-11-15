@@ -1,5 +1,9 @@
 # Alur approval dan akun versi 3 — 4 November 2026
 
+## Perubahan terbaru 15 November 2026
+
+[BUNDLE_SETTLEMENT_APPROVAL](BUNDLE_SETTLEMENT_APPROVAL.md) berlaku untuk dokumen baru: paket PP/BA KH/SPK dengan lima approval; kasbon sebelum tujuh approval pembayaran, tambahan Mgr Finance & Settlement dan Finance7, cap preview/blank Word/PDF. Histori/alur bertanda lama tetap; tidak ada bulk adoption dokumen berjalan. Ketentuan lama berikut tetap menjadi referensi historis bila berbeda.
+
 **Pembaruan 11 November 2026:** data pribadi Mandor SPK dan kasbon Finance sudah diimplementasikan untuk pengajuan baru `kasbon-v1`; Parsial/Final boleh dibayar sebelum scan, dengan kasbon terbit, persetujuan Finance, bukti transfer dan APM. Riwayat lama tetap. Migrasi baru belum diterapkan pada its aktif; lihat [alur, tabel, privasi, deploy dan batas pengujian](FINANCE_KASBON.md). Aturan lama di bawah tetap berlaku pada dokumen historis bila berbeda.
 
 

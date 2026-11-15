@@ -1,0 +1,32 @@
+{
+  "templateVersion": 3,
+  "issuerRole": "Admin Konstruksi",
+  "costCenter": "QA-COST-01",
+  "wbs": "QA-WBS-01",
+  "activity": "Pembayaran pekerjaan swakelola",
+  "place": "Surabaya",
+  "date": "2026-11-15",
+  "evp": "I GEDE WAHYU DANYNDRA",
+  "businessSupport": "OLD SLOT MUST NOT APPEAR",
+  "settlementUserId": "qa-settlement",
+  "rows": [{"accountCode":"QA-01","accountName":"Biaya konstruksi","text":"Pembayaran pekerjaan tahap satu <QA> & validasi","amount":"100000"}],
+  "payee": {"nik":"0011223344556677","accountNumber":"0001234567","accountName":"Mandor QA","bank":"Bank QA"},
+  "mandor": "MANDOR SIGNATURE REMOVED",
+  "unit": "Konstruksi · SURABAYA",
+  "project": "Proyek Uji Kasbon",
+  "projectCode": "QA-KASBON-001",
+  "ppNo": "0001/LG.000/TA-03R501/11-2026",
+  "spkNo": "0001-02/LG.000/TA-03R501/11-2026",
+  "termNumber": 1,
+  "termType": "Parsial",
+  "amount": 100000,
+  "signers": {
+    "PM Konstruksi": {"userId":"qa-pm","name":"PM QA"},
+    "Admin Area": {"userId":"qa-admin","name":"Admin Area QA"},
+    "Mgr Project Support": {"userId":"qa-support","name":"Support QA"},
+    "Mgr Deployment": {"userId":"qa-deployment","name":"Deployment QA"},
+    "Head of PMO": {"userId":"qa-head","name":"Head QA"},
+    "Mgr Finance & Settlement": {"userId":"qa-settlement","name":"Settlement QA"}
+  },
+  "issuer": "Admin Konstruksi QA"
+}

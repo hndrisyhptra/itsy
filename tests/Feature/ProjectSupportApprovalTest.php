@@ -24,8 +24,10 @@ class ProjectSupportApprovalTest extends TestCase
 
     private function api(string $command, array $args)
     {
-        return $this->postJson('/api/prototype/commands', ['command' => $command, 'args' => $args,
+        $send = fn () => $this->postJson('/api/prototype/commands', ['command' => $command, 'args' => $args,
             'revision' => PrototypeWorkspace::firstOrFail()->revision, 'request_id' => (string) Str::uuid()]);
+
+        return $command === 'saveProject' ? $this->historicalProjectCommand($args[0], (bool) ($args[1] ?? false), $send) : $send();
     }
 
     private function chain(bool $legacy = false): array

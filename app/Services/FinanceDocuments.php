@@ -15,10 +15,21 @@ class FinanceDocuments
 {
     public const KINDS = ['mandor-ktp', 'mandor-bank', 'transfer-proof'];
 
-    public function authorize(PrototypeWorkspace $w, string $id, bool $term = false, bool $write = false, bool $details = false, ?array $account = null): object
+    private const PAYEE_LABELS = ['nik' => 'NIK KTP Mandor', 'accountNumber' => 'Nomor rekening', 'accountName' => 'Nama pemilik rekening', 'bank' => 'Nama bank', 'ktpFileId' => 'Foto KTP Mandor', 'bankFileId' => 'Foto buku tabungan'];
+
+    private const PAYEE_MESSAGES = [
+        'nik.regex' => 'NIK KTP Mandor harus terdiri dari tepat 16 digit angka tanpa spasi atau tanda baca.',
+        'accountNumber.regex' => 'Nomor rekening harus terdiri dari 1–40 digit angka tanpa spasi atau tanda baca.',
+    ];
+
+    public function authorize(PrototypeWorkspace $w, string $id, bool $term = false, bool $write = false, bool $details = false, ?array $account = null, bool $approvalView = false): object
     {
         $account ??= app(AuthenticatedWorkspace::class)->account();
-        abort_unless(in_array($account['role'], $write ? ($term ? ['Finance'] : ['Admin Konstruksi', 'Superadmin']) : ['Admin Konstruksi', 'Superadmin', 'Finance'], true), 403);
+        $readRoles = ['Admin Konstruksi', 'Superadmin', 'Finance', 'Mgr Finance & Settlement'];
+        if ($approvalView && $term) {
+            $readRoles = [...$readRoles, ...PrototypeDomain::APPROVERS_V3];
+        }
+        abort_unless(in_array($account['role'], $write ? ($term ? ['Finance'] : ['Admin Konstruksi', 'Superadmin']) : $readRoles, true), 403, 'Peran akun tidak diizinkan mengakses dokumen pribadi Mandor atau pembayaran ini.');
         $q = DB::table('work_orders as s')->join('contracts as c', 'c.id_contract', '=', 's.contract_id')->join('project_plans as p', 'p.id_pp', '=', 'c.pp_id')
             ->where('s.workspace_id', $w->id)->where('c.workspace_id', $w->id)->where('p.workspace_id', $w->id)->whereIn('p.branch_id', $account['branchIds']);
         if ($term) {
@@ -26,8 +37,16 @@ class FinanceDocuments
         } else {
             $q->where('s.source_id', $id);
         }
-        $r = $q->first(['s.id_spk', ...($details ? ['s.document_data as spk_data', 'c.document_data as deal_data', 'p.document_data as pp_data'] : []), ...($term ? ['t.id_payment_term', 't.document_data as term_data'] : [])]);
-        abort_unless($r, 404);
+        $r = $q->first(['s.id_spk', 'p.status as pp_status', 'p.document_data->contractBundle as bundle_data', ...($details ? ['s.document_data as spk_data', 'c.document_data as deal_data', 'p.document_data as pp_data'] : []), ...($term ? ['t.id_payment_term', 't.document_data as term_data'] : [])]);
+        abort_unless($r, 404, ($term ? 'Pengajuan pembayaran' : 'SPK').' tidak ditemukan atau berada di luar Branch penugasan akun.');
+
+        if ($approvalView && ! in_array($account['role'], ['Admin Konstruksi', 'Superadmin', 'Finance'], true)) {
+            $t = json_decode($r->term_data, true, 512, JSON_THROW_ON_ERROR);
+            abort_unless(PrototypeDomain::usesSettlementPayment($t) && ($t['approverUserIds'][$account['role']] ?? '') === $account['id'] && ! in_array($t['status'], ['Draft', 'Ditolak', 'Dikembalikan'], true), 403, 'Kasbon hanya dapat direview oleh approver pengajuan yang ditugaskan.');
+        }
+        if ($write && ! $term && $r->bundle_data && $r->pp_status === 'SUBMITTED') {
+            abort(422, 'Identitas dan berkas Mandor paket PP terkunci selama approval.');
+        }
 
         return $r;
     }
@@ -62,7 +81,7 @@ class FinanceDocuments
     {
         $profile = DB::table('mandor_payee_profiles')->where('spk_id', $spkId)->orderByDesc('version')->first(['id_payee', 'private_data', 'version']);
         $data = $this->unpack($profile);
-        Validator::make($data ?? [], ['nik' => 'required|regex:/^\d{16}$/D', 'accountNumber' => 'required|regex:/^\d{1,40}$/D', 'accountName' => 'required|string|max:150', 'bank' => 'required|string|max:100', 'ktpFileId' => 'required|uuid', 'bankFileId' => 'required|uuid'])->validate();
+        Validator::make($data ?? [], ['nik' => 'required|regex:/^\d{16}$/D', 'accountNumber' => 'required|regex:/^\d{1,40}$/D', 'accountName' => 'required|string|max:150', 'bank' => 'required|string|max:100', 'ktpFileId' => 'required|uuid', 'bankFileId' => 'required|uuid'], self::PAYEE_MESSAGES, self::PAYEE_LABELS)->validate();
         $this->validatePayeeFiles($w, $spkId, $data);
 
         return $data + ['idPayee' => $profile->id_payee, 'version' => $profile->version];
@@ -103,7 +122,13 @@ class FinanceDocuments
 
     public function savePayee(PrototypeWorkspace $w, string $id, array $input): array
     {
-        $data = Validator::make($input['data'] ?? [], ['nik' => 'nullable|string|regex:/^\d{16}$/D', 'accountNumber' => 'nullable|string|regex:/^\d{1,40}$/D', 'accountName' => 'nullable|string|max:150', 'bank' => 'nullable|string|max:100', 'ktpFileId' => 'nullable|uuid', 'bankFileId' => 'nullable|uuid'])->validate();
+        $raw = $input['data'] ?? [];
+        foreach (array_keys(self::PAYEE_LABELS) as $key) {
+            if (isset($raw[$key]) && is_string($raw[$key])) {
+                $raw[$key] = trim($raw[$key]);
+            }
+        }
+        $data = Validator::make($raw, ['nik' => 'nullable|string|regex:/^\d{16}$/D', 'accountNumber' => 'nullable|string|regex:/^\d{1,40}$/D', 'accountName' => 'nullable|string|max:150', 'bank' => 'nullable|string|max:100', 'ktpFileId' => 'nullable|uuid', 'bankFileId' => 'nullable|uuid'], self::PAYEE_MESSAGES, self::PAYEE_LABELS)->validate();
         foreach (['nik', 'accountNumber', 'accountName', 'bank', 'ktpFileId', 'bankFileId'] as $key) {
             $data[$key] = trim($data[$key] ?? '');
         }
@@ -125,7 +150,8 @@ class FinanceDocuments
 
     public function kasbon(PrototypeWorkspace $w, string $id, bool $includeFiles = true): array
     {
-        $r = $this->authorize($w, $id, true);
+        $r = $this->authorize($w, $id, true, false, false, null, true);
+        $includeFiles = $includeFiles && in_array(app(AuthenticatedWorkspace::class)->account()['role'], ['Admin Konstruksi', 'Superadmin', 'Finance', 'Mgr Finance & Settlement'], true);
         $t = json_decode($r->term_data, true, 512, JSON_THROW_ON_ERROR);
         $rows = DB::table('finance_kasbons')->where('term_id', $r->id_payment_term)->orderByDesc('version')->limit(10)->get(['id_kasbon', 'version', 'private_data']);
         $files = $includeFiles ? DB::table('finance_private_files')->where('workspace_id', $w->id)->where('term_id', $r->id_payment_term)->orderByDesc('created_at')->limit(10)->get(['id_finance_file as id', 'kind', 'created_at as uploadedAt']) : collect();
@@ -137,7 +163,7 @@ class FinanceDocuments
     {
         $defaults = ['place' => 'Surabaya', 'date' => now('Asia/Jakarta')->toDateString(), 'evp' => 'I GEDE WAHYU DANYNDRA', 'businessSupport' => "ARIZA ARBA'ATUS S"];
         $data = Validator::make(($input['data'] ?? []) + $defaults, [
-            'payeeVersion' => 'required|integer|min:1',
+            'payeeVersion' => 'required|integer|min:1', 'settlementUserId' => 'nullable|string|max:100',
             'costCenter' => 'required|string|max:100', 'wbs' => 'required|string|max:100', 'activity' => 'required|string|max:150', 'place' => 'required|string|max:100', 'date' => 'required|date_format:Y-m-d',
             'rows' => 'required|array|min:1|max:20', 'rows.*' => 'required|array:accountCode,accountName,text,amount', 'rows.*.accountCode' => 'required|string|max:50', 'rows.*.accountName' => 'required|string|max:150', 'rows.*.text' => 'required|string|max:300', 'rows.*.amount' => ['required', 'numeric', 'gt:0', 'max:999999999999.99', 'regex:/^\d+(\.\d{1,2})?$/D'],
             'evp' => 'required|string|max:150', 'businessSupport' => 'required|string|max:150',
@@ -146,14 +172,14 @@ class FinanceDocuments
 
         return $this->locked($w, function ($row) use ($id, $input, $data, $hash) {
             $account = app(AuthenticatedWorkspace::class)->account();
-            abort_unless(in_array($account['role'], ['Admin Konstruksi', 'Superadmin'], true), 403, 'Pengajuan kasbon dibuat Admin Konstruksi setelah approval Head of PMO.');
+            abort_unless(in_array($account['role'], ['Admin Konstruksi', 'Superadmin'], true), 403, 'Pengajuan kasbon hanya dibuat Admin Konstruksi atau Superadmin.');
             $r = $this->authorize($row, $id, true, false, true, $account);
             if ($this->replay('finance_kasbons', $input['request_id'], $hash)) {
                 return app(PrototypeWorkspaceService::class)->payload($row) + ['replayed' => true];
             }
             abort_unless($row->revision === (int) $input['revision'], 409, 'Data berubah; muat ulang sebelum menerbitkan kasbon.');
             $t = json_decode($r->term_data, true, 512, JSON_THROW_ON_ERROR);
-            abort_unless(PrototypeDomain::adminKasbonPending($t), 422, 'Kasbon hanya dapat diajukan setelah lima approval termasuk Head, belum dibayar, dan belum diajukan atau sudah dikembalikan Finance.');
+            abort_unless(PrototypeDomain::adminKasbonPending($t), 422, 'Kasbon belum dapat diajukan pada status ini. Pengajuan baru memerlukan draf pembayaran belum lunas; dokumen historis mengikuti alur tersimpan.');
             $spk = json_decode($r->spk_data, true, 512, JSON_THROW_ON_ERROR);
             $p = json_decode($r->pp_data, true, 512, JSON_THROW_ON_ERROR);
             $d = json_decode($r->deal_data, true, 512, JSON_THROW_ON_ERROR);
@@ -171,18 +197,32 @@ class FinanceDocuments
             abort_unless(bccomp($sum, (string) $total, 2) === 0, 422, 'Jumlah rincian kasbon harus sama dengan tagihan termin saat ini.');
             $payee = $this->payeeSnapshot($row, $r->id_spk);
             abort_unless((int) $data['payeeVersion'] === (int) $payee['version'], 409, 'Data Mandor berubah. Muat ulang data penerima dan periksa rekening sebelum mengajukan kasbon kembali.');
+            $settlement = PrototypeDomain::usesSettlementPayment($t);
             $signers = [];
-            foreach (PrototypeDomain::approvalRoles($t) as $role) {
-                $a = collect($t['approvals'])->first(fn ($a) => $a['role'] === $role && ($a['userId'] ?? '') === ($t['approverUserIds'][$role] ?? ''));
-                abort_unless($a && $a['decision'] === 'Setujui', 422, 'Kelima approval harus lengkap sebelum penerbitan kasbon.');
-                $signers[$role] = ['name' => $a['actorName'], 'userId' => $a['userId']];
+            if ($settlement) {
+                $ids = array_intersect_key($t['approverUserIds'], array_flip(PrototypeDomain::APPROVERS_V3));
+                $ids['Mgr Finance & Settlement'] = $data['settlementUserId'] ?? '';
+                $users = DB::table('users as u')->join('user_assignments as a', 'a.user_id', '=', 'u.id_user')->join('roles as r', 'r.id_role', '=', 'a.role_id')->join('branches as b', 'b.id_branch', '=', 'a.branch_id')
+                    ->whereIn('u.id_user', array_map(fn ($id) => (int) str_replace('db-user-', '', $id), array_values($ids)))
+                    ->where('u.active', true)->where('a.active', true)->where('b.name', $p['branch'])->where('b.is_active', true)->whereNull('b.deleted_at')->whereColumn('u.role', 'r.code')->get(['u.id_user', 'u.name', 'r.code'])->keyBy('id_user');
+                foreach ($ids as $role => $selected) {
+                    $u = $users->get((int) str_replace('db-user-', '', $selected));
+                    abort_unless($u && (AccountAccess::ROLES[$u->code] ?? '') === $role, 422, 'Pilih approver aktif dengan peran '.$role.' pada Branch PP.');
+                    $signers[$role] = ['userId' => $selected, 'name' => $u->name];
+                }
+            } else {
+                foreach (PrototypeDomain::approvalRoles($t) as $role) {
+                    $a = collect($t['approvals'])->first(fn ($a) => $a['role'] === $role && ($a['userId'] ?? '') === ($t['approverUserIds'][$role] ?? ''));
+                    abort_unless($a && $a['decision'] === 'Setujui', 422, 'Kelima approval harus lengkap sebelum penerbitan kasbon.');
+                    $signers[$role] = ['name' => $a['actorName'], 'userId' => $a['userId']];
+                }
             }
             $version = (int) DB::table('finance_kasbons')->where('term_id', $r->id_payment_term)->max('version') + 1;
             $kid = (string) Str::uuid();
-            $snapshot = $data + ['templateVersion' => 2, 'issuerRole' => $account['role'], 'payee' => $payee, 'mandor' => $d['mandor'], 'unit' => $p['unit'].' · '.$p['branch'], 'project' => $p['name'], 'projectCode' => $p['projectCode'], 'ppNo' => $p['no'], 'spkNo' => $spk['no'], 'termNumber' => $t['number'], 'termType' => $t['type'], 'amount' => $total, 'signers' => $signers, 'issuer' => $account['name']];
+            $snapshot = $data + ['templateVersion' => $settlement ? 3 : 2, 'issuerRole' => $account['role'], 'payee' => $payee, 'mandor' => $d['mandor'], 'unit' => $p['unit'].' · '.$p['branch'], 'project' => $p['name'], 'projectCode' => $p['projectCode'], 'ppNo' => $p['no'], 'spkNo' => $spk['no'], 'termNumber' => $t['number'], 'termType' => $t['type'], 'amount' => $total, 'signers' => $signers, 'issuer' => $account['name']];
             DB::table('finance_kasbons')->insert(['id_kasbon' => $kid, 'term_id' => $r->id_payment_term, 'version' => $version, 'amount' => $total, 'private_data' => $this->pack($snapshot), 'issued_by' => auth()->id(), 'issued_at' => now(), 'request_uuid' => $input['request_id'], 'input_sha256' => $hash]);
 
-            return app(PrototypeWorkspaceService::class)->command($row, ['command' => '_issueKasbon', 'args' => [$id, ['id' => $kid, 'version' => $version, 'amount' => $total, 'issuedBy' => 'db-user-'.auth()->id(), 'issuedRole' => $account['role'], 'issuedAt' => now()->toISOString()]], 'revision' => $row->revision, 'request_id' => $input['request_id']]);
+            return app(PrototypeWorkspaceService::class)->command($row, ['command' => $settlement ? '_submitSettlementKasbon' : '_issueKasbon', 'args' => [$id, ['id' => $kid, 'version' => $version, 'amount' => $total, 'issuedBy' => 'db-user-'.auth()->id(), 'issuedRole' => $account['role'], ...($settlement ? ['settlementUserId' => $data['settlementUserId']] : []), 'issuedAt' => now()->toISOString()]], 'revision' => $row->revision, 'request_id' => $input['request_id']]);
         });
     }
 

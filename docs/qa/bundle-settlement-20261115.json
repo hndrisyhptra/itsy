@@ -1,0 +1,208 @@
+{
+  "date": "2026-11-15",
+  "scope": "PP/BA KH/SPK bundle, pre-submission kasbon with seven real approvals, native kasbon Word and print",
+  "storage": {
+    "active_its_changed": false,
+    "archive_reimported": false,
+    "env_changed": false,
+    "dompis_touched": false,
+    "migration_applied_live": false,
+    "server_deployed": false
+  },
+  "backup": {
+    "file": "area3-before-bundle-settlement-20261115-171303.sqlite",
+    "bytes": 233472,
+    "mode": "0o600",
+    "sha256": "055a820c9169cc2419f9a109e8f7e1cb32c79f51da8f587176ba1a55f209f74a"
+  },
+  "checks": {
+    "php": {
+      "tests": 295,
+      "assertions": 6447,
+      "passed": true,
+      "database": "sqlite :memory:",
+      "log": "/private/tmp/area3-bundle-final-php.log"
+    },
+    "frontend": {
+      "tests": 297,
+      "passed": true,
+      "log": "/private/tmp/area3-bundle-final-fe.log"
+    },
+    "typescript_vite_build": true,
+    "pint": true,
+    "asset_references": 32,
+    "preload_dependencies": 24,
+    "asset_profiles": 3,
+    "diff_check": true
+  },
+  "new_role": "MGR_FINANCE_SETTLEMENT",
+  "migration": "2026_11_15_000001_add_finance_settlement_approval",
+  "coverage": [
+    "PP Draft before BA KH/SPK, no standalone package submission bypass",
+    "BA/SPK/payee pending locks, five actual decisions, atomic Sah/commit",
+    "package rejection/correction/new manifest and PM restart",
+    "cashbon before Parsial/Final submission, invalid selected Settlement role",
+    "seven ordered actual decisions and bound kasbonId/SQL order3",
+    "all seven rejection positions require note; keep old decisions/kasbon version and restart PM",
+    "private kasbon review by assigned approvers, identity endpoint denied to first five",
+    "transfer proof/APM, next-term gating, Final BA PP Draft",
+    "old CHECK predicates preserved, new tuples/wrong version/role/step, isolated role rollback/reapply",
+    "head-correction descendant aliases retained; historical CLI excludes bundle",
+    "historical regression fixtures explicit/memory only",
+    "Authenticated-boot Admin UI: Draft/returned/rejected mounts kasbon entry before approval, Parsial/Final labels, submitted no reissue"
+  ],
+  "query_fixtures": {
+    "decision_queries_parsial": [
+      54,
+      56,
+      57,
+      58,
+      59,
+      60,
+      64
+    ],
+    "decision_queries_final": [
+      54,
+      56,
+      57,
+      58,
+      59,
+      60,
+      66
+    ],
+    "decision_budget": 80,
+    "actor_name_batch_reads_max": 2,
+    "draft_bundle_picker_service": 3,
+    "picker_page_size": 20,
+    "lookahead": 1,
+    "limitations": "Small isolated fixtures; not a MySQL concurrency/load benchmark. Existing aggregate boot/command load remains."
+  },
+  "native_docx": {
+    "generator": "resources/js/area3/kasbon-docx.ts",
+    "package_parts": 8,
+    "crc_xml_valid": true,
+    "blank_signature_spaces": true,
+    "mandor_signature_removed": true,
+    "business_support_replaced_new_only": true,
+    "finance_name_from_bound_actual_decision": true,
+    "normal_pages": 1,
+    "long_20_rows_pages": 2,
+    "all_3_png_pages_inspected": true,
+    "runtime_new_dependencies": false,
+    "lazy_chunk_kb": 5.24,
+    "lazy_chunk_gzip_kb": 2.15
+  },
+  "browser": {
+    "surface": "Temporary isolated Chrome headless file fixtures, actual app CSS and component; ordinary/nested modal",
+    "results": [
+      {
+        "name": "normal",
+        "screenStamps": 7,
+        "printStamps": 0,
+        "characters": 1061
+      },
+      {
+        "name": "normal-nested",
+        "screenStamps": 7,
+        "printStamps": 0,
+        "characters": 1061
+      },
+      {
+        "name": "long",
+        "screenStamps": 7,
+        "printStamps": 0,
+        "characters": 4534
+      },
+      {
+        "name": "long-nested",
+        "screenStamps": 7,
+        "printStamps": 0,
+        "characters": 4534
+      }
+    ],
+    "pdf": {
+      "normal": {
+        "pages": 1,
+        "pageCharacters": [
+          1056
+        ]
+      },
+      "normal-nested": {
+        "pages": 1,
+        "pageCharacters": [
+          1056
+        ]
+      },
+      "long": {
+        "pages": 3,
+        "pageCharacters": [
+          1970,
+          2093,
+          517
+        ]
+      },
+      "long-nested": {
+        "pages": 3,
+        "pageCharacters": [
+          1970,
+          2093,
+          517
+        ]
+      }
+    },
+    "all_final_pages_inspected": true,
+    "grand_total_once": true,
+    "bank_details_not_split": true,
+    "private_app_session_used": false
+  },
+  "artifacts": {
+    "normal.docx": {
+      "sha256": "d888b93c123035cee5318f3c99fd06f13647b5e244db055f81aa54a6eff6e0e8",
+      "bytes": 150995,
+      "pages": null
+    },
+    "long.docx": {
+      "sha256": "38c38be91023f7ac1ce06f5481b507c64261252adf2dac13822461bb0dd66dd2",
+      "bytes": 183547,
+      "pages": null
+    },
+    "normal-render/normal.pdf": {
+      "sha256": "e9cb2691623533a362657b9d2e6277ddb0fcca129466fda2a49535f58986f5ef",
+      "bytes": 108420,
+      "pages": 1
+    },
+    "long-render/long.pdf": {
+      "sha256": "47d4cd107228c7e69a9eae3676ce63ab2da50842bbff1d16cb503ed7c63bf1d0",
+      "bytes": 145981,
+      "pages": 2
+    },
+    "normal-browser.pdf": {
+      "sha256": "95b221233524eb3962e01cfe691e5b0944187bb1a2cb1fb5c0737f78eebbc689",
+      "bytes": 295716,
+      "pages": 1
+    },
+    "normal-nested-browser.pdf": {
+      "sha256": "a4eb6732d44e00c925e2a0e9e05547a9e277416ca7b58be1892b192396ed5b7a",
+      "bytes": 295723,
+      "pages": 1
+    },
+    "long-browser.pdf": {
+      "sha256": "6099e66cec121b9d3cef72398b2e4888b3f10603b29683e0fa581824eb346942",
+      "bytes": 307042,
+      "pages": 3
+    },
+    "long-nested-browser.pdf": {
+      "sha256": "9592096c55e90c7b99093c3c6d80eec78b2ddfddebc6ace0b654c68c7ee5056c",
+      "bytes": 307067,
+      "pages": 3
+    }
+  },
+  "limits": [
+    "New MySQL/MariaDB ALTER/check deployment not run against live its/server",
+    "No automatic adoption of running/paid documents or old standalone drafts",
+    "Manifest retains hashes/decisions, not full per-edit form archive",
+    "No end-to-end authenticated browser test for all seven accounts in this change",
+    "Microsoft Word desktop, native print dialog, physical printer, aaPanel upload integration not tested",
+    "Bank transfer, KTP/bank external verification and physical signatures remain outside application"
+  ]
+}

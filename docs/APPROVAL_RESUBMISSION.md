@@ -1,5 +1,9 @@
 # Penolakan dan pengajuan ulang PP dan pembayaran
 
+## Perubahan terbaru 15 November 2026
+
+[BUNDLE_SETTLEMENT_APPROVAL](BUNDLE_SETTLEMENT_APPROVAL.md) berlaku untuk dokumen baru: paket PP/BA KH/SPK dengan lima approval; kasbon sebelum tujuh approval pembayaran, tambahan Mgr Finance & Settlement dan Finance7, cap preview/blank Word/PDF. Histori/alur bertanda lama tetap; tidak ada bulk adoption dokumen berjalan. Ketentuan lama berikut tetap menjadi referensi historis bila berbeda.
+
 Pembaruan 5 November 2026 berlaku untuk dokumen **workflowVersion 3**, termasuk PP/termin versi 3 yang telah berstatus Ditolak. Penolakan dari salah satu lima approver wajib mempunyai catatan. Admin Konstruksi memperbaiki dan mengajukan ulang dokumen yang sama; persetujuan dimulai kembali dari PM Konstruksi, Admin Area, Mgr Deployment, Mgr Bussiness Support, lalu Head of PMO.
 
 ## Perilaku aplikasi

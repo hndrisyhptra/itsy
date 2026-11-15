@@ -1,3 +1,4 @@
+import { bundleEditable } from './project-bundle';
 import { capacity, type Project, type State } from './domain';
 import { appUrl, boot } from './laravel';
 
@@ -8,7 +9,7 @@ export const CHOICE_PAGE_SIZE=20;
 
 export function planChoice(s:State,p:Project):PlanChoice {
   const root=s.projects.find(row=>row.id===p.rootId);
-  let reason=p.status!=='Sah'?'PP belum Sah.':p.boqStatus!=='Final'?'BOQ belum Final.':'';
+  let reason=bundleEditable(p)?(!p.boq.length&&!p.parentId?'Isi BOQ PP terlebih dahulu.':''):p.status!=='Sah'?'PP belum Sah.':p.boqStatus!=='Final'?'BOQ belum Final.':'';
   if(!reason&&(!root||!root.boq.some(row=>(['m','s'] as const).some(c=>row[c]!==null&&capacity(s,p,row.id,c)>0)))) reason='Volume tersedia sudah habis.';
   return {id:p.id,no:p.no,name:p.name,branch:p.branch,projectCode:p.projectCode,status:p.status,eligible:!reason,reason};
 }

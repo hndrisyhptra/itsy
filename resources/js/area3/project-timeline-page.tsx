@@ -1,4 +1,4 @@
-import { usesFinancePayment, financePaymentLabel } from './finance-payment';
+import { usesSettlementPayment, usesFinancePayment, financePaymentLabel } from './finance-payment';
 import { usesPartialPayment, documentStatus, partialFinanceHistory, partialPaymentLabel } from './partial-payment';
 import { useState } from 'react';
 import { Check, Clock3, ArrowUpRight } from 'lucide-react';
@@ -15,7 +15,7 @@ export function ApprovalTrack({s,document,project=false}:{s:State;document:Proje
     const decision=approvals.find(a=>a.role===role&&a.decision==='Setujui'),current=role===waiting;
     const name=decision?.actorName??s.users.find(u=>u.id===(decision?.userId??selectedApprover(document,role)))?.name;
     const status=decision?'Disetujui':current?'Menunggu approval':document.status==='Draft'?'Belum diajukan':['Ditolak','Dikembalikan'].includes(document.status)?'Alur berhenti':'Belum giliran';
-    return <li key={role} className={decision?'done':current?'waiting':'pending'}><span className="project-stage-mark" aria-hidden="true">{decision?<Check size={14}/>:current?<Clock3 size={14}/>:i+1}</span><div><strong>{role}</strong><span>{name??((document.workflowVersion??1)<2?'Nama tidak tercatat':'Belum dipilih')}</span><b>{status}</b>{decision&&<small>{stamp(decision.at)}</small>}</div></li>;
+    return <li key={role} className={decision?'done':current?'waiting':'pending'}><span className="project-stage-mark" aria-hidden="true">{decision?<Check size={14}/>:current?<Clock3 size={14}/>:i+1}</span><div><strong>{role}</strong><span>{name??(!project&&role==='Finance'&&usesSettlementPayment(document as Term)?'Finance sesuai Branch':(document.workflowVersion??1)<2?'Nama tidak tercatat':'Belum dipilih')}</span><b>{status}</b>{decision&&<small>{stamp(decision.at)}</small>}</div></li>;
   })}</ol>;
 }
 
@@ -30,16 +30,17 @@ function PaymentTimeline({s,t}:{s:State;t:Term}) {
   const spk=s.spks.find(v=>v.id===t.spkId)!,deal=s.deals.find(d=>d.id===spk.dealId)!;
   const amount=termTotal(s,t),modern=(t.workflowVersion??1)>=2;
   const validFinance=(t.workflowVersion??1)>=3?t.scan?.status==='Valid'&&t.financeApproval?.decision==='Setujui'&&t.financeApproval.scanId===t.scan.id:t.scan?.status==='Valid';
+  const financeDecisions=usesSettlementPayment(t)?[]:(t.financePaymentHistory??[]);
   const scans=[...(t.scanHistory??[]),...(t.scan?[t.scan]:[])];
   return <article className="project-payment-timeline"><div className="project-timeline-heading"><div><h3>Termin {t.number} · {t.type}</h3><p>{spk.no} · {deal.mandor}</p></div><Link className="btn" to={'/termin/'+t.id}>Lihat pembayaran <ArrowUpRight size={14}/></Link></div>
     <div className="project-current-position"><Badge>{t.status}</Badge><strong>{paymentPosition(t)}</strong><span>{t.approvals.length}/{approvalRoles(t).length} approval dokumen</span></div>
     <ApprovalTrack s={s} document={t}/>
     {usesPartialPayment(t)&&<div className="project-finance-stage"><strong>Finance · Payment Parsial</strong><Badge>{t.paymentRequest?.status??'Belum diajukan'}</Badge><span>{partialPaymentLabel(t)} · Berkas {documentStatus(t)}{t.paymentRequest?.decision&&` · ${t.paymentRequest.decision.actorName}`}</span></div>}
-    {usesFinancePayment(t)&&<div className="project-finance-stage"><strong>Finance · Kasbon &amp; Payment</strong><Badge>{financePaymentLabel(t)}</Badge><span>Kasbon {t.kasbon?'v'+t.kasbon.version:'belum terbit'} · Bukti transfer {t.transferProof?'tersimpan':'belum diunggah'} · Berkas {documentStatus(t)}</span></div>}
+    {usesFinancePayment(t)&&!usesSettlementPayment(t)&&<div className="project-finance-stage"><strong>Finance · Kasbon &amp; Payment</strong><Badge>{financePaymentLabel(t)}</Badge><span>Kasbon {t.kasbon?'v'+t.kasbon.version:'belum terbit'} · Bukti transfer {t.transferProof?'tersimpan':'belum diunggah'} · Berkas {documentStatus(t)}</span></div>}
     {modern&&<div className="project-finance-stage"><strong>{(usesFinancePayment(t)||t.workflowVersion===3&&t.type==='Parsial')?'Verifikasi berkas · scan TTD fisik':'Finance · setelah scan TTD fisik'}</strong><Badge>{validFinance?(t.workflowVersion??1)>=3?'Disetujui':'Valid':t.scan?.status==='Perlu Koreksi'?'Perlu Koreksi':'Menunggu'}</Badge><span>{validFinance?((t.financeApproval?.actorName??s.users.find(u=>u.id===t.scan?.verifiedBy)?.name??'Finance')+' · '+stamp(t.financeApproval?.at??t.scan?.verifiedAt)):t.scan?'Menunggu scan yang valid dan keputusan Finance.':'Belum ada scan TTD fisik diunggah.'}</span></div>}
     <dl className="project-payment-facts"><div><dt>Tagihan</dt><dd>{money(amount)}</dd></div><div><dt>Terbayar</dt><dd>{money(t.paid)}</dd></div><div><dt>APM</dt><dd>{t.apm||'Belum dicatat'}<small>{t.apmStatus}</small></dd></div></dl>
     {!!scans.length&&<details><summary>Riwayat scan TTD fisik ({scans.length})</summary><Table headers={['Berkas','Status','Diunggah','Verifikasi / Catatan']}>{scans.map(file=><tr key={file.id}><td>{file.id===t.scan?.id?<a href={appUrl('/api/prototype/payments/'+t.id+'/scan')}>{file.name}</a>:file.name}<small>{file.id===t.scan?.id?'Berkas saat ini':'Berkas sebelumnya'}</small></td><td><Badge>{file.status}</Badge></td><td>{stamp(file.uploadedAt)}</td><td>{file.verifiedAt?stamp(file.verifiedAt):'Belum diverifikasi'}<small>{file.note||'—'}</small></td></tr>)}</Table></details>}
-    <details><summary>Riwayat keputusan pembayaran ({t.history.length+(t.financeHistory?.length??0)+partialFinanceHistory(t).length+(t.financePaymentHistory?.length??0)})</summary><DecisionHistory s={s} rows={[...t.history,...(t.financeHistory??[]),...partialFinanceHistory(t),...(t.financePaymentHistory??[])]}/></details>
+    <details><summary>Riwayat keputusan pembayaran ({t.history.length+(t.financeHistory?.length??0)+partialFinanceHistory(t).length+financeDecisions.length})</summary><DecisionHistory s={s} rows={[...t.history,...(t.financeHistory??[]),...partialFinanceHistory(t),...financeDecisions]}/></details>
     {!!t.paymentHistory.length&&<details><summary>Riwayat pencatatan pembayaran ({t.paymentHistory.length})</summary><Table headers={['Referensi','Jumlah','Waktu']}>{t.paymentHistory.map((v,i)=><tr key={i}><td>{v.ref}</td><td className="numeric">{money(v.amount)}</td><td>{stamp(v.at)}</td></tr>)}</Table></details>}
   </article>;
 }

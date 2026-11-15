@@ -48,12 +48,11 @@ test('Finance decision is bound to the kasbon version actually shown by the revi
   decideFinancePayment(s,t.id,'Setujui','Reviewed current','current-kasbon');assert.equal(t.financePayment.status,'Diverifikasi');assert.equal(t.financePayment.decision?.kasbonId,'current-kasbon');
 });
 
-test('v2 print uses actual Admin maker, provided default officials and Surabaya date above a blank Mandor signature',()=>{
+test('v2 print uses actual Admin maker, provided default officials and Surabaya date without the removed Mandor signature',()=>{
   const data=kasbon(),html=renderToStaticMarkup(createElement(KasbonDocument,{data}));
   assert.match(html,/Admin Aktual/);assert.match(html,/Admin Konstruksi · Pengaju Kasbon/);assert.match(html,/I GEDE WAHYU DANYNDRA/);assert.match(html,/ARIZA ARBA&#x27;ATUS S/);
-  const block=html.slice(html.indexOf('class="kasbon-mandor-signature"'),html.indexOf('<table class="kasbon-signatures"'));
-  assert.match(block,/Surabaya, 11 November 2026/);assert.ok(block.indexOf('Surabaya')<block.indexOf('Ketua Mandor'));
-  assert.match(block,/Ketua Mandor QA/);assert.equal((html.match(/class="kasbon-wet-signature"/g)??[]).length,8);
+  assert.match(html,/Surabaya, 11 November 2026/);assert.doesNotMatch(html,/kasbon-mandor-signature|Ketua Mandor/);
+  assert.equal((html.match(/class="kasbon-wet-signature"/g)??[]).length,7);
   assert.doesNotMatch(html,/Finance · Penerbit Kasbon|data:image|0011223344556677|APPROVED/);
 });
 

@@ -1,5 +1,9 @@
 # it's Area 3 — Construction Workspace
 
+**Alur baru — 15 November 2026**
+
+PP baru disimpan bersama draf BA KH dan SPK, lalu **Ajukan Paket** melalui SPK untuk lima approval. Pembayaran baru mengisi **kasbon sebelum pengajuan**, kemudian PM → Admin Area → Mgr Project Support → Mgr Deployment → Head of PMO → **Mgr Finance & Settlement** → Finance; bukti transfer dan APM sesudah Finance. Kasbon menyediakan Word/PDF dengan TTD kosong dan cap hanya pada preview. Riwayat/pembayaran lama tetap memakai alur tersimpan. Migration role/CHECK baru harus dijalankan saat deploy, lalu siapkan akun Settlement beserta Branch; belum diterapkan agen ke its aktif/server. [Alur, data, deployment dan verifikasi](docs/BUNDLE_SETTLEMENT_APPROVAL.md).
+
 **Header PP — 15 November 2026:** Total Nilai (Rp) otomatis mengikuti **Total Anggaran terakhir pada poin5**, termasuk perizinan bila ada; form, preview, Word dan PDF memakai jumlah yang sama dari rincian tersimpan. Nilai BOQ/alokasi SQL dan rumus COGS/margin tetap terpisah. Tidak perlu migration. [Perilaku, penyimpanan dan bukti](docs/PP_HEADER_BOQ_KHS.md).
 
 **Teks penutup PP — 15 November 2026:** judul “Dibuat, Diperiksa dan Disetujui”, catatan otomatis EVP dan footer “Dokumen prototipe. Tanda tangan fisik tidak dibuat otomatis.” sudah dihapus dari preview/Word/PDF. Tabel penandatangan beserta EVP/tanggal tetap. Tidak perlu migration. [Catatan perilaku dan pengujian](docs/PP_WORD_PRINT.md).

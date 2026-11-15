@@ -30,6 +30,7 @@ class TermWorkEvidenceTest extends TestCase
         $this->asRole('Admin Konstruksi');
         $s = $this->api('createTerm', [$state['spks'][0]['id']])->assertOk()->json('state');
         $this->termId = collect($s['terms'])->firstWhere('spkId', $state['spks'][0]['id'])['id'];
+        $this->historicalKasbonFixture($this->termId);
     }
 
     private function api(string $command, array $args)

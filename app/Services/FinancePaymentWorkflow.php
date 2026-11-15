@@ -8,11 +8,14 @@ trait FinancePaymentWorkflow
 {
     public static function usesFinancePayment(array $t): bool
     {
-        return ($t['workflowVersion'] ?? 1) === 3 && ($t['paymentFlow'] ?? '') === 'kasbon-v1';
+        return ($t['workflowVersion'] ?? 1) === 3 && in_array($t['paymentFlow'] ?? '', ['kasbon-v1', 'kasbon-settlement-v2'], true);
     }
 
     public static function adminKasbonPending(array $t): bool
     {
+        if (self::usesSettlementPayment($t)) {
+            return in_array($t['status'], ['Draft', 'Dikembalikan', 'Ditolak'], true) && $t['paid'] == 0 && $t['apmStatus'] !== 'Valid';
+        }
         if (! self::usesFinancePayment($t) || $t['status'] !== 'Disetujui' || $t['apmStatus'] === 'Valid' || $t['paid'] > 0
             || (isset($t['kasbon']) && ($t['financePayment']['status'] ?? '') !== 'Dikembalikan')) {
             return false;
@@ -32,6 +35,9 @@ trait FinancePaymentWorkflow
         $t = $this->record('terms', $input['id'] ?? '');
         if (($t['workflowVersion'] ?? 1) !== 3 || isset($t['paymentRequest']) || $t['paid'] > 0 || isset($t['kasbon'])) {
             $this->fail('Alur kasbon hanya dapat diadopsi pada pengajuan v3 yang masih dapat diperbaiki dan belum memiliki transaksi Finance.');
+        }
+        if (self::usesSettlementPayment($t)) {
+            $this->fail('Ajukan pembayaran melalui form kasbon untuk tujuh approval.');
         }
         $this->saveTerm($input, true);
         $t = $this->record('terms', $input['id']);
@@ -100,6 +106,13 @@ trait FinancePaymentWorkflow
     {
         $this->finance();
         $t = $this->record('terms', $id);
+        if (self::usesSettlementPayment($t)) {
+            if ($expectedKasbonId !== ($t['kasbon']['id'] ?? null)) {
+                $this->fail('Versi kasbon berubah. Review kembali dokumen aktif.');
+            }
+
+            return $this->decide($id, $decision, $note);
+        }
         $this->financePaymentEligible($t);
         if ((isset($t['kasbon']['issuedRole']) || $expectedKasbonId !== null) && $expectedKasbonId !== ($t['kasbon']['id'] ?? null)) {
             $this->fail('Versi kasbon berubah. Review kembali kasbon yang aktif sebelum memberi keputusan Finance.');

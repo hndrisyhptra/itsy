@@ -1,5 +1,9 @@
 # Pengajuan kasbon Admin, review Finance dan inbox otomatis
 
+## Perubahan terbaru 15 November 2026
+
+[BUNDLE_SETTLEMENT_APPROVAL](BUNDLE_SETTLEMENT_APPROVAL.md) berlaku untuk dokumen baru: paket PP/BA KH/SPK dengan lima approval; kasbon sebelum tujuh approval pembayaran, tambahan Mgr Finance & Settlement dan Finance7, cap preview/blank Word/PDF. Histori/alur bertanda lama tetap; tidak ada bulk adoption dokumen berjalan. Ketentuan lama berikut tetap menjadi referensi historis bila berbeda.
+
 Otoritas pengguna, 11 November 2026: pembuat kasbon adalah Admin Konstruksi setelah approval pembayaran selesai sampai Head of PMO. Finance mereview dokumen PP sampai kasbon sebelum memproses pembayaran. Bagian ini menggantikan aturan pembuat kasbon oleh Finance pada implementasi awal [FINANCE_KASBON](FINANCE_KASBON.md); aturan jumlah, bank, file privat, versi, APM, volume dan riwayat lainnya tetap.
 
 ## Alur yang berjalan

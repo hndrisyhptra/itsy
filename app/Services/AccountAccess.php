@@ -16,6 +16,7 @@ class AccountAccess
         'MGR_BUSSINESS_SUPPORT' => 'Mgr Bussiness Support',
         'MGR_PROJECT_SUPPORT' => 'Mgr Project Support',
         'HEAD_OF_PMO' => 'Head of PMO',
+        'MGR_FINANCE_SETTLEMENT' => 'Mgr Finance & Settlement',
         'FINANCE' => 'Finance',
         'SUPERADMIN' => 'Superadmin',
         'ADMIN_OPS' => 'Admin Operation',

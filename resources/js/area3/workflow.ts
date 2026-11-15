@@ -1,3 +1,4 @@
+import { approveProjectBundle } from './project-bundle';
 import { WHOLE_RUPIAH } from './currency';
 import { usesFinancePayment } from './finance-payment';
 import { usesPartialPayment } from './partial-payment';
@@ -12,9 +13,9 @@ export const APPROVERS_V3_PREVIOUS: Role[] = ['PM Konstruksi', 'Admin Area', 'Mg
 export const APPROVERS_V3_LEGACY:Role[]=['PM Konstruksi','Admin Area','Mgr Deployment','Mgr Bussiness Support','Head of PMO'];
 export function usesBusinessSupport(document:AssignedDocument){return document.approvalScheme==='business-support'||(!document.approvalScheme&&Object.hasOwn(document.approverUserIds??{},'Mgr Bussiness Support')&&!Object.hasOwn(document.approverUserIds??{},'Mgr Project Support'));}
 export function projectApprovalScheme(document?:Project):'project-support-first'|'project-support'|'business-support' {return document&&(!canReviseSubmission(document)||(document.approvalHistory?.length??0)>0||(document.approvals?.length??0)>0)?(usesBusinessSupport(document)?'business-support':document.approvalScheme??'project-support'):'project-support-first';}
-type AssignedDocument = {approvalScheme?:'project-support-first'|'project-support'|'business-support';workflowVersion?:number; pmUserId?:string; managerUserId?:string; approverUserIds?:Partial<Record<Role,string>>};
+type AssignedDocument = {paymentFlow?:string;approvalScheme?:'project-support-first'|'project-support'|'business-support';workflowVersion?:number; pmUserId?:string; managerUserId?:string; approverUserIds?:Partial<Record<Role,string>>};
 export function canReviseSubmission(document: {status:string;workflowVersion?:number}) { return ['Draft','Dikembalikan'].includes(document.status) || ((document.workflowVersion ?? 1) >= 3 && document.status === 'Ditolak'); }
-export function approvalRoles(document: AssignedDocument, project = false): Role[] { return (document.workflowVersion ?? 1) >= 3 ? (usesBusinessSupport(document)?APPROVERS_V3_LEGACY:APPROVERS_V3) : project || (document.workflowVersion ?? 1) >= 2 ? ['PM Konstruksi','Manager Konstruksi'] : ['PM Konstruksi','Manager Konstruksi','Finance']; }
+export function approvalRoles(document: AssignedDocument, project = false): Role[] { return !project&&document.workflowVersion===3&&document.paymentFlow==='kasbon-settlement-v2'?[...APPROVERS_V3,'Mgr Finance & Settlement','Finance']:(document.workflowVersion ?? 1) >= 3 ? (usesBusinessSupport(document)?APPROVERS_V3_LEGACY:APPROVERS_V3) : project || (document.workflowVersion ?? 1) >= 2 ? ['PM Konstruksi','Manager Konstruksi'] : ['PM Konstruksi','Manager Konstruksi','Finance']; }
 export function nextApprovalRole(document:AssignedDocument & {approvals?:Approval[]},project=false):Role|undefined {const approved=new Set((document.approvals??[]).filter(a=>a.decision==='Setujui').map(a=>a.role));return approvalRoles(document,project).find(role=>!approved.has(role));}
 export function selectedApprover(document: AssignedDocument, role:Role) { return (document.workflowVersion ?? 1) >= 3 ? document.approverUserIds?.[role] : role === 'PM Konstruksi' ? document.pmUserId : document.managerUserId; }
 export function validateAssignments(s:State, document:AssignedDocument & {branch:string}, required=true) {
@@ -56,14 +57,16 @@ export function rememberProjectNumber(s:State,p:Project,number:{value:string;nex
 }
 function approver(s: State, id: string | undefined, role: Role) { const u = s.users.find(u => u.id === id && u.active && u.role === role); if (!u) throw new Error('Pilih pengguna aktif dengan peran ' + role + '.'); return u; }
 export function assertAssigned(s: State, document: AssignedDocument, role: Role) {
+  if(document.paymentFlow==='kasbon-settlement-v2'&&role==='Finance'&&!document.approverUserIds?.Finance){approver(s,s.actorUserId,'Finance');if(s.role!=='Finance')throw new Error('Hanya Finance aktif yang dapat melanjutkan.');return;}
   const u = approver(s, selectedApprover(document, role), role);
   if (s.role !== role || s.actorUserId !== u.id) throw new Error('Hanya approver yang dipilih pada PP dapat menyetujui dokumen ini.');
 }
 export function projectApprovalRole(p: Project): Role | undefined { return p.status === 'Diajukan' ? nextApprovalRole(p,true) : undefined; }
 export function canApproveProject(s: State, p: Project) { const role = projectApprovalRole(p); return !!role && role === s.role && s.actorUserId === selectedApprover(p,role) && s.users.some(u => u.id === s.actorUserId && u.active && u.role === role); }
-export function canApproveTerm(s: State, t: Term) { const role = t.status === 'Diajukan' ? nextApprovalRole(t) : undefined; return !!role && role === s.role && ((t.workflowVersion ?? 1) < 2 || (s.actorUserId === selectedApprover(t,role) && s.users.some(u => u.id === s.actorUserId && u.active && u.role === role))); }
-export function saveProjectV2(s: State, input: Project, submit: boolean) {
+export function canApproveTerm(s: State, t: Term) { const role = t.status === 'Diajukan' ? nextApprovalRole(t) : undefined; return !!role && role === s.role && ((t.workflowVersion ?? 1) < 2 || ((s.actorUserId === selectedApprover(t,role)||t.paymentFlow==='kasbon-settlement-v2'&&role==='Finance'&&!t.approverUserIds?.Finance) && s.users.some(u => u.id === s.actorUserId && u.active && u.role === role))); }
+export function saveProjectV2(s: State, input: Project, submit: boolean, submittingBundle=false) {
   requireAdmin(s); const p = structuredClone(input), old = s.projects.find(x => x.id === p.id);
+  if(submit&&old?.contractBundle&&!submittingBundle)throw new Error('Lengkapi BA KH dan SPK lalu ajukan paket dari SPK.');
   if (old && !canReviseSubmission(old)) throw new Error('PP terkunci pada status ini.');
   const version = (old?.workflowVersion ?? 1) >= 2 ? old!.workflowVersion! : s.schema >= 3 ? 3 : 2;
   p.moneyPolicy=version>=3?WHOLE_RUPIAH:undefined;
@@ -72,6 +75,7 @@ export function saveProjectV2(s: State, input: Project, submit: boolean) {
   p.approvalScheme=projectApprovalScheme(old);
   p.approvalOrderChange=old?.approvalOrderChange;
   p.headApprovalReopen=old?.headApprovalReopen;
+  p.contractBundle=old?.contractBundle;
   const chain = validateAssignments(s, { ...p, workflowVersion: version }, submit);
   if (!['Konstruksi', 'Operation'].includes(p.unit) || !branchOptions(s).some(b => b.name === p.branch && b.active)) throw new Error('Pilih Unit Kerja dan Branch aktif.');
   if (!old && (p.parentId || p.rootId !== p.id)) throw new Error('PP lanjutan harus dibuat dari pelepasan BA PP.');
@@ -106,6 +110,7 @@ export function decideProject(s: State, id: string, decision: Approval['decision
   const a: Approval = { role, userId: s.actorUserId, actorName: s.users.find(u => u.id === s.actorUserId)?.name, actorNik:s.users.find(u=>u.id===s.actorUserId)?.nik, decision, note: note.trim(), at: now() };
   (p.approvalHistory ??= []).push(a); p.approvals ??= [];
   if (decision === 'Setujui') { p.approvals.push(a); if (p.approvals.length === approvalRoles(p,true).length) p.status = 'Sah'; } else { p.status = decision === 'Kembalikan' ? 'Dikembalikan' : 'Ditolak'; p.approvals = []; }
+  if(p.status==='Sah')approveProjectBundle(s,p);
   log(s, 'PP ' + decision, p.no, '/project-plan/' + id);
 }
 export function setNumberFormat(s: State, format: string) { recordCommand('setNumberFormat', [format]); requireAdmin(s); validateNumberFormat(format); s.settings ??= { ppNumberFormat: format, nextPpSequence: 1 }; s.settings.ppNumberFormat = format.trim(); log(s, 'Format No PP diperbarui', format, '/pengaturan'); }

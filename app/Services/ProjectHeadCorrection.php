@@ -35,6 +35,7 @@ final class ProjectHeadCorrection
             $index = array_search($plan['sourceId'], array_column($before['projects'], 'id'), true);
             abort_if($index === false, 422, 'Snapshot PP tidak ditemukan.');
             $p = $before['projects'][$index];
+            abort_if(PrototypeDomain::usesContractBundle($p), 422, 'Koreksi Head khusus PP historis tidak dapat memisahkan persetujuan paket PP, BA KH dan SPK.');
             $prior = DB::table('prototype_audits')->where('workspace_id', $w->id)->where('request_id', $plan['requestId'])->first();
             if ($prior) {
                 abort_unless($prior->command === 'reopenProjectHead' && (int) $prior->actor_user_id === (int) $operator->getKey()

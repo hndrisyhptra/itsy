@@ -43,6 +43,12 @@ trait PrototypeWorkflowV2
 
     private function assigned(array $document, string $role): void
     {
+        if (self::usesSettlementPayment($document) && $role === 'Finance' && empty($document['approverUserIds']['Finance'])) {
+            $this->approver($this->state['actorUserId'], 'Finance');
+            abort_unless($this->state['role'] === 'Finance', 403);
+
+            return;
+        }
         $id = $this->selectedApprover($document, $role);
         $this->approver($id, $role);
         abort_unless($this->state['role'] === $role && ($this->state['actorUserId'] ?? '') === $id, 403, 'Hanya approver yang dipilih pada PP dapat menyetujui dokumen ini.');
@@ -86,6 +92,9 @@ trait PrototypeWorkflowV2
     {
         $this->admin();
         $old = $this->existing('projects', $input['id'] ?? '');
+        if ($submit && self::usesContractBundle($old ?? []) && $this->submittingContractBundle !== ($old['id'] ?? null)) {
+            $this->fail('Ajukan paket PP bersama BA KH dan SPK melalui pengajuan paket.');
+        }
         if ($old && ! $this->canReviseSubmission($old)) {
             $this->fail('PP terkunci pada status ini.');
         }
@@ -205,6 +214,9 @@ trait PrototypeWorkflowV2
         }
         $p['approvals'] = [];
         $p['approvalHistory'] = $old['approvalHistory'] ?? [];
+        if (isset($old['contractBundle'])) {
+            $p['contractBundle'] = $old['contractBundle'];
+        }
         if (isset($old['headApprovalReopen'])) {
             $p['headApprovalReopen'] = $old['headApprovalReopen'];
         }
@@ -241,6 +253,9 @@ trait PrototypeWorkflowV2
             $p['approvals'] = [];
         }
         $this->put('projects', $p);
+        if ($p['status'] === 'Sah') {
+            $this->approveProjectBundle($p);
+        }
         $this->log('PP '.$decision, $p['no'].' · '.$role, '/project-plan/'.$id);
 
         return null;

@@ -11,12 +11,14 @@ class PrototypeDomain
 {
     use FinancePaymentWorkflow;
     use PartialPaymentWorkflow;
+    use ProjectContractBundle;
     use PrototypeTermWorkEvidence;
     use PrototypeWorkflowV2;
+    use SettlementApprovalWorkflow;
 
     private const BAKH_SIGNING_PLACE = 'Surabaya';
 
-    public const ROLES = ['Admin Konstruksi', 'PM Konstruksi', 'Manager Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Bussiness Support', 'Mgr Project Support', 'Head of PMO', 'Finance', 'Superadmin', 'Admin Operation', 'Admin Operation Area', 'Officer 1 Operation', 'Officer 2 Operation', 'Officer 3 Operation', 'Manager Branch Operation', 'General Manager Operation'];
+    public const ROLES = ['Admin Konstruksi', 'PM Konstruksi', 'Manager Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Bussiness Support', 'Mgr Project Support', 'Head of PMO', 'Mgr Finance & Settlement', 'Finance', 'Superadmin', 'Admin Operation', 'Admin Operation Area', 'Officer 1 Operation', 'Officer 2 Operation', 'Officer 3 Operation', 'Manager Branch Operation', 'General Manager Operation'];
 
     private array $state;
 
@@ -26,6 +28,8 @@ class PrototypeDomain
         ProjectHeadReopen::assertCommandAllowed($state, $command, $args);
         $result = match ($command) {
             'saveProject' => ($state['schema'] ?? 1) >= 2 ? $this->saveProjectV2($this->object($args[0] ?? null), (bool) ($args[1] ?? false)) : $this->saveProject($this->object($args[0] ?? null), (bool) ($args[1] ?? false)),
+            'saveProjectBundle' => $this->saveProjectBundle($this->object($args[0] ?? null), (bool) ($args[1] ?? false)),
+            'submitProjectBundle' => $this->submitProjectBundle($args[0] ?? '', $args[1] ?? null),
             'decideProject' => $this->decideProject($args[0] ?? '', $args[1] ?? '', $args[2] ?? ''),
             'assignProjectApprovers' => $this->assignProjectApprovers($args[0] ?? '', $args[1] ?? '', $args[2] ?? ''),
             'assignPaymentApprovers' => $this->assignPaymentApprovers($args[0] ?? '', $this->object($args[1] ?? null)),
@@ -49,6 +53,8 @@ class PrototypeDomain
             'submitFinanceTerm' => $this->submitFinanceTerm($this->object($args[0] ?? null)),
             'decideFinancePayment' => $this->decideFinancePayment($args[0] ?? '', $args[1] ?? '', $args[2] ?? '', $args[3] ?? null),
             'saveSpk' => $this->saveSpk($this->object($args[0] ?? null), $args[1] ?? 'save'),
+            '_submitSettlementKasbon' => $this->submitSettlementKasbon($args[0] ?? '', $this->object($args[1] ?? null)),
+            'createSettlementTerm' => $this->createSettlementTerm($args[0] ?? '', $resultId),
             'createTerm' => $this->createTerm($args[0] ?? '', $resultId),
             'saveTerm' => $this->saveTerm($this->object($args[0] ?? null), (bool) ($args[1] ?? false)),
             'decide' => $this->decide($args[0] ?? '', $args[1] ?? '', $args[2] ?? ''),
@@ -506,7 +512,7 @@ class PrototypeDomain
     {
         $p = $this->record('projects', $d['projectId'] ?? '');
         $root = $this->record('projects', $p['rootId']);
-        if ($p['status'] !== 'Sah' || $p['boqStatus'] !== 'Final' || (($p['workflowVersion'] ?? 1) >= 2 && count($p['approvals'] ?? []) !== count($this->approvalRoles($p, true)))) {
+        if (! self::usesContractBundle($p) && ($p['status'] !== 'Sah' || $p['boqStatus'] !== 'Final' || (($p['workflowVersion'] ?? 1) >= 2 && count($p['approvals'] ?? []) !== count($this->approvalRoles($p, true))))) {
             $this->fail('PP harus sah dan BOQ final.');
         }
         $this->required($d, ['no', 'mandor']);
@@ -598,8 +604,10 @@ class PrototypeDomain
         $this->admin();
         $this->enum($action, ['save', 'generate', 'attest']);
         $old = $this->existing('deals', $d['id'] ?? '');
+        $this->assertBundleDocumentEditable($this->record('projects', $d['projectId'] ?? ''), $action);
         // Removed text reference is archive-only: never accept a new client claim.
         $d['evidence'] = $old['evidence'] ?? '';
+        unset($d['approvedWithProject']);
         if ($old && $old['status'] === 'Sah') {
             $this->fail('BA KH sah terkunci.');
         }
@@ -653,6 +661,7 @@ class PrototypeDomain
         $this->enum($action, ['save', 'generate', 'attest']);
         $old = $this->existing('spks', $v['id'] ?? '');
         $v['evidence'] = $old['evidence'] ?? '';
+        unset($v['approvedWithProject']);
         unset($v['_payeeReady']);
         unset($v['financialFlow'], $v['payeeVersion']);
         foreach (['financialFlow', 'payeeVersion'] as $field) {
@@ -672,7 +681,9 @@ class PrototypeDomain
             $v = SpkIssuance::sync($v);
         }
         $d = $this->record('deals', $v['dealId'] ?? '');
-        if ($d['status'] !== 'Sah') {
+        $project = $this->record('projects', $d['projectId']);
+        $this->assertBundleDocumentEditable($project, $action);
+        if ($d['status'] !== 'Sah' && ! self::usesContractBundle($project)) {
             $this->fail('SPK hanya dapat dibuat dari BA KH sah.');
         }
         if ((! $old || $old['status'] === 'Draft') && ($this->state['schema'] ?? 1) >= 3) {
@@ -768,6 +779,9 @@ class PrototypeDomain
         if (($t['workflowVersion'] ?? 1) >= 3) {
             $t['moneyPolicy'] = WholeRupiah::POLICY;
         }
+        if ($submit && self::usesSettlementPayment($t) && ! $this->issuingSettlementKasbon) {
+            $this->fail('Isi dan ajukan kasbon terlebih dahulu untuk memulai tujuh approval pembayaran.');
+        }
         $t['type'] = $this->enum($input['type'] ?? '', ['Parsial', 'Final']);
         if ($t['number'] === 3 && $t['type'] !== 'Final') {
             $this->fail('Termin ketiga wajib Final.');
@@ -826,6 +840,16 @@ class PrototypeDomain
         if (($t['workflowVersion'] ?? 1) >= 2) {
             $a['userId'] = $this->state['actorUserId'];
             $a['actorName'] = $this->record('users', $a['userId'])['name'];
+        }
+        if (self::usesSettlementPayment($t)) {
+            if (empty($t['kasbon']['id'])) {
+                $this->fail('Kasbon wajib tersedia sebelum approval.');
+            }
+            if ($this->state['role'] === 'Finance' && $decision === 'Setujui' && isset($t['scan']) && $t['scan']['status'] !== 'Valid') {
+                $this->fail('Verifikasi scan yang tersedia sebelum approval Finance.');
+            }
+            $a['kasbonId'] = $t['kasbon']['id'];
+            $t = $this->settlementDecision($t, $a);
         }
         $t['history'][] = $a;
         if ($decision === 'Setujui') {
@@ -1052,6 +1076,7 @@ class PrototypeDomain
                 $p['workflowVersion'] = 3;
                 $p['approvalScheme'] = 'project-support-first';
                 $p['approverUserIds'] = $parent['approverUserIds'] ?? $parent['paymentApproverUserIds'] ?? [];
+                $p['contractBundle'] = ['version' => 1, 'submissions' => []];
                 $p['continuationNotes'] = $notes;
                 $p['schedule'] = array_fill(0, 5, ['days' => 1]);
                 $p = ProjectPlanTemplate::apply($p);

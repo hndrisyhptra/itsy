@@ -1,5 +1,13 @@
 # Antrean upload dan optimasi aplikasi — 6 November 2026
 
+## 15 November 2026 — Worker harus memuat kode terbaru dan retry privat
+
+Insiden lokal: PID26843 milikdaemon masih menjalankan `area3:work-uploads` sejak7November; task KTP/bank15November gagal walaupun akun/SPK/Branch valid. Long-running PHP worker mempertahankan class lama. Setelah perubahan handler upload, worker perlu dihentikan tertib dan dimulai kembali dengan kode yang sama dengan web. Pada lokal ini cache file telah diverifikasi berada di storage proyek Area3, prefix `its-area-3-cache-`; `php artisan queue:restart` berhasil menghentikan worker lama. Autostart=true memulai penggantinya pada unggahan berikutnya dengan identitas web. Pengguna mengonfirmasi upload KTP lokal berhasil. Tidak mengubah worker Dompis atau konfigurasi/izin daemon, tidak memaksa root/file permissions, tidak membersihkan jobs/failed tasks.
+
+`waitUpload` sekarang memberi `UploadTaskFailedError` hanya ketika status server terminalfailed. `uploadPrivateDocument` menghapus UUID tersimpan untuk File/kind/document itu setelah error tersebut, sehingga klik Unggah berikutnya membuat task baru. Gangguan POST/polling/timeout tetap menyimpan UUID yang sama untuk retry manual dan tidak pernah mengirim ulang otomatis. Keberhasilan tetap memerlukan taskcompleted dan refresh berizin. Tidak menambah polling/SQL/API atau mengubah BOQ/evidence/workflow authorization.
+
+Regresi nyata worker tanpa sesi browser menyelesaikan KTP/bank dengan39query per task pada fixture satuSPK (batas75), mengembalikan identitas guard ke kosong dan memastikan metadata uploader/file preview benar. Branch dicabut tetap menolak tanpa private file/receipt/revisi, dengan alasanBranch yang aman. Transport fixture membuktikan UUID baru setelah failure pasti, UUID tetap setelah uncertainPOST/poll dan nolautoPOST.283PHP/5991assertions,291frontend/build/Pint/assets lulus. Ini bukan benchmark beban/MySQL; server aaPanel tidak disentuh. [Detail](FINANCE_KASBON.md), [bukti](qa/mandor-upload-fix-20261115.json).
+
 ## 11 November 2026 — Upload eviden sebelum migration kasbon
 
 Laporan Server Error ditelusuri ke log lokal: SQLSTATE42S22/1054, kolom `upload_tasks.context_id` belum ada saat INSERT upload eviden. Kesalahan pada pembaruan kasbon: kolom baru ikut ditulis untuk semua jenis upload, termasuk `boq`/`evidence` yang tidak membutuhkannya. HTTP gagal sebelum task/job berhasil dibuat, bukan deteksi worker tidak aktif atau kesalahan isi PDF.

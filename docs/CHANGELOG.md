@@ -1,5 +1,20 @@
 # Catatan perubahan it's Area 3
 
+## 15 November 2026 — Paket PP, BA KH, SPK dan kasbon sebelum tujuh approval
+
+- Permintaan/konfirmasi pengguna: Admin melengkapi PP, BA KH dan SPK sebelum satu pengajuan lima approval; kasbon pembayaran diisi sebelum PM, tambahan Mgr Finance & Settlement sebelum Finance7, timeline tujuh tahap. TTD Mandor kasbon dihapus; cap keputusan nyata hanya preview, Word/PDF menyediakan ruang TTD kosong.
+- Backend: trait paket/Settlement baru, server marker/manifests, kunci core/profil/pending upload, pengesahan/commit atomik pada Head; kasbon terenkripsi template3/versi penerima, enam assignee aktif/Branch, Finance7 actor/kasbonId, penolakan wajib note dan pengajuan ulang PM dengan versi baru. Bukti transfer/APM penuh dan late-scan/ledger/next-term tetap. Role/CHECK order3 migration baru, tanpa akun/seed/adopsi massal keputusan lama.
+- UI: PP→BA→SPK/paket review, form kasbon sebelum submit, dropdown Settlement, tujuh tahap/inbox/timeline/Finance review, lazy native DOCX kasbon dan portrait print biasa/nested. Nama Finance berasal dari keputusan yang cocok, bukan default fiktif. Alur/signer Business Support historis tetap pada dokumen lama; penghapusan TTD Mandor berlaku keluaran kasbon.
+- Performa: actor names batch, decision map dan satu join signer; Draft-package picker3query/20+1, keputusan fixture54–66query≤80. Tidak mengklaim throughput umum; aggregate load lama tetap. Manifest menyimpan hash versi, bukan full-copy revisi formulir. Audit lengkap: [BUNDLE_SETTLEMENT_APPROVAL](BUNDLE_SETTLEMENT_APPROVAL.md), ARCHITECTURE/WORKPLAN/QA dan [JSON](qa/bundle-settlement-20261115.json).
+- Verifikasi penuh295PHP/6447assertions,297frontend lulus; build/aset/Pint dan hasil tambahan pada QA. Word CRC/XML8parts,1+2halaman/all3PNG diperiksa; PDF Chrome normal/nested1+3halaman,7cap preview/0print/Grand Total sekali. its aktif/.env/arsip/Dompis/server tidak ditulis; migration/deploy/akun Settlement belum diterapkan agen. Backup demo privat233472byte sebelum perubahan. Pengujian akun browser menyeluruh, MySQL DDL server, desktop Word dan cetak fisik belum dilakukan.
+
+## 15 November 2026 — Unggah foto Mandor dan pesan validasi NIK
+
+- Pengguna mengonfirmasi simpan data aman setelah NIK16digit. Pesan keliru “NIK pegawai...huruf...” ditelusuri ke terjemahan regexusername generik; FinanceDocuments sekarang memberi label/pesan khusus KTP/rekening, trim tepi sebelum validasi dan menjaga nol awal/formatketat. Pesan role/Branch private upload juga diperjelas tanpa mengubah akses.
+- Dua task lokal gagal walaupun akun/SPK/Branch valid. Workerdaemon PID26843 berjalan sejak7November dan memakai handler sebelum fiturprivat11November. Sinyalqueue:restart pada cache file proyek menghentikan worker lama, autostart tetap. Pengguna sudah mengonfirmasi upload KTP berhasil setelah reload/uploadbaru. Tidak mengubah riwayat task/PII/transaksi/izinfile atau worker aplikasi lain.
+- Retry privat memberi UUID baru hanya setelah server mengonfirmasi taskfailed; uncertainPOST/poll tetap UUIDlama, tanpa autoPOST. Tidak menambah endpoint/SQL/poll/schema/migration. Worker tanpa sesi menyelesaikan kedua jenisfoto dengan39query/task fixture≤75; existing Branch/role/version/payee/FinanceAPM guards tetap.
+- 283PHP/5991assertions,291frontend/build/Pint/assets32manifest/25preload×3profil lulus; fotoKTP lokal dikonfirmasi pengguna, bank/permissions/retry diverifikasi otomatis. Backup demoSQLite233472byte sebelum edit; its baca-saja diagnosis. Tidak ada serveraaPanel/commit/push/deploy. [Perilaku](FINANCE_KASBON.md), UPLOAD_QUEUE_PERFORMANCE/ARCHITECTURE/WORKPLAN/QA dan [bukti](qa/mandor-upload-fix-20261115.json) dicatat; audit lama tetap.
+
 ## 15 November 2026 — SPK otomatis Surabaya dan tanggal sebelum awal pekerjaan
 
 - Tempat penerbitan SPK readonly Surabaya pada form, preview, Word dan cetak/PDF. Tanggal surat yang kosong/invalid/melewati awal pekerjaan otomatis memakai awal pekerjaan SPK; tanggal lebih awal tetap. Contoh 11 November dengan periode 28 Oktober–3 November tampil Surabaya, 28 Oktober 2026. Nama proyek/Branch/alamat/periode/signer/nominal tetap.

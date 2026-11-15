@@ -27,6 +27,7 @@ class BarpTemplateTest extends TestCase
         $s = $this->seedWorkflow('D');
         $this->asRole('Admin Konstruksi');
         $t = $this->api('createTerm', [$s['spks'][0]['id']])->assertOk()->json('state.terms.0');
+        $t = $this->historicalKasbonFixture($t['id']);
         $t['actuals'] = [$s['deals'][0]['rows'][0]['rowId'] => ['m' => 1, 's' => 1]];
 
         return [$s, $t];

@@ -87,7 +87,17 @@ class PrototypeWorkspaceService
             if ($row->revision !== $input['revision']) {
                 throw new HttpResponseException(response()->json($this->payload($row) + ['message' => 'Data berubah di tab lain. Muat ulang data terbaru; perubahan tidak ditimpa.'], 409));
             }
-            if ($input['command'] === 'saveProject') {
+            if ($input['command'] === 'submitProjectBundle') {
+                $project = collect($before['projects'])->firstWhere('id', $input['args'][0] ?? '');
+                abort_unless($project && PrototypeDomain::usesContractBundle($project), 422, 'Paket PP tidak ditemukan.');
+                $dealIds = collect($before['deals'])->where('projectId', $project['id'])->pluck('id')->all();
+                foreach (collect($before['spks'])->whereIn('dealId', $dealIds) as $spk) {
+                    app(FinanceDocuments::class)->requirePayee($row, $spk['id']);
+                }
+                $input['args'][1] = ! empty($project['boqUpload']['id']) ? app(BoqImportStorage::class)->read($row, $project['boqUpload']['id'], $project) : null;
+                abort_if(DB::table('upload_tasks')->where('workspace_id', $row->id)->whereIn('document_id', [$project['id'], ...collect($before['spks'])->whereIn('dealId', $dealIds)->pluck('id')->all()])->whereIn('status', ['queued', 'processing'])->exists(), 422, 'Tunggu seluruh upload paket selesai.');
+            }
+            if (in_array($input['command'], ['saveProject', 'saveProjectBundle'], true)) {
                 // Never trust client provenance, comparison prices or an arbitrary file path.
                 unset($input['args'][0]['_boqImport']);
                 if (! empty($input['args'][0]['boqUpload']['id'])) {
@@ -109,6 +119,9 @@ class PrototypeWorkspaceService
                     ->where('kind', $input['command'] !== 'saveProject' ? 'evidence' : 'boq')->whereIn('status', ['queued', 'processing'])->exists();
                 abort_if($pending, 422, 'Tunggu antrean upload dokumen ini selesai sebelum mengajukan approval.');
             }
+            if ($input['command'] === '_submitSettlementKasbon') {
+                abort_if(DB::table('upload_tasks')->where('workspace_id', $row->id)->where('document_id', $input['args'][0])->where('kind', 'evidence')->whereIn('status', ['queued', 'processing'])->exists(), 422, 'Tunggu upload eviden selesai sebelum pengajuan kasbon.');
+            }
             if ($input['command'] === 'recordApm' && PrototypeDomain::usesFinancePayment(collect($before['terms'])->firstWhere('id', $input['args'][0]) ?? [])) {
                 abort_if(DB::table('upload_tasks')->where('workspace_id', $row->id)->where('document_id', $input['args'][0])->where('kind', 'transfer-proof')->whereIn('status', ['queued', 'processing'])->exists(), 422, 'Tunggu antrean bukti transfer selesai sebelum APM.');
             }
@@ -119,6 +132,12 @@ class PrototypeWorkspaceService
                 if (($savedSpk['financialFlow'] ?? '') === 'kasbon-v1' || PrototypeDomain::usesFinancePayment($savedTerm ?? [])) {
                     $domainCommand = 'submitFinanceTerm';
                 }
+            }
+            if ($input['command'] === 'saveProjectBundle' || ($input['command'] === 'saveProject' && ! collect($before['projects'])->contains('id', $input['args'][0]['id'] ?? ''))) {
+                $domainCommand = 'saveProjectBundle';
+            }
+            if ($input['command'] === 'createTerm') {
+                $domainCommand = 'createSettlementTerm';
             }
             $state = app(PrototypeDomain::class)->execute($before, $domainCommand, $input['args'], $input['result_id'] ?? null)['state'];
             $balanceQuery = fn () => DB::table('volume_balances')->join('boq_components as c', 'c.id_boq_component', '=', 'volume_balances.boq_component_id')

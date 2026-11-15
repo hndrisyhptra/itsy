@@ -308,3 +308,13 @@ body{color:var(--text);background:var(--bg)}[data-theme=dark] .metric-label,[dat
 .pp-full-plan .plan-budget-section .budget-boq-table table:has(th:nth-child(10)) th:nth-child(7),.pp-full-plan .plan-budget-section .budget-boq-table table:has(th:nth-child(10)) th:nth-child(8){width:10%}
 .pp-full-plan .plan-budget-section .budget-boq-table table:has(th:nth-child(10)) th:nth-child(10){width:11%}
 .pp-full-plan .plan-budget-section .budget-boq-table tbody tr:not(.budget-total) td:nth-child(n+4){overflow-wrap:normal;word-break:normal}
+
+/* Kasbon marks are document-bound application decisions; physical outputs stay blank. */
+.kasbon-wet-signature{display:flex;align-items:center;justify-content:center}
+.kasbon-approval-stamp{display:inline-block;color:#21704d;border:3px double #21704d;padding:6px 10px;font-size:11px;letter-spacing:1px;line-height:1.35}
+.kasbon-approval-stamp small{font-size:9px;letter-spacing:0}
+@media print{.kasbon-approval-stamp{display:none!important}.document.kasbon-document{page:kasbon-portrait;display:block!important;visibility:visible!important;width:100%;max-width:none;height:auto!important;overflow:visible!important}.modal-body:has(.kasbon-document){overflow:visible!important}.kasbon-document .kasbon-signatures tr{break-inside:avoid}}
+
+@media print{.kasbon-document .kasbon-amounts tfoot{display:table-row-group}.kasbon-document,.kasbon-document p,.kasbon-document th{color:#111!important}.kasbon-document .kasbon-signatures,.kasbon-document .kasbon-signatures td{border:0!important;background:#fff!important}.modal:has(.kasbon-document),.modal-body:has(.kasbon-document){background:#fff!important}}
+
+@media print{.kasbon-document dl{break-inside:avoid}body:has(.kasbon-document),.main-shell:has(.kasbon-document){background:#fff!important}}

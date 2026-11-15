@@ -1,5 +1,16 @@
 # Laravel conversion checklist
 
+## 15 November 2026 — Paket PP dan kasbon sebelum tujuh approval
+
+- [x] PP baru/lanjutan bertanda server: PP → draf BA KH → draf SPK/profil Mandor → Ajukan Paket → lima keputusan → Sah/commit atomik.
+- [x] Kunci isi paket/profil selama pengajuan, hash versi, harga/jadwal/volume/pending-upload guards; penolakan mempertahankan sejarah dan mengulang PM.
+- [x] Kasbon Admin sebelum pengajuan pembayaran; pilih Settlement aktif/Branch, tujuh tahap/inbox/timeline, keputusan terikat kasbonId, penolakan pada tujuh posisi dan versi baru.
+- [x] Finance review/approval7 → bukti transfer privat → APM penuh; scan boleh menyusul, next-term dan tiga termin tetap. Alur lama tidak diadopsi massal.
+- [x] Kasbon tanpa TTD Mandor; nama Settlement aktual; cap keputusan nyata hanya preview; native Word lazy dan print/PDF biasa/nested tidak blank.
+- [x] Migration role MGR_FINANCE_SETTLEMENT/order3 CHECK, rollback guard tanpa akun contoh; actor lookups batch, picker tetap bounded. Perilaku/arsitektur: docs/BUNDLE_SETTLEMENT_APPROVAL.md.
+- [ ] Operator menerapkan migration/build pada server dan menyiapkan akun Settlement/Branch; belum dijalankan agen. Uji server, browser akun end-to-end, Word desktop dan cetak fisik masih terpisah.
+- Bukti penuh:295PHP/6447assertions dan297frontend lulus; native Word1+2halaman diperiksa; PDF normal/nested1+3halaman,7cap layar/0cetak. Build/aset/Pint serta hasil tambahan terakhir dicatat pada LARAVEL_QA dan qa/bundle-settlement-20261115.json. Backup demo233472byte; tidak menulis its aktif/env/Dompis.
+
 Target: /Applications/XAMPP/xamppfiles/htdocs/its/area3-prototype. Laravel12/PHP8.2, Blade shell + retained React/TypeScript interface. No dependency on Dompis Prov runtime, database, credentials or vendor directory.
 
 - [x] Laravel skeleton and separate dependencies.
@@ -681,3 +692,12 @@ Historical iteration; superseded by the dashboard restoration below.
 - [x] Query review scalar O(1),0SQL/API/lookup tambahan;10vektor kalender helper0queries.281PHP/5959assertions,290FE/build/Pint/assets32refs/25preload×3profil lulus;2native DOCX CRC/XML/render1+1halaman/semua2PNG diperiksa, model HTML/Word/source tetap.
 - [x] Catat SPK_TEMPLATE_WORD/SPK_SIGNER_WORD/ARCHITECTURE/CHANGELOG/LARAVEL_QA/AGENTS/workflow skill dan qa/spk-issuance-20261115.json tanpa menimpa audit.
 - [ ] Operator deploy kode+build dan uji browser akun/live MySQL/server/desktop Word/native print/cetak fisik. Tidak ada migration baru atau commit/push/deploy oleh agen.
+
+## Unggah identitas Mandor lokal — 15 November 2026
+
+- [x] BackupdemoSQLite233472byte sebelum edit, diagnosisits baca-saja tanpa NIK/rekening/foto di output. Dua taskfailed, akun/SPK/Branch valid.
+- [x] Temukan workerdaemon sejak7November; sinyalLaravel restart pada cachefile khususproyek menghentikan workerlama. Autostarttrue/PHPXAMPP tetap, tanpa ubahworker lain/izin/env/taskdata.
+- [x] Pengguna mengonfirmasi fotoKTP berhasil setelah reload/uploadbaru. NIKsimpan sudah aman setelah16digit; pesan validasiKTP/rekening diperbaiki, leadingzero/trim/validasi ketat tetap.
+- [x] Retryprivat melepasUUID hanya pada confirmedterminalfailed; jaringan/polluncertain tetapUUIDlama/nolautoPOST. Role/Branch errorjelas, keamanan/versi/enkripsi/audit/FinanceAPM tetap.
+- [x] 283PHP/5991assertions,291FE/build/Pint/assets lulus; sessionlessworker KTP/bank39query/task≤75, tanpa query/API/poll tambahan. Audit FINANCE_KASBON/UPLOAD_QUEUE_PERFORMANCE/ARCHITECTURE/CHANGELOG/LARAVEL_QA dan qa/mandor-upload-fix-20261115.json.
+- [ ] Jika deployserver nanti, restart hanya workerArea3 setelah updatekode; tidak ada migrationbaru. ServeraaPanel/Financeend-to-end/browserresponsive tidak diuji ulang untuk perbaikan ini.

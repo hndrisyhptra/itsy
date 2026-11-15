@@ -5,6 +5,9 @@ description: Implement its Area 3 Project Plan, BOQ, mandor contracting, assigne
 
 # area3-business-workflow
 
+## PP bundle and seven kasbon approvals — 15 November 2026
+Follow docs/BUNDLE_SETTLEMENT_APPROVAL.md and current AGENTS authority: new PP/continuation saves PP+BA KH+SPK as one frozen package, five actual decisions atomically attest/commit at Head. New kasbon-settlement-v2 requires Admin kasbon before PM, selected six assignees then Branch Finance7, all decisions kasbon-bound; rejection note/newversion/restart PM, actual transfer proof/full APM/late scan/next-term guards. Keep historical markers/decisions, no bulk live adoption or fake signatures/credentials. Native kasbon Word/print omit marks/Mandor TTD; actual marks only preview. Role/order3 migration not deployed live. Batch actor names, bound private/picker reads and retain isolated tests/render/query/deploy limits from current QA.
+
 ## SPK issuance city and date — 15 November 2026
 User additionally authorizes Surabaya for SPK; follow latest docs/SPK_TEMPLATE_WORD.md. Canonical PHP/TS new/draft save/generate/attest uses fixed place and issue date no later than its own work start, retaining earlier valid dates and deriving empty/invalid/late dates from valid start. Form readonly city/date max; HTML/print/Word share the model. Historical output uses this presentation without changing Terbit/Sah snapshots/decisions. Keep work periods, BA KH/PP data, signers/NIK, amounts, ledger and all guards. No new SQL/API/migration; audit query/helper/calendar/issued-preservation/render evidence with real limitations.
 

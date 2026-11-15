@@ -34,7 +34,9 @@ class UsernameApprovalV3Test extends TestCase
     {
         $revision = $this->getJson('/api/prototype/state')->assertOk()->json('revision');
 
-        return $this->postJson('/api/prototype/commands', ['command' => $command, 'args' => $args, 'revision' => $revision, 'request_id' => (string) Str::uuid()]);
+        $send = fn () => $this->postJson('/api/prototype/commands', ['command' => $command, 'args' => $args, 'revision' => $revision, 'request_id' => (string) Str::uuid()]);
+
+        return $command === 'saveProject' ? $this->historicalProjectCommand($args[0], (bool) ($args[1] ?? false), $send) : $send();
     }
 
     private function assertAttestationQueries(array $queries, bool $financial = false): void

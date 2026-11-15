@@ -497,6 +497,29 @@ class RelationalWorkflowStore
         }
         $roles = PrototypeDomain::storedApprovalRoles($document, $project);
         $cycles = ProjectHeadReopen::cycles($document, $project);
+        // Resolve all selected/history actors once per document, including seven-step payments.
+        $selectedIds = array_values($document['approverUserIds'] ?? []);
+        $selectedIds[] = $document['preparedBy']['userId'] ?? '';
+        $selectedIds[] = $document['pmUserId'] ?? '';
+        $selectedIds[] = $document['managerUserId'] ?? '';
+        foreach ($cycles as $decisions) {
+            foreach ($decisions as $decision) {
+                $selectedIds[] = $decision['userId'] ?? '';
+            }
+        }
+        $sqlIds = [];
+        foreach (array_unique($selectedIds) as $selected) {
+            if (preg_match('/^db-user-([0-9]+)$/D', $selected, $match)) {
+                $sqlIds[] = (int) $match[1];
+            }
+        }
+        $names = [];
+        foreach (array_chunk($sqlIds, 200) as $chunk) {
+            foreach (DB::table('users')->whereIn('id_user', $chunk)->get(['id_user', 'name']) as $user) {
+                $this->userCache['db-user-'.$user->id_user] = $user->id_user;
+                $names[$user->id_user] = $user->name;
+            }
+        }
         foreach ($cycles as $i => $decisions) {
             if (! $decisions && ! in_array($document['status'], ['Diajukan', 'Sah', 'Disetujui'], true)) {
                 continue;
@@ -507,12 +530,13 @@ class RelationalWorkflowStore
                 'Kembalikan' => 'RETURNED', 'Tolak' => 'REJECTED', default => count($decisions) === count($roles) ? 'APPROVED' : 'PENDING'
             };
             DB::table('approval_runs')->updateOrInsert(['id_approval_run' => $run], ['pp_id' => $project ? $this->id($workspace->id, 'projects', $document['id']) : null, 'term_id' => $project ? null : $this->id($workspace->id, 'terms', $document['id']), 'cycle_no' => $i + 1, 'status' => $status, 'submitted_by' => $this->user($document['preparedBy']['userId'] ?? null), 'submitted_at' => $this->dateTime($document['submitted'] ?? null), 'workflow_version' => $document['workflowVersion']]);
+            $byRole = array_column($decisions, null, 'role');
             foreach ($roles as $step => $role) {
-                $decision = collect($decisions)->firstWhere('role', $role);
+                $decision = $byRole[$role] ?? null;
                 $selected = $decision['userId'] ?? (($document['workflowVersion'] ?? 1) >= 3 ? ($document['approverUserIds'][$role] ?? null) : ($document[$step === 0 ? 'pmUserId' : 'managerUserId'] ?? null));
                 $user = $this->user($selected);
                 $id = $this->id($workspace->id, 'approval-step', $run.'|'.$step);
-                DB::table('approval_steps')->updateOrInsert(['id_approval_step' => $id], ['run_id' => $run, 'step_no' => $step + 1, 'expected_role' => array_search($role, AccountAccess::ROLES, true), 'assigned_user_id' => $user, 'assigned_name_snapshot' => $decision['actorName'] ?? ($user ? DB::table('users')->where('id_user', $user)->value('name') : ''), 'workflow_version' => $document['workflowVersion'], 'approval_order_version' => ($document['approvalScheme'] ?? '') === 'project-support-first' ? 2 : 1]);
+                DB::table('approval_steps')->updateOrInsert(['id_approval_step' => $id], ['run_id' => $run, 'step_no' => $step + 1, 'expected_role' => array_search($role, AccountAccess::ROLES, true), 'assigned_user_id' => $user, 'assigned_name_snapshot' => $decision['actorName'] ?? ($names[$user] ?? ''), 'workflow_version' => $document['workflowVersion'], 'approval_order_version' => ! $project && PrototypeDomain::usesSettlementPayment($document) ? 3 : (($document['approvalScheme'] ?? '') === 'project-support-first' ? 2 : 1)]);
                 if ($decision) {
                     $data = ['step_id' => $id, 'actor_user_id' => $this->user($decision['userId'] ?? null), 'actor_name_snapshot' => $decision['actorName'] ?? '', 'decision' => match ($decision['decision']) {
                         'Setujui' => 'APPROVE', 'Kembalikan' => 'RETURN', 'Tolak' => 'REJECT'

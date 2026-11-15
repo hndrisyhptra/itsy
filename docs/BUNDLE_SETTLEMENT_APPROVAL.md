@@ -1,0 +1,61 @@
+# Paket PP dan kasbon sebelum tujuh approval
+
+## Otoritas 15 November 2026
+
+Pengguna mengubah PP menjadi satu pengajuan bersama BA KH dan SPK. Untuk pembayaran, pengguna mengonfirmasi kasbon **diisi sebelum pengajuan pertama**, kemudian PM → Admin Area → Mgr Project Support → Mgr Deployment → Head of PMO → Mgr Finance & Settlement → Finance. Ketentuan ini menggantikan kasbon setelah Head untuk dokumen baru. Dokumen lama tetap memakai marker/alur tersimpan; tidak ada adopsi massal pengajuan berjalan, penggantian keputusan, akun atau pembayaran historis.
+
+## Paket PP
+
+1. Admin menyimpan Header PP, BOQ dan perencanaan sebagai draf. PP baru melalui HTTP, termasuk PP lanjutan baru, mendapat marker server `contractBundle.version=1`.
+2. Admin lanjut mengisi BA KH, menyimpan draf, kemudian membuat SPK dan melengkapi profil Mandor/foto privat. BA KH/SPK paket boleh disusun sebelum PP Sah. Nomor -01/-02, jadwal, Head terpilih dan batas harga tetap berasal dari PP tersimpan.
+3. Dari SPK, **Ajukan Paket PP, BA KH & SPK** menyimpan SPK terlebih dahulu, menunggu konfirmasi server, lalu mengajukan paket. Laravel memeriksa kembali PP lengkap, BOQ privat bila ada, lima assignee aktif/Branch, harga/volume, dokumen lengkap, profil Mandor dan antrean upload.
+4. Server mencatat UUID/waktu dan hash isi BA KH/SPK dalam `contractBundle.submissions`. PP Diajukan, BA KH/SPK tetap Draft dan tidak boleh diedit/disahkan secara terpisah. Profil/foto Mandor juga terkunci selama pengajuan paket.
+5. Kelima approver meninjau PP dan berkas BA KH/SPK dari detail PP. Setelah keputusan Head yang sebenarnya, PP, BA KH dan SPK menjadi Sah dalam transaksi yang sama; volume baru menjadi committed saat itu. Status aplikasi tidak membuat tanda tangan basah.
+
+Pengembalian/penolakan wajib catatan. PP dan dokumen paket dapat dikoreksi Admin dan diajukan ulang dari PM; riwayat keputusan, identitas dokumen dan manifest hash sebelumnya dipertahankan. Manifest adalah bukti hash versi, bukan arsip lengkap setiap revisi isi formulir. Satu BA KH/satu SPK per PP tetap mengikuti nomor tetap -01/-02 dan aturan unik sebelumnya. Tidak menambah suffix atau mengubah ledger/pelepasan volume.
+
+`saveProject` generik tidak dapat melewati kelengkapan paket pada PP baru/bertanda. Marker/hashes/status pengesahan milik server, bukan isian klien. PP v1/v2 dan dokumen yang sudah mempunyai riwayat tidak diubah melalui `saveProjectBundle`. PP v3 Draft lama tanpa riwayat dapat diadopsi melalui perintah eksplisit, tetapi editor dokumen lama tidak melakukannya otomatis. CLI koreksi Head khusus PP historis menolak paket baru agar tidak memisahkan persetujuan PP dari BA KH/SPK.
+
+## Pembayaran baru
+
+Pembayaran baru melalui HTTP memakai `paymentFlow=kasbon-settlement-v2`, workflowVersion3. Lima assignee dari PP dibekukan seperti sebelumnya. Admin menyimpan aktual dan informasi BARP, lalu **Ajukan Termin** (Parsial) atau **Ajukan Payment** (Final) membuka form kasbon sebelum pengajuan. Form juga dapat dibuka dari bagian kasbon pada detail termin.
+
+Kasbon memerlukan Cost Center, WBS, jenis kegiatan, tempat/tanggal, rincian akun/keperluan dan nominal, maksimum20baris. Default tempat Surabaya dan EVP I GEDE WAHYU DANYNDRA tetap. Nominal seluruh baris harus sama dengan tagihan aktual; penerima/rekening/bank/foto berasal dari versi profil Mandor tersimpan yang ditampilkan. Admin memilih satu akun **Mgr Finance & Settlement** aktif yang mempunyai Branch PP; identitasnya menggantikan slot Business Support pada kasbon baru, tanpa alias nama akun lama.
+
+POST privat menyimpan kasbon terenkripsi templateVersion3 lalu memulai tujuh approval secara atomik dengan lock/revision/UUID receipt. Kasbon mengikat versi profil penerima dan setiap keputusan mengikat `kasbonId`. Submit generik/submitFinanceTerm tidak dapat mengajukan alur ini tanpa kasbon. Upload eviden yang masih antre menghalangi pengajuan.
+
+| Tahap | Peran | Penugasan |
+| --- | --- | --- |
+| 1 | PM Konstruksi | Akun terpilih dari PP |
+| 2 | Admin Area | Akun terpilih dari PP |
+| 3 | Mgr Project Support | Akun terpilih dari PP |
+| 4 | Mgr Deployment | Akun terpilih dari PP |
+| 5 | Head of PMO | Akun terpilih dari PP |
+| 6 | Mgr Finance & Settlement | Akun terpilih pada kasbon |
+| 7 | Finance | Akun Finance aktif pada Branch PP; identitas pelaku dibekukan pada keputusan |
+
+Finance baru dapat menyetujui setelah tahap6. Sesudah tahap7 Setujui, pengajuan Disetujui/Diverifikasi, kemudian Finance mengunggah bukti transfer privat untuk kasbon yang sama dan mencatat APM unik sebagai pelunasan penuh. Transfer bank tetap dilakukan di luar aplikasi. Bukti transfer dan APM tidak dibuat otomatis. Termin berikutnya menunggu pelunasan/APM sebelumnya, maksimum tiga termin tetap.
+
+Parsial maupun Final boleh dibayar sebelum scan TTD lengkap; NOK/OK tetap terpisah dari status pembayaran. Scan yang sudah tersedia harus diverifikasi sebelum APM; scan dapat disusulkan tanpa mengubah pembayaran. Eviden pekerjaan tidak dihitung sebagai scan TTD. Penolakan/pengembalian oleh salah satu dari tujuh peran mewajibkan catatan, menyimpan siklus lama dan mengulang dari PM setelah kasbon versi baru diajukan. Tidak ada tombol pengembalian pasca-persetujuan Finance7 yang melewati rantai ini; alur historis tetap memakai tombol lamanya.
+
+## Review dan keluaran kasbon
+
+Inbox dan timeline memakai tujuh role dokumen, termasuk akun/tanggal keputusan aktual, tanpa menampilkan Finance7 dua kali pada riwayat gabungan. Lima approver pertama dapat membaca kasbon dari pengajuan baru yang memang menugaskan akunnya setelah diajukan; endpoint/foto identitas Mandor tetap tidak dibuka untuk mereka. Mgr Finance & Settlement dan Finance dapat membuka review berkas sesuai Branch. Profil/bank/kasbon terenkripsi tidak dimasukkan ke bootstrap/export umum/localStorage.
+
+Blok TTD Mandor dihapus dari kasbon, termasuk keluaran historis. Identitas penerima tetap ada. Kasbon baru menampilkan tiga baris signers: PM/Admin Area/pengaju; Support/Deployment/Head; Mgr Finance/Finance/EVP. EVP/pengaju bukan approval aplikasi tambahan. Cap APPROVED hanya berasal dari keputusan nyata pada `kasbonId` yang sedang dilihat dan user yang cocok; tidak ada cap fiktif untuk EVP/pengaju.
+
+Preview menyediakan konfirmasi Unduh Word (.docx) dan Cetak/Simpan PDF. Native Word memakai model isi kasbon yang sama, logo publik tetap, tabel editable, kepala tabel berulang, rekening nol awal, nama Finance dari keputusan yang cocok, dan ruang TTD basah kosong. Semua cap hilang di Word maupun cetak. Word dibuat lazy di browser tanpa paket runtime baru/konverter/server query; tidak memakai HTML berakhiran .doc. CSS menjaga ancestor modal biasa/nested tetap terlihat saat print, satu Grand Total pada akhir tabel, rincian rekening tidak terpotong dan halaman khusus A4 portrait.
+
+## SQL dan deployment
+
+Migration `2026_11_15_000001_add_finance_settlement_approval` menambah kode role `MGR_FINANCE_SETTLEMENT` dan memperluas CHECK `approval_steps` untuk workflow3/orderVersion3 dengan tujuh posisi yang tepat. Order1/2 dan identitas keputusan lama tetap. Tidak membuat akun, tidak mengganti role pengguna lama dan tidak mengubah transaksi berjalan. Marker/manifests memakai project_plans.document_data; metadata pembayaran/keputusan memakai payment_terms.document_data, approval_runs/steps/decisions dan finance_kasbons yang sudah ada. Rollback menolak role/order baru yang sudah digunakan.
+
+**Belum dimigrasikan ke its aktif/server oleh agen.** Saat deploy: backup database/storage/APP_KEY sesuai prosedur proyek, jalankan migration yang tertunda pada its, bangun aset dan periksa aset, bersihkan cache aplikasi dan mulai ulang worker Area3 saja. Jangan fresh/reset/seed/generate APP_KEY. Setelah migration, Superadmin membuat/menetapkan akun Mgr Finance & Settlement beserta Branch; tidak ada akun/password contoh. Migration uang terdahulu yang masih tertunda mempunyai preflight/auditnya sendiri; jangan menganggap pull kode otomatis menerapkannya. Lihat panduan deployment/runtime yang sudah ada.
+
+## Query dan bukti
+
+Resolver approval SQL sekarang membaca ID/nama seluruh selected/history actors dalam batch200 sekali per dokumen; tidak melakukan lookup nama per tahap. Indeks keputusan dibangun sekali per siklus. Resolver identitas dan manifest memakai state terotorisasi yang sudah dimuat. Validasi enam signer kasbon menggunakan satu join akun/role/assignment/Branch, bukan query per role. Picker tetap20+1 dan query count sebelumnya; tambahan hanya kolom marker minimal. Dokumen Word/preview tidak meminta katalog/workflow global.
+
+Fixture satu pembayaran/tujuh tahap mencatat54,56,57,58,59,60,64query per keputusan HTTP Parsial; Final7 mencatat66query termasuk pembuatan BA PP Draft, budget80; lookup nama batch≤2. Ini bukti fixture SQLite kecil, bukan uji beban MySQL. Jumlah SQL writes approval masih mengikuti jumlah siklus/keputusan; boot/command masih memuat aggregate terotorisasi seperti arsitektur sebelumnya. Tidak ada klaim seluruh aplikasi bebas bottleneck.
+
+Verifikasi akhir dan batas aktual ada di [LARAVEL_QA.md](LARAVEL_QA.md) dan [bukti JSON](qa/bundle-settlement-20261115.json). Backup demo privat sebelum perubahan: `area3-before-bundle-settlement-20261115-171303.sqlite`,233472byte/mode0600. its aktif, arsip workspace, .env, server dan Dompis tidak dimutasi oleh implementasi ini.

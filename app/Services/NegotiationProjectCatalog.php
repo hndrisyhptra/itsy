@@ -51,7 +51,7 @@ class NegotiationProjectCatalog
         $rows = $this->scope($account)->where('pp.project_id', $project)->orderByDesc('pp.usage_date')->orderBy('pp.id_pp')
             ->limit(self::PAGE_SIZE + 1)->offset(($page - 1) * self::PAGE_SIZE)
             ->get(['pp.id_pp', 'pp.source_id as id', 'pp.root_pp_id', 'pp.parent_pp_id', 'pp.pp_no as no', 'pp.status',
-                'pp.document_data->name as name', 'pp.document_data->boqStatus as boq_status', 'pp.document_data->allocations as allocations', 'b.name as branch', 'p.project_code as project_code']);
+                'pp.document_data->name as name', 'pp.document_data->contractBundle as bundle_data', 'pp.document_data->boqStatus as boq_status', 'pp.document_data->allocations as allocations', 'b.name as branch', 'p.project_code as project_code']);
         // Foreign/invisible project IDs must not reveal existence, names or counts.
         if ($rows->isEmpty() && $page === 1) {
             abort(404, 'ID Project tidak ditemukan dalam akses Branch Anda.');
@@ -83,7 +83,8 @@ class NegotiationProjectCatalog
         }
 
         return $this->page($rows->map(function ($r) use ($available, $childAvailable) {
-            $reason = $r->status !== 'APPROVED' ? 'PP belum Sah.' : ($r->boq_status !== 'Final' ? 'BOQ belum Final.' : '');
+            $bundle = $r->bundle_data && in_array($r->status, ['DRAFT', 'RETURNED', 'REJECTED'], true);
+            $reason = $bundle ? ($r->boq_status === 'Belum diimpor' ? 'Isi BOQ PP terlebih dahulu.' : '') : ($r->status !== 'APPROVED' ? 'PP belum Sah.' : ($r->boq_status !== 'Final' ? 'BOQ belum Final.' : ''));
             if (! $reason && ! ($r->parent_pp_id ? isset($childAvailable[$r->id_pp]) : in_array($r->root_pp_id, $available, true))) {
                 $reason = 'Volume tersedia sudah habis.';
             }

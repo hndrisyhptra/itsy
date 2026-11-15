@@ -24,6 +24,9 @@ trait PrototypeApprovalChain
 
     public static function approvalRoles(array $document, bool $project = false): array
     {
+        if (! $project && self::usesSettlementPayment($document)) {
+            return [...self::APPROVERS_V3, 'Mgr Finance & Settlement', 'Finance'];
+        }
         if (($document['workflowVersion'] ?? 1) >= 3) {
             return self::usesBusinessSupport($document) ? self::APPROVERS_V3_LEGACY : self::APPROVERS_V3;
         }

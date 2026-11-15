@@ -1,5 +1,9 @@
 # Urutan approval Project Support — 6 November 2026
 
+## Perubahan terbaru 15 November 2026
+
+[BUNDLE_SETTLEMENT_APPROVAL](BUNDLE_SETTLEMENT_APPROVAL.md) berlaku untuk dokumen baru: paket PP/BA KH/SPK dengan lima approval; kasbon sebelum tujuh approval pembayaran, tambahan Mgr Finance & Settlement dan Finance7, cap preview/blank Word/PDF. Histori/alur bertanda lama tetap; tidak ada bulk adoption dokumen berjalan. Ketentuan lama berikut tetap menjadi referensi historis bila berbeda.
+
 ## Pembaruan 13 November 2026 — Baris EVP tetap
 
 Tabel penutup kini menambahkan **Disetujui Oleh: I GEDE WAHYU DANYNDRA / 730371 / EVP Area Jawa Bali** setelah baris akun. Form Disetujui otomatis; preview APPROVED/Persetujuan otomatis selalu ada sebagai penanda administratif, terpisah dari lima keputusan akun. Tanggal referensi satu hari sebelum BA KH valid tersimpan paling awal milik exact PP (termasuk Draft tersimpan); kosong bila belum ada. Saat cetak sel TTD tetap kosong. Tidak ada perubahan keputusan/tanggal approval/SQL/migration. Aturan empat baris dan cap dari akun di bawah tetap berlaku pada baris akun; penanda EVP adalah tambahan yang diminta pengguna. [Rincian dan arsitektur/query](PP_EVP_SIGNATORY.md).

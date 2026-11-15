@@ -11,6 +11,7 @@ use App\Services\UploadQueue;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -46,6 +47,51 @@ class FinanceKasbonTest extends TestCase
         return $task;
     }
 
+    public function test_mandor_photos_complete_without_browser_auth_and_worker_restores_identity(): void
+    {
+        $this->withoutVite();
+        Storage::fake('local');
+        $state = $this->seedWorkflow('D');
+        $admin = $this->asRole('Admin Konstruksi');
+        $spk = $state['spks'][0]['id'];
+        foreach (['mandor-ktp', 'mandor-bank'] as $kind) {
+            $task = $this->post('/api/finance/uploads/'.$kind.'/'.$spk, ['file' => UploadedFile::fake()->image('identity.png'), 'revision' => (string) PrototypeWorkspace::first()->revision, 'request_id' => (string) Str::uuid()], ['Accept' => 'application/json'])->assertAccepted()->json('task.id');
+            Auth::forgetGuards();
+            Auth::forgetUser();
+            $this->assertNull(Auth::user());
+            DB::enableQueryLog();
+            DB::flushQueryLog();
+            app(UploadQueue::class)->process($task);
+            $queries = DB::getQueryLog();
+            DB::disableQueryLog();
+            $this->assertLessThanOrEqual(75, count($queries));
+            fwrite(STDERR, "\nSessionless $kind worker: ".count($queries)." queries.\n");
+            $this->assertNull(Auth::user());
+            $this->assertDatabaseHas('upload_tasks', ['id_upload_task' => $task, 'status' => 'completed', 'error' => null]);
+            $this->assertDatabaseHas('finance_private_files', ['id_finance_file' => $task, 'kind' => $kind, 'uploaded_by' => $admin->id_user]);
+            $this->asRole('Admin Konstruksi');
+            $this->get('/api/finance/files/'.$task)->assertOk();
+        }
+    }
+
+    public function test_payee_validation_names_ktp_and_bank_fields_without_account_username_messages(): void
+    {
+        $this->withoutVite();
+        Storage::fake('local');
+        $state = $this->seedWorkflow('D');
+        $this->asRole('Admin Konstruksi');
+        $path = '/api/finance/spk/'.$state['spks'][0]['id'].'/payee';
+        $before = PrototypeWorkspace::first()->revision;
+        foreach (['123', '00112233445566X7', '0011 223344556677'] as $nik) {
+            $this->write($path, ['nik' => $nik])->assertUnprocessable()->assertJsonPath('errors.nik.0', 'NIK KTP Mandor harus terdiri dari tepat 16 digit angka tanpa spasi atau tanda baca.');
+        }
+        $this->write($path, ['accountNumber' => '12.34'])->assertUnprocessable()->assertJsonPath('errors.accountNumber.0', 'Nomor rekening harus terdiri dari 1–40 digit angka tanpa spasi atau tanda baca.');
+        $this->assertSame($before, PrototypeWorkspace::first()->revision);
+        $this->assertDatabaseCount('mandor_payee_profiles', 0);
+        $this->write($path, ['nik' => ' 0011223344556677 ', 'accountNumber' => ' 0001234567 ', 'bank' => ' Bank QA '])->assertOk();
+        $this->getJson($path)->assertOk()->assertJsonPath('profile.nik', '0011223344556677')->assertJsonPath('profile.accountNumber', '0001234567')->assertJsonPath('profile.bank', 'Bank QA');
+    }
+
     private function setupTerm(bool $final = false, int $approvals = 5, bool $compatibilitySubmit = false): array
     {
         $this->withoutVite();
@@ -56,6 +102,7 @@ class FinanceKasbonTest extends TestCase
         $spk = $s['spks'][0];
         $this->api('createTerm', [$spk['id']])->assertOk();
         $t = $this->getJson('/api/prototype/state')->json('state.terms.0');
+        $t = $this->historicalKasbonFixture($t['id']);
         $t['type'] = $final ? 'Final' : 'Parsial';
         $t['actuals'] = [$s['deals'][0]['rows'][0]['rowId'] => ['m' => 1, 's' => 1]];
         $t['barp']['place'] = 'Tempat uji';
@@ -445,6 +492,7 @@ class FinanceKasbonTest extends TestCase
         $rev = PrototypeWorkspace::first()->revision;
         app(UploadQueue::class)->process($task);
         $this->assertDatabaseHas('upload_tasks', ['id_upload_task' => $task, 'status' => 'failed']);
+        $this->assertStringContainsString('Branch penugasan akun', DB::table('upload_tasks')->where('id_upload_task', $task)->value('error'));
         $this->assertDatabaseMissing('finance_private_files', ['id_finance_file' => $task]);
         $this->assertDatabaseMissing('prototype_audits', ['request_id' => $uuid]);
         $this->assertSame($rev, PrototypeWorkspace::first()->revision);

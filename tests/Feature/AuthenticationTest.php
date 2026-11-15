@@ -29,7 +29,9 @@ class AuthenticationTest extends TestCase
 
     private function command(string $command, array $args, int $revision = 0)
     {
-        return $this->postJson('/api/prototype/commands', ['command' => $command, 'args' => $args, 'revision' => $revision, 'request_id' => (string) Str::uuid()]);
+        $send = fn () => $this->postJson('/api/prototype/commands', ['command' => $command, 'args' => $args, 'revision' => $revision, 'request_id' => (string) Str::uuid()]);
+
+        return $command === 'saveProject' ? $this->historicalProjectCommand($args[0], (bool) ($args[1] ?? false), $send) : $send();
     }
 
     public function test_guest_cannot_access_workspace_exports_scans_or_accounts(): void

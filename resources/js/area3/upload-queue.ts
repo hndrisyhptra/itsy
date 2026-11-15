@@ -2,6 +2,9 @@ import { appUrl, boot } from './laravel';
 import { postUpload, taskUploadProgress, type UploadProgressHandler } from './upload-progress';
 export type UploadKind='boq'|'evidence'|'mandor-ktp'|'mandor-bank'|'transfer-proof';
 export interface UploadTask {id:string;kind:UploadKind;documentId:string;name:string;status:'queued'|'processing'|'completed'|'failed';attempts:number;error:string|null;createdAt:string}
+export class UploadTaskFailedError extends Error {
+  constructor(readonly taskId:string,message:string){super(message);this.name='UploadTaskFailedError';}
+}
 export const pendingUpload=(task:UploadTask)=>task.status==='queued'||task.status==='processing';
 export const uploadStatus=(task:UploadTask)=>({queued:'Dalam antrean',processing:'Sedang diproses',completed:'Selesai',failed:'Gagal'}[task.status]);
 async function json(response:Response) {
@@ -36,7 +39,7 @@ export async function waitUpload(task:UploadTask,onProgress?:(message:string)=>v
     const previous=current.status;current=(await uploadTask(current.id,false,signal)).task;
     if(current.status!==previous)onTaskProgress?.(taskUploadProgress(current));
   }
-  if(current.status==='failed')throw new Error(current.error||'Pemrosesan file gagal.');
+  if(current.status==='failed')throw new UploadTaskFailedError(current.id,current.error||'Pemrosesan file gagal.');
   return current;
 }
 

@@ -5,6 +5,9 @@ description: Implement and verify official KHS component prices, agreed BA KH/SP
 
 # area3-financial-calculation
 
+## PP bundle and seven kasbon approvals — 15 November 2026
+Follow docs/BUNDLE_SETTLEMENT_APPROVAL.md and current AGENTS authority: new PP/continuation saves PP+BA KH+SPK as one frozen package, five actual decisions atomically attest/commit at Head. New kasbon-settlement-v2 requires Admin kasbon before PM, selected six assignees then Branch Finance7, all decisions kasbon-bound; rejection note/newversion/restart PM, actual transfer proof/full APM/late scan/next-term guards. Keep historical markers/decisions, no bulk live adoption or fake signatures/credentials. Native kasbon Word/print omit marks/Mandor TTD; actual marks only preview. Role/order3 migration not deployed live. Batch actor names, bound private/picker reads and retain isolated tests/render/query/deploy limits from current QA.
+
 ## Header PP from IV.5 — 15 November 2026
 Latest user maps Header Total Nilai to final IV.5 Total Anggaran including permit; see docs/PP_HEADER_BOQ_KHS.md. Shared recap/Header helper uses canonical editable or saved usage, legacy without itemized budget keeps its value. Do not repurpose SQL BOQ budget or alter COGS/margin/ledger/history.0SQL/API/schema/migration. Verify readonly/zero/source edits/save-readback/legacy/preview-Word-PDF equality and canonical backend rejection of forged recap; record actual visual/server limits.
 

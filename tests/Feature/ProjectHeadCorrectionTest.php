@@ -292,8 +292,8 @@ class ProjectHeadCorrectionTest extends TestCase
         $term = $state['terms'][0];
         $state['bapps'][] = ['id' => 'bapp-qa', 'termId' => $term['id']];
         $commands = ['saveDeal' => [$state['deals'][0]], 'saveSpk' => [$state['spks'][0]], 'saveSpkFinance' => [$state['spks'][0]],
-            'saveTerm' => [$term], 'submitFinanceTerm' => [$term], 'createTerm' => [$term['spkId']], '_recordPayeeFile' => [$term['spkId']], '_setPayeeVersion' => [$term['spkId']]];
-        foreach (['decide', 'adoptFinancePayment', '_issueKasbon', '_attachTransferProof', 'decideFinancePayment', 'requestPartialPayment', 'verifyPartialPayment', 'payPartialPayment', 'recordApm', 'recordPayment', 'verifyTermScan', '_attachTermScan', '_attachTermWorkEvidence', 'removeTermWorkEvidence'] as $command) {
+            'saveTerm' => [$term], 'submitFinanceTerm' => [$term], 'createTerm' => [$term['spkId']], 'createSettlementTerm' => [$term['spkId']], '_recordPayeeFile' => [$term['spkId']], '_setPayeeVersion' => [$term['spkId']]];
+        foreach (['decide', 'adoptFinancePayment', '_submitSettlementKasbon', '_issueKasbon', '_attachTransferProof', 'decideFinancePayment', 'requestPartialPayment', 'verifyPartialPayment', 'payPartialPayment', 'recordApm', 'recordPayment', 'verifyTermScan', '_attachTermScan', '_attachTermWorkEvidence', 'removeTermWorkEvidence'] as $command) {
             $commands[$command] = [$term['id']];
         }
         foreach (['attestBapp', 'releaseVolume', 'createContinuation'] as $command) {

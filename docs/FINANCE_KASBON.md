@@ -1,5 +1,19 @@
 # Kasbon, data Mandor dan pembayaran — 11 November 2026
 
+## 15 November 2026 — Kasbon sebelum tujuh approval
+
+Pengguna mengonfirmasi kasbon Admin diisi sebelum pengajuan pembayaran pertama. New kasbon-settlement-v2: PM → Admin Area → Project Support → Deployment → Head → Mgr Finance & Settlement → Finance7, lalu bukti transfer/APM. New template3 mengganti Business Support dengan akun Settlement terpilih aktif/Branch, tanpa TTD Mandor, cap keputusan terikat versi hanya preview dan native Word/PDF blank signature. Dokumen lama tetap alur/marker/identitas tersimpan. [Aturan, peran private, schema, deployment dan bukti](BUNDLE_SETTLEMENT_APPROVAL.md) menggantikan kasbon-setelah-Head hanya untuk dokumen baru. Migration role/order3 belum dijalankan agen pada its aktif/server.
+
+## 15 November 2026 — Validasi Mandor dan worker lokal lama
+
+Pesan “NIK pegawai hanya boleh berisi huruf...” berasal dari terjemahan regex generik untuk username, bukan aturan identitas Mandor. FinanceDocuments kini memakai label/pesan khusus: NIK KTP tepat16digit, rekening1–40digit tanpa pemisah; spasi tepi dibuang sebelum validasi, nol awal tetap disimpan sebagai teks. Tidak mengubah NIK akun/pegawai atau melonggarkan validasi identitas. Pengguna mengonfirmasi simpan berhasil setelah memasukkan16digit.
+
+Unggah KTP/buku tabungan lokal ditolak oleh worker yang masih berjalan sejak7November, sebelum fitur dokumen privat ditambahkan11November. Pemeriksaan baca-saja dua task gagal menemukan akun aktif, roleSuperadmin, SPK valid dan Branch sesuai. Worker lama dihentikan lewat sinyal `queue:restart` pada cache file proyek ini; tidak mengubah task gagal/PII/transaksi. Autostart tetap memakai PHP XAMPP dan identitas OS web. Setelah muat ulang halaman dan upload baru, pengguna mengonfirmasi unggahan berhasil.
+
+Retry privat membedakan task server yang sudah terminal `failed` dari hasil jaringan/polling yang belum pasti: percobaan eksplisit berikutnya memakai UUID baru hanya setelah failure terkonfirmasi. Hasil belum pasti tetap memakai UUID yang sama; tidak ada POST otomatis. Task lama tetap riwayat. Penolakan role/Branch kini mempunyai pesan khusus tanpa membocorkan identitas/dokumen Branch lain. Enkripsi, versi penerima, frozen kasbon, Finance/APM dan private paths tetap.
+
+Tidak ada schema/migration/query/endpoint tambahan. Fixture worker tanpa sesi browser:39query per foto KTP/bank, batas75; payee read5query fixture.283PHP/5991assertions,291frontend/build/Pint/assets lulus. Pengguna menguji unggah KTP lokal; bank/worker isolation/retry/invalid NIK/Branch diverifikasi otomatis, bukan klaim load test atau pengujian server aaPanel. [Bukti](qa/mandor-upload-fix-20261115.json).
+
 ## Otoritas terbaru — Admin mengajukan kasbon, Finance mereview
 
 **11 November 2026, perubahan berikutnya dari pengguna:** kasbon dibuat Admin Konstruksi setelah lima approval pembayaran sampai Head of PMO, lalu masuk review Finance. Finance tidak lagi menerbitkan kasbon baru. Default Surabaya/tanggal pengajuan dan dua pejabat fisik, preview berkas/BOQ Mandor serta inbox otomatis dijelaskan pada [ADMIN_KASBON_REVIEW_SYNC](ADMIN_KASBON_REVIEW_SYNC.md). Bank dan keputusan terikat versi yang ditampilkan. Snapshot lama tetap utuh. Bagian implementasi awal di bawah dipertahankan sebagai riwayat; pernyataan Finance sebagai pembuat kasbon telah digantikan.

@@ -128,12 +128,13 @@ test('mutation and file entry points explicitly require confirmation; existing f
     'workflow-ui.tsx': ['decideProject(', 'setNumberFormat(', 'assignPaymentApprovers(', 'assignProjectApprovers('],
     'partial-payment-panel.tsx': ['requestPartialPayment(', 'verifyPartialPayment(', 'payPartialPayment('],
     'payment-evidence.tsx': ['verifyTermScan(', 'uploadTermScan(', 'recordApm('],
-    'payments.tsx': ['save()', 'save(true)', 'createTerm(', 'recordApm(', 'recordPayment(', 'decide(', 'releaseVolume(', 'createContinuation('],
-    'contracts.tsx': ["save('save')", 'save(confirm)', 'createTerm('],
+    'payments.tsx': ['save()', 'save(true)', 'createSettlementTerm(', 'recordApm(', 'recordPayment(', 'decide(', 'releaseVolume(', 'createContinuation('],
+    'contracts.tsx': ["save('save')", 'save(confirm)', 'createSettlementTerm(', 'submitProjectBundle('],
     'master-import.tsx': ['commit()', 'inspect()'],
     'term-work-evidence.tsx': ['removeTermWorkEvidence('],
     'management.tsx': ['saveProfile(', 'saveUser(', 'updateKhs('],
     'upload-tasks.tsx': ['resumeUpload(', 'onUse(task)'],
+    'kasbon-preview.tsx': ['download()', 'window.print()'],
     'finance-private-ui.tsx': ['uploadPrivateDocument(', 'savePrivateDocument(', 'decideFinancePayment(', 'recordApm(', 'submit()'],
   };
   for (const [file, calls] of Object.entries(cases)) {

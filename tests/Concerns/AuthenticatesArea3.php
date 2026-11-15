@@ -5,6 +5,8 @@ namespace Tests\Concerns;
 use App\Models\PrototypeWorkspace;
 use App\Models\User;
 use App\Services\AccountAccess;
+use App\Services\AuthenticatedWorkspace;
+use App\Services\BoqImportStorage;
 use App\Services\FinanceDocuments;
 use App\Services\PrototypeDomain;
 use App\Services\PrototypeWorkspaceService;
@@ -12,6 +14,7 @@ use App\Services\RelationalWorkflowStore;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 trait AuthenticatesArea3
 {
@@ -30,6 +33,63 @@ trait AuthenticatesArea3
         $this->actingAs($user)->withSession(['password_hash_web' => $user->password]);
 
         return $user;
+    }
+
+    /** Explicit pre-bundle fixture: never used by current-flow tests or production. */
+    private function historicalProjectCommand(array $p, bool $submit, callable $send)
+    {
+        $w = PrototypeWorkspace::first();
+        if (DB::getDriverName() !== 'sqlite' || DB::connection()->getDatabaseName() !== ':memory:' || ! app()->environment('testing')) {
+            throw new \RuntimeException('Memory only');
+        }
+        $store = app(RelationalWorkflowStore::class);
+        if ($submit && ! DB::table('project_plans')->where('workspace_id', $w->id)->where('source_id', $p['id'])->exists()) {
+            $state = app(AuthenticatedWorkspace::class)->bind($store->read($w));
+            $input = $p;
+            try {
+                if (! empty($p['boqUpload']['id'])) {
+                    $input['_boqImport'] = app(BoqImportStorage::class)->read($w, $p['boqUpload']['id'], null);
+                }
+                // Validate the original standalone submission before preparing its existing Draft.
+                app(PrototypeDomain::class)->execute($state, 'saveProject', [$input, true]);
+                $draft = app(PrototypeDomain::class)->execute($state, 'saveProject', [$input, false])['state'];
+                DB::transaction(fn () => $store->write($w, $draft, $state));
+            } catch (ValidationException $error) { /* Let HTTP assert invalid input. */
+            }
+        }
+        $response = $send();
+        if (! $submit && $response->status() === 200) {
+            foreach ($response->json('state.projects') as $project) {
+                if ($project['id'] === $p['id'] && isset($project['contractBundle'])) {
+                    unset($project['contractBundle']);
+                    // Marker only: explicit synthetic pre-upgrade fixture, not application behavior.
+                    DB::table('project_plans')->where('workspace_id', $w->id)->where('source_id', $p['id'])->update(['document_data' => json_encode($project, JSON_THROW_ON_ERROR)]);
+                }
+            }
+        }
+
+        return $response;
+    }
+
+    /** Explicit pre-seven-step kasbon fixture; historical approval coverage remains intact. */
+    private function historicalKasbonFixture(string $id): array
+    {
+        $this->historicalPaymentFixture($id);
+        $w = PrototypeWorkspace::first();
+        $store = app(RelationalWorkflowStore::class);
+        $before = $store->read($w);
+        $after = $before;
+        foreach ($after['terms'] as &$term) {
+            if ($term['id'] === $id) {
+                $term['paymentFlow'] = 'kasbon-v1';
+                $term['financePayment'] = ['status' => 'Menunggu Approval'];
+                $found = $term;
+            }
+        }
+        unset($term);
+        DB::transaction(fn () => $store->write($w, $after, $before));
+
+        return $found;
     }
 
     /** Freeze a pre-kasbon v3 fixture; production never removes this marker. */

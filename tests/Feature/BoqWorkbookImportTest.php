@@ -61,7 +61,7 @@ class BoqWorkbookImportTest extends TestCase
     {
         $revision = $this->getJson('/api/prototype/state')->assertOk()->json('revision');
 
-        return $this->postJson('/api/prototype/commands', ['command' => 'saveProject', 'args' => [$p, $submit], 'revision' => $revision, 'request_id' => (string) Str::uuid()]);
+        return $this->historicalProjectCommand($p, $submit, fn () => $this->postJson('/api/prototype/commands', ['command' => 'saveProject', 'args' => [$p, $submit], 'revision' => $revision, 'request_id' => (string) Str::uuid()]));
     }
 
     private function project(array $import): array
