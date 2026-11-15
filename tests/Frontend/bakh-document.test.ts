@@ -24,10 +24,12 @@ test('calendar date prose is derived from the form date with correct words and n
 test('Word narrative preview uses every document-form value, three clauses and private saved Head identity without sample data or writes', () => {
   const { s, p, d } = fixture(), before = JSON.stringify({ s, p, d });
   const html = renderToStaticMarkup(createElement(BakhDocument, { project: p, deal: d }));
-  for (const text of [p.name, d.no, d.location, d.witel, d.place, d.fo, d.jointer, d.signer, d.signerNik, d.mandor, '30 November 2026', '13 Desember 2026', 'Jumat', 'Enam', 'Dua Ribu Dua Puluh Enam']) assert.ok(typeof text === 'string' && html.includes(text), String(text));
+  for (const text of [p.name, d.no, d.location, d.witel, 'Surabaya', d.fo, d.jointer, d.signer, d.signerNik, d.mandor, '30 November 2026', '13 Desember 2026', 'Jumat', 'Enam', 'Dua Ribu Dua Puluh Enam']) assert.ok(typeof text === 'string' && html.includes(text), String(text));
   assert.match(html, /BERITA ACARA<br\/><span>NEGOSIASI KESEPAKATAN HARGA/);
   assert.equal((html.match(/<li>/g) ?? []).length, 3);
   assert.equal((html.match(/Belum Termasuk Pajak Penghasilan/g) ?? []).length, 2);
+  assert.doesNotMatch(html, /Tempat dari form QA/);
+  assert.match(html, /class="bakh-document-place">Surabaya, 6 November 2026/);
   assert.match(html, /Waspang TA dan Pelaksana Pekerjaan/); assert.match(html, /POW terlampir/);
   assert.equal((html.match(/class="bakh-document-signature-space"[^>]*><\/div>/g) ?? []).length, 2);
   assert.doesNotMatch(html, /HENDRA|HILARIUS|PROJECT JPP|FLORES|September 2024|<img|<svg|APPROVED|<table|Jumlah Kesepakatan/);

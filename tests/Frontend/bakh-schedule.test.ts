@@ -5,8 +5,8 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { bakhPeriod, syncBakhPeriod } from '../../resources/js/area3/bakh-schedule';
 import { seed } from '../../resources/js/area3/seed';
-import { blankDeal, saveDeal, getDeal, type Schedule } from '../../resources/js/area3/domain';
-import { BakhPeriodFields } from '../../resources/js/area3/contracts';
+import { blankDeal, blankSpk, saveDeal, getDeal, type Schedule } from '../../resources/js/area3/domain';
+import { BakhPeriodFields, BakhPlaceField } from '../../resources/js/area3/contracts';
 
 const vectors=JSON.parse(readFileSync(new URL('../Fixtures/bakh-schedule.json',import.meta.url),'utf8')) as {name:string;schedule:Schedule[];expected:ReturnType<typeof bakhPeriod>}[];
 function fixture() {
@@ -24,9 +24,12 @@ test('new BA KH and cached drafts use PP dates in the form, save, generate and a
   for(const action of ['save','generate','attest'] as const)for(const existing of [false,true]) {
     const {s,d,p}=fixture();if(existing)s.deals.push(structuredClone(d));
     assert.equal(blankDeal(s,p.id).start,'2026-11-30');assert.equal(blankDeal(s,p.id).end,'2026-12-13');
+    const legacyPlace=d.place;d.signingPlace='CLIENT CITY';d.place=existing?'CLIENT SPK PLACE':'';
     const effective=syncBakhPeriod(s,d);assert.equal(effective.start,'2026-11-30');assert.equal(effective.end,'2026-12-13');
     assert.equal(d.start,'2000-01-01');const pp=structuredClone(p);saveDeal(s,d,action);
     assert.equal(getDeal(s,d.id).start,'2026-11-30');assert.equal(getDeal(s,d.id).end,'2026-12-13');assert.deepEqual(p,pp);
+    const saved=getDeal(s,d.id);assert.equal(saved.signingPlace,'Surabaya');assert.equal(saved.place,existing?legacyPlace:'');
+    assert.equal(blankSpk(s,d.id).place,existing?legacyPlace:'');
   }
 });
 
@@ -44,6 +47,8 @@ test('selected continuation schedule is used while issued and approved snapshots
 
 test('document date controls are read-only and show automatically derived dates without period alerts',()=>{
   const {s,d}=fixture(),deal=syncBakhPeriod(s,d);
+  const place=renderToStaticMarkup(createElement(BakhPlaceField));
+  assert.match(place,/readOnly="" value="Surabaya"/);assert.doesNotMatch(place,/onChange|type="text"/);
   const html=renderToStaticMarkup(createElement(BakhPeriodFields,{deal,disabled:false}));
   assert.equal((html.match(/readOnly=""/g)??[]).length,2);
   assert.match(html,/value="2026-11-30"/);assert.match(html,/value="2026-12-13"/);

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Services\BakhSchedule;
 use App\Services\PrototypeDomain;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
@@ -43,12 +44,22 @@ class BakhScheduleTest extends TestCase
                 if ($existingDraft) {
                     $source['deals'][] = $deal;
                 }
-                $after = app(PrototypeDomain::class)->execute($source, 'saveDeal', [$deal, $action])['state'];
+                $input = $deal;
+                $input['place'] = $existingDraft ? 'CLIENT SPK PLACE' : '';
+                $input['signingPlace'] = 'CLIENT CITY';
+                DB::flushQueryLog();
+                DB::enableQueryLog();
+                $after = app(PrototypeDomain::class)->execute($source, 'saveDeal', [$input, $action])['state'];
+                $this->assertSame([], DB::getQueryLog());
+                DB::disableQueryLog();
                 $saved = collect($after['deals'])->firstWhere('id', $deal['id']);
                 $this->assertSame('2026-11-30', $saved['start']);
                 $this->assertSame('2026-12-13', $saved['end']);
                 $this->assertSame($deal['rows'], $saved['rows']);
                 $this->assertSame($state['projects'], $after['projects']);
+                $this->assertSame('Surabaya', $saved['signingPlace']);
+                $this->assertSame($existingDraft ? $deal['place'] : '', $saved['place']);
+                $this->assertSame($state['spks'], $after['spks']);
             }
         }
     }
@@ -68,6 +79,8 @@ class BakhScheduleTest extends TestCase
         $this->assertSame('2026-11-30', $saved['start']);
         $this->assertSame('2026-12-01', $saved['end']);
         $this->assertSame('Sah', $saved['status']);
+        $this->assertSame($deal['place'], $saved['place']);
+        $this->assertArrayNotHasKey('signingPlace', $saved);
     }
 
     public function test_missing_pp_schedule_fails_closed_without_inventing_dates(): void

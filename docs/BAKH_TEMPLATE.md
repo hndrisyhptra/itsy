@@ -1,5 +1,17 @@
 # Preview Berita Acara Kesepakatan Harga — 6 November 2026
 
+## Tempat penandatanganan Surabaya — 15 November 2026
+
+Sesuai penandaan pada screenshot pengguna, kota pada baris **di atas TTD** selalu **Surabaya, [tanggal BA KH]**. Berlaku pada semua preview/cetak/PDF/Word surat BERITA ACARA NEGOSIASI KESEPAKATAN HARGA, termasuk pembacaan BA lama. Tanggal tetap tanggal dokumen, bukan hari ini; tanggal tidak valid tetap elipsis. Field form menjadi Tempat penandatanganan baca saja/otomatis Surabaya. PEKERJAAN/LOKASI/WITEL tetap data aslinya. Lampiran yang tidak memiliki baris tempat tidak ditambah baris baru. SPK/PP/Pembayaran/kasbon tidak diberi aturan kota ini.
+
+BAKH_SIGNING_PLACE pada modul kecil bakh-place.ts dipakai form serta bakhDocumentData, sehingga HTML dan native Word berbagi sumber teks. Laravel dan domain TS mengisi **signingPlace=Surabaya** untuk BA baru/draf saat save/generate/attest, mengabaikan signingPlace client. Field otomatis tidak lagi membutuhkan isian legacy place agar pengajuan lolos; semua syarat lain tetap. signingPlace tersimpan dalam contracts.document_data melalui proyeksi JSON yang sudah ada, tanpa kolom/migration baru.
+
+Field legacy **place** dipertahankan terpisah karena blankSpk masih menggunakannya sebagai referensi awal SPK. Pada draf yang sudah tersimpan, gunakan legacy place lama; API kompatibilitas baru tetap menerima legacy place teks sebagaimana sebelumnya, tetapi nilainya tidak menentukan kota BA. Form baru tidak mengisi legacy place dengan Surabaya, sehingga SPK tidak ikut dipaksa Surabaya. New signingPlace tidak diteruskan ke SPK. Terbit/Sah tidak ditulis ulang massal; pengesahan Terbit tetap mengambil snapshot lama seluruhnya. Preview historis hanya menggunakan kota tetap yang diminta pengguna, bukan memutasi snapshot.
+
+Review query: assignment scalar memakai lookup dokumen lama yang sudah ada, **0SQL/API/query/lookup tambahan**; enam kasus domain new/existingDraft × save/generate/attest terukur0SQL. Harga/volume/signers/nomor/jadwal/authorization/receipts/audit tetap. Cadangan demo SQLite privat sebelum edit: storage/app/private/backups/area3-before-bakh-surabaya-20261115-145544.sqlite (233472byte), sumber dibaca read-only; its aktif tidak diakses/diubah.
+
+Verifikasi:280PHP/5906assertions,289frontend,TypeScript/Vite build,Pint,assets32manifest/25preload×3profil lulus. Existing regressions diperluas untuk form readonly, client-city override, blank legacy place, preview/Word exact city, lokasi/Witel/PP/SPK tetap serta Terbit tidak berubah. Dua fixture Draft/Sah menghasilkan native DOCX CRC/XML valid, masing-masing1halaman dirender dan keduaPNG diperiksa; teks Surabaya/tanggal sesuai, sumber fixture tidak dimutasi. [Bukti/hash](qa/bakh-surabaya-20261115.json). Browser akun/server/MySQL runtime integrasi khusus perubahan ini, desktop Microsoft Word/native print dialog/cetak fisik belum diuji. Tidak ada migration/live rewrite/env/worker/Dompis/commit/push/deploy. Ketentuan lama di bawah yang memetakan tempat langsung dari isian manual digantikan hanya untuk kota penandatanganan BA.
+
 Tombol **Preview BA KH** pada BA KH membuka berita acara khusus mengikuti `BA KH.docx` yang diberikan pengguna, bukan tabel transaksi generik. Referensi berada pada `/Users/hendrisyahputra/Downloads/Kelengkapan Tagihan Swakelola (Feb 2026)/BA KH.docx`; satu halaman A4 portrait telah dirender dan diperiksa. Dokumen sumber hanya dibaca, tidak diubah dan data contohnya tidak disalin menjadi data aplikasi.
 
 SHA-256 sumber: `36ef24684782c4acd05e9f7ca910b89d964f79cc39d4c221d3103a301ba0d1bb`.

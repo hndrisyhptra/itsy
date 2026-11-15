@@ -34,6 +34,7 @@ test('portrait Word uses the exact preview model, editable narrative and existin
   const { s, p, d } = fixture(), before = JSON.stringify({ s, p, d });
   const doc = docxParts(createBakhDocx(s, p, d, 'bakh'))['word/document.xml'], model = bakhDocumentData(p, d);
   for (const text of [model.number, p.name, d.location, d.witel, model.place, d.fo, d.jointer, 'Head Word QA', 'NIK: QA-WORD-01', ...model.opening.map(r => r.text), ...model.team.map(r => r.text)]) assert.ok(doc.includes(text), text);
+  assert.match(doc, /Surabaya, 6 November 2026/);assert.doesNotMatch(doc,/Tempat Word QA/);
   assert.match(doc, /w:orient="portrait"/); assert.match(doc, /w:w="11906" w:h="16838"/);
   assert.equal((doc.match(/<w:numPr>/g) ?? []).length, 3);
   assert.equal((doc.match(/w:line="1300" w:lineRule="exact"/g) ?? []).length, 2);

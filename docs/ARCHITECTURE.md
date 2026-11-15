@@ -1,5 +1,13 @@
 # Arsitektur aplikasi it's Area 3
 
+## 15 November 2026 — Kota tetap untuk BA Negosiasi
+
+bakh-place.ts menyediakan konstanta ringan Surabaya untuk BakhPlaceField readonly dan model bakhDocumentData. Main HTML/print/Word memakai model yang sama; tanggal dokumen tetap. PrototypeDomain/saveDeal TS menetapkan signingPlace server-owned untuk new/draft save/generate/attest. Contracts.document_data memakai JSON projection existing, tidak ada schema/API baru. Terbit attestation tetap memakai old snapshot, Sah terkunci; semua output BA membaca kota tetap yang secara eksplisit diminta tanpa bulk rewriting historical snapshots.
+
+Legacy place dipertahankan untuk referensi blankSpk, bukan lagi kota BA. Existing draft mempertahankan old.place; new compatibility payload menerima legacy text, tetapi signingPlace client diabaikan dan form baru legacy place tetap kosong. SPK tetap menggunakan field/validasi tempatnya sendiri; tidak mewarisi konstanta baru. Lokasi pekerjaan/Witel/PP/ledger/harga/approvals/file tetap.
+
+Query review0SQL/API/lookup tambahan, scalarO(1) di atas lookup lama;6domain paths terukur0queries. Tambahan JSON metadata konstan, existing atomic revision/receipt/audit tetap. Backup demo SQLite read-only dibuat sebelum workflow edit; tidak menyentuh its aktif.280PHP/5906assertions/289FE/build/Pint/assets lulus; native DOCX Draft/Sah CRC/XML dan1/1pages/all2PNG diperiksa. [Aturan/batas](BAKH_TEMPLATE.md), [bukti](qa/bakh-surabaya-20261115.json). Tidak mengklaim uji beban atau live-server/desktop Word/native print/physical verification.
+
 ## 15 November 2026 — Perapian dua BOQ PP
 
 CSS dibatasi pada dua budget-boq-table dalam preview PP: font/padding lebih kecil, fixed grid100%, lebar kolom Owner/Mandor terpisah, designator bold inherit dan wrap di kolomnya, nominal tidak dipecah per digit. CaptureProjectPlan memberi metadata compactBoq pada dua tabel; exporter PP memakai font6pt dan margin25/40twip. Helper word-ooxml.table menerima opsi margin, default55/65 tetap sehingga tabel lain/penutup dan exporter lain tidak berubah. Pengguna mengklarifikasi penutup tidak perlu dikembalikan; XML penutup pada fixture byte-identik. Header dari IV.5, semua teks/nominal/approval/storage tetap.

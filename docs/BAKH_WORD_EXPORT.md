@@ -1,5 +1,9 @@
 # Unduh Word BA KH dan Lampiran — 6 November 2026
 
+## Kota pada baris TTD — 15 November 2026
+
+Main BA KH Word kini selalu memakai **Surabaya, [tanggal BA KH]** dari bakhDocumentData yang sama dengan preview, sesuai screenshot pengguna. Semua status pembacaan, termasuk historis, memakai kota tetap tanpa mengubah snapshot lama. Metadata pekerjaan/lokasi/Witel, tanggal, identitas dan lampiran tetap; tidak menambah baris kota pada lampiran. Form readonly dan backend canonical signingPlace hanya berlaku pada BA KH, legacy place untuk SPK dipisahkan. [Aturan, storage, query dan pengujian](BAKH_TEMPLATE.md). Dua render Word1/1halaman diperiksa, CRC/XML valid; browser/desktop Word/print fisik belum diperiksa untuk perubahan ini.
+
 Pada **Preview BA KH** dan **Lihat Lampiran** terdapat tombol **Unduh Word (.docx)** di samping Cetak/Simpan PDF. Masing-masing menghasilkan file Word tersendiri yang berisi paragraf/tabel native dan dapat diedit. BA KH memakai A4 vertikal, lampiran A4 horizontal. Nama file menggunakan nomor BA KH yang dibersihkan dari karakter path/nama file terlarang.
 
 ## Sumber isi dan perilaku

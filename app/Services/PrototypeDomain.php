@@ -14,6 +14,8 @@ class PrototypeDomain
     use PrototypeTermWorkEvidence;
     use PrototypeWorkflowV2;
 
+    private const BAKH_SIGNING_PLACE = 'Surabaya';
+
     public const ROLES = ['Admin Konstruksi', 'PM Konstruksi', 'Manager Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Bussiness Support', 'Mgr Project Support', 'Head of PMO', 'Finance', 'Superadmin', 'Admin Operation', 'Admin Operation Area', 'Officer 1 Operation', 'Officer 2 Operation', 'Officer 3 Operation', 'Manager Branch Operation', 'General Manager Operation'];
 
     private array $state;
@@ -569,7 +571,7 @@ class PrototypeDomain
             $this->fail('Pilih minimal satu komponen pekerjaan.');
         }
         if ($formal) {
-            $this->required($d, ['place', 'location', 'witel', 'date', 'start', 'end', 'signer', 'fo', 'jointer']);
+            $this->required($d, ['location', 'witel', 'date', 'start', 'end', 'signer', 'fo', 'jointer']);
             $this->date($d['date']);
             $this->date($d['start']);
             $this->date($d['end']);
@@ -607,6 +609,9 @@ class PrototypeDomain
             }
             $d = $old;
         } else {
+            $d['signingPlace'] = self::BAKH_SIGNING_PLACE;
+            // Keep the legacy place only for existing SPK defaults; it is no longer a BA KH input.
+            $d['place'] = $old['place'] ?? $this->text($d['place'] ?? '', 1000);
             $project = $this->record('projects', $d['projectId'] ?? '');
             if (($this->state['schema'] ?? 1) >= 3) {
                 $d['no'] = ContractNumber::fromProject($project['no'], '01');

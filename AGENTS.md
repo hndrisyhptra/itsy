@@ -1,5 +1,8 @@
 # it's Area 3 — Development rules
 
+## Surabaya only for BA Negosiasi signing city — 15 November 2026
+Follow latest docs/BAKH_TEMPLATE.md: user fixes only city above main BA KH signatures to Surabaya in readonly form/all previews/print/Word, including historical reads; date remains saved BA date. New/draft saves canonicalize server-owned signingPlace, ignoring client city. Preserve legacy place separately for blankSpk compatibility; never force other documents/work location/Witel to Surabaya. Issued snapshots remain immutable/no bulk backfill, output uses explicit fixed-city authority. Existing contracts.document_data needs no migration;0new SQL/API/lookup, retain workflow guards/audit and actual QA/render limits.
+
 ## PP Header from point IV.5 — 15 November 2026
 User explicitly changes Header Total Nilai presentation to the final Total Anggaran row at point IV.5, including permit. Follow latest docs/PP_HEADER_BOQ_KHS.md, superseding BOQ-derived Header display only. Reuse budgetRecapTotal/projectPlanHeaderTotal for form/summary/template preview/Word/PDF, editable canonical budget and saved usage on readback; legacy without itemized planBudget keeps original value. Do not repurpose project_plans.budget (BOQ/allocation), rewrite locked snapshots or change COGS/margin/ledger/dashboard/approval/payment gates. No duplicate client-total field/schema/migration/live backfill; Laravel already owns saved canonical usage.0new SQL/API, one usage scan/constant memory. Record actual tests/render/query limits without overwriting prior audits.
 

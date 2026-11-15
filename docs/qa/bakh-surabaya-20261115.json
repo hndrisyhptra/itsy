@@ -1,0 +1,52 @@
+{
+  "date": "2026-11-15",
+  "scope": "BA Negosiasi Kesepakatan Harga signing city only; Draft and Sah isolated fixtures",
+  "tests": {
+    "php": 280,
+    "assertions": 5906,
+    "frontend": 289,
+    "build": "pass",
+    "pint": "pass",
+    "assets": {
+      "manifest": 32,
+      "preloads": 25,
+      "profiles": 3
+    }
+  },
+  "queryReview": {
+    "addedSql": 0,
+    "addedApi": 0,
+    "pureDomainCases": 6,
+    "queriesPerDomainCase": 0,
+    "reason": "Scalar signingPlace assignment uses the existing old document lookup and existing JSON projection"
+  },
+  "fixtures": {
+    "Draft": {
+      "nativeZipXmlValid": true,
+      "docxSha256": "34fdbffb9f9981e01c734427ad4f008a80da00786555ee9d086f803c94b29c9c",
+      "renderedPagesVisuallyInspected": 1,
+      "city": "Surabaya, 25 Oktober 2026",
+      "locationAndWitelPreserved": true
+    },
+    "Sah": {
+      "nativeZipXmlValid": true,
+      "docxSha256": "34fdbffb9f9981e01c734427ad4f008a80da00786555ee9d086f803c94b29c9c",
+      "renderedPagesVisuallyInspected": 1,
+      "city": "Surabaya, 25 Oktober 2026",
+      "locationAndWitelPreserved": true
+    }
+  },
+  "newSimulation": false,
+  "limits": [
+    "Live MySQL/server integration for this change",
+    "Authenticated browser and native print dialog",
+    "Desktop Microsoft Word and physical print"
+  ],
+  "fixtureSource": {
+    "sourceUnchanged": true,
+    "previewPlace": "Surabaya, 25 Oktober 2026",
+    "workLocationUnchanged": true,
+    "witelUnchanged": true,
+    "spkPlaces": []
+  }
+}

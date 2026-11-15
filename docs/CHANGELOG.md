@@ -1,5 +1,12 @@
 # Catatan perubahan it's Area 3
 
+## 15 November 2026 — Tempat penandatanganan BA Negosiasi menjadi Surabaya
+
+- Baris kota di atas TTD surat BA KH otomatis Surabaya dengan tanggal BA tersimpan, berlaku preview/cetak/Word dan pembacaan historis. Form tempat readonly. Pekerjaan/lokasi/Witel, tanggal, signers, lampiran dan dokumen lain tetap.
+- Backend/TS menyimpan signingPlace=Surabaya pada new/draft save/generate/attest dan mengabaikan client signingPlace; legacy place terpisah tetap untuk referensi awal SPK. Terbit/Sah tidak ditulis ulang; tidak memaksa SPK menjadi Surabaya. Tidak ada kolom/migration/endpoint baru; metadata memakai contracts.document_data existing,0query/API/lookup tambahan (6domain paths0SQL).
+- Backup demo SQLite privat233472byte sebelum edit (lihat BAKH_TEMPLATE); its aktif/env/worker/Dompis tidak disentuh, tanpa commit/push/deploy.280PHP/5906assertions,289FE/build/Pint/assets32refs/25preload×3profil lulus. Dua Word Draft/Sah native CRC/XML valid1/1pages/all2PNG diperiksa, kota/tanggal sesuai, lokasi/Witel/source tetap. Browser akun/live MySQL/server/desktop Word/native print/cetak fisik belum diuji untuk perubahan ini.
+- [Perilaku/storage](BAKH_TEMPLATE.md), BAKH_WORD_EXPORT/ARCHITECTURE/WORKPLAN/QA/AGENTS/workflow skill dan [bukti](qa/bakh-surabaya-20261115.json) dicatat; audit lama dipertahankan.
+
 ## 15 November 2026 — Ringkaskan tabel BOQ Owner dan Mandor PP
 
 - Pengguna mengonfirmasi tabel penutup sudah sesuai; hanya dua tabel BOQ yang dirapikan. Preview memakai font/padding kecil dan proporsi kolom terpisah, kode panjang membungkus, nominal tidak dipaksa pecah digit. Print/Word BOQ6pt dengan margin sel lebih rapat; input editor dan tabel penutup tetap.

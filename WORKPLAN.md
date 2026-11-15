@@ -662,3 +662,13 @@ Historical iteration; superseded by the dashboard restoration below.
 - [x] 280PHP/5880assertions/289FE/build/assets32refs/25preload×3profil lulus. Preview850px tabel668px tanpa overflow, screenshot diperiksa; native ZIP/XML/text sama/closing byte-identik, Word3/4pages (5changed inspected+2Header hash-identik), PDF current/nested4/5pages/3viewport nonblank.
 - [x] Catat PP_WORD_PRINT/PP_BUDGET_TEMPLATE/ARCHITECTURE/CHANGELOG/QA dan qa/pp-compact-boq-20261115.json tanpa menimpa audit.
 - [ ] Operator deploy kode+build dan verifikasi akun server/desktop Word/native print dialog/cetak fisik. Tidak ada migration baru atau commit/push/deploy oleh agen.
+
+
+## Surabaya hanya pada BA Negosiasi Kesepakatan Harga — 15 November 2026
+
+- [x] Backup demo SQLite privat233472byte sebelum edit, tidak menyentuh its aktif.
+- [x] Form tempat readonly Surabaya; preview/Word/print memakai model tetap Surabaya + tanggal BA untuk Draft/Terbit/Sah/historis. Lokasi/Witel/pekerjaan serta dokumen lain tetap.
+- [x] Backend/TS canonical signingPlace pada new/draft; legacy place dipisahkan/dipertahankan untuk SPK, issued snapshots tidak direwrite. contracts.document_data existing/tanpa schema/migration.0SQL/API/lookup tambahan,6domain paths0queries.
+- [x] 280PHP/5906assertions/289FE/build/Pint/assets32refs/25preload×3profil lulus;2native DOCX CRC/XML/render1/1pages/all2PNG, exact city/date/location/Witel/source assertions.
+- [x] Catat BAKH_TEMPLATE/BAKH_WORD_EXPORT/ARCHITECTURE/CHANGELOG/QA/AGENTS/workflow skill dan qa/bakh-surabaya-20261115.json tanpa mengganti audit lama.
+- [ ] Operator deploy kode+build dan uji browser akun/live server/MySQL/desktop Word/native print/cetak fisik. Tidak ada migration baru atau commit/push/deploy oleh agen.

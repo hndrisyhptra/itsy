@@ -1,5 +1,11 @@
 # Laravel rebuild QA — 2 November 2026
 
+## Kota Surabaya khusus BA Negosiasi — 15 November 2026
+
+**280PHP/5906assertions,289frontend,TypeScript/Vite build,Pint dan assets32manifest/25preload×3profil lulus.** PHP tetap isolated fail-closed SQLite memory. Existing tests diperluas untuk canonical signingPlace meskipun client mengirim kota lain, legacy place kosong pada dokumen baru tetap formal valid, legacy place tersimpan/SPK/PP dipertahankan, Terbit snapshot tidak berubah; form readonly dan preview/Word memakai Surabaya dengan tanggal BA. Enam new/draft save/generate/attest paths menghasilkan0SQL domain; tidak ada query/API baru atau lookup per komponen.
+
+Fixture Draft/Sah memakai source city lama dan signingPlace client palsu: HTML/Word menampilkan Surabaya,25Oktober2026, lokasi/Witel tetap dan sumber tidak dimutasi. Kedua native DOCX CRC/XML dibaca independen, dirender1/1halaman dan keduaPNG diperiksa; PDF hasil renderer memuat kota/tanggal sesuai. [Bukti/hash](qa/bakh-surabaya-20261115.json). Browser terautentikasi/native print dialog/live MySQL/server/desktop Word/cetak fisik belum diuji khusus perubahan ini; CSS print tidak berubah. Backup demo SQLite read-only sebelum edit; its aktif tidak ditulis, tanpa migration/env/worker/Dompis/commit/push/deploy.
+
 ## Dua BOQ PP lebih ringkas — 15 November 2026
 
 **280PHP/5880assertions,289frontend,TypeScript/Vite build,assets32manifest/25preload×3profil lulus.** PHP tetap isolated fail-closed SQLite memory. Existing Word tests memeriksa compact9/10kolom, native font6pt/grid10544twip/repeated header/text escaping/margin25/40 serta default margin55/65 tabel penutup. Tidak menambah tes baru yang hanya meniru tampilan.
