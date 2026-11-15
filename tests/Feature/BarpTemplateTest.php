@@ -33,6 +33,27 @@ class BarpTemplateTest extends TestCase
         return [$s, $t];
     }
 
+    public function test_barp_city_is_server_owned_on_save_and_sql_snapshot_without_lookup_or_history_rewrite(): void
+    {
+        [$s, $t] = $this->draft();
+        $this->assertSame('Surabaya', $t['barp']['place']);
+        $t['barp']['place'] = ['forged' => true];
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $canonical = BarpTemplate::save($s, $t, $t, false);
+        $this->assertSame([], DB::getQueryLog());
+        DB::disableQueryLog();
+        $this->assertSame('Surabaya', $canonical['barp']['place']);
+        $saved = $this->api('saveTerm', [$t, true])->assertOk()->json('state.terms.0');
+        $this->assertSame('Surabaya', $saved['barp']['place']);
+        $this->assertSame($saved['barp'], $saved['barpHistory'][0]['document']);
+        $row = DB::table('payment_terms')->first();
+        $this->assertSame('Surabaya', json_decode($row->document_data, true)['barp']['place']);
+        $before = $row->document_data;
+        $this->getJson('/api/prototype/state')->assertOk();
+        $this->assertSame($before, DB::table('payment_terms')->first()->document_data);
+    }
+
     public function test_barp_fields_persist_in_relational_snapshot_with_no_extra_catalog_queries_or_unrelated_writes(): void
     {
         [$s, $t] = $this->draft();
@@ -81,7 +102,7 @@ class BarpTemplateTest extends TestCase
         $invalid['barp'] = null;
         $this->api('saveTerm', [$invalid, false])->assertUnprocessable();
         $invalid = $t;
-        $invalid['barp']['place'] = '';
+        $invalid['barp']['date'] = '';
         $this->api('saveTerm', [$invalid, false])->assertOk();
         $this->api('saveTerm', [$invalid, true])->assertUnprocessable();
         $submitted = $this->api('saveTerm', [$t, true])->assertOk()->json('state.terms.0');

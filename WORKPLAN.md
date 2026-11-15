@@ -1,5 +1,13 @@
 # Laravel conversion checklist
 
+## 16 November 2026 — BARP langsung Final dan Surabaya
+
+- [x] Pembayaran pertama Final: hilangkan nomor tahap/termin pada main/appendix/Word/toolbar/filename, tanpa mengubah ledger. Parsial pertama dan Final berikutnya tetap bernomor.
+- [x] Surabaya otomatis readonly pada form; Laravel/React mengabaikan kota masuk pada editable save. Output historis memakai kota tetap dan tanggal asli tanpa bulk rewrite.
+- [x] Lampiran Final satu kali memakai satu kolom aktual Final; perhitungan/identitas/approval/Finance/APM dan arsip tetap.
+- [x]296PHP/6459assertions,299frontend,build/Pint/assets lulus;4Word/6halaman diperiksa dan ZIP/XML/PDF nonblank. Helper0SQL baru; fixture simpan metadata59query≤60. Bukti: docs/qa/barp-final-surabaya-20261116.json.
+- [ ] Uji manual browser akun/server/Word desktop/cetak fisik tetap terpisah. Tidak perlu migrasi; tidak melakukan deployment/data rewrite/env/Dompis. Backupdemo233472byte/0600.
+
 ## 15 November 2026 — Paket PP dan kasbon sebelum tujuh approval
 
 - [x] PP baru/lanjutan bertanda server: PP → draf BA KH → draf SPK/profil Mandor → Ajukan Paket → lima keputusan → Sah/commit atomik.

@@ -1,5 +1,11 @@
 # Arsitektur aplikasi it's Area 3
 
+## 16 November 2026 — Label BARP langsung Final dan kota server-owned
+
+`barp-labels.ts` menjadi helper ringan untuk kondisi nomor1+Final dan kota Surabaya, tanpa memuat template Word. Main HTML/nativeOOXML memakai barp-content; filename/toolbar memakai aturan sama. Lampiran memproyeksikan ledger existing menjadi11kolom untuk Final satu kali (actual pertama saja, lebar gabungan15%), atau tetap13kolom untuk cicilan. Headers/widths/recaps/note dibagi oleh HTML dan Word, sehingga colspan dan grid konsisten; nilai/ledger tidak dimutasi.
+BarpTemplate PHP dan barp-form TS menetapkan kota pada defaults/explicit save dan mengabaikan incoming place; form/cache tidak dapat menimpa kota. Read/render historis memakai Surabaya dengan tanggal tersimpan tanpa transaksi atau perubahan barpHistory; tidak mengambil tanggal/identitas akun baru. Jalur metadata absent historis tetap tidak diadopsi otomatis.
+Query review:0SQL/endpoint/schema/package baru, lookup identitas dan indeks source/agreement existing tetap; HTTP metadata fixture59query≤60, pure canonicalization0query. Ini bukan benchmark MySQL/latensi.296PHP/6459assertions,299frontend/build/Pint/assets lulus; empatWord ZIP/XML dan enamPNG diperiksa. [Aturan](BARP_TEMPLATE_WORD.md), [lampiran](BARP_APPENDIX.md), [bukti/batas](qa/barp-final-surabaya-20261116.json). Browser akun/Word desktop/native print/server tidak diuji ulang, tidak live migration/data mutation.
+
 ## 15 November 2026 — Paket dokumen PP dan tujuh approval kasbon
 
 Keputusan dan batas: [BUNDLE_SETTLEMENT_APPROVAL](BUNDLE_SETTLEMENT_APPROVAL.md). ProjectContractBundle dan SettlementApprovalWorkflow memperluas domain Laravel; marker/hashes/keputusan tetap milik server. PP memakai lima keputusan yang mengesahkan BA KH/SPK sekaligus dalam transaksi existing, bukan tiga approval terpisah atau signature fiktif. JSON per-dokumen memuat manifest hash/approval binding, SQL runs/steps/decisions memakai order3 khusus pembayaran baru. Private kasbon template3 tetap terenkripsi dan mengikat versi penerima/kasbonId. Marker lama/running/paid tidak dimigrasikan ulang.

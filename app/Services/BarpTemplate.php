@@ -6,6 +6,8 @@ use Illuminate\Validation\ValidationException;
 
 final class BarpTemplate
 {
+    public const PLACE = 'Surabaya';
+
     /** Already-loaded selected identities only, with no database lookup. */
     private static function paymentSigner(array $state, array $project, array $term, string $role): array
     {
@@ -44,7 +46,7 @@ final class BarpTemplate
             $head = $spk;
         }
 
-        return ['version' => 2, 'job' => $project['name'], 'deployment' => self::paymentSigner($state, $project, $term, 'Mgr Deployment'), 'support' => self::paymentSigner($state, $project, $term, 'Mgr Project Support'), 'date' => now()->toDateString(), 'place' => $spk['place'], 'start' => $spk['start'], 'end' => $spk['end'], 'location' => $deal['location'] ?? '', 'sto' => '', 'homepass' => null,
+        return ['version' => 2, 'job' => $project['name'], 'deployment' => self::paymentSigner($state, $project, $term, 'Mgr Deployment'), 'support' => self::paymentSigner($state, $project, $term, 'Mgr Project Support'), 'date' => now()->toDateString(), 'place' => self::PLACE, 'start' => $spk['start'], 'end' => $spk['end'], 'location' => $deal['location'] ?? '', 'sto' => '', 'homepass' => null,
             'waspang' => $spk['supervisor'], 'mandor' => $deal['mandor'], 'headName' => $head['signer'], 'headNik' => $head['signerNik'] ?? '', 'headUserId' => $head['signerUserId'] ?? ''];
     }
 
@@ -62,11 +64,12 @@ final class BarpTemplate
         $deal = collect($state['deals'])->firstWhere('id', $spk['dealId']);
         $project = collect($state['projects'])->firstWhere('id', $deal['projectId']);
         $barp['job'] = $project['name'];
+        $barp['place'] = self::PLACE;
         if (($barp['version'] ?? 1) < 2) {
             $barp['deployment'] = self::paymentSigner($state, $project, $term, 'Mgr Deployment');
             $barp['support'] = self::paymentSigner($state, $project, $term, 'Mgr Project Support');
         }
-        foreach (['date' => 10, 'place' => 150, 'start' => 10, 'end' => 10, 'sto' => 150] as $field => $limit) {
+        foreach (['date' => 10, 'start' => 10, 'end' => 10, 'sto' => 150] as $field => $limit) {
             if (array_key_exists($field, $data)) {
                 if (! is_string($data[$field]) || mb_strlen($data[$field]) > $limit) {
                     self::fail('Isian BARP '.$field.' tidak valid atau terlalu panjang.');

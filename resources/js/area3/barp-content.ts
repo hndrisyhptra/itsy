@@ -1,3 +1,4 @@
+import { BARP_PLACE, isSingleFinalBarp } from './barp-labels';
 import { rupiahNumber, monetaryRound, moneyLine } from './currency';
 import type { Project, Deal, Spk, Term } from './domain';
 import { approvalRoles,selectedApprover } from './domain';
@@ -41,14 +42,15 @@ export function barpDocumentData(project:Project,deal:Deal,spk:Spk,term:Term){
   }
   material=round(material);total=round(total);contract=round(contract);
   const service=round(total-material),amount=`Rp ${number.format(total)},- (${rupiahWords(total)})`,job=filled(project.name),mandor=filled(b.mandor);
+  const singleFinal=isSingleFinalBarp(term);
   return {
-    title:`BERITA ACARA REKON PEKERJAAN - TAHAP ${term.number}`,job,mandor,location:filled(b.version>=2?b.job:b.location),objectLabel:b.version>=2?'PEKERJAAN':'LOKASI',sto:b.sto.trim(),homepass:b.homepass===null?'':String(b.homepass),
+    title:`BERITA ACARA REKON PEKERJAAN${singleFinal?'':` - TAHAP ${term.number}`}`,job,mandor,location:filled(b.version>=2?b.job:b.location),objectLabel:b.version>=2?'PEKERJAAN':'LOKASI',sto:b.sto.trim(),homepass:b.homepass===null?'':String(b.homepass),
     opening:`Pada hari ini ${date?.weekday??'…'} tanggal ${date?.full??'…'}, telah dilakukan rekonsiliasi terhadap pelaksanaan pekerjaan ${job}, antara PT. Telkom Akses selanjutnya disebut TELKOM AKSES dengan ${mandor} selanjutnya disebut MANDOR, dengan kesepakatan sebagai berikut:`,
-    price:`TELKOM AKSES dan Mandor sepakat bahwa harga borongan berdasarkan hasil rekonsiliasi proyek periode tanggal ${start?.full??'…'} sampai ${end?.full??'…'} untuk tahap ${term.number} adalah sebesar ${amount}, dengan porsi nilai tahap ini ${contract>0?new Intl.NumberFormat('id-ID',{maximumFractionDigits:2}).format(Math.round(total/contract*10000)/100):'0'}% dari nilai SPK. Rincian sebagai berikut:`,
-    stageScope:`Harga Berdasarkan Surat Perintah Kerja — volume tahap ${term.number} :`,
-    reconHeading:`Nilai Rekonsiliasi Tahap ${term.number} untuk Pengajuan Pembayaran`,
-    reconText:`TELKOM AKSES dan Mandor sepakat bahwa nilai hasil rekonsiliasi tahap ${term.number} yang diajukan untuk pembayaran adalah sebesar ${amount}. Dengan rincian sebagai berikut:`,
-    placeDate:`${filled(b.place)}, ${date?.full??'…'}`,status:canPrintBarp(term)?'':canExportBarp(term)?'SALINAN REVIEW — MENUNGGU PERSETUJUAN':'DRAF — BELUM DIAJUKAN / PERLU PERBAIKAN',
+    price:`TELKOM AKSES dan Mandor sepakat bahwa harga borongan berdasarkan hasil rekonsiliasi proyek periode tanggal ${start?.full??'…'} sampai ${end?.full??'…'} ${singleFinal?'':`untuk tahap ${term.number} `}adalah sebesar ${amount}, dengan porsi nilai ${singleFinal?'rekonsiliasi':'tahap ini'} ${contract>0?new Intl.NumberFormat('id-ID',{maximumFractionDigits:2}).format(Math.round(total/contract*10000)/100):'0'}% dari nilai SPK. Rincian sebagai berikut:`,
+    stageScope:`Harga Berdasarkan Surat Perintah Kerja — volume${singleFinal?'':` tahap ${term.number}`} :`,
+    reconHeading:`Nilai Rekonsiliasi${singleFinal?'':` Tahap ${term.number}`} untuk Pengajuan Pembayaran`,
+    reconText:`TELKOM AKSES dan Mandor sepakat bahwa nilai hasil rekonsiliasi${singleFinal?'':` tahap ${term.number}`} yang diajukan untuk pembayaran adalah sebesar ${amount}. Dengan rincian sebagai berikut:`,
+    placeDate:`${BARP_PLACE}, ${date?.full??'…'}`,status:canPrintBarp(term)?'':canExportBarp(term)?'SALINAN REVIEW — MENUNGGU PERSETUJUAN':'DRAF — BELUM DIAJUKAN / PERLU PERBAIKAN',
     waspang:filled(b.waspang),head:filled(b.headName),headNik:b.headNik?`NIK: ${b.headNik}`:'',material,service,total,
     materialText:deal.rows.some(r=>r.m)?number.format(material):'',serviceText:deal.rows.some(r=>r.s)?number.format(service):'',totalText:number.format(total),
     zeroMaterial:deal.rows.some(r=>r.m)?'0':'',zeroService:deal.rows.some(r=>r.s)?'0':'',

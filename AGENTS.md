@@ -1,5 +1,8 @@
 # it's Area 3 — Development rules
 
+## BARP direct Final and city — 16 November 2026
+Follow the latest docs/BARP_TEMPLATE_WORD.md and docs/BARP_APPENDIX.md. Only number1+typeFinal omits installment/stage naming across main/appendix preview, Word, toolbar and filenames; retain ledger number/type/amounts and numbered Parsial1/Final2/3. Direct Final appendix projects the existing ledger into11columns with one actual Final column; multi-payment keeps13. BARP signing city is server-owned Surabaya on defaults/explicit editable saves and readonly forms; ignore stale/client place. Historical output uses Surabaya with its saved date, without rewriting snapshots/history or inventing dates/signatures. Preserve all identity/Branch/approval/Finance/APM/scan gates. No new SQL/endpoint/schema/package; verify native Word/render and record actual query/tests/manual limits.
+
 ## Paket PP and pre-submission kasbon — 15 November 2026
 
 Follow docs/BUNDLE_SETTLEMENT_APPROVAL.md, superseding prior standalone PP and kasbon-after-Head rules for new documents only. New v3 PP (including continuations) is a server-marked PP/BA KH/SPK Draft package; only submitProjectBundle starts the same five real approvals. Lock package core/payee uploads during submission, validate canonical BOQ/schedule/ceilings/private payee/pending uploads, bind manifest hashes and atomically mark BA KH/SPK Sah/commit volume only at actual Head completion. No independent generate/attest or client marker bypass. Rejection keeps identity/history/manifest and resubmits all five from PM.

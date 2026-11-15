@@ -22,16 +22,38 @@ function fixture(){
 }
 function approve(t:Term){t.status='Disetujui';t.approvals=roles.map((role,i)=>({role,decision:'Setujui',userId:`qa-${i}`,at:'2026-11-08',note:''}));}
 
+test('single direct Final BARP omits installment/stage labels in HTML and Word; multi-payment labels and saved history remain intact',()=>{
+ const {s,p,d,v,t}=fixture();approve(t);
+ for(const [number,type,single] of [[1,'Final',true],[1,'Parsial',false],[2,'Final',false],[3,'Final',false]] as const){
+  Object.assign(t,{number,type});const before=JSON.stringify(s),data=barpDocumentData(p,d,v,t);
+  const html=renderToStaticMarkup(createElement(DocumentPreview,{state:s,project:p,deal:d,spk:v,term:t,kind:'BA Rekonsiliasi Pekerjaan – Termin',onClose:()=>{}}));
+  const xml=docxParts(createBarpDocx(p,d,v,t))['word/document.xml'];
+  for(const output of [html,xml]){
+   assert.match(output,/Surabaya, 8 November 2026/);
+   if(single)assert.doesNotMatch(output,/(?:tahap|termin)\s*#?\s*1/i);
+   else assert.match(output,new RegExp(`TAHAP ${number}`));
+  }
+  assert.equal(data.total,termTotal(s,t));assert.equal(JSON.stringify(s),before);
+  assert.equal(barpWordFilename(v,t).startsWith('BARP_'),single);
+ }
+ const input=structuredClone(t);Object.assign(input.barp!,{place:{forged:true}});
+ assert.equal(saveBarp(s,t,input,false).barp!.place,'Surabaya');assert.equal(blankBarp(s,t).place,'Surabaya');
+ const old=JSON.stringify(t);delete t.barp;const archived=JSON.stringify(t);
+ assert.match(barpDocumentData(p,d,v,t).placeDate,/^Surabaya, …$/);assert.equal(JSON.stringify(t),archived);
+ Object.assign(t,JSON.parse(old));t.status='Draft';
+ const form=renderToStaticMarkup(createElement(TermEditor,{s,id:t.id}));assert.match(form,/<input readOnly=""[^>]*value="Surabaya"/);
+});
+
 test('BARP validates the same calendar, period, required fields and optional Homepass as Laravel; identities are server-owned',()=>{
  const {s,t}=fixture();
  for(const [key,value] of [['date','2026-02-30'],['start','1900-01-01'],['end','2999-01-01'],['homepass',-1],['homepass',1.2],['homepass','10'],['homepass',1000000001],['sto','x'.repeat(151)]] as const){
   const input=structuredClone(t);Object.assign(input.barp!,{[key]:value});assert.throws(()=>saveBarp(s,t,input,false));
  }
- const input=structuredClone(t);input.barp!.place='';assert.doesNotThrow(()=>saveBarp(s,t,input,false));assert.throws(()=>saveBarp(s,t,input,true),/Lengkapi/);
- Object.assign(input.barp!,{place:'BARP',headName:'FORGED',headNik:'FORGED',headUserId:'FORGED',waspang:'FORGED',mandor:'FORGED',homepass:0});
+ const input=structuredClone(t);input.barp!.date='';assert.doesNotThrow(()=>saveBarp(s,t,input,false));assert.throws(()=>saveBarp(s,t,input,true),/Lengkapi/);
+ Object.assign(input.barp!,{date:'2026-11-08',place:'BARP',headName:'FORGED',headNik:'FORGED',headUserId:'FORGED',waspang:'FORGED',mandor:'FORGED',homepass:0});
  const saved=saveBarp(s,t,input,true).barp!;
  for(const field of ['headName','headNik','headUserId','waspang','mandor'] as const)assert.equal(saved[field],t.barp![field]);
- assert.equal(saved.homepass,0);input.barp!.homepass=null;assert.equal(saveBarp(s,t,input,true).barp!.homepass,null);
+ assert.equal(saved.place,'Surabaya');assert.equal(saved.homepass,0);input.barp!.homepass=null;assert.equal(saveBarp(s,t,input,true).barp!.homepass,null);
  assert.throws(()=>saveBarp(s,t,{...t,barp:null} as unknown as Term,false),/formulir/);
  for(const malformed of [{},[]])assert.throws(()=>saveBarp(s,t,{...t,barp:malformed} as unknown as Term,false),/formulir/);
 });

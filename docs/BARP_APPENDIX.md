@@ -1,5 +1,10 @@
 # Pekerjaan otomatis dan Lampiran Rekonsiliasi — 9 November 2026
 
+## Otoritas terbaru — 16 November 2026
+
+Kondisi langsung Final satu pembayaran adalah nomor1+jenisFinal, sama dengan main BARP. Header PEKERJAAN tidak menambahkan Termin#1, rekap tidak menambahkan TAHAP1; tiga kolom actual per-termin diproyeksikan menjadi satu kolom **Final** (11kolom total), memakai actual pertama dari ledger yang sama. Catatan menyatakan pembayaran Final satu kali. Parsial pertama dan Final2/3 tetap memakai13kolom dan nomor tahap. Tidak menghapus/mengubah actuals, identity, previous/cumulative/current amounts, signers atau approval.
+Lebar/header/colspan/recap/note shared dari barpAppendixData untuk HTML dan nativeWord; landscape tetap khusus lampiran. Main BARP kotaSurabaya/date tersimpan menurut [BARP_TEMPLATE_WORD](BARP_TEMPLATE_WORD.md); Witel/proyek lampiran tetap data sendiri. Helper ringan tidak mengimpor mainWord template.0SQL/query/endpoint/migration baru, indeks ledger existing dipertahankan.4Word main+appendix Final1/Final2 dirender dan seluruh6halaman diperiksa; ZIP/CRC/XML dan nonblankPDF lulus.296PHP/6459assertions,299frontend/build/Pint/assets lulus; browserakun/Worddesktop/physicalprint/server belum diuji ulang. [Bukti](qa/barp-final-surabaya-20261116.json). Ketentuan historis di bawah tetap untuk audit.
+
 Perubahan ini melanjutkan [BARP_TEMPLATE_WORD.md](BARP_TEMPLATE_WORD.md). Referensi visual adalah screenshot pengguna yang disimpan pada [artifacts/barp-appendix/reference.png](artifacts/barp-appendix/reference.png); kontrak tampilannya ada di [artifact.md](artifacts/barp-appendix/artifact.md). Nama, nilai, dan gambar tanda tangan contoh bukan data aplikasi.
 
 ## Form Informasi BA Rekonsiliasi Pekerjaan

@@ -22,6 +22,19 @@ function fixture(){
 }
 function approve(t:Term){t.status='Disetujui';t.approvals=roles.map((role,i)=>({role,userId:`qa-${i}`,decision:'Setujui',note:'QA',at:'2026-11-09'}));}
 
+test('direct Final appendix projects a single actual column and neutral recaps consistently in HTML and native Word without changing the ledger',()=>{
+ const {s,p,d,v,t}=fixture();approve(t);t.type='Final';
+ const before=JSON.stringify(s),ledger=termVolumeData(s,p,d,v,t),data=barpAppendixData(s,p,d,v,t);
+ assert.deepEqual(data.actualHeaders,['Final']);assert.equal(data.widths.length,11);assert.equal(data.widths.reduce((a,b)=>a+b,0),100);
+ assert.equal(data.rows[0].cells.length,11);assert.equal(data.rows[0].cells[5],String(ledger.rows[0].current));
+ assert.equal(data.current.total,ledger.current.total);
+ const html=renderToStaticMarkup(createElement(DocumentPreview,{state:s,project:p,deal:d,spk:v,term:t,kind:'Lampiran Rekonsiliasi Pekerjaan',onClose:()=>{}}));
+ const xml=docxParts(createBarpAppendixDocx(s,p,d,v,t))['word/document.xml'];
+ for(const output of [html,xml]){assert.doesNotMatch(output,/(?:tahap|termin)\s*#?\s*[123]/i);assert.match(output,/JUMLAH HARGA \/ TAGIHAN/);}
+ assert.match(xml,/w:gridSpan w:val="10"/);assert.equal(JSON.stringify(s),before);
+ assert.ok(barpAppendixWordFilename(v,t).startsWith('Lampiran-BARP_'));
+});
+
 test('Pekerjaan is canonical, cached/client location/job/manager overrides are ignored, and v1 correction captures managers without replacing old signatures',()=>{
  const {s,p,d,v,t}=fixture(),input=structuredClone(t);
  Object.assign(input.barp!,{job:'FORGED',location:'FORGED',deployment:{name:'FORGED',userId:'FORGED'},support:{name:'FORGED'}});

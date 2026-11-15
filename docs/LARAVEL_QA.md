@@ -1,5 +1,11 @@
 # Laravel rebuild QA — 2 November 2026
 
+## 16 November 2026 — BARP Final satu kali / Surabaya
+
+296PHP/6459assertions dan299frontend lulus; artisan tetap fail-closed SQLite :memory:. Build TypeScript/Vite, scopedPint dan assets32manifest/24preloads×3profil lulus. Backupdemo233472byte/0600 dibuat sebelum edit; tanpa live its/env/migration/Dompis/server writes.
+Regresi baru: Final1 menghilangkan Termin/Tahap1 dalam HTML/mainWord/lampiranWord/filename, Parsial1 dan Final2/3 mempertahankan tahap; amount sama dengan termTotal; ledger/saved history immutable saat render. Final1 lampiran11kolom/actualFinal/width100%/colspan10. Surabaya default/readonly/cache/canonical PHP/TS/SQLsnapshot, incoming kota malformed diabaikan; tanggal dan identities tetap. Existing required-date/period/Homepass, snapshot resubmit, authorization dan export/print gates lulus. Pure resolver/canonical save0SQL; HTTP fixture metadata59query≤60 dengan arsip/unrelated rows tetap. Bukan load benchmark.
+EmpatDOCX sintetis dari generator aplikasi (Final1/Final2 main+appendix), ZIPCRC dan semuaXML/relationships dibaca independen. BundledLibreOffice merender2+1+2+1halaman dan seluruh6PNG diperiksa; PDF hasil render nonblank setiap halaman. Surabaya dengan tanggal tersimpan terlihat, nomor tahap hanya pada multi-payment, TTD kosong dan angka tetap. Ini pengujian fixture, bukan transaksi pengguna. Browser akun/responsive/native print dialog/Word desktop/physical print/aaPanel belum diuji ulang. Detail: [qa/barp-final-surabaya-20261116.json](qa/barp-final-surabaya-20261116.json).
+
 ## 15 November 2026 — Paket PP dan tujuh approval kasbon
 
 Otoritas/implementasi: [BUNDLE_SETTLEMENT_APPROVAL](BUNDLE_SETTLEMENT_APPROVAL.md). Semua artisan tests memakai fail-closed SQLite :memory:, tidak its aktif. Backup demoSQLite233472byte/mode0600 sebelum perubahan. Tidak ada migration/seed/data/apply pada live its, perubahan env, Dompis atau deploy server.

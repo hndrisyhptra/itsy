@@ -1,0 +1,87 @@
+{
+  "date": "2026-11-16",
+  "change": "BARP direct Final naming and automatic Surabaya",
+  "condition": {
+    "number": 1,
+    "type": "Final"
+  },
+  "php": {
+    "passed": 296,
+    "assertions": 6459,
+    "database": "isolated SQLite :memory:"
+  },
+  "frontend": {
+    "passed": 299
+  },
+  "build": "passed",
+  "pint": "passed",
+  "assets": {
+    "manifest_references": 32,
+    "preload_dependencies": 24,
+    "profiles": 3
+  },
+  "query_review": {
+    "barp_canonicalization_new_queries": 0,
+    "existing_one_pp_http_save_queries": 59,
+    "fixture_limit": 60,
+    "extra_endpoint_or_schema": false,
+    "limitation": "Not a MySQL throughput/load benchmark; aggregate boot and command reads unchanged."
+  },
+  "artifacts": [
+    {
+      "fixture": "single-final-main",
+      "parts": 11,
+      "sha256": "4f39760b205390b20613c96d92d894e3f74d0f7cd4125978bfe3c730e8000810",
+      "rendered_pages": 2,
+      "all_pages_visually_inspected": true,
+      "zip_crc_xml_valid": true,
+      "nonblank_pdf": true
+    },
+    {
+      "fixture": "single-final-appendix",
+      "parts": 5,
+      "sha256": "fc62efedb3e196f5d9952a5e474ed26dcf638884172f08da7fc334300d4fc5f2",
+      "rendered_pages": 1,
+      "all_pages_visually_inspected": true,
+      "zip_crc_xml_valid": true,
+      "nonblank_pdf": true
+    },
+    {
+      "fixture": "second-final-main",
+      "parts": 11,
+      "sha256": "c98e1ee1759c5c2c6d1f579a00411701737498fed1b44cdbfaf8f9b9cd453953",
+      "rendered_pages": 2,
+      "all_pages_visually_inspected": true,
+      "zip_crc_xml_valid": true,
+      "nonblank_pdf": true
+    },
+    {
+      "fixture": "second-final-appendix",
+      "parts": 5,
+      "sha256": "b180dab5eab606895f25ab1f9b0a007b1355d34dd554e472aef8d0d914a29a03",
+      "rendered_pages": 1,
+      "all_pages_visually_inspected": true,
+      "zip_crc_xml_valid": true,
+      "nonblank_pdf": true
+    }
+  ],
+  "preserved": [
+    "saved term number/type/identity",
+    "current actual quantities and agreed prices",
+    "approval/Finance/APM/scan gates",
+    "submitted histories and SQL archive",
+    "saved dates, signers and Branch authorization"
+  ],
+  "demo_backup": {
+    "bytes": 233472,
+    "mode": "0600"
+  },
+  "live_database_mutation": false,
+  "migration_required": false,
+  "limitations": [
+    "Synthetic fixture render only, not actual user records",
+    "Browser account end-to-end and native print dialog not rechecked",
+    "Microsoft Word desktop and physical printing not verified",
+    "No aaPanel deployment or live MySQL writes"
+  ]
+}

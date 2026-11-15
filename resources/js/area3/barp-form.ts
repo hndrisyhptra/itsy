@@ -1,3 +1,4 @@
+import { BARP_PLACE } from './barp-labels';
 import { paymentSigner, type BarpSigner } from './barp-signers';
 import type { State, Term } from './domain';
 import { today } from './domain';
@@ -8,7 +9,7 @@ export interface BarpData { version:1|2;job?:string;deployment?:BarpSigner;suppo
 export function blankBarp(s:State,t:Term):BarpData {
   const v=s.spks.find(v=>v.id===t.spkId)!,d=s.deals.find(d=>d.id===v.dealId)!,p=s.projects.find(p=>p.id===d.projectId)!;
   const head=(t.workflowVersion??1)>=3?projectHeadIdentity(s,{...p,approverUserIds:t.approverUserIds,approvals:[...t.approvals,...(p.approvals??[])]}):v.signerSource==='pp-head-pmo'?v:undefined;
-  return {version:2,job:p.name,deployment:paymentSigner(s,p,t,'Mgr Deployment',true),support:paymentSigner(s,p,t,'Mgr Project Support',true),date:today(),place:v.place,start:v.start,end:v.end,location:d.location??'',sto:'',homepass:null,waspang:v.supervisor,mandor:d.mandor,headName:head?.signer??'',headNik:head?.signerNik??'',headUserId:head?.signerUserId??''};
+  return {version:2,job:p.name,deployment:paymentSigner(s,p,t,'Mgr Deployment',true),support:paymentSigner(s,p,t,'Mgr Project Support',true),date:today(),place:BARP_PLACE,start:v.start,end:v.end,location:d.location??'',sto:'',homepass:null,waspang:v.supervisor,mandor:d.mandor,headName:head?.signer??'',headNik:head?.signerNik??'',headUserId:head?.signerUserId??''};
 }
 export function saveBarp(s:State,t:Term,input:Term,submit:boolean):Term {
   if(!t.barp&&!Object.hasOwn(input,'barp'))return t;
@@ -16,9 +17,9 @@ export function saveBarp(s:State,t:Term,input:Term,submit:boolean):Term {
   if(!data||typeof data!=='object'||Array.isArray(data)||Object.keys(data).length===0)throw new Error('Informasi BARP harus berupa formulir yang valid.');
   const barp={...(t.barp??blankBarp(s,t))};
   const v=s.spks.find(v=>v.id===t.spkId)!,d=s.deals.find(d=>d.id===v.dealId)!,p=s.projects.find(p=>p.id===d.projectId)!;
-  barp.job=p.name;
+  barp.job=p.name;barp.place=BARP_PLACE;
   if(barp.version<2){barp.deployment=paymentSigner(s,p,t,'Mgr Deployment',true);barp.support=paymentSigner(s,p,t,'Mgr Project Support',true);}
-  for(const [key,limit] of [['date',10],['place',150],['start',10],['end',10],['sto',150]] as const){
+  for(const [key,limit] of [['date',10],['start',10],['end',10],['sto',150]] as const){
     if(Object.hasOwn(data,key)){if(typeof data[key]!=='string'||[...data[key]].length>limit)throw new Error(`Isian BARP ${key} tidak valid atau terlalu panjang.`);barp[key]=data[key].trim();}
   }
   const hp=Object.hasOwn(data,'homepass')?data.homepass:barp.homepass;

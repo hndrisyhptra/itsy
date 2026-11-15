@@ -1,5 +1,13 @@
 # Catatan perubahan it's Area 3
 
+## 16 November 2026 — BARP Final satu kali dan tempat Surabaya
+
+- Permintaan: preview/unduhan BARP langsung Final satu pembayaran tidak memakai Termin 1/Tahap 1; tempat tanggal otomatis Surabaya.
+- Kondisi tampilan memakai nomor pertama + jenis Final, tanpa mengubah identitas/nomor ledger. Judul, narasi, toolbar dan nama Word mengikuti aturan yang sama. Lampiran langsung Final memakai satu kolom aktual Final (11 kolom keseluruhan) dan rekap tanpa tahap; Parsial pertama/Final kedua-ketiga mempertahankan grid 13 kolom dan nomor tahap.
+- Form kota readonly; PHP/TS default dan explicit editable save menetapkan Surabaya, mengabaikan kota client/cache. Output historis juga menampilkan Surabaya dengan tanggal tersimpan; GET/download tidak menulis ulang metadata/riwayat. Jumlah tagihan, harga, volume, identitas penandatangan, approval/scan/Finance/APM tidak berubah.
+- Optimasi: helper murni tanpa SQL baru; HTTP fixture simpan metadata tetap59query≤60, indeks ledger existing dipakai kembali. Tanpa endpoint/dependency/migration atau penulisan live its/env/Dompis. Backupdemo233472byte/0600 tersedia sebelum edit.
+- Verifikasi:296PHP/6459assertions,299frontend,build/Pint/assets32references/24preloads×3profil lulus. Empat Word generator aplikasi (main/appendix Final1/Final2), ZIP/CRC/XML valid,6halaman render diperiksa; PDF hasil render semuanya berisi. Belum uji ulang browser akun/native print dialog/Word desktop/cetak fisik/server. [Perilaku](BARP_TEMPLATE_WORD.md), [lampiran](BARP_APPENDIX.md), [bukti](qa/barp-final-surabaya-20261116.json).
+
 ## 15 November 2026 — Paket PP, BA KH, SPK dan kasbon sebelum tujuh approval
 
 - Permintaan/konfirmasi pengguna: Admin melengkapi PP, BA KH dan SPK sebelum satu pengajuan lima approval; kasbon pembayaran diisi sebelum PM, tambahan Mgr Finance & Settlement sebelum Finance7, timeline tujuh tahap. TTD Mandor kasbon dihapus; cap keputusan nyata hanya preview, Word/PDF menyediakan ruang TTD kosong.

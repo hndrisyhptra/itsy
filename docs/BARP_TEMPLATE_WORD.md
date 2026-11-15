@@ -1,5 +1,11 @@
 # BARP Pembayaran — template, form dan Word
 
+## Otoritas terbaru — 16 November 2026
+
+Pembayaran langsung Final satu kali dikenali dari `term.number === 1 && term.type === 'Final'`. Khusus kondisi ini judul menjadi **BERITA ACARA REKON PEKERJAAN**, narasi/tabel/heading/toolbar/filename tidak menyebut Termin1/Tahap1. Parsial pertama dan Final nomor2/3 tetap bernomor. Ini aturan presentasi, tidak mengganti nomor dokumen/ledger, actuals atau nilai tagihan, dan tidak menyatakan progres fisik100%.
+Tempat penandatanganan BARP adalah **Surabaya**, readonly pada form. Laravel/React default dan explicit editable save menetapkan kota server-owned serta mengabaikan client/cache place; tidak perlu mengisi kota. Main preview/Word/print termasuk histori memakai Surabaya dengan tanggal dokumen asli; dokumen tanpa tanggal tetap ellipsis, tanpa tanggal hari ini rekaan. Read/export tidak menulis ulang snapshots/barpHistory/issued data. Identitas, periode, tanggal, harga, approval/scan/Finance/APM tetap.
+Lampiran mengikuti [BARP_APPENDIX](BARP_APPENDIX.md). Tidak ada SQL/endpoint/migration/package tambahan; semua data memakai props authorized yang sama.296PHP/6459assertions,299frontend/build/Pint/assets lulus;4Word/6halaman render diperiksa. [Bukti/query/batas](qa/barp-final-surabaya-20261116.json). Ketentuan lama di bawah adalah audit kronologis dan tunduk pada revisi ini.
+
 Berlaku 8 November 2026. Referensi pengguna: `BARP - 100%.docx`, disimpan tanpa perubahan di [artifacts/barp/reference/BARP.docx](artifacts/barp/reference/BARP.docx). SHA256 `9c08a9075bc7110bbe4315add0823d4a7676e3c28c282897610757d45b7f498f`. Kontrak pelestarian template ada di [artifact.md](artifacts/barp/artifact.md).
 
 ## Pembaruan 9 November 2026
