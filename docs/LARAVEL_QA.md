@@ -1,5 +1,15 @@
 # Laravel rebuild QA — 2 November 2026
 
+## 16 November 2026 — Paket dokumen lengkap, timeline terbaru dan List Payment putih
+
+Pengguna meminta satu Word/PDF dari PP sampai Lampiran BA PP, dan mengonfirmasi kasbon setiap pembayaran ikut. Ikon pada Aksi BA PP hanya muncul setelah Sah; tersedia pula di detail/timeline. Preview menggabungkan PP, BA KH/lampiran, SPK/lampiran, BARP/lampiran/kasbon aktif tiap pembayaran lalu BA PP/lampiran, lewat exact UUID lineage. Native Word memakai generator asli dengan section portrait/landscape, style/numbering/media terisolasi dan header kosong untuk mencegah logo diwariskan. Print menyimpan satu PDF nonblank; cap/status sel TTD tidak ikut hasil unduhan/cetak. Unggahan privat tetap terpisah. Kasbon hilang/akses gagal/versi berubah menahan ekspor; histori tanpa kasbon tidak dibuatkan snapshot baru.
+
+Timeline/detail PP/pembayaran/BA PP/inbox memperlihatkan paket5approval, kasbon sebelum7approval, transfer/lunas, status scan terpisah dan APM opsional. Keputusan current-user/current-kasbon saja mendapat tanda selesai; riwayat lama tetap. List Payment mengganti banner gradient dengan putih/solid dan memperbaiki keterangan APM opsional. Lampiran SPK Word memperlebar TotalVol agar digit total tidak terpisah.
+
+Query/performa: indeks relasi/total BA PP sekali, list20baris, grouping timeline sekali dan aktivitas20baris per halaman. Kasbon current_only pada GET existing memilih satu UUID aktif/3kolom tanpa file catalog/arsip decryption;3queryservice/6HTTP pada fixture, maksimum3request per paket. Tanpa mutasi SQL/schema/migration/dependency/its aktif/.env/Dompis; data, uang, approval, ledger, encrypted snapshots dan arsip tetap. Rincian/pengamanan/deploy: [DOCUMENT_PACKAGE](DOCUMENT_PACKAGE.md).
+
+Verifikasi:311PHP/7193assertions memory,336frontend,TypeScript/Vite,Pint dan assets41refs/32preloads×3profil lulus. Native Word2paket/30halaman, browserPDF2paket/32halaman, ZIP/CRC/XML/rel/style/section/blankTTD/nonblank serta klik YA/TIDAK Word/print lulus pada fixture. Server/akunlive/Worddesktop/cetakfisik/loadtest belum diverifikasi; tidak deploy/migrate/restart. [Bukti](qa/document-package-20261116.json).
+
 ## 16 November 2026 — Word BA PP dan Lampiran BA PP
 
 - 310PHP/7137assertions isolated SQLite memory lulus; PHP/backend/schema tidak diubah.329frontend lulus,4testWord/appendix baru meliputi18parts/15preserved,conditionalstage/currentgross, escapingUnicode/multiline/tokenliteral, HTML/native table equality dengan BARP untuk stages1–3,3vs5signers,stateunchanged,download confirmation/status/review/filename. Existing indexed1000row fixture tetap lulus.

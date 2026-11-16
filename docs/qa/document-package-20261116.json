@@ -1,0 +1,461 @@
+{
+  "date": "2026-11-16",
+  "feature": "Complete PP–BAPP document package including each saved kasbon, current timeline/detail and solid white payment list",
+  "behavior": "docs/DOCUMENT_PACKAGE.md",
+  "php": {
+    "tests": 311,
+    "assertions": 7193,
+    "database": "isolated SQLite :memory:",
+    "passed": true
+  },
+  "frontend": {
+    "tests": 336,
+    "newTests": 7,
+    "passed": true
+  },
+  "build": "TypeScript/Vite passed",
+  "pint": "changed PHP files passed",
+  "assets": {
+    "manifestReferences": 41,
+    "preloadDependencies": 32,
+    "profiles": 3
+  },
+  "queryEvidence": {
+    "currentKasbonServiceSelects": 3,
+    "currentKasbonHttpSelectsInFixture": 6,
+    "httpBudget": 50,
+    "maximumCurrentKasbonRequestsPerPackage": 3,
+    "maximumCurrentRowsPerRead": 1,
+    "selectedColumns": [
+      "id_kasbon",
+      "version",
+      "private_data"
+    ],
+    "privateFileCatalogReads": 0,
+    "archivedKasbonDecryption": 0,
+    "sqlMutationsDuringReads": 0,
+    "limits": "Memory fixture with authenticated request context; not cold-session, MySQL latency or concurrent-load benchmark"
+  },
+  "architecture": {
+    "packageJoin": "BAPP UUID → Final UUID → SPK UUID → BA KH UUID → PP UUID",
+    "maximumApprovedTerms": 3,
+    "maximumGeneratedParts": 20,
+    "sourceLimitMiB": 48,
+    "outputLimitMiB": 64,
+    "nativeDocx": true,
+    "lazyNativeGenerators": true,
+    "physicalSignatureCellsBlank": true,
+    "privateUploadsRemainSeparate": true,
+    "activeKasbonRequiredAndUuidFingerprintPinned": true,
+    "newMigrations": 0,
+    "newRuntimeDependencies": 0,
+    "liveWrites": 0,
+    "branchAndSelectedActorPermissionsRetained": true
+  },
+  "documents": [
+    {
+      "kind": "single",
+      "parts": 22,
+      "sections": 10,
+      "styleCount": 46,
+      "bookmarks": 0,
+      "word": {
+        "pages": 13,
+        "textLengths": [
+          1219,
+          2776,
+          1763,
+          1296,
+          818,
+          1057,
+          1015,
+          2173,
+          310,
+          1236,
+          963,
+          908,
+          1116
+        ],
+        "sizes": [
+          [
+            595.303937007874,
+            841.889763779528
+          ],
+          [
+            595.303937007874,
+            841.889763779528
+          ],
+          [
+            595.303937007874,
+            841.889763779528
+          ],
+          [
+            595.303937007874,
+            841.889763779528
+          ],
+          [
+            841.889763779528,
+            595.303937007874
+          ],
+          [
+            595.303937007874,
+            841.889763779528
+          ],
+          [
+            841.889763779528,
+            595.303937007874
+          ],
+          [
+            595.303937007874,
+            841.889763779528
+          ],
+          [
+            595.303937007874,
+            841.889763779528
+          ],
+          [
+            841.889763779528,
+            595.303937007874
+          ],
+          [
+            595.303937007874,
+            841.889763779528
+          ],
+          [
+            595.303937007874,
+            841.889763779528
+          ],
+          [
+            841.889763779528,
+            595.303937007874
+          ]
+        ]
+      },
+      "browser": {
+        "pages": 14,
+        "textLengths": [
+          1217,
+          2353,
+          1537,
+          654,
+          1250,
+          818,
+          1046,
+          1018,
+          1654,
+          775,
+          1277,
+          963,
+          897,
+          1157
+        ],
+        "sizes": [
+          [
+            594.95996,
+            841.91998
+          ],
+          [
+            594.95996,
+            841.91998
+          ],
+          [
+            594.95996,
+            841.91998
+          ],
+          [
+            594.95996,
+            841.91998
+          ],
+          [
+            594.95996,
+            841.91998
+          ],
+          [
+            841.91998,
+            594.95996
+          ],
+          [
+            594.95996,
+            841.91998
+          ],
+          [
+            841.91998,
+            594.95996
+          ],
+          [
+            594.95996,
+            841.91998
+          ],
+          [
+            594.95996,
+            841.91998
+          ],
+          [
+            841.91998,
+            594.95996
+          ],
+          [
+            594.95996,
+            841.91998
+          ],
+          [
+            594.95996,
+            841.91998
+          ],
+          [
+            841.91998,
+            594.95996
+          ]
+        ]
+      },
+      "docxSha256": "75d72b80d575d51b972f7ebde073418008402d1f251643e048bcc866f2668662",
+      "pdfSha256": "6dc0420e9432648b805a79522999abe176d86a61e61513beaefc5ae39d19363a"
+    },
+    {
+      "kind": "staged",
+      "parts": 28,
+      "sections": 13,
+      "styleCount": 57,
+      "bookmarks": 0,
+      "word": {
+        "pages": 17,
+        "textLengths": [
+          1219,
+          2776,
+          1763,
+          1296,
+          818,
+          1057,
+          1015,
+          2246,
+          310,
+          1516,
+          986,
+          2222,
+          310,
+          1619,
+          974,
+          922,
+          1499
+        ],
+        "sizes": [
+          [
+            595.303937007874,
+            841.889763779528
+          ],
+          [
+            595.303937007874,
+            841.889763779528
+          ],
+          [
+            595.303937007874,
+            841.889763779528
+          ],
+          [
+            595.303937007874,
+            841.889763779528
+          ],
+          [
+            841.889763779528,
+            595.303937007874
+          ],
+          [
+            595.303937007874,
+            841.889763779528
+          ],
+          [
+            841.889763779528,
+            595.303937007874
+          ],
+          [
+            595.303937007874,
+            841.889763779528
+          ],
+          [
+            595.303937007874,
+            841.889763779528
+          ],
+          [
+            841.889763779528,
+            595.303937007874
+          ],
+          [
+            595.303937007874,
+            841.889763779528
+          ],
+          [
+            595.303937007874,
+            841.889763779528
+          ],
+          [
+            595.303937007874,
+            841.889763779528
+          ],
+          [
+            841.889763779528,
+            595.303937007874
+          ],
+          [
+            595.303937007874,
+            841.889763779528
+          ],
+          [
+            595.303937007874,
+            841.889763779528
+          ],
+          [
+            841.889763779528,
+            595.303937007874
+          ]
+        ]
+      },
+      "browser": {
+        "pages": 18,
+        "textLengths": [
+          1217,
+          2353,
+          1536,
+          654,
+          1250,
+          818,
+          1046,
+          1018,
+          1723,
+          775,
+          1556,
+          986,
+          1699,
+          775,
+          1659,
+          974,
+          911,
+          1539
+        ],
+        "sizes": [
+          [
+            594.95996,
+            841.91998
+          ],
+          [
+            594.95996,
+            841.91998
+          ],
+          [
+            594.95996,
+            841.91998
+          ],
+          [
+            594.95996,
+            841.91998
+          ],
+          [
+            594.95996,
+            841.91998
+          ],
+          [
+            841.91998,
+            594.95996
+          ],
+          [
+            594.95996,
+            841.91998
+          ],
+          [
+            841.91998,
+            594.95996
+          ],
+          [
+            594.95996,
+            841.91998
+          ],
+          [
+            594.95996,
+            841.91998
+          ],
+          [
+            841.91998,
+            594.95996
+          ],
+          [
+            594.95996,
+            841.91998
+          ],
+          [
+            594.95996,
+            841.91998
+          ],
+          [
+            594.95996,
+            841.91998
+          ],
+          [
+            841.91998,
+            594.95996
+          ],
+          [
+            594.95996,
+            841.91998
+          ],
+          [
+            594.95996,
+            841.91998
+          ],
+          [
+            841.91998,
+            594.95996
+          ]
+        ]
+      },
+      "docxSha256": "7a9fa73a4481c699e7fc4bfe15424abf266e0f541d0b4a44dcc16eca60708ce0",
+      "pdfSha256": "3cc928985f7f1c32c2b003acf00484b893914f4039030a80ee3551f17ec0dcde"
+    }
+  ],
+  "browser": {
+    "requests": [
+      "/",
+      "/harness.js",
+      "/fixture.json",
+      "/api/finance/terms/termin-e7cc5e15-a1f2-4d56-839d-6dc7ba4b90e3/kasbon",
+      "/",
+      "/harness.js",
+      "/fixture.json",
+      "/api/finance/terms/termin-1b7c3226-d4b4-480d-9d7a-2e183cb4940b/kasbon",
+      "/api/finance/terms/termin-bb7fa4aa-a968-490a-bd55-93a7c46d7bc0/kasbon"
+    ],
+    "jsErrors": [],
+    "downloads": [
+      {
+        "kind": "single",
+        "name": "Paket-Dokumen_PP-026-AREA3.docx",
+        "parts": 10
+      },
+      {
+        "kind": "staged",
+        "name": "Paket-Dokumen_PP-026-AREA3.docx",
+        "parts": 13
+      }
+    ],
+    "confirmation": "Word and print: TIDAK cancels, YA creates one download or invokes print once",
+    "pdf": "Actual page.pdf with mixed named pages; no blank pages or APPROVED stamps",
+    "listPayment": "white computed background, background-image none, 375/768/1440 layouts inspected",
+    "timeline": "current five and seven approvers with actual names/version binding; historical routes retained",
+    "context": "temporary Chrome profile; all requests intercepted to synthetic local fixtures; no live account or network service"
+  },
+  "limitations": [
+    "Not deployed to aaPanel",
+    "No live account/Branch browser test",
+    "Microsoft Word desktop and physical printing unverified",
+    "Very long content may add pages; browser and Word pagination differ",
+    "No concurrent MySQL/load benchmark",
+    "PDF saved through browser print dialog, not a server-generated signed archive"
+  ],
+  "liveState": {
+    "itsDatabaseChanged": false,
+    "environmentChanged": false,
+    "archiveChanged": false,
+    "dompisChanged": false,
+    "migrationRun": false,
+    "workerChanged": false,
+    "commitPushDeploy": false
+  }
+}

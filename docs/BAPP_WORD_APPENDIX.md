@@ -30,3 +30,8 @@ Tidak menambah SQL/API/schema/migration/runtimepackage atau request bank/file. P
 - LOP sangat panjang/banyak baris memerlukan beberapa halaman. NativeWord mengulang header; Chrome dapat tidak mengulang header sangat tinggi seperti batas BARP existing. Penandatangan tetap utuh pada halaman terakhir. Browser akun/aaPanel, Word desktop, cetak fisik dan loadtest belum diverifikasi.
 
 Tidak menjalankan migration, seed/reset, live its write, env/archive/Dompis change, restartworker, commit/push atau deploy. Tidak memerlukan backup baru karena perubahan ini hanya output dokumen/UI. Detail bukti: [QA](qa/bapp-word-appendix-20261116.json).
+
+
+## 16 November 2026 — Paket dokumen dan ringkasan alur terbaru
+
+Lihat [DOCUMENT_PACKAGE](DOCUMENT_PACKAGE.md): BA PP Sah menyediakan satu Word/PDF PP–Lampiran BA PP termasuk kasbon aktif setiap pembayaran. Timeline/detail menampilkan alur aktual5/7approval, scan terpisah dan APM opsional; riwayat/otorisasi/pembayaran tetap. List Payment memakai banner putih solid tanpa gradient. Shared Lampiran SPK Word memperlebar TotalVol6%→8% (Uraian23%→21%) agar digit total tidak turun sendiri. Current-only kasbon tetap lazy/UUID-bound/3query tanpa file catalog atau dekripsi arsip; tidak ada migration/data live rewrite. Bukti dan batas pengujian dicatat pada [QA](qa/document-package-20261116.json).

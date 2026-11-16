@@ -24,3 +24,8 @@ Kolom **Jenis PP** di tabel utama dihapus. Aksi detail/edit dipertahankan. Jenis
 - Halaman menampilkan riwayat yang tersedia dalam workspace, bukan klaim pemulihan log lama yang tidak pernah tersimpan. Riwayat keputusan terpisah tetap ditampilkan bila aktivitas generiknya tidak tersedia. Perbarui halaman melalui Muat ulang data untuk perubahan dari akun lain.
 - APM/TTD tetap proses manual seperti sebelumnya. Timeline tidak mengeksekusi approval, tanda tangan, pembayaran atau perubahan ledger.
 - Pengujian relasi, rendering dan batas akses dijalankan otomatis. Pemeriksaan visual browser belum selesai karena akses berkas pratinjau lokal diblokir kebijakan browser; tidak ada bypass atau perubahan akses aplikasi.
+
+
+## 16 November 2026 — Paket dokumen dan ringkasan alur terbaru
+
+Lihat [DOCUMENT_PACKAGE](DOCUMENT_PACKAGE.md): BA PP Sah menyediakan satu Word/PDF PP–Lampiran BA PP termasuk kasbon aktif setiap pembayaran. Timeline/detail menampilkan alur aktual5/7approval, scan terpisah dan APM opsional; riwayat/otorisasi/pembayaran tetap. List Payment memakai banner putih solid tanpa gradient. Shared Lampiran SPK Word memperlebar TotalVol6%→8% (Uraian23%→21%) agar digit total tidak turun sendiri. Current-only kasbon tetap lazy/UUID-bound/3query tanpa file catalog atau dekripsi arsip; tidak ada migration/data live rewrite. Bukti dan batas pengujian dicatat pada [QA](qa/document-package-20261116.json).

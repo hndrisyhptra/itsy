@@ -1,5 +1,7 @@
 # it's Area 3 — Construction Workspace
 
+**16 November 2026 — Paket Dokumen:** pada BA PP Sah, ikon Aksi menyediakan satu Word atau Cetak/Simpan PDF berisi PP, BA KH/lampiran, SPK/lampiran, BARP/lampiran/kasbon aktif setiap pembayaran, BA PP/lampiran. Ruang TTD hasil unduh/cetak kosong. Timeline/detail mengikuti paket5approval dan kasbon sebelum7approval; List Payment putih tanpa gradient. Tidak perlu migration baru. [Penggunaan, akses dan pengujian](docs/DOCUMENT_PACKAGE.md).
+
 **16 November 2026 — Pelunasan:** Finance mengunggah bukti transfer lalu **Tandai Lunas**; APM opsional, dapat ditambah/diedit setelah lunas tanpa pembayaran ulang. Tetap approval/Finance/proof/Branch dan net kanonis. Migration nullable APM baru perlu dijalankan saat deploy; belum diterapkan agen pada database aktif. [Alur, data, deploy dan verifikasi](docs/PAYMENT_SETTLEMENT_OPTIONAL_APM.md).
 
 **16 November 2026:** Kasbon baru dan transfer/APM otomatis memakai Material utuh +97,5%Jasa Mandor aktual, tanpa rincian potongan pada berkas. Bruto dan kasbon terbit/paid lama tetap. **Pembayaran → List Payment** tersedia khusus Mgr Finance & Settlement/Finance untuk ringkasan, pencarian LOP, filter Branch/status dan detail. Tidak ada migration baru. [Perilaku, penyimpanan dan verifikasi](docs/KASBON_PPH_PAYMENT_LIST.md).

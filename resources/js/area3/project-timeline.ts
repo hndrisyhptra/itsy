@@ -14,6 +14,11 @@ export function projectTimeline(s:State,id:string) {
   const spks=s.spks.filter(v=>dealProjects.has(v.dealId)),spkProjects=new Map(spks.map(v=>[v.id,dealProjects.get(v.dealId)!]));
   const terms=s.terms.filter(t=>spkProjects.has(t.spkId)),termProjects=new Map(terms.map(t=>[t.id,spkProjects.get(t.spkId)!]));
   const bapps=s.bapps.filter(b=>termProjects.has(b.termId)),bappProjects=new Map(bapps.map(b=>[b.id,termProjects.get(b.termId)!]));
+  const byProject=new Map(projects.map(p=>[p.id,{deals:[] as typeof deals,spks:[] as typeof spks,terms:[] as typeof terms,bapps:[] as typeof bapps}]));
+  for(const d of deals)byProject.get(d.projectId)!.deals.push(d);
+  for(const v of spks)byProject.get(spkProjects.get(v.id)!)!.spks.push(v);
+  for(const t of terms)byProject.get(termProjects.get(t.id)!)!.terms.push(t);
+  for(const b of bapps)byProject.get(bappProjects.get(b.id)!)!.bapps.push(b);
   const routeProject=(route:string) => {
     const parts=route.split(/[?#]/)[0].split('/').filter(Boolean);
     if((parts[0]==='project-plan'||parts[0]==='boq')&&projectIds.has(parts[1])) return parts[1];
@@ -25,7 +30,7 @@ export function projectTimeline(s:State,id:string) {
   };
   const events=s.events.flatMap(e=>{const projectId=routeProject(e.route);return projectId?[{...e,projectId}]:[];})
     .sort((a,b)=>(Date.parse(b.at)||0)-(Date.parse(a.at)||0));
-  return {anchor,projects,deals,spks,terms,bapps,events};
+  return {anchor,projects,deals,spks,terms,bapps,events,byProject};
 }
 
 export function projectPosition(p:Project):string {
@@ -40,7 +45,7 @@ export function paymentPosition(t:Term):string {
   if(t.status==='Diajukan') return 'Menunggu approval '+(nextApprovalRole(t)??'—');
   if(t.status==='Dikembalikan') return 'Dikembalikan · menunggu perbaikan Admin Konstruksi';
   if(t.status==='Ditolak') return (t.workflowVersion??1)>=3?'Ditolak · menunggu perbaikan dan pengajuan ulang Admin Konstruksi dari PM':'Ditolak · proses pembayaran berhenti';
-  if(t.status==='Draft') return 'Draft · belum diajukan';
+  if(t.status==='Draft') return t.paymentFlow==='kasbon-settlement-v2'?'Draft · lengkapi aktual dan kasbon sebelum tujuh approval':'Draft · belum diajukan';
   if((t.workflowVersion??1)<2) return t.apmStatus==='Valid'?'APM valid · lihat realisasi pembayaran':'Menunggu APM';
   if(usesFinancePayment(t)&&settlementRecorded(t))return 'Tagihan lunas · '+(t.apm?'APM '+t.apm:'APM belum diisi')+' · Berkas '+documentStatus(t);
   if(t.apmStatus==='Valid') return 'APM valid · tagihan lunas'+(usesPartialPayment(t)||usesFinancePayment(t)?' · Berkas '+documentStatus(t):'');

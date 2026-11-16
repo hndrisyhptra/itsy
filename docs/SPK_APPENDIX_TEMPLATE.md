@@ -37,3 +37,8 @@ Ruang TTD fisik tetap kosong; tidak ada tanda tangan/stempel/gambar rekaan. Blok
 Fixture HTML privat dibuat dari komponen aplikasi dengan CSS penuh di direktori sementara; **browser menolak akses localhost karena izin tidak diberikan**. Pemeriksaan visual browser, keyboard/scroll aktual, ukuran375/768/1440, dark mode dan hasil print belum terverifikasi. Tidak ada upaya mengakses browser lain atau menghindari penolakan. Server fixture sementara dihentikan. Tidak ada screenshot atau klaim kesamaan piksel/cetak fisik; dialog printer/font dapat mengubah page break. Fixture QA bukan dokumen transaksi pengguna dan bukan output yang diberikan.
 
 Audit: CHANGELOG.md, LARAVEL_QA.md, ARCHITECTURE.md, WORKPLAN.md dan qa/spk-appendix-template-20261107.json.
+
+
+## 16 November 2026 — Paket dokumen dan ringkasan alur terbaru
+
+Lihat [DOCUMENT_PACKAGE](DOCUMENT_PACKAGE.md): BA PP Sah menyediakan satu Word/PDF PP–Lampiran BA PP termasuk kasbon aktif setiap pembayaran. Timeline/detail menampilkan alur aktual5/7approval, scan terpisah dan APM opsional; riwayat/otorisasi/pembayaran tetap. List Payment memakai banner putih solid tanpa gradient. Shared Lampiran SPK Word memperlebar TotalVol6%→8% (Uraian23%→21%) agar digit total tidak turun sendiri. Current-only kasbon tetap lazy/UUID-bound/3query tanpa file catalog atau dekripsi arsip; tidak ada migration/data live rewrite. Bukti dan batas pengujian dicatat pada [QA](qa/document-package-20261116.json).

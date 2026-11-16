@@ -1,5 +1,15 @@
 # Laravel conversion checklist
 
+## 16 November 2026 — Paket dokumen lengkap, timeline terbaru dan List Payment putih
+
+Pengguna meminta satu Word/PDF dari PP sampai Lampiran BA PP, dan mengonfirmasi kasbon setiap pembayaran ikut. Ikon pada Aksi BA PP hanya muncul setelah Sah; tersedia pula di detail/timeline. Preview menggabungkan PP, BA KH/lampiran, SPK/lampiran, BARP/lampiran/kasbon aktif tiap pembayaran lalu BA PP/lampiran, lewat exact UUID lineage. Native Word memakai generator asli dengan section portrait/landscape, style/numbering/media terisolasi dan header kosong untuk mencegah logo diwariskan. Print menyimpan satu PDF nonblank; cap/status sel TTD tidak ikut hasil unduhan/cetak. Unggahan privat tetap terpisah. Kasbon hilang/akses gagal/versi berubah menahan ekspor; histori tanpa kasbon tidak dibuatkan snapshot baru.
+
+Timeline/detail PP/pembayaran/BA PP/inbox memperlihatkan paket5approval, kasbon sebelum7approval, transfer/lunas, status scan terpisah dan APM opsional. Keputusan current-user/current-kasbon saja mendapat tanda selesai; riwayat lama tetap. List Payment mengganti banner gradient dengan putih/solid dan memperbaiki keterangan APM opsional. Lampiran SPK Word memperlebar TotalVol agar digit total tidak terpisah.
+
+Query/performa: indeks relasi/total BA PP sekali, list20baris, grouping timeline sekali dan aktivitas20baris per halaman. Kasbon current_only pada GET existing memilih satu UUID aktif/3kolom tanpa file catalog/arsip decryption;3queryservice/6HTTP pada fixture, maksimum3request per paket. Tanpa mutasi SQL/schema/migration/dependency/its aktif/.env/Dompis; data, uang, approval, ledger, encrypted snapshots dan arsip tetap. Rincian/pengamanan/deploy: [DOCUMENT_PACKAGE](docs/DOCUMENT_PACKAGE.md).
+
+Verifikasi:311PHP/7193assertions memory,336frontend,TypeScript/Vite,Pint dan assets41refs/32preloads×3profil lulus. Native Word2paket/30halaman, browserPDF2paket/32halaman, ZIP/CRC/XML/rel/style/section/blankTTD/nonblank serta klik YA/TIDAK Word/print lulus pada fixture. Server/akunlive/Worddesktop/cetakfisik/loadtest belum diverifikasi; tidak deploy/migrate/restart. [Bukti](docs/qa/document-package-20261116.json).
+
 ## 16 November 2026 — Unduh Word BA PP dan Lampiran BA PP mengikuti BARP
 
 Kedua preview kini memiliki Unduh Word (.docx), konfirmasi YA/TIDAK, busy/duplicate guard dan penanda review sesuai pembayaran. Surat nativeWord memakai package template BA-PP.docx dengan slot dari model HTML yang sama, tanpa nomor BAPP, conditional Tahap/Termin dan tiga ruang TTD kosong.18packageentries;15preserve-only byte-exact, metadata core/custom dinetralkan, body editable/unused bookmarkend dibersihkan; sumber asli tetap.

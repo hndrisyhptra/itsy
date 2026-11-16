@@ -12,7 +12,8 @@ export function spkAppendixWordFilename(spk: Spk) {
 /** Native editable table from the same read-only model as the form/preview. */
 export function createSpkAppendixDocx(state: State, project: Project, deal: Deal, spk: Spk) {
   const data = spkAppendixData(state, project, deal), pageWidth = 15704;
-  const widths = [3,10,23,6,7,7,12,6,8,8,10].map(p => Math.floor(pageWidth*p/100));
+  // Footer repeats Rupiah totals in Total Vol; retain enough width for the whole amount.
+  const widths = [3,10,21,6,7,7,12,8,8,8,10].map(p => Math.floor(pageWidth*p/100));
   widths[10] += pageWidth - widths.reduce((a,b) => a+b,0);
   const left = ['NO','DESIGNATOR','URAIAN','SATUAN'], right = ['TOTAL VOL','MATERIAL','JASA','JUMLAH'];
   const rows = [

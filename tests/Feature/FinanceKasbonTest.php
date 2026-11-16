@@ -707,6 +707,51 @@ class FinanceKasbonTest extends TestCase
         $this->assertSame($audits, DB::table('prototype_audits')->count());
     }
 
+    public function test_package_current_kasbon_read_is_uuid_bound_three_queries_and_never_decrypts_archived_versions(): void
+    {
+        $t = $this->setupTerm();
+        $this->payee($t['spkId']);
+        $t = $this->issue($t);
+        $original = DB::table('finance_kasbons')->first();
+        $this->api('decideFinancePayment', [$t['id'], 'Kembalikan', 'Koreksi kasbon'])->assertOk();
+        $t = $this->issue($this->term($t['id']));
+        $w = PrototypeWorkspace::first();
+        $revision = $w->revision;
+        $audits = DB::table('prototype_audits')->count();
+        // An unreadable archived ciphertext must not even be selected for a current-only export.
+        DB::table('finance_kasbons')->where('id_kasbon', $original->id_kasbon)->update(['private_data' => 'archive-not-selected']);
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $view = app(FinanceDocuments::class)->kasbon($w, $t['id'], false, true);
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+        $this->assertCount(3, $queries);
+        $this->assertCount(1, $view['documents']);
+        $this->assertSame($t['kasbon']['id'], $view['documents'][0]['id']);
+        $this->assertCount(0, $view['files']);
+        foreach ($queries as $q) {
+            $this->assertMatchesRegularExpression('/^select /i', $q['query']);
+            $this->assertStringNotContainsString('finance_private_files', $q['query']);
+            $this->assertStringNotContainsString('designator_package_prices', $q['query']);
+        }
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $this->getJson('/api/finance/terms/'.$t['id'].'/kasbon?documents_only=1&current_only=1&kasbon_id='.$original->id_kasbon)
+            ->assertOk()->assertJsonCount(1, 'documents')->assertJsonPath('documents.0.id', $t['kasbon']['id'])->assertJsonCount(0, 'files');
+        $httpQueries = DB::getQueryLog();
+        DB::disableQueryLog();
+        $this->assertLessThanOrEqual(50, count($httpQueries));
+        fwrite(STDERR, "\nCurrent-only kasbon package HTTP: ".count($httpQueries)." queries; service 3 queries.\n");
+        foreach ($httpQueries as $q) {
+            $this->assertMatchesRegularExpression('/^select /i', $q['query']);
+            $this->assertStringNotContainsString('finance_private_files', $q['query']);
+        }
+        $this->asRole('PM Konstruksi');
+        $this->getJson('/api/finance/terms/'.$t['id'].'/kasbon?current_only=1')->assertForbidden();
+        $this->assertSame($revision, PrototypeWorkspace::first()->revision);
+        $this->assertSame($audits, DB::table('prototype_audits')->count());
+    }
+
     public function test_refreshing_workspace_revision_cannot_silently_accept_a_different_payee_version(): void
     {
         $t = $this->setupTerm();

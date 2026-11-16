@@ -148,12 +148,14 @@ class FinanceDocuments
         });
     }
 
-    public function kasbon(PrototypeWorkspace $w, string $id, bool $includeFiles = true): array
+    public function kasbon(PrototypeWorkspace $w, string $id, bool $includeFiles = true, bool $currentOnly = false): array
     {
         $r = $this->authorize($w, $id, true, false, false, null, true);
-        $includeFiles = $includeFiles && in_array(app(AuthenticatedWorkspace::class)->account()['role'], ['Admin Konstruksi', 'Superadmin', 'Finance', 'Mgr Finance & Settlement'], true);
+        $includeFiles = ! $currentOnly && $includeFiles && in_array(app(AuthenticatedWorkspace::class)->account()['role'], ['Admin Konstruksi', 'Superadmin', 'Finance', 'Mgr Finance & Settlement'], true);
         $t = json_decode($r->term_data, true, 512, JSON_THROW_ON_ERROR);
-        $rows = DB::table('finance_kasbons')->where('term_id', $r->id_payment_term)->orderByDesc('version')->limit(10)->get(['id_kasbon', 'version', 'private_data']);
+        $rows = DB::table('finance_kasbons')->where('term_id', $r->id_payment_term)
+            ->when($currentOnly, fn ($query) => $query->where('id_kasbon', $t['kasbon']['id'] ?? ''))
+            ->orderByDesc('version')->limit($currentOnly ? 1 : 10)->get(['id_kasbon', 'version', 'private_data']);
         $files = $includeFiles ? DB::table('finance_private_files')->where('workspace_id', $w->id)->where('term_id', $r->id_payment_term)->orderByDesc('created_at')->limit(10)->get(['id_finance_file as id', 'kind', 'created_at as uploadedAt']) : collect();
 
         return ['documents' => $rows->map(fn ($v) => ['id' => $v->id_kasbon, 'version' => $v->version, 'data' => $this->kasbonView($v, $t)])->all(), 'files' => $files, 'flow' => PrototypeDomain::usesFinancePayment($t)];

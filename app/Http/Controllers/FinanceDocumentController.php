@@ -32,7 +32,7 @@ class FinanceDocumentController extends Controller
             return response()->json($docs->issue($w, $term, $input));
         }
 
-        return response()->json($docs->kasbon($w, $term, ! $request->boolean('documents_only')))->header('Cache-Control', 'private, no-store');
+        return response()->json($docs->kasbon($w, $term, ! $request->boolean('documents_only'), $request->boolean('current_only')))->header('Cache-Control', 'private, no-store');
     }
 
     public function upload(Request $request, string $kind, string $document, PrototypeWorkspaceService $workspaces, UploadQueue $queue)
