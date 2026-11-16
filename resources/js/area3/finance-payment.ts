@@ -1,3 +1,4 @@
+import {legacyReviewApproved,legacyReviewPending} from './legacy-settlement-review';
 import { settlementRecorded } from './payment-settlement';
 import { type State, type Term, type Spk, type Approval, getTerm, getSpk, projectForSpk, operational, approvalRoles, requireFinance, requireAdmin, applyTermDecision, applyTermSave, applySpk, termTotal, now, log } from './domain';
 import { paymentDue, kasbonQuoteMatches, type KasbonSettlement } from './kasbon-settlement';
@@ -6,7 +7,7 @@ import { recordCommand } from './commands';
 export interface KasbonSummary {settlement?:KasbonSettlement;settlementUserId?:string;id:string;version:number;amount:number;issuedBy:string;issuedAt:string;issuedRole?:State['role']}
 export interface FinancePayment {settledAt?:string;settledBy?:string;apmHistory?:{before:string;after:string;at:string;by:string}[];status:'Menunggu Approval'|'Kasbon Terbit'|'Dikembalikan'|'Diverifikasi'|'Dibayar';decision?:Approval&{kasbonId:string};documentsAtPayment?:'OK'|'NOK';kasbonId?:string;transferFileId?:string}
 export const usesFinancePayment=(t:Term)=>t.workflowVersion===3&&['kasbon-v1','kasbon-settlement-v2'].includes(t.paymentFlow??'');
-export const financePaymentLabel=(t:Term)=>usesSettlementPayment(t)&&['Draft','Dikembalikan','Ditolak'].includes(t.status)?'Lengkapi kasbon & ajukan ulang dari PM':t.status==='Diajukan'?'Menunggu Approval':t.financePayment?.status==='Menunggu Approval'?'Menunggu Pengajuan Kasbon Admin':t.financePayment?.status==='Kasbon Terbit'?'Kasbon Diajukan · Review Finance':t.financePayment?.status??'Menunggu Pengajuan Kasbon Admin';
+export const financePaymentLabel=(t:Term)=>legacyReviewPending(t)?'Menunggu Mgr Finance & Settlement':usesSettlementPayment(t)&&['Draft','Dikembalikan','Ditolak'].includes(t.status)?'Lengkapi kasbon & ajukan ulang dari PM':t.status==='Diajukan'?'Menunggu Approval':t.financePayment?.status==='Menunggu Approval'?'Menunggu Pengajuan Kasbon Admin':t.financePayment?.status==='Kasbon Terbit'?'Kasbon Diajukan · Review Finance':t.financePayment?.status??'Menunggu Pengajuan Kasbon Admin';
 export function adminKasbonPending(t:Term){
   if(t.paymentFlow==='kasbon-settlement-v2')return ['Draft','Dikembalikan','Ditolak'].includes(t.status)&&t.paid===0&&t.apmStatus!=='Valid';
   if(!usesFinancePayment(t)||t.status!=='Disetujui'||t.apmStatus==='Valid'||t.paid>0||t.kasbon&&t.financePayment?.status!=='Dikembalikan')return false;
@@ -31,6 +32,7 @@ export function financePaymentEligible(t:Term){
 export function decideFinancePayment(s:State,id:string,decision:'Setujui'|'Kembalikan',note:string,expectedKasbonId?:string){
   const t=getTerm(s,id),expected=expectedKasbonId??t.kasbon?.id;
   recordCommand('decideFinancePayment',[id,decision,note,...(expected?[expected]:[])]);requireFinance(s);if(usesSettlementPayment(t)){if(expected!==t.kasbon?.id)throw new Error('Versi kasbon berubah. Review kembali kasbon aktif.');applyTermDecision(s,id,decision,note);return;}financePaymentEligible(t);
+  if(!legacyReviewApproved(t))throw new Error('Menunggu persetujuan Mgr Finance & Settlement untuk kasbon aktif.');
   if(expected!==t.kasbon?.id)throw new Error('Versi kasbon berubah. Review kembali kasbon yang aktif sebelum memberi keputusan Finance.');
   if(!t.kasbon||!['Kasbon Terbit','Diverifikasi'].includes(t.financePayment?.status??'')||!['Setujui','Kembalikan'].includes(decision)||note.length>1000||(decision==='Kembalikan'&&!note.trim())||(decision==='Setujui'&&t.financePayment?.status!=='Kasbon Terbit'))throw new Error('Terbitkan kasbon terlebih dahulu; pengembalian wajib disertai catatan.');
   if(decision==='Setujui'&&t.scan&&t.scan.status!=='Valid')throw new Error('Scan sudah tersedia; verifikasi berkas terlebih dahulu sebelum Approve Payment.');
@@ -39,6 +41,7 @@ export function decideFinancePayment(s:State,id:string,decision:'Setujui'|'Kemba
   (t.financePaymentHistory??=[]).push(a);t.financePayment={status:decision==='Setujui'?'Diverifikasi':'Dikembalikan',decision:a};log(s,'Payment '+t.financePayment.status,`Termin ${t.number} · ${note}`,'/termin/'+id);
 }
 export function assertFinanceApmReady(s:State,t:Term){
+  if(!legacyReviewApproved(t))throw new Error('Menunggu persetujuan Mgr Finance & Settlement untuk kasbon aktif.');
   financePaymentEligible(t);
   if(t.scan&&t.scan.status!=='Valid')throw new Error('Scan sudah tersedia; verifikasi berkas sebelum APM.');
   if(t.financePayment?.status!=='Diverifikasi'||t.financePayment.decision?.decision!=='Setujui'||t.financePayment.decision.kasbonId!==t.kasbon?.id||!t.transferProof?.id||t.transferProof.kasbonId!==t.kasbon?.id||t.kasbon.amount!==paymentDue(t,termTotal(s,t))||!kasbonQuoteMatches(s.deals.find(d=>d.id===s.spks.find(v=>v.id===t.spkId)!.dealId)!,t))throw new Error('Kasbon terbit, persetujuan Finance sesuai kasbon dan bukti transfer wajib sebelum APM.');
@@ -73,11 +76,11 @@ export function updatePaymentApm(s:State,id:string,apm:string) {
 }
 
 export interface KasbonPrintSigner {userId:string;name:string;job:string;at:string;by:string}
-export const canEditKasbonPrintSigner=(s:State,t:Term,kasbonId:string)=>(operational(s)||s.role==='Finance')&&usesFinancePayment(t)&&!usesSettlementPayment(t)&&t.status==='Disetujui'&&!!kasbonId&&t.kasbon?.id===kasbonId;
+export const canEditKasbonPrintSigner=(s:State,t:Term,kasbonId:string)=>(operational(s)||s.role==='Finance')&&usesFinancePayment(t)&&!usesSettlementPayment(t)&&t.status==='Disetujui'&&!!kasbonId&&t.kasbon?.id===kasbonId&&!t.legacySettlementReview;
 export function setKasbonPrintSigner(s:State,id:string,kasbonId:string,userId:string){
   if(!operational(s)&&s.role!=='Finance')throw new Error('Hanya Admin Konstruksi, Superadmin atau Finance yang dapat mengubah penandatangan fisik.');
   const t=getTerm(s,id);
-  if(!usesFinancePayment(t)||usesSettlementPayment(t)||t.status!=='Disetujui'||!kasbonId||t.kasbon?.id!==kasbonId)throw new Error('Pilih kasbon aktif dari pembayaran lama yang sudah disetujui. Versi arsip dan alur tujuh approval tidak dapat diubah melalui pilihan ini.');
+  if(!usesFinancePayment(t)||usesSettlementPayment(t)||t.status!=='Disetujui'||!!t.legacySettlementReview||!kasbonId||t.kasbon?.id!==kasbonId)throw new Error('Pilih kasbon aktif dari pembayaran lama yang sudah disetujui. Versi arsip dan alur tujuh approval tidak dapat diubah melalui pilihan ini.');
   const user=s.users.find(u=>u.id===userId&&u.active&&u.role==='Mgr Finance & Settlement');
   if(!user)throw new Error('Pilih pengguna aktif dengan peran Mgr Finance & Settlement.');
   const p=projectForSpk(s,getSpk(s,t.spkId));

@@ -1,3 +1,4 @@
+import {legacyReviewDecisions,legacyReviewApproved} from './legacy-settlement-review';
 import { settlementRecorded } from './payment-settlement';
 import { paymentDue } from './kasbon-settlement';
 import { usesSettlementPayment, usesFinancePayment, financePaymentLabel } from './finance-payment';
@@ -32,12 +33,13 @@ function PaymentTimeline({s,t}:{s:State;t:Term}) {
   const spk=s.spks.find(v=>v.id===t.spkId)!,deal=s.deals.find(d=>d.id===spk.dealId)!;
   const amount=termTotal(s,t),modern=(t.workflowVersion??1)>=2;
   const validFinance=(t.workflowVersion??1)>=3?t.scan?.status==='Valid'&&t.financeApproval?.decision==='Setujui'&&t.financeApproval.scanId===t.scan.id:t.scan?.status==='Valid';
-  const financeDecisions=usesSettlementPayment(t)?[]:(t.financePaymentHistory??[]);
+  const financeDecisions=[...legacyReviewDecisions(t),...(usesSettlementPayment(t)?[]:(t.financePaymentHistory??[]))];
   const scans=[...(t.scanHistory??[]),...(t.scan?[t.scan]:[])];
   return <article className="project-payment-timeline"><div className="project-timeline-heading"><div><h3>Termin {t.number} · {t.type}</h3><p>{spk.no} · {deal.mandor}</p></div><Link className="btn" to={'/termin/'+t.id}>Lihat pembayaran <ArrowUpRight size={14}/></Link></div>
     <div className="project-current-position"><Badge>{t.status}</Badge><strong>{paymentPosition(t)}</strong><span>{t.approvals.length}/{approvalRoles(t).length} approval dokumen</span></div>
     <ApprovalTrack s={s} document={t}/>
     {usesPartialPayment(t)&&<div className="project-finance-stage"><strong>Finance · Payment Parsial</strong><Badge>{t.paymentRequest?.status??'Belum diajukan'}</Badge><span>{partialPaymentLabel(t)} · Berkas {documentStatus(t)}{t.paymentRequest?.decision&&` · ${t.paymentRequest.decision.actorName}`}</span></div>}
+    {t.legacySettlementReview&&<div className="project-finance-stage"><strong>Mgr Finance &amp; Settlement · Review tambahan kasbon</strong><Badge>{legacyReviewApproved(t)?'Disetujui':t.legacySettlementReview.decision?.decision==='Kembalikan'?'Dikembalikan':'Menunggu'}</Badge><span>{t.legacySettlementReview.name} · Kasbon v{t.kasbon?.version}{t.legacySettlementReview.decision&&' · '+stamp(t.legacySettlementReview.decision.at)}</span></div>}
     {usesFinancePayment(t)&&!usesSettlementPayment(t)&&<div className="project-finance-stage"><strong>Finance · Kasbon &amp; Payment</strong><Badge>{financePaymentLabel(t)}</Badge><span>Kasbon {t.kasbon?'v'+t.kasbon.version:'belum terbit'} · Bukti transfer {t.transferProof?'tersimpan':'belum diunggah'} · Berkas {documentStatus(t)}</span></div>}
     {modern&&<div className="project-finance-stage"><strong>{(usesFinancePayment(t)||t.workflowVersion===3&&t.type==='Parsial')?'Verifikasi berkas · scan TTD fisik':'Finance · setelah scan TTD fisik'}</strong><Badge>{validFinance?(t.workflowVersion??1)>=3?'Disetujui':'Valid':t.scan?.status==='Perlu Koreksi'?'Perlu Koreksi':'Menunggu'}</Badge><span>{validFinance?((t.financeApproval?.actorName??s.users.find(u=>u.id===t.scan?.verifiedBy)?.name??'Finance')+' · '+stamp(t.financeApproval?.at??t.scan?.verifiedAt)):t.scan?'Menunggu scan yang valid dan keputusan Finance.':'Belum ada scan TTD fisik diunggah.'}</span></div>}
     <dl className="project-payment-facts"><div><dt>Tagihan</dt><dd>{money(amount)}</dd></div><div><dt>Terbayar</dt><dd>{money(t.paid)}</dd></div><div><dt>APM</dt><dd>{t.apm||'Belum dicatat'}<small>{t.apmStatus}</small></dd></div></dl>

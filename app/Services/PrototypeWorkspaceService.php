@@ -87,6 +87,10 @@ class PrototypeWorkspaceService
             if ($row->revision !== $input['revision']) {
                 throw new HttpResponseException(response()->json($this->payload($row) + ['message' => 'Data berubah di tab lain. Muat ulang data terbaru; perubahan tidak ditimpa.'], 409));
             }
+            if ($input['command'] === 'routeLegacyFinance') {
+                $ids = array_column($input['args'][0], 'id');
+                abort_if(DB::table('upload_tasks')->where('workspace_id', $row->id)->whereIn('document_id', $ids)->where('kind', 'transfer-proof')->whereIn('status', ['queued', 'processing'])->exists(), 422, 'Tunggu antrean bukti transfer selesai sebelum memindahkan pengajuan.');
+            }
             if ($input['command'] === 'submitProjectBundle') {
                 $project = collect($before['projects'])->firstWhere('id', $input['args'][0] ?? '');
                 abort_unless($project && PrototypeDomain::usesContractBundle($project), 422, 'Paket PP tidak ditemukan.');

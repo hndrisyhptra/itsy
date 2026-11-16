@@ -139,6 +139,23 @@ class AuthenticatedWorkspace
         $term = fn ($id) => $spk($lookup('terms', $id)['spkId']);
         $bapp = fn ($id) => $term($lookup('bapps', $id)['termId']);
         $input = $args[0] ?? null;
+        if ($command === 'routeLegacyFinance') {
+            $branches = $this->account()['branches'];
+            abort_unless(is_array($input) && count($input) >= 1 && count($input) <= 50, 422);
+            $terms = array_column($state['terms'], null, 'id');
+            $spks = array_column($state['spks'], null, 'id');
+            $deals = array_column($state['deals'], null, 'id');
+            $projects = array_column($state['projects'], null, 'id');
+            foreach ($input as $target) {
+                abort_unless(is_array($target), 422);
+                $t = $terms[$target['id'] ?? ''] ?? null;
+                abort_unless($t, 404);
+                $p = $projects[$deals[$spks[$t['spkId']]['dealId']]['projectId']];
+                abort_unless(in_array($p['branch'], $branches, true), 403);
+            }
+
+            return;
+        }
         $p = match ($command) {
             'saveProject', 'saveProjectBundle' => $input,
             'submitProjectBundle' => $project($input),
@@ -149,7 +166,7 @@ class AuthenticatedWorkspace
             'saveSpkFinance', 'saveSpk' => $deal($input['dealId'] ?? ''),
             'createTerm', 'createSettlementTerm' => $spk($input),
             'submitFinanceTerm', 'saveTerm' => $spk($input['spkId'] ?? ''),
-            'adoptFinancePayment', '_issueKasbon', '_submitSettlementKasbon', '_attachTransferProof', 'decideFinancePayment', 'requestPartialPayment', 'verifyPartialPayment', 'payPartialPayment', 'decide', 'recordApm', 'settleFinancePayment', 'updatePaymentApm', 'setKasbonPrintSigner', 'recordPayment', 'verifyTermScan', '_attachTermScan', '_attachTermWorkEvidence', 'removeTermWorkEvidence' => $term($input),
+            'adoptFinancePayment', '_issueKasbon', '_submitSettlementKasbon', '_attachTransferProof', 'decideFinancePayment', 'requestPartialPayment', 'verifyPartialPayment', 'payPartialPayment', 'decide', 'recordApm', 'settleFinancePayment', 'updatePaymentApm', 'setKasbonPrintSigner', 'decideLegacySettlementReview', 'recordPayment', 'verifyTermScan', '_attachTermScan', '_attachTermWorkEvidence', 'removeTermWorkEvidence' => $term($input),
             'attestBapp', 'releaseVolume', 'createContinuation' => $bapp($input),
             default => null,
         };

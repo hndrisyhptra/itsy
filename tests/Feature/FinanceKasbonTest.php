@@ -227,9 +227,9 @@ class FinanceKasbonTest extends TestCase
         app(AccountAccess::class)->assign($selected, 'MGR_FINANCE_SETTLEMENT', [$other]);
         $this->api('setKasbonPrintSigner', $args)->assertUnprocessable();
         $this->assertSame($before, PrototypeWorkspace::first()->revision);
-        $selected->update(['active' => false]);
+        $selected->forceFill(['active' => false])->save();
         $this->api('setKasbonPrintSigner', $args)->assertUnprocessable();
-        $selected->update(['active' => true]);
+        $selected->forceFill(['active' => true])->save();
         app(AccountAccess::class)->assign($selected, 'MGR_FINANCE_SETTLEMENT', DB::table('branches')->pluck('id_branch')->all());
         $this->asRole('Admin Konstruksi');
         $this->api('setKasbonPrintSigner', $args)->assertOk();
@@ -278,6 +278,184 @@ class FinanceKasbonTest extends TestCase
             $this->assertStringContainsString('Head of PMO', $e->getMessage());
         }
         $this->assertArrayNotHasKey('kasbonPrintSigners', $this->term($t['id']));
+    }
+
+    public function test_pending_legacy_payment_routes_to_actual_manager_then_returns_to_finance_without_repeating_work_approvals(): void
+    {
+        $t = $this->setupTerm();
+        $this->payee($t['spkId']);
+        $t = $this->issue($t);
+        $manager = $this->asRole('Mgr Finance & Settlement');
+        $this->asRole('Finance');
+        $before = $this->term($t['id']);
+        $original = DB::table('finance_kasbons')->first();
+        $decisions = DB::table('approval_decisions')->get()->toArray();
+        $archive = PrototypeWorkspace::first()->state;
+        $revision = PrototypeWorkspace::first()->revision;
+        $input = ['command' => 'routeLegacyFinance', 'args' => [[['id' => $t['id'], 'kasbonId' => $t['kasbon']['id']]], 'db-user-'.$manager->id_user], 'revision' => $revision, 'request_id' => (string) Str::uuid()];
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $this->postJson('/api/prototype/commands', $input)->assertOk();
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+        $this->assertLessThanOrEqual(50, count($queries));
+        foreach ($queries as $query) {
+            $this->assertDoesNotMatchRegularExpression('/^\s*(insert into|update|delete from) ["`]*(finance_kasbons|apm_settlements|project_plans|term_actuals|approval_runs|approval_steps|approval_decisions|document_files|volume_balances|volume_movements)["` ]/i', $query['query']);
+        }
+        fwrite(STDERR, "\nLegacy routing single HTTP: ".count($queries)." queries.\n");
+        $this->getJson('/api/finance/payments')->assertOk()->assertJsonPath('items.0.approval', 'Menunggu Mgr Finance & Settlement');
+        $this->postJson('/api/prototype/commands', $input)->assertOk()->assertJsonPath('replayed', true);
+        $this->assertSame($revision + 1, PrototypeWorkspace::first()->revision);
+        $routed = $this->term($t['id']);
+        unset($routed['legacySettlementReview'], $routed['legacySettlementReviewHistory']);
+        $this->assertSame($before, $routed);
+        $this->api('decideFinancePayment', [$t['id'], 'Setujui', ''])->assertUnprocessable();
+        $this->api('settleFinancePayment', [$t['id'], ''])->assertUnprocessable();
+        $this->api('recordApm', [$t['id'], 'APM/BYPASS/001', true])->assertUnprocessable();
+        $this->post('/api/finance/uploads/transfer-proof/'.$t['id'], ['file' => UploadedFile::fake()->createWithContent('proof.pdf', '%PDF-1.4'), 'request_id' => (string) Str::uuid(), 'revision' => (string) PrototypeWorkspace::first()->revision], ['Accept' => 'application/json'])->assertUnprocessable();
+        $this->api('setKasbonPrintSigner', [$t['id'], $t['kasbon']['id'], 'db-user-'.$manager->id_user])->assertUnprocessable();
+        $this->asRole('Superadmin');
+        $this->api('decideLegacySettlementReview', [$t['id'], $t['kasbon']['id'], 'Setujui', ''])->assertForbidden();
+        $this->asRole('Mgr Finance & Settlement');
+        $this->getJson('/api/finance/terms/'.$t['id'].'/kasbon?documents_only=1')->assertOk()->assertJsonPath('documents.0.data.printSigner.name', $manager->name);
+        $this->api('decideLegacySettlementReview', [$t['id'], 'stale-kasbon', 'Setujui', ''])->assertUnprocessable();
+        $this->api('decideLegacySettlementReview', [$t['id'], $t['kasbon']['id'], 'Setujui', 'Berkas sesuai'])->assertOk();
+        $this->assertTrue(PrototypeDomain::legacyReviewApproved($this->term($t['id'])));
+        $this->getJson('/api/finance/payments')->assertOk()->assertJsonPath('items.0.approval', 'Mgr Finance disetujui · Menunggu Finance');
+        $this->getJson('/api/finance/terms/'.$t['id'].'/kasbon?documents_only=1')->assertOk()->assertJsonPath('documents.0.data.printSignerApproval.userId', 'db-user-'.$manager->id_user);
+        $this->assertEquals($original, DB::table('finance_kasbons')->first());
+        $this->assertEquals($decisions, DB::table('approval_decisions')->get()->toArray());
+        $this->assertSame($archive, PrototypeWorkspace::first()->state);
+        $this->assertSame($before['approvals'], $this->term($t['id'])['approvals']);
+        $this->asRole('Finance');
+        $this->api('decideFinancePayment', [$t['id'], 'Setujui', ''])->assertOk();
+        $this->getJson('/api/finance/payments')->assertOk()->assertJsonPath('items.0.approval', 'Finance disetujui · Proses transfer');
+        $this->api('routeLegacyFinance', $input['args'])->assertUnprocessable();
+        $this->upload('transfer-proof', $t['id']);
+        $this->api('settleFinancePayment', [$t['id'], ''])->assertOk();
+        $this->assertEquals($before['kasbon']['amount'], $this->term($t['id'])['paid']);
+    }
+
+    public function test_manager_return_requires_note_and_new_kasbon_review_without_changing_five_work_approvals(): void
+    {
+        $t = $this->setupTerm();
+        $this->payee($t['spkId']);
+        $t = $this->issue($t);
+        $manager = $this->asRole('Mgr Finance & Settlement');
+        $this->asRole('Finance');
+        $this->api('routeLegacyFinance', [[['id' => $t['id'], 'kasbonId' => $t['kasbon']['id']]], 'db-user-'.$manager->id_user])->assertOk();
+        $approvals = $this->term($t['id'])['approvals'];
+        $this->asRole('Mgr Finance & Settlement');
+        $this->api('decideLegacySettlementReview', [$t['id'], $t['kasbon']['id'], 'Kembalikan', ''])->assertUnprocessable();
+        $this->api('decideLegacySettlementReview', [$t['id'], $t['kasbon']['id'], 'Kembalikan', 'Perbaiki rincian'])->assertOk();
+        $this->assertSame('Dikembalikan', $this->term($t['id'])['financePayment']['status']);
+        $new = $this->issue($this->term($t['id']));
+        $this->assertNotSame($t['kasbon']['id'], $new['kasbon']['id']);
+        $this->assertTrue(PrototypeDomain::legacyReviewPending($new));
+        $this->assertFalse(PrototypeDomain::legacyReviewApproved($new));
+        $this->assertSame($approvals, $new['approvals']);
+        $this->assertCount(3, $new['legacySettlementReviewHistory']);
+        $this->api('decideFinancePayment', [$t['id'], 'Setujui', ''])->assertUnprocessable();
+        $this->asRole('Mgr Finance & Settlement');
+        $this->api('decideLegacySettlementReview', [$t['id'], $t['kasbon']['id'], 'Setujui', ''])->assertUnprocessable();
+        $this->api('decideLegacySettlementReview', [$t['id'], $new['kasbon']['id'], 'Setujui', ''])->assertOk();
+        $this->getJson('/api/finance/terms/'.$t['id'].'/kasbon?documents_only=1')->assertOk()->assertJsonPath('documents.0.data.printSignerApproval.kasbonId', $new['kasbon']['id']);
+    }
+
+    public function test_routing_rejects_unauthorized_roles_branches_inactive_manager_duplicates_and_stale_version_atomically(): void
+    {
+        $t = $this->setupTerm();
+        $this->payee($t['spkId']);
+        $t = $this->issue($t);
+        $manager = $this->asRole('Mgr Finance & Settlement');
+        $target = ['id' => $t['id'], 'kasbonId' => $t['kasbon']['id']];
+        $args = [[$target], 'db-user-'.$manager->id_user];
+        $this->asRole('Admin Konstruksi');
+        $this->api('routeLegacyFinance', $args)->assertForbidden();
+        $this->asRole('Finance');
+        $revision = PrototypeWorkspace::first()->revision;
+        $this->api('routeLegacyFinance', [[...$args[0], $target], $args[1]])->assertUnprocessable();
+        $this->api('routeLegacyFinance', [[...$args[0], ['id' => $t['id'], 'kasbonId' => 'stale']], $args[1]])->assertUnprocessable();
+        $this->api('routeLegacyFinance', [array_fill(0, 51, $target), $args[1]])->assertUnprocessable();
+        $this->api('routeLegacyFinance', [[['id' => [], 'kasbonId' => $target['kasbonId']]], $args[1]])->assertUnprocessable();
+        $manager->forceFill(['active' => false])->save();
+        $this->api('routeLegacyFinance', $args)->assertUnprocessable();
+        $manager->forceFill(['active' => true])->save();
+        $other = DB::table('branches')->where('name', '!=', 'DENPASAR')->value('id_branch');
+        app(AccountAccess::class)->assign($manager, 'MGR_FINANCE_SETTLEMENT', [$other]);
+        $this->api('routeLegacyFinance', $args)->assertUnprocessable();
+        $finance = $this->asRole('Finance');
+        app(AccountAccess::class)->assign($finance, 'FINANCE', [$other]);
+        $this->api('routeLegacyFinance', $args)->assertForbidden();
+        $this->assertSame($revision, PrototypeWorkspace::first()->revision);
+        $this->assertArrayNotHasKey('legacySettlementReview', app(RelationalWorkflowStore::class)->read(PrototypeWorkspace::first())['terms'][0]);
+    }
+
+    public function test_bulk_legacy_routing_is_atomic_bounded_and_does_not_read_private_ciphertext_per_term(): void
+    {
+        $t = $this->setupTerm();
+        $this->payee($t['spkId']);
+        $t = $this->issue($t);
+        $manager = $this->asRole('Mgr Finance & Settlement');
+        $this->asRole('Finance');
+        $w = PrototypeWorkspace::first();
+        $store = app(RelationalWorkflowStore::class);
+        $before = $store->read($w);
+        $s = $before;
+        $original = DB::table('finance_kasbons')->first();
+        $baseSpk = collect($s['spks'])->firstWhere('id', $t['spkId']);
+        $baseDeal = collect($s['deals'])->firstWhere('id', $baseSpk['dealId']);
+        $baseProject = collect($s['projects'])->firstWhere('id', $baseDeal['projectId']);
+        $targets = [['id' => $t['id'], 'kasbonId' => $t['kasbon']['id']]];
+        // Cloned synthetic memory-only graphs; no user database or live PII.
+        for ($i = 1; $i < 8; $i++) {
+            $p = $baseProject;
+            $p['id'] = $p['rootId'] = 'route-pp-'.$i;
+            $p['no'] = 'ROUTE/PP/'.$i;
+            $d = $baseDeal;
+            $d['id'] = 'route-deal-'.$i;
+            $d['no'] = 'ROUTE/BA/'.$i;
+            $d['projectId'] = $p['id'];
+            $v = $baseSpk;
+            $v['id'] = 'route-spk-'.$i;
+            $v['no'] = 'ROUTE/SPK/'.$i;
+            $v['dealId'] = $d['id'];
+            $copy = $t;
+            $copy['id'] = 'route-term-'.$i;
+            $copy['spkId'] = $v['id'];
+            $copy['kasbon']['id'] = (string) Str::uuid();
+            $s['projects'][] = $p;
+            $s['deals'][] = $d;
+            $s['spks'][] = $v;
+            $s['terms'][] = $copy;
+            $targets[] = ['id' => $copy['id'], 'kasbonId' => $copy['kasbon']['id']];
+        }
+        DB::transaction(fn () => $store->write($w, $s, $before));
+        foreach (array_slice($targets, 1) as $target) {
+            DB::table('finance_kasbons')->insert(['id_kasbon' => $target['kasbonId'], 'term_id' => $store->id($w->id, 'terms', $target['id']), 'version' => 1, 'amount' => $original->amount, 'private_data' => 'NEVER-DECRYPT-FOR-ROUTING', 'issued_by' => $original->issued_by, 'issued_at' => now(), 'request_uuid' => (string) Str::uuid(), 'input_sha256' => str_repeat('a', 64)]);
+        }
+        $revision = $w->fresh()->revision;
+        $bad = $targets;
+        $bad[7]['kasbonId'] = 'stale';
+        $this->api('routeLegacyFinance', [$bad, 'db-user-'.$manager->id_user])->assertUnprocessable();
+        $this->assertSame($revision, $w->fresh()->revision);
+        foreach ($store->read($w)['terms'] as $term) {
+            $this->assertArrayNotHasKey('legacySettlementReview', $term);
+        }
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $this->api('routeLegacyFinance', [$targets, 'db-user-'.$manager->id_user])->assertOk();
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+        $this->assertLessThanOrEqual(120, count($queries));
+        $this->assertCount(1, collect($queries)->filter(fn ($q) => str_contains($q['query'], 'user_assignments') && str_contains($q['query'], 'join') && ! str_contains($q['query'], '"a"."user_id" = ?')), 'One batch assignment read at command bind, independent of term count.');
+        foreach ($queries as $q) {
+            $this->assertStringNotContainsString('private_data', $q['query']);
+        }
+        fwrite(STDERR, "\nLegacy routing 8-term HTTP: ".count($queries)." queries.\n");
+        foreach ($store->read($w)['terms'] as $term) {
+            $this->assertSame('db-user-'.$manager->id_user, $term['legacySettlementReview']['userId']);
+        }
     }
 
     public function test_existing_paid_kasbon_can_correct_apm_without_rewriting_original_settlement_or_history(): void

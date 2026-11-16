@@ -9,6 +9,10 @@ export function assertHeadReopenCommand(s: State, command: string, args: unknown
   const deal = (id: unknown) => s.deals.find(d => d.id === id)?.projectId;
   const spk = (id: unknown) => deal(s.spks.find(v => v.id === id)?.dealId);
   const term = (id: unknown) => spk(s.terms.find(t => t.id === id)?.spkId);
+  if(command==='routeLegacyFinance'){
+    for(const target of args[0] as {id:string}[])if(pending.has(term(target.id)??''))throw new Error(HEAD_REOPEN_MESSAGE);
+    return;
+  }
   const input = args[0] as { id?: string; projectId?: string; dealId?: string } | undefined;
   let project: string | undefined;
   switch (command) {
@@ -16,7 +20,7 @@ export function assertHeadReopenCommand(s: State, command: string, args: unknown
     case 'saveSpk': case 'saveSpkFinance': project = deal(input?.dealId); break;
     case '_recordPayeeFile': case '_setPayeeVersion': case 'createTerm': case 'createSettlementTerm': project = spk(args[0]); break;
     case 'saveTerm': case 'submitFinanceTerm': project = term(input?.id); break;
-    case 'decide': case 'adoptFinancePayment': case '_issueKasbon': case '_submitSettlementKasbon': case '_attachTransferProof': case 'decideFinancePayment': case 'requestPartialPayment': case 'verifyPartialPayment': case 'payPartialPayment': case 'settleFinancePayment': case 'updatePaymentApm': case 'setKasbonPrintSigner': case 'recordApm': case 'recordPayment': case 'verifyTermScan': case '_attachTermScan': case '_attachTermWorkEvidence': case 'removeTermWorkEvidence': project = term(args[0]); break;
+    case 'decide': case 'adoptFinancePayment': case '_issueKasbon': case '_submitSettlementKasbon': case '_attachTransferProof': case 'decideFinancePayment': case 'requestPartialPayment': case 'verifyPartialPayment': case 'payPartialPayment': case 'settleFinancePayment': case 'updatePaymentApm': case 'setKasbonPrintSigner': case 'decideLegacySettlementReview': case 'recordApm': case 'recordPayment': case 'verifyTermScan': case '_attachTermScan': case '_attachTermWorkEvidence': case 'removeTermWorkEvidence': project = term(args[0]); break;
     case 'attestBapp': case 'releaseVolume': case 'createContinuation': project = term(s.bapps.find(b => b.id === args[0])?.termId); break;
   }
   if (project && pending.has(project)) throw new Error(HEAD_REOPEN_MESSAGE);

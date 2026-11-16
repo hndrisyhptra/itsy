@@ -134,6 +134,7 @@ test('mutation and file entry points explicitly require confirmation; existing f
     'term-work-evidence.tsx': ['removeTermWorkEvidence('],
     'management.tsx': ['saveProfile(', 'saveUser(', 'updateKhs('],
     'upload-tasks.tsx': ['resumeUpload(', 'onUse(task)'],
+    'legacy-finance-routing-ui.tsx': ['routeLegacyFinance(', 'decideLegacySettlementReview('],
     'kasbon-preview.tsx': ['download()', 'window.print()'],
     'finance-private-ui.tsx': ['uploadPrivateDocument(', 'savePrivateDocument(', 'decideFinancePayment(', 'settleFinancePayment(', 'updatePaymentApm(', 'setKasbonPrintSigner(', 'submit()'],
   };

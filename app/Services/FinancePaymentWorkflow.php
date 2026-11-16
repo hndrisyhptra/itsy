@@ -6,6 +6,8 @@ use Illuminate\Support\Str;
 
 trait FinancePaymentWorkflow
 {
+    use LegacySettlementReview;
+
     public function paymentDue(array $t): float
     {
         return KasbonSettlement::due($t, $this->termTotal($t));
@@ -97,7 +99,7 @@ trait FinancePaymentWorkflow
         abort_unless(in_array($this->state['role'], ['Admin Konstruksi', 'Superadmin', 'Finance'], true), 403);
         $t = $this->record('terms', $id);
         if (! self::usesFinancePayment($t) || self::usesSettlementPayment($t) || $t['status'] !== 'Disetujui'
-            || $kasbonId === '' || ($t['kasbon']['id'] ?? '') !== $kasbonId) {
+            || isset($t['legacySettlementReview']) || $kasbonId === '' || ($t['kasbon']['id'] ?? '') !== $kasbonId) {
             $this->fail('Pilih kasbon aktif dari pembayaran lama yang sudah disetujui. Versi arsip dan alur tujuh approval tidak dapat diubah melalui pilihan ini.');
         }
         $user = $this->approver($userId, 'Mgr Finance & Settlement');
@@ -203,6 +205,11 @@ trait FinancePaymentWorkflow
             unset($t['transferProof']);
         }
         $t['kasbon'] = $summary;
+        if (isset($t['legacySettlementReview'])) {
+            unset($t['legacySettlementReview']['decision']);
+            $t['legacySettlementReview']['kasbonId'] = $summary['id'];
+            $t['legacySettlementReviewHistory'][] = $t['legacySettlementReview'];
+        }
         $t['financePayment'] = ['status' => 'Kasbon Terbit'];
         $this->put('terms', $t);
         $this->log('Kasbon diajukan Admin Konstruksi', 'Termin '.$t['number'].' · versi '.$summary['version'], '/termin/'.$id);
@@ -222,6 +229,9 @@ trait FinancePaymentWorkflow
             return $this->decide($id, $decision, $note);
         }
         $this->financePaymentEligible($t);
+        if (! self::legacyReviewApproved($t)) {
+            $this->fail('Menunggu persetujuan Mgr Finance & Settlement untuk kasbon aktif.');
+        }
         if ((isset($t['kasbon']['issuedRole']) || $expectedKasbonId !== null) && $expectedKasbonId !== ($t['kasbon']['id'] ?? null)) {
             $this->fail('Versi kasbon berubah. Review kembali kasbon yang aktif sebelum memberi keputusan Finance.');
         }
@@ -304,6 +314,9 @@ trait FinancePaymentWorkflow
 
     private function assertFinanceApmReady(array $t): void
     {
+        if (! self::legacyReviewApproved($t)) {
+            $this->fail('Menunggu persetujuan Mgr Finance & Settlement untuk kasbon aktif.');
+        }
         $this->financePaymentEligible($t);
         if (isset($t['scan']) && ($t['scan']['status'] ?? '') !== 'Valid') {
             $this->fail('Scan sudah tersedia; verifikasi berkas sebelum APM.');

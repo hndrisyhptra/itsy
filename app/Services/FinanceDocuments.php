@@ -42,7 +42,7 @@ class FinanceDocuments
 
         if ($approvalView && ! in_array($account['role'], ['Admin Konstruksi', 'Superadmin', 'Finance'], true)) {
             $t = json_decode($r->term_data, true, 512, JSON_THROW_ON_ERROR);
-            abort_unless(PrototypeDomain::usesSettlementPayment($t) && ($t['approverUserIds'][$account['role']] ?? '') === $account['id'] && ! in_array($t['status'], ['Draft', 'Ditolak', 'Dikembalikan'], true), 403, 'Kasbon hanya dapat direview oleh approver pengajuan yang ditugaskan.');
+            abort_unless(((PrototypeDomain::usesSettlementPayment($t) && ($t['approverUserIds'][$account['role']] ?? '') === $account['id']) || ($account['role'] === 'Mgr Finance & Settlement' && ($t['legacySettlementReview']['userId'] ?? '') === $account['id'])) && ! in_array($t['status'], ['Draft', 'Ditolak', 'Dikembalikan'], true), 403, 'Kasbon hanya dapat direview oleh approver pengajuan yang ditugaskan.');
         }
         if ($write && ! $term && $r->bundle_data && $r->pp_status === 'SUBMITTED') {
             abort(422, 'Identitas dan berkas Mandor paket PP terkunci selama approval.');
@@ -169,6 +169,14 @@ class FinanceDocuments
             $data['printSigner'] = $term['kasbonPrintSigners'][$row->id_kasbon];
         }
 
+        if (($term['kasbon']['id'] ?? '') === $row->id_kasbon && isset($term['legacySettlementReview'])) {
+            $r = $term['legacySettlementReview'];
+            $data['printSigner'] = ['userId' => $r['userId'], 'name' => $r['name'], 'job' => 'Mgr Finance & Settlement Area Jawa Bali', 'at' => $r['assignedAt'], 'by' => $r['assignedBy']];
+            if (PrototypeDomain::legacyReviewApproved($term)) {
+                $data['printSignerApproval'] = $r['decision'];
+            }
+        }
+
         return $data;
     }
 
@@ -246,7 +254,7 @@ class FinanceDocuments
         $r = $this->authorize($w, $id, $kind === 'transfer-proof', true);
         if ($kind === 'transfer-proof') {
             $t = json_decode($r->term_data, true, 512, JSON_THROW_ON_ERROR);
-            abort_unless(PrototypeDomain::usesFinancePayment($t) && $t['status'] === 'Disetujui' && $t['apmStatus'] !== 'Valid' && isset($t['kasbon']) && ($t['financePayment']['status'] ?? '') === 'Diverifikasi', 422, 'Bukti transfer hanya untuk kasbon yang sudah disetujui Finance dan belum lunas.');
+            abort_unless(PrototypeDomain::legacyReviewApproved($t) && PrototypeDomain::usesFinancePayment($t) && $t['status'] === 'Disetujui' && $t['apmStatus'] !== 'Valid' && isset($t['kasbon']) && ($t['financePayment']['status'] ?? '') === 'Diverifikasi', 422, 'Bukti transfer hanya untuk kasbon yang sudah disetujui Finance dan belum lunas.');
         }
 
         return $r;

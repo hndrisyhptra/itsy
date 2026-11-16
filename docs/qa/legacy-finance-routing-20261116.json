@@ -1,0 +1,88 @@
+{
+  "date": "2026-11-16",
+  "feature": "Explicit pending legacy Finance inbox routing to selected Mgr Finance & Settlement",
+  "scope": "Current approved-work kasbon-v1 only; no previous Finance Setujui, current Finance decision, transfer proof, APM, payment history or paid amount; new seven-stage and earlier flows excluded",
+  "commands": [
+    "routeLegacyFinance",
+    "decideLegacySettlementReview"
+  ],
+  "limits": {
+    "batch": 50,
+    "page": 20
+  },
+  "storage": "Server-owned payment_terms.document_data.legacySettlementReview and append-only legacySettlementReviewHistory; existing workspace lock/revision/receipts/audit; no new migration",
+  "preserved": [
+    "five actual work approvals and SQL runs/steps/decisions",
+    "assignees and original decision times",
+    "encrypted finance_kasbons",
+    "original bank/recipient snapshot",
+    "gross/net policy and amounts",
+    "APM and transfer proof",
+    "volume ledger",
+    "workspace archive"
+  ],
+  "verification": {
+    "php": {
+      "tests": 310,
+      "assertions": 7137,
+      "database": "isolated SQLite :memory:"
+    },
+    "frontend": {
+      "tests": 318,
+      "passed": true
+    },
+    "typescript_vite": "passed",
+    "pint_scoped": "passed",
+    "assets": {
+      "manifest_refs": 36,
+      "preload_dependencies": 28,
+      "profiles": 3
+    },
+    "queries": {
+      "single_route_http": 36,
+      "single_budget": 50,
+      "eight_route_http": 51,
+      "eight_budget": 120,
+      "batch_assignment_reads": 1,
+      "queue_probe": 1,
+      "payment_list_service": 4,
+      "private_ciphertext_read_by_route": false,
+      "new_per_row_lookup": false
+    },
+    "cases": [
+      "route revision and UUID replay",
+      "Finance approval/upload/APM/settle blocked until exact selected active Manager review",
+      "wrong actor/role/Branch/inactive Manager",
+      "duplicate/51-target/malformed UUID/string shape/stale versions rejected with no partial mutation",
+      "eight graph all-or-nothing batch",
+      "original encrypted document, five decisions and archive unchanged",
+      "Manager return requires note and Admin reissue requires new UUID-bound review",
+      "new seven-stage and paid/Finance-approved excluded",
+      "Frontend Head lock and exact-assignee inbox predicates",
+      "status projections on List Payment",
+      "501-document indexed routing list, no per-row relation finds",
+      "preview mark only for genuine matching Manager decision, Word blank"
+    ]
+  },
+  "word": {
+    "synthetic_fixtures": 1,
+    "rendered_pages": 1,
+    "all_png_pages_inspected": true,
+    "zip_crc_xml": "passed",
+    "pdf_text_nonblank": true,
+    "preview_mark_present": true,
+    "word_mark_absent": true
+  },
+  "deployment": {
+    "live_its_modified": false,
+    "server_deployed": false,
+    "migration_required": false,
+    "demo_backup": "private SQLite backup before workflow edit"
+  },
+  "limitations": [
+    "No logged-in browser interaction/aaPanel integration for new routing controls",
+    "No new browser print, desktop Microsoft Word or physical print verification",
+    "No MySQL concurrency/load benchmark; existing aggregate/reference loads remain",
+    "Payment execution outside the application; synthetic proof/files used only in isolated tests"
+  ]
+}

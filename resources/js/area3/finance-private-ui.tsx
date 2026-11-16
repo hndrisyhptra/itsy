@@ -1,3 +1,5 @@
+import {legacyReviewApproved} from './legacy-settlement-review';
+import {LegacySettlementReviewActions} from './legacy-finance-routing-ui';
 import { settlementRecorded } from './payment-settlement';
 import { settleFinancePayment, updatePaymentApm, setKasbonPrintSigner, canEditKasbonPrintSigner } from './finance-payment';
 import { paymentDue, kasbonQuote } from './kasbon-settlement';
@@ -92,8 +94,8 @@ export function AdminKasbonInbox({s}:{s:State}) {
 
 export function FinanceKasbonPanel({s,t}:{s:State;t:Term}) {
   const [documents,setDocuments]=useState<KasbonVersion[]>([]),[error,setError]=useState(''),[reload,setReload]=useState(0),[busy,setBusy]=useState(false),[preview,setPreview]=useState(''),[note,setNote]=useState(''),[apm,setApm]=useState(t.apm),[printSigner,setPrintSigner]=useState('');
-  const allowed=!!boot?.account&&(operational(s)||s.role==='Finance'||usesSettlementPayment(t)&&['Diajukan','Disetujui'].includes(t.status)&&t.approverUserIds?.[s.role]===s.actorUserId),finance=s.role==='Finance',ready=t.status==='Disetujui'&&!settlementRecorded(t),paid=settlementRecorded(t);
-  useEffect(()=>{if(!allowed||!usesFinancePayment(t))return;const a=new AbortController();void privateRead<{documents:KasbonVersion[]}>('/api/finance/terms/'+t.id+'/kasbon?documents_only=1',a.signal).then(r=>{setDocuments(r.documents);setError('');}).catch(e=>{if(!a.signal.aborted)setError(e.message);});return()=>a.abort();},[allowed,t.id,t.kasbon?.id,reload]);
+  const allowed=!!boot?.account&&(operational(s)||s.role==='Finance'||s.role==='Mgr Finance & Settlement'&&t.legacySettlementReview?.userId===s.actorUserId||usesSettlementPayment(t)&&['Diajukan','Disetujui'].includes(t.status)&&t.approverUserIds?.[s.role]===s.actorUserId),finance=s.role==='Finance',ready=t.status==='Disetujui'&&!settlementRecorded(t)&&legacyReviewApproved(t),paid=settlementRecorded(t);
+  useEffect(()=>{if(!allowed||!usesFinancePayment(t))return;const a=new AbortController();void privateRead<{documents:KasbonVersion[]}>('/api/finance/terms/'+t.id+'/kasbon?documents_only=1',a.signal).then(r=>{setDocuments(r.documents);setError('');}).catch(e=>{if(!a.signal.aborted)setError(e.message);});return()=>a.abort();},[allowed,t.id,t.kasbon?.id,reload,t.legacySettlementReview]);
   useEffect(()=>setApm(t.apm),[t.id,t.apm]);
   if(!usesFinancePayment(t)||!allowed)return null;
   async function command(fn:(s:State)=>void,message:string){setBusy(true);try{mutate(fn);await waitForPersistence();setNote('');toast(message);}catch(e){toast(e instanceof Error?e.message:String(e),true);}finally{setBusy(false);}}
@@ -112,6 +114,8 @@ export function FinanceKasbonPanel({s,t}:{s:State;t:Term}) {
     {(finance||s.role==='Mgr Finance & Settlement')&&<div className="actions"><FinanceReviewButton s={s} t={t} kasbon={latest?.data} identity={<KasbonPayeeReview s={s} t={t} kasbon={latest?.data}/>}/></div>}
     {finance&&ready&&!t.kasbon&&<Notice>Menunggu Admin Konstruksi mengisi dan mengajukan form kasbon.</Notice>}
     {!t.scan&&<Notice tone="warning">Berkas belum lengkap (NOK). Scan TTD dapat dilengkapi dan diverifikasi setelah pembayaran.</Notice>}
+    {t.legacySettlementReview&&<Notice tone={legacyReviewApproved(t)?'success':'warning'}>{legacyReviewApproved(t)?'Mgr Finance & Settlement telah menyetujui kasbon aktif.':'Menunggu review Mgr Finance & Settlement.'} {t.legacySettlementReview.name}{t.legacySettlementReview.decision?.note&&' · '+t.legacySettlementReview.decision.note}</Notice>}
+    <LegacySettlementReviewActions s={s} t={t} onDone={()=>setReload(v=>v+1)}/>
     {t.financePayment?.decision?.note&&<Notice tone="warning">Catatan Finance: {t.financePayment.decision.note}</Notice>}
     {documents.length>0&&<div className="actions">{documents.map(d=><Button key={d.id} onClick={()=>{setPreview(d.id);setPrintSigner(d.data.printSigner?.userId??'');}}>Preview Kasbon v{d.version}{d.id!==t.kasbon?.id?' · Arsip':''}</Button>)}</div>}
     {finance&&ready&&t.kasbon&&<>

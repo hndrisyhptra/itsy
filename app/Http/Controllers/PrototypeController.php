@@ -44,12 +44,12 @@ class PrototypeController extends Controller
         abort_if(strlen($request->getContent()) > 2 * 1024 * 1024, 413, 'Data transaksi terlalu besar.');
         $input = $request->validate([
             'request_id' => ['required', 'uuid'], 'revision' => ['required', 'integer', 'min:0'],
-            'command' => ['required', 'string', 'in:setKasbonPrintSigner,settleFinancePayment,updatePaymentApm,createSettlementTerm,saveProjectBundle,submitProjectBundle,adoptFinancePayment,submitFinanceTerm,decideFinancePayment,saveSpkFinance,requestPartialPayment,verifyPartialPayment,payPartialPayment,adoptApprovalOrder,removeTermWorkEvidence,saveProject,decideProject,assignProjectApprovers,assignPaymentApprovers,setNumberFormat,selectActor,verifyTermScan,importDemo,reviewBoq,finalizeBoq,saveDeal,saveSpk,createTerm,saveTerm,decide,recordApm,recordPayment,attestBapp,releaseVolume,createContinuation,updateKhs,saveUser,saveProfile,role,reset'],
+            'command' => ['required', 'string', 'in:routeLegacyFinance,decideLegacySettlementReview,setKasbonPrintSigner,settleFinancePayment,updatePaymentApm,createSettlementTerm,saveProjectBundle,submitProjectBundle,adoptFinancePayment,submitFinanceTerm,decideFinancePayment,saveSpkFinance,requestPartialPayment,verifyPartialPayment,payPartialPayment,adoptApprovalOrder,removeTermWorkEvidence,saveProject,decideProject,assignProjectApprovers,assignPaymentApprovers,setNumberFormat,selectActor,verifyTermScan,importDemo,reviewBoq,finalizeBoq,saveDeal,saveSpk,createTerm,saveTerm,decide,recordApm,recordPayment,attestBapp,releaseVolume,createContinuation,updateKhs,saveUser,saveProfile,role,reset'],
             'args' => ['present', 'array', 'max:5'], 'result_id' => ['nullable', 'string', 'regex:/^[a-zA-Z0-9-]{3,100}$/D'],
         ]);
         $types = [
             'createSettlementTerm' => ['string'], 'saveProjectBundle' => ['array', 'boolean'], 'submitProjectBundle' => ['string'], 'adoptFinancePayment' => ['string'], 'submitFinanceTerm' => ['array'], 'decideFinancePayment' => ['string', 'string', 'string', 'string'], 'saveSpkFinance' => ['array', 'string'],
-            'setKasbonPrintSigner' => ['string', 'string', 'string'], 'settleFinancePayment' => ['string', 'string'], 'updatePaymentApm' => ['string', 'string'],
+            'routeLegacyFinance' => ['array', 'string'], 'decideLegacySettlementReview' => ['string', 'string', 'string', 'string'], 'setKasbonPrintSigner' => ['string', 'string', 'string'], 'settleFinancePayment' => ['string', 'string'], 'updatePaymentApm' => ['string', 'string'],
             'requestPartialPayment' => ['string'], 'verifyPartialPayment' => ['string', 'string', 'string'], 'payPartialPayment' => ['string', 'string'],
             'decideProject' => ['string', 'string', 'string'], 'assignProjectApprovers' => ['string', 'string', 'string'],
             'setNumberFormat' => ['string'], 'selectActor' => ['string'], 'verifyTermScan' => ['string', 'string', 'string'],
@@ -66,6 +66,8 @@ class PrototypeController extends Controller
             $rules['args.'.$i] = ['sometimes', $type];
         }
         $nested = match ($input['command']) {
+            'routeLegacyFinance' => ['args.0' => 'required|array|min:1|max:50', 'args.0.*' => 'required|array:id,kasbonId', 'args.0.*.id' => 'required|string|max:100|distinct', 'args.0.*.kasbonId' => 'required|uuid', 'args.1' => 'required|string|max:100'],
+            'decideLegacySettlementReview' => ['args.0' => 'required|string|max:100', 'args.1' => 'required|uuid', 'args.2' => 'required|in:Setujui,Kembalikan', 'args.3' => 'present|string|max:1000'],
             'saveProject', 'saveProjectBundle' => ['args.0.id' => 'required|string|max:100', 'args.0.schedule' => 'sometimes|array|max:5', 'args.0.schedule.*' => 'array', 'args.0.team' => 'present|array|max:100', 'args.0.team.*' => 'array', 'args.0.costs' => 'required|array', 'args.0.boq' => 'present|array|max:500', 'args.0.boq.*' => 'array', 'args.0.boqUpload' => 'sometimes|nullable|array', 'args.0.boqUpload.id' => 'required_with:args.0.boqUpload|uuid'],
             'saveDeal' => ['args.0.id' => 'required|string|max:100', 'args.0.rows' => 'required|array|max:500', 'args.0.rows.*' => 'array'],
             'submitFinanceTerm', 'saveTerm' => ['args.0.id' => 'required|string|max:100', 'args.0.actuals' => 'present|array|max:500', 'args.0.actuals.*' => 'array'],

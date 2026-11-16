@@ -3,6 +3,12 @@ name: area3-business-workflow
 description: Implement its Area 3 Project Plan, BOQ, mandor contracting, assigned two-stage approvals, scan verification and full APM settlement, APM gating, BA PP and continuation state transitions.
 ---
 
+## 16 November 2026 — Explicit legacy Finance inbox rerouting
+
+User authorizes selecting pending legacy kasbon-v1 payments for Mgr Finance review before Finance. Follow docs/LEGACY_FINANCE_ROUTING.md. Finance/Superadmin explicitly routes1–50 current UUID-bound, five-work-approved kasbons to one active Manager covering all selected Branches, atomically under revision/receipt/audit. No paid/APM/proof/prior Finance Setujui/current decision, pending proof task, new seven-stage flow or Head correction bypass. Store actual legacySettlementReview/history in existing payment_terms.document_data; preserve original five SQL decisions/runs/assignees and encrypted kasbon/money/ledger/archive. Manager decision is a supplemental current-kasbon gate, not a retroactive fake seven-stage run. Require it for Finance approval/transfer/APM/settlement; Manager return needs note, Admin reissue binds new UUID and requires fresh Manager review without resetting historical work approvals. Inbox/count/timeline/list/private selected-Manager read and genuine preview-only stamp follow the marker. No migration/live bulk mutation; deployment alone never routes documents.
+
+
+
 ## 16 November 2026 — Explicit physical Finance signer on legacy kasbon
 
 User confirms old payment is the source of Business Support on preview. Follow latest docs/FINANCE_KASBON.md: allow Admin/Superadmin/Finance to explicitly select an actual active Branch-assigned Mgr Finance & Settlement account for the current approved kasbon-v1 physical slot, including paid. Keep encrypted original/history, decisions/assignees, net/gross/paid/APM/recipient/proof and workspace archive unchanged. Persist server-owned UUID-keyed kasbonPrintSigners and before/after history via existing lock/revision/receipts/audit; no migration or bulk backfill. Archived versions and seven-stage flow cannot be reassigned this way. Shared HTML/Word uses saved name/job without fabricated approval; print blank. Preserve Head lock/private scope, 3-query lazy read/35-query metadata HTTP fixture (not load benchmark), and document actual QA/server limits.

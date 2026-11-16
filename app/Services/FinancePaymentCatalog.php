@@ -47,7 +47,7 @@ final class FinancePaymentCatalog
         }
         $page = (int) ($filters['page'] ?? 1);
         $rows = $q->orderByDesc('t.submitted_at')->orderBy('t.id_payment_term')->offset(($page - 1) * self::PAGE_SIZE)->limit(self::PAGE_SIZE + 1)
-            ->select(['t.source_id as id', 'pp.source_id as pp_id', 'pp.pp_no', 'p.project_code', 'pp.document_data->name as job', 'w.spk_no', 'c.mandor_name', 'b.name as branch', 't.term_no', 't.term_type', 't.status', 't.submitted_at', 't.document_data->workflowVersion as workflow_version', 't.document_data->approvalScheme as approval_scheme', 't.document_data->paymentFlow as flow', 't.document_data->approvals as decisions', 't.document_data->approverUserIds as assignees', 't.document_data->scan->status as scan_status', 'a.apm_no', 'a.recorded_at', 'a.amount as paid_amount'])
+            ->select(['t.source_id as id', 'pp.source_id as pp_id', 'pp.pp_no', 'p.project_code', 'pp.document_data->name as job', 'w.spk_no', 'c.mandor_name', 'b.name as branch', 't.term_no', 't.term_type', 't.status', 't.submitted_at', 't.document_data->workflowVersion as workflow_version', 't.document_data->approvalScheme as approval_scheme', 't.document_data->paymentFlow as flow', 't.document_data->approvals as decisions', 't.document_data->approverUserIds as assignees', 't.document_data->financePayment->status as finance_status', 't.document_data->legacySettlementReview->version as legacy_review_version', 't.document_data->legacySettlementReview->decision->decision as legacy_review_decision', 't.document_data->scan->status as scan_status', 'a.apm_no', 'a.recorded_at', 'a.amount as paid_amount'])
             ->selectRaw("$amount AS amount, CASE WHEN $paid THEN 1 ELSE 0 END AS is_paid")->get();
         $items = $rows->take(self::PAGE_SIZE)->map(function ($r) {
             $t = ['status' => $r->status === 'SUBMITTED' ? 'Diajukan' : '', 'workflowVersion' => (int) $r->workflow_version, 'approvalScheme' => $r->approval_scheme, 'paymentFlow' => $r->flow,
@@ -55,6 +55,10 @@ final class FinancePaymentCatalog
             $status = match ($r->status) {
                 'DRAFT' => 'Draf', 'SUBMITTED' => 'Menunggu '.PrototypeDomain::nextApprovalRole($t), 'RETURNED' => 'Dikembalikan', 'REJECTED' => 'Ditolak', 'APPROVED' => 'Approval lengkap', default => $r->status,
             };
+
+            if ($r->legacy_review_version && $r->status === 'APPROVED' && ! $r->is_paid) {
+                $status = $r->finance_status === 'Dikembalikan' ? 'Kasbon dikembalikan ke Admin' : ($r->finance_status === 'Diverifikasi' ? 'Finance disetujui · Proses transfer' : (($r->legacy_review_decision ?? '') === 'Setujui' ? 'Mgr Finance disetujui · Menunggu Finance' : 'Menunggu Mgr Finance & Settlement'));
+            }
 
             return ['id' => $r->id, 'ppId' => $r->pp_id, 'ppNo' => $r->pp_no, 'projectCode' => $r->project_code, 'name' => $r->job, 'spkNo' => $r->spk_no, 'mandor' => $r->mandor_name, 'branch' => $r->branch,
                 'number' => (int) $r->term_no, 'type' => $r->term_type === 'FINAL' ? 'Final' : 'Parsial', 'amount' => (float) $r->amount, 'paid' => (bool) $r->is_paid, 'paidAmount' => $r->is_paid ? (float) $r->paid_amount : 0,

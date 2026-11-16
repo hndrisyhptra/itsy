@@ -1,3 +1,4 @@
+import {canReviewLegacySettlement} from './legacy-settlement-review';
 import { adminKasbonPending } from './finance-payment';
 import { financeTaskPending } from './partial-payment';
 import { useState, useEffect, lazy, Suspense } from 'react';
@@ -56,7 +57,7 @@ export default function App() {
   useEffect(() => { const listener=(event:Event) => { const message=(event as CustomEvent<string>).detail; toast(message,true); navigate('/dashboard'); }; window.addEventListener('area3:server-error',listener); return () => window.removeEventListener('area3:server-error',listener); },[]);
   useEffect(() => { document.documentElement.dataset.theme = theme; localStorage.setItem('area3-theme', theme); }, [theme]);
   useEffect(() => { setMobile(false); setPanel(''); setQuery(''); document.title = `${NAV.find(n => n.path === `/${navModule}`)?.label ?? 'Dashboard'} · it's Area 3`; }, [path]);
-  const inboxCount = s.projects.filter(p => canApproveProject(s, p)).length + s.terms.filter(t => canApproveTerm(s, t) || (s.role === 'Finance' && financeTaskPending(t)) || (operational(s) && adminKasbonPending(t))).length, active = NAV.find(n => n.path === `/${navModule}`);
+  const inboxCount = s.projects.filter(p => canApproveProject(s, p)).length + s.terms.filter(t => canApproveTerm(s, t) || canReviewLegacySettlement(s,t) || (s.role === 'Finance' && financeTaskPending(t)) || (operational(s) && adminKasbonPending(t))).length, active = NAV.find(n => n.path === `/${navModule}`);
   const searchResults = query.trim() ? [
     ...s.projects.filter(p => `${p.no} ${p.name}`.toLowerCase().includes(query.toLowerCase())).map(p => ({ title: p.no, detail: p.name, route: `/project-plan/${p.id}` })),
     ...s.spks.filter(v => `${v.no} ${getDeal(s, v.dealId).mandor}`.toLowerCase().includes(query.toLowerCase())).map(v => ({ title: v.no, detail: getDeal(s, v.dealId).mandor, route: `/spk/${v.id}` })),

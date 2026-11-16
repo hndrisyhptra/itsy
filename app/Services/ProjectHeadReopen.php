@@ -47,13 +47,22 @@ final class ProjectHeadReopen
         $deal = fn ($id) => $lookup('deals', $id)['projectId'] ?? '';
         $spk = fn ($id) => $deal($lookup('spks', $id)['dealId'] ?? '');
         $term = fn ($id) => $spk($lookup('terms', $id)['spkId'] ?? '');
+        if ($command === 'routeLegacyFinance') {
+            foreach ($args[0] ?? [] as $target) {
+                if (isset($pending[$term($target['id'] ?? '')])) {
+                    throw ValidationException::withMessages(['prototype' => self::MESSAGE]);
+                }
+            }
+
+            return;
+        }
         $input = $args[0] ?? null;
         $project = match ($command) {
             'saveDeal' => $input['projectId'] ?? '',
             'saveSpk', 'saveSpkFinance' => $deal($input['dealId'] ?? ''),
             '_recordPayeeFile', '_setPayeeVersion', 'createTerm', 'createSettlementTerm' => $spk($input),
             'saveTerm', 'submitFinanceTerm' => $term($input['id'] ?? ''),
-            'decide', 'adoptFinancePayment', '_submitSettlementKasbon', '_issueKasbon', '_attachTransferProof', 'decideFinancePayment', 'requestPartialPayment', 'verifyPartialPayment', 'payPartialPayment', 'recordApm', 'settleFinancePayment', 'updatePaymentApm', 'setKasbonPrintSigner', 'recordPayment', 'verifyTermScan', '_attachTermScan', '_attachTermWorkEvidence', 'removeTermWorkEvidence' => $term($input),
+            'decide', 'adoptFinancePayment', '_submitSettlementKasbon', '_issueKasbon', '_attachTransferProof', 'decideFinancePayment', 'requestPartialPayment', 'verifyPartialPayment', 'payPartialPayment', 'recordApm', 'settleFinancePayment', 'updatePaymentApm', 'setKasbonPrintSigner', 'decideLegacySettlementReview', 'recordPayment', 'verifyTermScan', '_attachTermScan', '_attachTermWorkEvidence', 'removeTermWorkEvidence' => $term($input),
             'attestBapp', 'releaseVolume', 'createContinuation' => $term($lookup('bapps', $input)['termId'] ?? ''),
             default => '',
         };

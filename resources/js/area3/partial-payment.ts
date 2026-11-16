@@ -1,3 +1,4 @@
+import {legacyReviewApproved} from './legacy-settlement-review';
 import { settlementRecorded } from './payment-settlement';
 import { usesFinancePayment } from './finance-payment';
 import { type State, type Term, type Approval, getTerm, requireAdmin, requireFinance, approvalRoles, now, log, termTotal, uid } from './domain';
@@ -11,6 +12,7 @@ export interface PartialPaymentRequest {
 export const usesPartialPayment=(t:Term)=>t.workflowVersion===3&&t.type==='Parsial'&&t.paymentFlow==='partial-payment-v1';
 export const documentStatus=(t:Term):'OK'|'NOK'=>t.scan?'OK':'NOK';
 export function financeTaskPending(t:Term) {
+  if(!legacyReviewApproved(t))return false;
   if(usesFinancePayment(t))return t.status==='Disetujui'&&(t.scan?.status==='Menunggu Verifikasi'||!settlementRecorded(t)&&!!t.kasbon&&t.financePayment?.status!=='Dikembalikan');
   if(t.status!=='Disetujui')return false;
   if(usesPartialPayment(t))return (t.apmStatus!=='Valid'&&['Diajukan','Diverifikasi'].includes(t.paymentRequest?.status??''))||t.scan?.status==='Menunggu Verifikasi';
