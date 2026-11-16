@@ -1,11 +1,11 @@
 import { settlementRecorded } from './payment-settlement';
-import { settleFinancePayment, updatePaymentApm } from './finance-payment';
+import { settleFinancePayment, updatePaymentApm, setKasbonPrintSigner, canEditKasbonPrintSigner } from './finance-payment';
 import { paymentDue, kasbonQuote } from './kasbon-settlement';
 import { ApproverSelect } from './workflow-ui';
 import { usesSettlementPayment } from './finance-payment';
 import { KasbonPreview } from './kasbon-preview';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { type State, type Spk, type Term, money, operational, termTotal, termTotalForDeal } from './domain';
+import { type State, type Spk, type Term, money, operational, getSpk, projectForSpk, termTotal, termTotalForDeal } from './domain';
 import { usesFinancePayment, financePaymentLabel, decideFinancePayment, adminKasbonPending } from './finance-payment';
 import { appUrl, boot } from './laravel';
 import { mutate, persistencePending, refreshState, savePrivateDocument, uploadPrivateDocument, waitForPersistence } from './store';
@@ -68,7 +68,7 @@ function KasbonSubmissionForm({s,t,previous,onClose,onSubmitted}:{s:State;t:Term
     {loaded&&!complete&&<Notice tone="warning">Lengkapi dan simpan NIK KTP, rekening, bank serta foto Mandor pada SPK sebelum mengajukan kasbon. <Link to={'/spk/'+t.spkId}>Buka SPK</Link></Notice>}
     <div className="actions"><Button disabled={busy} onClick={()=>setPayeeReload(v=>v+1)}>Muat ulang data penerima</Button><span>Versi penerima: {payeeVersion||'belum tersimpan'}</span></div><div className="form-grid"><Field label="Nilai Pengajuan"><input readOnly value={money(quote.net)}/></Field>{([['accountName','Nama Penerima'],['accountNumber','Nomor Rekening'],['bank','Nama Bank']] as const).map(([key,label])=><Field key={key} label={label}><input readOnly value={payee?.[key]??''}/></Field>)}</div>
     {usesSettlementPayment(t)&&<ApproverSelect s={s} branch={s.projects.find(p=>p.id===s.deals.find(d=>d.id===s.spks.find(v=>v.id===t.spkId)?.dealId)?.projectId)?.branch} role="Mgr Finance & Settlement" label="Approval 6 · Mgr Finance & Settlement *" value={form.settlementUserId} onChange={id=>setForm(f=>({...f,settlementUserId:id}))} disabled={busy}/>}
-    <Notice>Cost Center, WBS dan nomor akun diisi sesuai referensi resmi. Nama EVP dan Mgr Business Support merupakan penandatangan fisik, bukan tambahan approver aplikasi.</Notice>
+    <Notice>Cost Center, WBS dan nomor akun diisi sesuai referensi resmi. {usesSettlementPayment(t)?'EVP merupakan penandatangan fisik. Mgr Finance & Settlement mengikuti akun approval yang dipilih.':'EVP dan Mgr Business Support mengikuti template historis. Penandatangan fisik Mgr Finance & Settlement dapat dipilih pada preview kasbon aktif.'}</Notice>
     <div className="form-grid">{([['costCenter','Cost Center'],['wbs','WBS'],['activity','Jenis Kegiatan'],['place','Lokasi di atas TTD Mandor'],['date','Tanggal Kasbon'],['evp','Nama EVP Area Jawa Bali'],['businessSupport','Nama Mgr Business Support']] as const).filter(([key])=>!usesSettlementPayment(t)||key!=='businessSupport').map(([key,label])=><Field key={key} label={(key==='place'?'Tempat pengajuan':label)+' *'}><input type={key==='date'?'date':'text'} maxLength={key==='costCenter'||key==='wbs'||key==='place'?100:150} disabled={busy} value={form[key]} onChange={e=>change(key,e.target.value)}/></Field>)}</div>
     <Table headers={['No Akun','Nama Akun','Teks / Keperluan','Amount (Rp)','Aksi']}>{form.rows.map((r,i)=><tr key={i}>{(['accountCode','accountName','text','amount'] as const).map(key=><td key={key}><input aria-label={`${key} baris ${i+1}`} type={key==='amount'?'number':'text'} min={key==='amount'?'1':undefined} step={key==='amount'?'1':undefined} maxLength={key==='accountCode'?50:key==='accountName'?150:300} value={r[key]} disabled={busy} onChange={e=>setForm(f=>({...f,rows:f.rows.map((v,j)=>j===i?{...v,[key]:e.target.value}:v)}))}/></td>)}<td><Button confirm="Hapus baris rincian kasbon ini?" disabled={busy||form.rows.length===1} onClick={()=>setForm(f=>({...f,rows:f.rows.filter((_,j)=>j!==i)}))}>Hapus</Button></td></tr>)}</Table>
     <div className="actions"><Button confirm="Tambahkan baris rincian kasbon?" disabled={busy||form.rows.length>=20} onClick={()=>setForm(f=>({...f,rows:[...f.rows,{accountCode:'',accountName:'',text:'',amount:''}]}))}>+ Baris</Button><Button onClick={onClose} disabled={busy}>Batal</Button><Button primary confirm={usesSettlementPayment(t)?"Ajukan pembayaran beserta kasbon ini untuk tujuh approval, dimulai dari PM Konstruksi?":"Ajukan kasbon kepada Finance untuk direview?"} disabled={busy||persistencePending||!complete||!adminKasbonPending(t)||usesSettlementPayment(t)&&!form.settlementUserId} onClick={()=>void submit()}>Ajukan Kasbon</Button></div>
@@ -91,13 +91,19 @@ export function AdminKasbonInbox({s}:{s:State}) {
 }
 
 export function FinanceKasbonPanel({s,t}:{s:State;t:Term}) {
-  const [documents,setDocuments]=useState<KasbonVersion[]>([]),[error,setError]=useState(''),[reload,setReload]=useState(0),[busy,setBusy]=useState(false),[preview,setPreview]=useState(''),[note,setNote]=useState(''),[apm,setApm]=useState(t.apm);
+  const [documents,setDocuments]=useState<KasbonVersion[]>([]),[error,setError]=useState(''),[reload,setReload]=useState(0),[busy,setBusy]=useState(false),[preview,setPreview]=useState(''),[note,setNote]=useState(''),[apm,setApm]=useState(t.apm),[printSigner,setPrintSigner]=useState('');
   const allowed=!!boot?.account&&(operational(s)||s.role==='Finance'||usesSettlementPayment(t)&&['Diajukan','Disetujui'].includes(t.status)&&t.approverUserIds?.[s.role]===s.actorUserId),finance=s.role==='Finance',ready=t.status==='Disetujui'&&!settlementRecorded(t),paid=settlementRecorded(t);
   useEffect(()=>{if(!allowed||!usesFinancePayment(t))return;const a=new AbortController();void privateRead<{documents:KasbonVersion[]}>('/api/finance/terms/'+t.id+'/kasbon?documents_only=1',a.signal).then(r=>{setDocuments(r.documents);setError('');}).catch(e=>{if(!a.signal.aborted)setError(e.message);});return()=>a.abort();},[allowed,t.id,t.kasbon?.id,reload]);
   useEffect(()=>setApm(t.apm),[t.id,t.apm]);
   if(!usesFinancePayment(t)||!allowed)return null;
   async function command(fn:(s:State)=>void,message:string){setBusy(true);try{mutate(fn);await waitForPersistence();setNote('');toast(message);}catch(e){toast(e instanceof Error?e.message:String(e),true);}finally{setBusy(false);}}
   const latest=documents.find(d=>d.id===t.kasbon?.id),selected=documents.find(d=>d.id===preview);
+  async function savePrintSigner(){
+    if(!selected)return;setBusy(true);
+    try{mutate(d=>setKasbonPrintSigner(d,t.id,selected.id,printSigner));await waitForPersistence();
+      const response=await privateRead<{documents:KasbonVersion[]}>('/api/finance/terms/'+t.id+'/kasbon?documents_only=1');setDocuments(response.documents);toast('Penandatangan fisik kasbon tersimpan.');
+    }catch(e){setError(e instanceof Error?e.message:String(e));toast(e instanceof Error?e.message:String(e),true);setPreview('');}finally{setBusy(false);}
+  }
   return <Card title="Kasbon Admin & Review Pembayaran Finance" subtitle="Kasbon baru diisi sebelum tujuh approval. Finance mereview berkas lalu memproses transfer, bukti transfer dan tandai lunas. Nomor APM opsional. Dokumen historis mengikuti alur tersimpan.">
     {error&&<Notice tone="error">{error}</Notice>}
     <div className="summary-strip"><span>Pengajuan <Badge>{financePaymentLabel(t)}</Badge></span><span>Nilai transfer <b>{money(paymentDue(t,termTotal(s,t)))}</b></span><span>Status Berkas <Badge>{t.scan?'OK':'NOK'}</Badge></span></div>
@@ -107,7 +113,7 @@ export function FinanceKasbonPanel({s,t}:{s:State;t:Term}) {
     {finance&&ready&&!t.kasbon&&<Notice>Menunggu Admin Konstruksi mengisi dan mengajukan form kasbon.</Notice>}
     {!t.scan&&<Notice tone="warning">Berkas belum lengkap (NOK). Scan TTD dapat dilengkapi dan diverifikasi setelah pembayaran.</Notice>}
     {t.financePayment?.decision?.note&&<Notice tone="warning">Catatan Finance: {t.financePayment.decision.note}</Notice>}
-    {documents.length>0&&<div className="actions">{documents.map(d=><Button key={d.id} onClick={()=>setPreview(d.id)}>Preview Kasbon v{d.version}{d.id!==t.kasbon?.id?' · Arsip':''}</Button>)}</div>}
+    {documents.length>0&&<div className="actions">{documents.map(d=><Button key={d.id} onClick={()=>{setPreview(d.id);setPrintSigner(d.data.printSigner?.userId??'');}}>Preview Kasbon v{d.version}{d.id!==t.kasbon?.id?' · Arsip':''}</Button>)}</div>}
     {finance&&ready&&t.kasbon&&<>
       {t.scan&&t.scan.status!=='Valid'&&<Notice tone="warning">Scan tersedia. Verifikasi pada bagian berkas sebelum Approve Payment/APM.</Notice>}
       {!usesSettlementPayment(t)&&<><Field label="Catatan Finance / alasan pengembalian"><textarea maxLength={1000} value={note} disabled={busy} onChange={e=>setNote(e.target.value)}/></Field>
@@ -122,6 +128,6 @@ export function FinanceKasbonPanel({s,t}:{s:State;t:Term}) {
     {t.transferProof&&<PrivateFileLink id={t.transferProof.id} label="Preview Bukti Transfer"/>}
     {paid&&<Notice tone="success">Lunas {money(t.paid)} · Termin {t.number} ({t.type}) · {t.apm?`APM ${t.apm}`:'APM belum diisi'}. Transfer bank dilakukan di luar aplikasi.</Notice>}
     {finance&&paid&&<div className="stack"><Field label="Nomor APM" hint="Pembaruan nomor tidak mengulang pelunasan atau mengubah nilai transfer."><Input disabled={busy||persistencePending} value={apm} onChange={setApm}/></Field><Button confirm="Simpan perubahan nomor APM pada pembayaran yang sudah lunas?" disabled={busy||persistencePending||!apm.trim()||apm.trim().toUpperCase()===t.apm} onClick={()=>void command(d=>updatePaymentApm(d,t.id,apm),'Nomor APM tersimpan.')}>Simpan Nomor APM</Button></div>}
-    {selected&&<Modal title={`Form Pengajuan Kasbon Project · v${selected.version}`} onClose={()=>setPreview('')} wide><KasbonPreview data={selected.data} term={t} kasbonId={selected.id}/></Modal>}
+    {selected&&<Modal title={`Form Pengajuan Kasbon Project · v${selected.version}`} onClose={()=>setPreview('')} wide>{canEditKasbonPrintSigner(s,t,selected.id)&&selected.data.templateVersion!==3&&<div className="preview-toolbar stack"><Notice>Kasbon historis. Pilih Mgr Finance &amp; Settlement sebagai penandatangan fisik; pembayaran dan approval yang sudah tercatat tetap berlaku.</Notice><ApproverSelect s={s} branch={projectForSpk(s,getSpk(s,t.spkId)).branch} label="Penandatangan fisik Mgr Finance & Settlement" role="Mgr Finance & Settlement" value={printSigner} onChange={setPrintSigner} disabled={busy||persistencePending}/><Button confirm="Ganti penandatangan fisik kasbon ini dengan akun Mgr Finance & Settlement yang dipilih? Riwayat approval dan nilai pembayaran tetap." disabled={busy||persistencePending||!printSigner} onClick={()=>void savePrintSigner()}>Simpan Penandatangan</Button></div>}{busy?<Notice>Memuat dokumen terkonfirmasi…</Notice>:<KasbonPreview data={selected.data} term={t} kasbonId={selected.id}/>}</Modal>}
   </Card>;
 }

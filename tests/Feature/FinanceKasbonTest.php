@@ -154,6 +154,132 @@ class FinanceKasbonTest extends TestCase
         return $this->term($t['id']);
     }
 
+    public function test_legacy_paid_kasbon_physical_signer_is_audited_without_reissuing_or_changing_payment(): void
+    {
+        $t = $this->setupTerm();
+        $this->payee($t['spkId']);
+        $t = $this->issue($t);
+        $this->api('decideFinancePayment', [$t['id'], 'Setujui', ''])->assertOk();
+        $this->upload('transfer-proof', $t['id']);
+        $this->api('recordApm', [$t['id'], 'APM/OLD/001', true])->assertOk();
+        $selected = $this->asRole('Mgr Finance & Settlement');
+        $this->asRole('Finance');
+        $before = $this->term($t['id']);
+        $original = DB::table('finance_kasbons')->first();
+        $settlement = DB::table('apm_settlements')->first();
+        $archive = PrototypeWorkspace::first()->state;
+        $revision = PrototypeWorkspace::first()->revision;
+        $request = ['command' => 'setKasbonPrintSigner', 'args' => [$t['id'], $t['kasbon']['id'], 'db-user-'.$selected->id_user], 'revision' => $revision, 'request_id' => (string) Str::uuid()];
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $this->postJson('/api/prototype/commands', $request)->assertOk();
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+        $this->assertLessThanOrEqual(50, count($queries));
+        foreach ($queries as $query) {
+            $this->assertDoesNotMatchRegularExpression('/^\s*(insert into|update|delete from) ["`]*(finance_kasbons|apm_settlements|project_plans|term_actuals|approval_runs|approval_steps|approval_decisions|document_files|volume_balances|volume_movements)["` ]/i', $query['query']);
+        }
+        fwrite(STDERR, "\nLegacy kasbon signer HTTP: ".count($queries)." queries.\n");
+        $after = $this->term($t['id']);
+        $signer = $after['kasbonPrintSigners'][$t['kasbon']['id']];
+        $this->assertSame('db-user-'.$selected->id_user, $signer['userId']);
+        $this->assertSame($selected->name, $signer['name']);
+        $this->assertSame('Mgr Finance & Settlement Area Jawa Bali', $signer['job']);
+        $this->assertSame($before['approvals'], $after['approvals']);
+        unset($after['kasbonPrintSigners'], $after['kasbonPrintSignerHistory']);
+        $this->assertSame($before, $after);
+        $this->assertEquals($original, DB::table('finance_kasbons')->first());
+        $this->assertEquals($settlement, DB::table('apm_settlements')->first());
+        $this->assertSame($archive, PrototypeWorkspace::first()->state);
+        $this->postJson('/api/prototype/commands', $request)->assertOk()->assertJsonPath('replayed', true);
+        $this->assertSame($revision + 1, PrototypeWorkspace::first()->revision);
+        $this->assertCount(1, $this->term($t['id'])['kasbonPrintSignerHistory']);
+        $w = PrototypeWorkspace::first();
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $view = app(FinanceDocuments::class)->kasbon($w, $t['id'], false);
+        $readQueries = DB::getQueryLog();
+        DB::disableQueryLog();
+        $this->assertCount(3, $readQueries);
+        $this->assertSame($signer, $view['documents'][0]['data']['printSigner']);
+        $this->assertSame('Pejabat Support QA', $view['documents'][0]['data']['businessSupport']);
+        // Account renames do not silently replace the explicitly saved identity.
+        $selected->update(['name' => 'New account name']);
+        $this->assertSame($signer, app(FinanceDocuments::class)->kasbon($w, $t['id'], false)['documents'][0]['data']['printSigner']);
+        $this->postJson('/api/prototype/commands', [...$request, 'request_id' => (string) Str::uuid()])->assertConflict();
+    }
+
+    public function test_legacy_kasbon_signer_requires_current_version_authorized_role_and_active_branch_account(): void
+    {
+        $t = $this->setupTerm();
+        $this->payee($t['spkId']);
+        $t = $this->issue($t);
+        $selected = $this->asRole('Mgr Finance & Settlement');
+        $args = [$t['id'], $t['kasbon']['id'], 'db-user-'.$selected->id_user];
+        $this->api('setKasbonPrintSigner', $args)->assertForbidden();
+        $this->asRole('PM Konstruksi');
+        $this->api('setKasbonPrintSigner', $args)->assertForbidden();
+        $this->asRole('Finance');
+        $before = PrototypeWorkspace::first()->revision;
+        $this->api('setKasbonPrintSigner', [$t['id'], 'archived-version', $args[2]])->assertUnprocessable();
+        $this->api('setKasbonPrintSigner', [$t['id'], $args[1], 'db-user-'.$this->accounts['PM Konstruksi']->id_user])->assertUnprocessable();
+        $other = DB::table('branches')->where('name', '!=', 'DENPASAR')->value('id_branch');
+        app(AccountAccess::class)->assign($selected, 'MGR_FINANCE_SETTLEMENT', [$other]);
+        $this->api('setKasbonPrintSigner', $args)->assertUnprocessable();
+        $this->assertSame($before, PrototypeWorkspace::first()->revision);
+        $selected->update(['active' => false]);
+        $this->api('setKasbonPrintSigner', $args)->assertUnprocessable();
+        $selected->update(['active' => true]);
+        app(AccountAccess::class)->assign($selected, 'MGR_FINANCE_SETTLEMENT', DB::table('branches')->pluck('id_branch')->all());
+        $this->asRole('Admin Konstruksi');
+        $this->api('setKasbonPrintSigner', $args)->assertOk();
+        $this->asRole('Finance');
+        $this->api('decideFinancePayment', [$t['id'], 'Kembalikan', 'Koreksi kasbon'])->assertOk();
+        $t = $this->issue($this->term($t['id']));
+        $this->api('setKasbonPrintSigner', $args)->assertUnprocessable();
+        $documents = $this->getJson('/api/finance/terms/'.$t['id'].'/kasbon?documents_only=1')->assertOk()->json('documents');
+        $this->assertCount(2, $documents);
+        foreach ($documents as $document) {
+            $this->assertArrayNotHasKey('printSigner', $document['data'], 'Archived originals and a new kasbon do not inherit the override.');
+        }
+        $finance = $this->asRole('Finance');
+        app(AccountAccess::class)->assign($finance, 'FINANCE', [$other]);
+        $this->api('setKasbonPrintSigner', [$t['id'], $t['kasbon']['id'], $args[2]])->assertForbidden();
+    }
+
+    public function test_physical_signer_cannot_reassign_seven_stage_approvals_or_bypass_a_reopened_head(): void
+    {
+        $t = $this->setupTerm();
+        $this->payee($t['spkId']);
+        $t = $this->issue($t);
+        $selected = $this->asRole('Mgr Finance & Settlement');
+        $this->asRole('Finance');
+        $state = $this->getJson('/api/prototype/state')->assertOk()->json('state');
+        $args = [$t['id'], $t['kasbon']['id'], 'db-user-'.$selected->id_user];
+        $current = collect($state['terms'])->search(fn ($row) => $row['id'] === $t['id']);
+        $changed = $state;
+        $changed['terms'][$current]['paymentFlow'] = 'kasbon-settlement-v2';
+        try {
+            app(PrototypeDomain::class)->execute($changed, 'setKasbonPrintSigner', $args);
+            $this->fail('Seven-stage assignment must not be replaced by a physical-only signer.');
+        } catch (ValidationException $e) {
+            $this->assertStringContainsString('tujuh approval', $e->getMessage());
+        }
+        $spk = collect($state['spks'])->firstWhere('id', $t['spkId']);
+        $deal = collect($state['deals'])->firstWhere('id', $spk['dealId']);
+        $pi = collect($state['projects'])->search(fn ($row) => $row['id'] === $deal['projectId']);
+        $changed = $state;
+        $changed['projects'][$pi]['status'] = 'Diajukan';
+        $changed['projects'][$pi]['headApprovalReopen'] = ['version' => 1];
+        try {
+            app(PrototypeDomain::class)->execute($changed, 'setKasbonPrintSigner', $args);
+            $this->fail('Head correction must continue blocking descendants.');
+        } catch (ValidationException $e) {
+            $this->assertStringContainsString('Head of PMO', $e->getMessage());
+        }
+        $this->assertArrayNotHasKey('kasbonPrintSigners', $this->term($t['id']));
+    }
+
     public function test_existing_paid_kasbon_can_correct_apm_without_rewriting_original_settlement_or_history(): void
     {
         $t = $this->setupTerm();

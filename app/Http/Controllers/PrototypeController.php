@@ -44,12 +44,12 @@ class PrototypeController extends Controller
         abort_if(strlen($request->getContent()) > 2 * 1024 * 1024, 413, 'Data transaksi terlalu besar.');
         $input = $request->validate([
             'request_id' => ['required', 'uuid'], 'revision' => ['required', 'integer', 'min:0'],
-            'command' => ['required', 'string', 'in:settleFinancePayment,updatePaymentApm,createSettlementTerm,saveProjectBundle,submitProjectBundle,adoptFinancePayment,submitFinanceTerm,decideFinancePayment,saveSpkFinance,requestPartialPayment,verifyPartialPayment,payPartialPayment,adoptApprovalOrder,removeTermWorkEvidence,saveProject,decideProject,assignProjectApprovers,assignPaymentApprovers,setNumberFormat,selectActor,verifyTermScan,importDemo,reviewBoq,finalizeBoq,saveDeal,saveSpk,createTerm,saveTerm,decide,recordApm,recordPayment,attestBapp,releaseVolume,createContinuation,updateKhs,saveUser,saveProfile,role,reset'],
+            'command' => ['required', 'string', 'in:setKasbonPrintSigner,settleFinancePayment,updatePaymentApm,createSettlementTerm,saveProjectBundle,submitProjectBundle,adoptFinancePayment,submitFinanceTerm,decideFinancePayment,saveSpkFinance,requestPartialPayment,verifyPartialPayment,payPartialPayment,adoptApprovalOrder,removeTermWorkEvidence,saveProject,decideProject,assignProjectApprovers,assignPaymentApprovers,setNumberFormat,selectActor,verifyTermScan,importDemo,reviewBoq,finalizeBoq,saveDeal,saveSpk,createTerm,saveTerm,decide,recordApm,recordPayment,attestBapp,releaseVolume,createContinuation,updateKhs,saveUser,saveProfile,role,reset'],
             'args' => ['present', 'array', 'max:5'], 'result_id' => ['nullable', 'string', 'regex:/^[a-zA-Z0-9-]{3,100}$/D'],
         ]);
         $types = [
             'createSettlementTerm' => ['string'], 'saveProjectBundle' => ['array', 'boolean'], 'submitProjectBundle' => ['string'], 'adoptFinancePayment' => ['string'], 'submitFinanceTerm' => ['array'], 'decideFinancePayment' => ['string', 'string', 'string', 'string'], 'saveSpkFinance' => ['array', 'string'],
-            'settleFinancePayment' => ['string', 'string'], 'updatePaymentApm' => ['string', 'string'],
+            'setKasbonPrintSigner' => ['string', 'string', 'string'], 'settleFinancePayment' => ['string', 'string'], 'updatePaymentApm' => ['string', 'string'],
             'requestPartialPayment' => ['string'], 'verifyPartialPayment' => ['string', 'string', 'string'], 'payPartialPayment' => ['string', 'string'],
             'decideProject' => ['string', 'string', 'string'], 'assignProjectApprovers' => ['string', 'string', 'string'],
             'setNumberFormat' => ['string'], 'selectActor' => ['string'], 'verifyTermScan' => ['string', 'string', 'string'],

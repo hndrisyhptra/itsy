@@ -91,6 +91,34 @@ trait FinancePaymentWorkflow
         return null;
     }
 
+    /** Physical signer correction only; never an application approval or financial reissue. */
+    private function setKasbonPrintSigner(string $id, string $kasbonId, string $userId): null
+    {
+        abort_unless(in_array($this->state['role'], ['Admin Konstruksi', 'Superadmin', 'Finance'], true), 403);
+        $t = $this->record('terms', $id);
+        if (! self::usesFinancePayment($t) || self::usesSettlementPayment($t) || $t['status'] !== 'Disetujui'
+            || $kasbonId === '' || ($t['kasbon']['id'] ?? '') !== $kasbonId) {
+            $this->fail('Pilih kasbon aktif dari pembayaran lama yang sudah disetujui. Versi arsip dan alur tujuh approval tidak dapat diubah melalui pilihan ini.');
+        }
+        $user = $this->approver($userId, 'Mgr Finance & Settlement');
+        $p = $this->record('projects', $this->record('deals', $this->record('spks', $t['spkId'])['dealId'])['projectId']);
+        if (isset($user['branches']) && ! in_array($p['branch'], $user['branches'], true)) {
+            $this->fail('Penandatangan harus ditugaskan pada Branch PP.');
+        }
+        $before = $t['kasbonPrintSigners'][$kasbonId] ?? null;
+        if (($before['userId'] ?? '') === $user['id'] && ($before['name'] ?? '') === $user['name']) {
+            return null;
+        }
+        $after = ['userId' => $user['id'], 'name' => $user['name'], 'job' => 'Mgr Finance & Settlement Area Jawa Bali',
+            'at' => now()->toISOString(), 'by' => $this->state['actorUserId']];
+        $t['kasbonPrintSigners'][$kasbonId] = $after;
+        $t['kasbonPrintSignerHistory'][] = ['kasbonId' => $kasbonId, 'before' => $before, 'after' => $after];
+        $this->put('terms', $t);
+        $this->log('Penandatangan fisik kasbon diperbarui', $user['name'].' · Mgr Finance & Settlement', '/termin/'.$id);
+
+        return null;
+    }
+
     public static function adminKasbonPending(array $t): bool
     {
         if (self::usesSettlementPayment($t)) {

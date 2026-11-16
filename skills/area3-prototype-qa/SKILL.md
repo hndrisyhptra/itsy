@@ -3,6 +3,12 @@ name: area3-prototype-qa
 description: Test the its Area 3 interactive prototype through the linked business scenarios, permissions, persistence, financial/volume invariants, documents and responsive layouts.
 ---
 
+## 16 November 2026 — Explicit physical Finance signer on legacy kasbon
+
+User confirms old payment is the source of Business Support on preview. Follow latest docs/FINANCE_KASBON.md: allow Admin/Superadmin/Finance to explicitly select an actual active Branch-assigned Mgr Finance & Settlement account for the current approved kasbon-v1 physical slot, including paid. Keep encrypted original/history, decisions/assignees, net/gross/paid/APM/recipient/proof and workspace archive unchanged. Persist server-owned UUID-keyed kasbonPrintSigners and before/after history via existing lock/revision/receipts/audit; no migration or bulk backfill. Archived versions and seven-stage flow cannot be reassigned this way. Shared HTML/Word uses saved name/job without fabricated approval; print blank. Preserve Head lock/private scope, 3-query lazy read/35-query metadata HTTP fixture (not load benchmark), and document actual QA/server limits.
+
+
+
 ## 16 November 2026 — Tandai Lunas dengan APM opsional
 
 Follow docs/PAYMENT_SETTLEMENT_OPTIONAL_APM.md, superseding mandatory APM number for kasbon-v1/kasbon-settlement-v2 settlement only. Finance explicitly settles after all applicable approvals, current-version private proof, verified scan when present, canonical net and no pending proof upload; APM optional. Server-only settledAt/settledBy and frozen proof/kasbon binding plus shared settlementRecorded govern next-term/inbox/timeline/matrix/list; do not fabricate an APM or mark absent number Valid. Finance may add/correct unique validated APM after full settlement, audit before/after/actor/time without changing original paid/history/SQL settlement amount/date/identity. Legacy pre-kasbon gates remain. Migration2026_11_16_000001 allows nullable unique apm_no only for kasbon+proof, restores SQLite triggers and refuses rollback with nulls; not applied live by agent. Keep Branch/revision/UUID/Head-lock/private file guards, no double settlement/backfill/live write. Query fixture39 per settle/edit, list4; record actual QA/deploy limits.

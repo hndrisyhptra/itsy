@@ -156,7 +156,20 @@ class FinanceDocuments
         $rows = DB::table('finance_kasbons')->where('term_id', $r->id_payment_term)->orderByDesc('version')->limit(10)->get(['id_kasbon', 'version', 'private_data']);
         $files = $includeFiles ? DB::table('finance_private_files')->where('workspace_id', $w->id)->where('term_id', $r->id_payment_term)->orderByDesc('created_at')->limit(10)->get(['id_finance_file as id', 'kind', 'created_at as uploadedAt']) : collect();
 
-        return ['documents' => $rows->map(fn ($v) => ['id' => $v->id_kasbon, 'version' => $v->version, 'data' => $this->unpack($v)])->all(), 'files' => $files, 'flow' => PrototypeDomain::usesFinancePayment($t)];
+        return ['documents' => $rows->map(fn ($v) => ['id' => $v->id_kasbon, 'version' => $v->version, 'data' => $this->kasbonView($v, $t)])->all(), 'files' => $files, 'flow' => PrototypeDomain::usesFinancePayment($t)];
+    }
+
+    private function kasbonView(object $row, array $term): array
+    {
+        $data = $this->unpack($row);
+        // Current legacy version only. Encrypted original and archived versions stay untouched.
+        if (PrototypeDomain::usesFinancePayment($term) && ! PrototypeDomain::usesSettlementPayment($term)
+            && ($data['templateVersion'] ?? 1) !== 3 && ($term['kasbon']['id'] ?? '') === $row->id_kasbon
+            && isset($term['kasbonPrintSigners'][$row->id_kasbon])) {
+            $data['printSigner'] = $term['kasbonPrintSigners'][$row->id_kasbon];
+        }
+
+        return $data;
     }
 
     public function issue(PrototypeWorkspace $w, string $id, array $input): array

@@ -149,7 +149,7 @@ class AuthenticatedWorkspace
             'saveSpkFinance', 'saveSpk' => $deal($input['dealId'] ?? ''),
             'createTerm', 'createSettlementTerm' => $spk($input),
             'submitFinanceTerm', 'saveTerm' => $spk($input['spkId'] ?? ''),
-            'adoptFinancePayment', '_issueKasbon', '_submitSettlementKasbon', '_attachTransferProof', 'decideFinancePayment', 'requestPartialPayment', 'verifyPartialPayment', 'payPartialPayment', 'decide', 'recordApm', 'settleFinancePayment', 'updatePaymentApm', 'recordPayment', 'verifyTermScan', '_attachTermScan', '_attachTermWorkEvidence', 'removeTermWorkEvidence' => $term($input),
+            'adoptFinancePayment', '_issueKasbon', '_submitSettlementKasbon', '_attachTransferProof', 'decideFinancePayment', 'requestPartialPayment', 'verifyPartialPayment', 'payPartialPayment', 'decide', 'recordApm', 'settleFinancePayment', 'updatePaymentApm', 'setKasbonPrintSigner', 'recordPayment', 'verifyTermScan', '_attachTermScan', '_attachTermWorkEvidence', 'removeTermWorkEvidence' => $term($input),
             'attestBapp', 'releaseVolume', 'createContinuation' => $bapp($input),
             default => null,
         };

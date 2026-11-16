@@ -1,5 +1,5 @@
 import { settlementRecorded } from './payment-settlement';
-import { type State, type Term, type Spk, type Approval, getTerm, approvalRoles, requireFinance, requireAdmin, applyTermDecision, applyTermSave, applySpk, termTotal, now, log } from './domain';
+import { type State, type Term, type Spk, type Approval, getTerm, getSpk, projectForSpk, operational, approvalRoles, requireFinance, requireAdmin, applyTermDecision, applyTermSave, applySpk, termTotal, now, log } from './domain';
 import { paymentDue, kasbonQuoteMatches, type KasbonSettlement } from './kasbon-settlement';
 import { recordCommand } from './commands';
 
@@ -70,4 +70,21 @@ export function updatePaymentApm(s:State,id:string,apm:string) {
   if(!usesFinancePayment(t)||!settlementRecorded(t)||t.status!=='Disetujui'||t.financePayment?.status!=='Dibayar'||t.paid!==paymentDue(t,termTotal(s,t)))throw new Error('Nomor APM hanya dapat diubah Finance pada pembayaran kasbon yang sudah lunas.');
   apm=checkedPaymentApm(s,t,apm);recordCommand('updatePaymentApm',[id,apm]);if(apm===t.apm)return;
   (t.financePayment.apmHistory??=[]).push({before:t.apm,after:apm,at:now(),by:s.actorUserId!});t.apm=apm;t.apmStatus='Valid';log(s,'Nomor APM diperbarui',apm,'/termin/'+id);
+}
+
+export interface KasbonPrintSigner {userId:string;name:string;job:string;at:string;by:string}
+export const canEditKasbonPrintSigner=(s:State,t:Term,kasbonId:string)=>(operational(s)||s.role==='Finance')&&usesFinancePayment(t)&&!usesSettlementPayment(t)&&t.status==='Disetujui'&&!!kasbonId&&t.kasbon?.id===kasbonId;
+export function setKasbonPrintSigner(s:State,id:string,kasbonId:string,userId:string){
+  if(!operational(s)&&s.role!=='Finance')throw new Error('Hanya Admin Konstruksi, Superadmin atau Finance yang dapat mengubah penandatangan fisik.');
+  const t=getTerm(s,id);
+  if(!usesFinancePayment(t)||usesSettlementPayment(t)||t.status!=='Disetujui'||!kasbonId||t.kasbon?.id!==kasbonId)throw new Error('Pilih kasbon aktif dari pembayaran lama yang sudah disetujui. Versi arsip dan alur tujuh approval tidak dapat diubah melalui pilihan ini.');
+  const user=s.users.find(u=>u.id===userId&&u.active&&u.role==='Mgr Finance & Settlement');
+  if(!user)throw new Error('Pilih pengguna aktif dengan peran Mgr Finance & Settlement.');
+  const p=projectForSpk(s,getSpk(s,t.spkId));
+  if(user.branches&&!user.branches.includes(p.branch))throw new Error('Penandatangan harus ditugaskan pada Branch PP.');
+  recordCommand('setKasbonPrintSigner',[id,kasbonId,userId]);
+  const before=t.kasbonPrintSigners?.[kasbonId];if(before?.userId===user.id&&before.name===user.name)return;
+  const after={userId:user.id,name:user.name,job:'Mgr Finance & Settlement Area Jawa Bali',at:now(),by:s.actorUserId!};
+  (t.kasbonPrintSigners??={})[kasbonId]=after;(t.kasbonPrintSignerHistory??=[]).push({kasbonId,before:before??null,after});
+  log(s,'Penandatangan fisik kasbon diperbarui',user.name+' · Mgr Finance & Settlement','/termin/'+id);
 }

@@ -1,0 +1,79 @@
+{
+  "date": "2026-11-16",
+  "feature": "Explicit physical Finance signer for current legacy kasbon",
+  "storage": "Server-owned payment_terms.document_data.kasbonPrintSigners keyed by current kasbon UUID, append-only before/after history; original encrypted finance_kasbons unchanged",
+  "authorization": [
+    "Admin Konstruksi",
+    "Superadmin",
+    "Finance"
+  ],
+  "guards": [
+    "kasbon-v1 only",
+    "Disetujui",
+    "current kasbon UUID",
+    "selected active Mgr Finance & Settlement account on PP Branch",
+    "actor Branch",
+    "revision and UUID replay",
+    "Head correction lock",
+    "no client arbitrary metadata replacement"
+  ],
+  "verification": {
+    "php": {
+      "tests": 306,
+      "assertions": 6887
+    },
+    "frontend": 313,
+    "build": "passed",
+    "assets": {
+      "manifest_references": 36,
+      "preload_dependencies": 28,
+      "profiles": 3
+    },
+    "pint": "passed",
+    "query_budget": {
+      "signer_http_measured": 35,
+      "signer_http_limit": 50,
+      "private_lazy_service_reads": 3,
+      "additional_read_queries": 0,
+      "no_writes": [
+        "finance_kasbons",
+        "apm_settlements",
+        "project_plans",
+        "term_actuals",
+        "approval_runs",
+        "approval_steps",
+        "approval_decisions",
+        "document_files",
+        "volume_balances",
+        "volume_movements"
+      ]
+    },
+    "word": {
+      "fixtures": 2,
+      "pages_each": 1,
+      "independent_zip_crc_xml": "passed",
+      "all_png_pages_inspected": true,
+      "blank_physical_signatures": true
+    }
+  },
+  "unchanged": [
+    "paid amount",
+    "gross/net policy",
+    "APM",
+    "transfer proof",
+    "recipient snapshots",
+    "original encrypted document",
+    "approval decisions and assignees",
+    "archived kasbon versions",
+    "workspace state archive"
+  ],
+  "migration_required": false,
+  "live_database_changed": false,
+  "server_deployed": false,
+  "limits": [
+    "Synthetic isolated SQLite memory fixtures, not live bank transfers",
+    "Logged-in UI and aaPanel server not verified",
+    "No fresh browser print or Microsoft Word desktop or physical print QA",
+    "Existing aggregate command/reference loading remains; query fixture is not a load benchmark"
+  ]
+}

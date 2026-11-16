@@ -62,6 +62,7 @@ class PrototypeDomain
             'verifyPartialPayment' => $this->verifyPartialPayment($args[0] ?? '', $args[1] ?? '', $args[2] ?? ''),
             'payPartialPayment' => $this->payPartialPayment($args[0] ?? '', $args[1] ?? ''),
             'settleFinancePayment' => $this->settleFinancePayment($args[0] ?? '', $args[1] ?? ''),
+            'setKasbonPrintSigner' => $this->setKasbonPrintSigner($args[0] ?? '', $args[1] ?? '', $args[2] ?? ''),
             'updatePaymentApm' => $this->updatePaymentApm($args[0] ?? '', $args[1] ?? ''),
             'recordApm' => $this->recordApm($args[0] ?? '', $args[1] ?? '', (bool) ($args[2] ?? true)),
             'recordPayment' => $this->recordPayment($args[0] ?? '', $args[1] ?? 0, $args[2] ?? ''),
