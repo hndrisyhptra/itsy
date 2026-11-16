@@ -1,0 +1,67 @@
+{
+  "date": "2026-11-16",
+  "incident": "Local transfer proof rejected by stale upload daemon despite valid Finance approval",
+  "diagnosis": {
+    "readOnlyItsInspection": true,
+    "failedTaskCount": 2,
+    "paymentFlow": "kasbon-settlement-v2",
+    "workflowVersion": 3,
+    "termStatus": "Disetujui",
+    "financeStatus": "Diverifikasi",
+    "financeDecision": "Setujui",
+    "decisionAndTaskKasbonMatch": true,
+    "apmValid": false,
+    "paidPositive": false,
+    "workerStartedLocal": "2026-11-15 16:41:11",
+    "updatedHandlersLocal": "2026-11-16 04:48–04:51"
+  },
+  "recovery": {
+    "projectLocalFileCacheAndPrefixVerified": true,
+    "queueRestartSignalSent": true,
+    "oldWorkerStopped": true,
+    "autostart": true,
+    "userConfirmedNewUploadSuccess": true,
+    "failedTasksPreserved": true,
+    "businessRowsChangedByAgent": false,
+    "envOrPermissionsChanged": false,
+    "otherApplicationWorkersTouched": false
+  },
+  "regression": {
+    "tests": "Existing BundleSettlementTest Partial and Final vectors",
+    "clearBrowserAuthBeforeProcessing": true,
+    "guardRestoredToEmpty": true,
+    "privateUploaderAndPreviewVerified": true,
+    "apmAfterProofVerified": true,
+    "workerQueriesPerVector": [
+      43,
+      43
+    ],
+    "queryBudget": 80,
+    "database": "SQLite :memory:",
+    "files": "fake local disk"
+  },
+  "verification": {
+    "phpTests": 300,
+    "phpAssertions": 6593,
+    "frontendTests": 305,
+    "build": "passed",
+    "pintScoped": "passed",
+    "diffCheck": "passed",
+    "assets": {
+      "manifestReferences": 36,
+      "preloads": 28,
+      "profiles": 3
+    }
+  },
+  "scope": {
+    "productionCodeChanged": false,
+    "newQueries": 0,
+    "schemaOrMigration": false,
+    "testAndAuditChangesOnly": true
+  },
+  "limits": [
+    "User confirmed local browser upload; no bank transfer performed by agent",
+    "No aaPanel/server deployment or load benchmark",
+    "Application worker restart uses project-local cache; Supervisor production process control remains operator responsibility"
+  ]
+}

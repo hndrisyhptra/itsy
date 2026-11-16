@@ -1,3 +1,4 @@
+import { settlementRecorded } from './payment-settlement';
 import { paymentDue } from './kasbon-settlement';
 import { type State, type Project, type Deal, type Spk, type Term, boqTotal, round, termTotalForDeal } from './domain';
 
@@ -34,7 +35,7 @@ export function dashboardMatrix(s:State,branch=''):DashboardMatrixData {
     const order=orders.get(t.spkId);if(!order)continue;
     order.terms.push(t);const d=deals.get(order.spk.dealId)!.deal;
     const amount=termTotalForDeal(d,t),paid=Number.isFinite(t.paid)?Math.max(0,round(t.paid)):0;
-    settled.set(t.id,t.status==='Disetujui'&&t.apmStatus==='Valid'&&amount>0&&paid>=paymentDue(t,amount));
+    settled.set(t.id,t.status==='Disetujui'&&settlementRecorded(t)&&amount>0&&paid>=paymentDue(t,amount));
     if(order.spk.status==='Sah'&&t.status==='Disetujui'){
       plans.get(d.projectId)!.realized+=paid;
       if(paid>0)payments.push({id:t.id,planId:d.projectId,spkNo:order.spk.no,number:t.number,type:t.type,apm:t.apm,amount:paid});

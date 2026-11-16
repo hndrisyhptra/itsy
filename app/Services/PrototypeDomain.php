@@ -61,6 +61,8 @@ class PrototypeDomain
             'requestPartialPayment' => $this->requestPartialPayment($args[0] ?? ''),
             'verifyPartialPayment' => $this->verifyPartialPayment($args[0] ?? '', $args[1] ?? '', $args[2] ?? ''),
             'payPartialPayment' => $this->payPartialPayment($args[0] ?? '', $args[1] ?? ''),
+            'settleFinancePayment' => $this->settleFinancePayment($args[0] ?? '', $args[1] ?? ''),
+            'updatePaymentApm' => $this->updatePaymentApm($args[0] ?? '', $args[1] ?? ''),
             'recordApm' => $this->recordApm($args[0] ?? '', $args[1] ?? '', (bool) ($args[2] ?? true)),
             'recordPayment' => $this->recordPayment($args[0] ?? '', $args[1] ?? 0, $args[2] ?? ''),
             'attestBapp' => $this->attestBapp($args[0] ?? '', $args[1] ?? ''),
@@ -729,7 +731,7 @@ class PrototypeDomain
         if ($previous && (($this->state['schema'] ?? 1) >= 3 || self::usesPartialPayment($previous) || self::usesFinancePayment($previous)) && bccomp((string) $previous['paid'], (string) $this->paymentDue($previous), 2) !== 0) {
             $this->fail('Payment termin sebelumnya harus lunas sebelum termin berikutnya.');
         }
-        if ($previous && ($previous['status'] !== 'Disetujui' || count($previous['approvals']) !== $this->approvalCount($previous) || $previous['apmStatus'] !== 'Valid')) {
+        if ($previous && ($previous['status'] !== 'Disetujui' || count($previous['approvals']) !== $this->approvalCount($previous) || ! self::settlementRecorded($previous))) {
             $this->fail('Termin sebelumnya membutuhkan approval lengkap dan APM valid.');
         }
         $id ??= 'termin-'.Str::uuid();

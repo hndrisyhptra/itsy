@@ -1,0 +1,66 @@
+{
+  "date": "2026-11-16",
+  "scope": "Kasbon display only: direct first Final omits installment label; other installments show Termin N without type",
+  "cases": [
+    {
+      "case": "direct-final",
+      "label": null,
+      "docxZipCrcXml": "passed",
+      "renderedPages": 1,
+      "allPagesInspected": true,
+      "renderedPdfTextCharacters": 970
+    },
+    {
+      "case": "first-partial",
+      "label": "Termin 1",
+      "docxZipCrcXml": "passed",
+      "renderedPages": 1,
+      "allPagesInspected": true,
+      "renderedPdfTextCharacters": 981
+    },
+    {
+      "case": "second-final",
+      "label": "Termin 2",
+      "docxZipCrcXml": "passed",
+      "renderedPages": 1,
+      "allPagesInspected": true,
+      "renderedPdfTextCharacters": 981
+    }
+  ],
+  "regression": {
+    "templateVersions": [
+      "legacy",
+      2,
+      3
+    ],
+    "vectorsPerVersion": 5,
+    "outputs": [
+      "HTML SSR",
+      "native DOCX"
+    ],
+    "sourceSnapshotsUnchanged": true
+  },
+  "verification": {
+    "phpTests": 300,
+    "phpAssertions": 6581,
+    "frontendTests": 305,
+    "build": "passed",
+    "assets": {
+      "manifestReferences": 36,
+      "preloads": 28,
+      "profiles": 3
+    }
+  },
+  "database": {
+    "newQueries": 0,
+    "newEndpoints": 0,
+    "migration": false,
+    "liveWrites": false
+  },
+  "limits": [
+    "Synthetic fixtures only; no live account/server or physical print test",
+    "Browser print not re-run for this text-only change; print consumes the same HTML component",
+    "Microsoft Word desktop not verified"
+  ],
+  "deployment": "Local code/build only; no commit/push/server deployment"
+}

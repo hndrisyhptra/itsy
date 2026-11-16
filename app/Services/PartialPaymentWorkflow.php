@@ -15,7 +15,7 @@ trait PartialPaymentWorkflow
     {
         if (self::usesFinancePayment($t)) {
             return $t['status'] === 'Disetujui' && (($t['scan']['status'] ?? '') === 'Menunggu Verifikasi'
-                || ($t['apmStatus'] !== 'Valid' && isset($t['kasbon']) && ($t['financePayment']['status'] ?? '') !== 'Dikembalikan'));
+                || (! self::settlementRecorded($t) && isset($t['kasbon']) && ($t['financePayment']['status'] ?? '') !== 'Dikembalikan'));
         }
         if ($t['status'] !== 'Disetujui') {
             return false;

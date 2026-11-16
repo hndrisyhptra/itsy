@@ -23,6 +23,74 @@ trait FinancePaymentWorkflow
         return ($t['workflowVersion'] ?? 1) === 3 && in_array($t['paymentFlow'] ?? '', ['kasbon-v1', 'kasbon-settlement-v2'], true);
     }
 
+    public static function settlementRecorded(array $t): bool
+    {
+        return ($t['apmStatus'] ?? '') === 'Valid' || (self::usesFinancePayment($t)
+            && ($t['financePayment']['status'] ?? '') === 'Dibayar' && ! empty($t['financePayment']['settledAt'])
+            && ($t['paid'] ?? 0) > 0 && ! empty($t['kasbon']['id']) && ! empty($t['transferProof']['id'])
+            && ($t['financePayment']['kasbonId'] ?? '') === $t['kasbon']['id']
+            && ($t['financePayment']['transferFileId'] ?? '') === $t['transferProof']['id']);
+    }
+
+    private function checkedPaymentApm(string $id, string $apm, bool $optional = false): string
+    {
+        $apm = strtoupper($this->text($apm, 60));
+        if ($apm === '' && $optional) {
+            return '';
+        }
+        if (! preg_match('/^[A-Z0-9][A-Z0-9\/._-]{4,59}$/D', $apm)) {
+            $this->fail('Nomor APM 5–60 karakter, huruf/angka/._-/ saja.');
+        }
+        foreach ($this->state['terms'] as $other) {
+            if ($other['id'] !== $id && $other['apmStatus'] === 'Valid' && strtoupper($other['apm']) === $apm) {
+                $this->fail('Nomor APM sudah digunakan.');
+            }
+        }
+
+        return $apm;
+    }
+
+    private function settleFinancePayment(string $id, string $apm): null
+    {
+        $this->finance();
+        $t = $this->record('terms', $id);
+        $this->assertFinanceApmReady($t);
+        $apm = $this->checkedPaymentApm($id, $apm, true);
+        $amount = $this->paymentDue($t);
+        $at = now()->toISOString();
+        $t['paid'] = $amount;
+        $t['apm'] = $apm;
+        $t['apmStatus'] = $apm === '' ? 'Belum Terbit' : 'Valid';
+        $t['paymentHistory'][] = ['amount' => $amount, 'ref' => $t['transferProof']['id'], 'source' => 'TRANSFER_PROOF', 'at' => $at, 'actor' => $this->state['actorUserId']];
+        $t['financePayment'] = array_merge($t['financePayment'], ['status' => 'Dibayar', 'documentsAtPayment' => isset($t['scan']) ? 'OK' : 'NOK',
+            'kasbonId' => $t['kasbon']['id'], 'transferFileId' => $t['transferProof']['id'], 'settledAt' => $at, 'settledBy' => $this->state['actorUserId']]);
+        $this->put('terms', $t);
+        $this->log('Pembayaran ditandai lunas', $apm ? 'APM '.$apm : 'Bukti transfer tercatat · APM belum diisi', '/termin/'.$id);
+
+        return null;
+    }
+
+    private function updatePaymentApm(string $id, string $apm): null
+    {
+        $this->finance();
+        $t = $this->record('terms', $id);
+        if (! self::usesFinancePayment($t) || ! self::settlementRecorded($t) || $t['status'] !== 'Disetujui'
+            || ($t['financePayment']['status'] ?? '') !== 'Dibayar' || bccomp((string) $t['paid'], (string) $this->paymentDue($t), 2) !== 0) {
+            $this->fail('Nomor APM hanya dapat diubah Finance pada pembayaran kasbon yang sudah lunas.');
+        }
+        $apm = $this->checkedPaymentApm($id, $apm);
+        if ($apm === $t['apm']) {
+            return null;
+        }
+        $t['financePayment']['apmHistory'][] = ['before' => $t['apm'], 'after' => $apm, 'at' => now()->toISOString(), 'by' => $this->state['actorUserId']];
+        $t['apm'] = $apm;
+        $t['apmStatus'] = 'Valid';
+        $this->put('terms', $t);
+        $this->log('Nomor APM diperbarui', $apm, '/termin/'.$id);
+
+        return null;
+    }
+
     public static function adminKasbonPending(array $t): bool
     {
         if (self::usesSettlementPayment($t)) {

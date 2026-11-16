@@ -1,3 +1,4 @@
+import { settlementRecorded } from './payment-settlement';
 import { usesFinancePayment, financePaymentLabel } from './finance-payment';
 import { usesPartialPayment, documentStatus, partialPaymentLabel } from './partial-payment';
 import { type State, type Project, type Term, nextApprovalRole } from './domain';
@@ -41,6 +42,7 @@ export function paymentPosition(t:Term):string {
   if(t.status==='Ditolak') return (t.workflowVersion??1)>=3?'Ditolak · menunggu perbaikan dan pengajuan ulang Admin Konstruksi dari PM':'Ditolak · proses pembayaran berhenti';
   if(t.status==='Draft') return 'Draft · belum diajukan';
   if((t.workflowVersion??1)<2) return t.apmStatus==='Valid'?'APM valid · lihat realisasi pembayaran':'Menunggu APM';
+  if(usesFinancePayment(t)&&settlementRecorded(t))return 'Tagihan lunas · '+(t.apm?'APM '+t.apm:'APM belum diisi')+' · Berkas '+documentStatus(t);
   if(t.apmStatus==='Valid') return 'APM valid · tagihan lunas'+(usesPartialPayment(t)||usesFinancePayment(t)?' · Berkas '+documentStatus(t):'');
   if(usesFinancePayment(t))return financePaymentLabel(t)+' · Berkas '+documentStatus(t);
   if(usesPartialPayment(t))return partialPaymentLabel(t)+' · Berkas '+documentStatus(t);

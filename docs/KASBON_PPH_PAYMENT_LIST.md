@@ -1,5 +1,11 @@
 # Kasbon bersih dan List Payment — 16 November 2026
 
+## 16 November 2026 — Tandai Lunas dengan APM opsional
+
+Finance dapat menekan Tandai Lunas setelah bukti transfer aktif selesai diunggah dan approval/review Finance lengkap, tanpa nomor APM. Upload sendiri tidak membayar otomatis. APM dapat diisi saat pelunasan atau ditambah/diedit sesudah lunas; format/keunikan dan konfirmasi YA/TIDAK tetap. Koreksi nomor menyimpan audit before/after/actor/waktu dan tidak mengubah nilai/tanggal/penerima/bukti/keputusan maupun menambah pembayaran kedua. Berlaku pada alur kasbon-v1/kasbon-settlement-v2; pra-kasbon historis tetap.
+
+Nomor APM dipisahkan dari pelunasan; next-term/CLOSE/inbox/List Payment memakai settlement nyata. Migration nullable APM disiapkan tanpa rewrite data lama dan belum dijalankan pada its aktif. [Aturan, penyimpanan, query dan hasil verifikasi](PAYMENT_SETTLEMENT_OPTIONAL_APM.md).
+
 ## Nominal pengajuan dan transfer
 
 Pengguna menetapkan potongan **2,5% khusus Jasa Mandor**, Material tidak dipotong, dan mengonfirmasi kasbon serta transfer/APM menggunakan nilai bersih sementara tagihan bruto tetap tercatat. Angka ini adalah parameter yang diminta pengguna, bukan hasil penetapan tarif pajak oleh aplikasi.

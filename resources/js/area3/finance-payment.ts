@@ -1,9 +1,10 @@
+import { settlementRecorded } from './payment-settlement';
 import { type State, type Term, type Spk, type Approval, getTerm, approvalRoles, requireFinance, requireAdmin, applyTermDecision, applyTermSave, applySpk, termTotal, now, log } from './domain';
 import { paymentDue, kasbonQuoteMatches, type KasbonSettlement } from './kasbon-settlement';
 import { recordCommand } from './commands';
 
 export interface KasbonSummary {settlement?:KasbonSettlement;settlementUserId?:string;id:string;version:number;amount:number;issuedBy:string;issuedAt:string;issuedRole?:State['role']}
-export interface FinancePayment {status:'Menunggu Approval'|'Kasbon Terbit'|'Dikembalikan'|'Diverifikasi'|'Dibayar';decision?:Approval&{kasbonId:string};documentsAtPayment?:'OK'|'NOK';kasbonId?:string;transferFileId?:string}
+export interface FinancePayment {settledAt?:string;settledBy?:string;apmHistory?:{before:string;after:string;at:string;by:string}[];status:'Menunggu Approval'|'Kasbon Terbit'|'Dikembalikan'|'Diverifikasi'|'Dibayar';decision?:Approval&{kasbonId:string};documentsAtPayment?:'OK'|'NOK';kasbonId?:string;transferFileId?:string}
 export const usesFinancePayment=(t:Term)=>t.workflowVersion===3&&['kasbon-v1','kasbon-settlement-v2'].includes(t.paymentFlow??'');
 export const financePaymentLabel=(t:Term)=>usesSettlementPayment(t)&&['Draft','Dikembalikan','Ditolak'].includes(t.status)?'Lengkapi kasbon & ajukan ulang dari PM':t.status==='Diajukan'?'Menunggu Approval':t.financePayment?.status==='Menunggu Approval'?'Menunggu Pengajuan Kasbon Admin':t.financePayment?.status==='Kasbon Terbit'?'Kasbon Diajukan · Review Finance':t.financePayment?.status??'Menunggu Pengajuan Kasbon Admin';
 export function adminKasbonPending(t:Term){
@@ -47,4 +48,26 @@ export function adoptFinancePayment(s:State,id:string){
   recordCommand('adoptFinancePayment',[id]);requireAdmin(s);const t=getTerm(s,id);
   if(t.workflowVersion!==3||usesFinancePayment(t)||t.paymentRequest||t.paid>0||t.approverUserIds?.['Mgr Bussiness Support'])throw new Error('Pengajuan historis ini sudah memiliki Payment atau memerlukan penugasan approver yang sesuai.');
   t.paymentFlow='kasbon-v1';financePaymentEligible(t);t.financePayment={status:'Menunggu Approval'};log(s,'Alur kasbon diadopsi Admin','Approval pekerjaan tetap tersimpan','/termin/'+id);
+}
+
+function checkedPaymentApm(s:State,t:Term,apm:string,optional=false):string {
+  apm=apm.trim().toUpperCase();
+  if(optional&&!apm)return '';
+  if(!/^[A-Z0-9][A-Z0-9/._-]{4,59}$/.test(apm))throw new Error('Nomor APM 5–60 karakter, huruf/angka/._-/ saja.');
+  if(s.terms.some(x=>x.id!==t.id&&x.apmStatus==='Valid'&&x.apm.toUpperCase()===apm))throw new Error('Nomor APM sudah digunakan.');
+  return apm;
+}
+export function settleFinancePayment(s:State,id:string,apm='') {
+  requireFinance(s);const t=getTerm(s,id);assertFinanceApmReady(s,t);apm=checkedPaymentApm(s,t,apm,true);
+  recordCommand('settleFinancePayment',[id,apm]);const amount=paymentDue(t,termTotal(s,t)),at=now();
+  t.paid=amount;t.apm=apm;t.apmStatus=apm?'Valid':'Belum Terbit';
+  t.paymentHistory.push({amount,ref:t.transferProof!.id,at,source:'TRANSFER_PROOF',actor:s.actorUserId});
+  Object.assign(t.financePayment!,{status:'Dibayar',documentsAtPayment:t.scan?'OK':'NOK',kasbonId:t.kasbon!.id,transferFileId:t.transferProof!.id,settledAt:at,settledBy:s.actorUserId});
+  log(s,'Pembayaran ditandai lunas',apm?'APM '+apm:'Bukti transfer tercatat · APM belum diisi','/termin/'+id);
+}
+export function updatePaymentApm(s:State,id:string,apm:string) {
+  requireFinance(s);const t=getTerm(s,id);
+  if(!usesFinancePayment(t)||!settlementRecorded(t)||t.status!=='Disetujui'||t.financePayment?.status!=='Dibayar'||t.paid!==paymentDue(t,termTotal(s,t)))throw new Error('Nomor APM hanya dapat diubah Finance pada pembayaran kasbon yang sudah lunas.');
+  apm=checkedPaymentApm(s,t,apm);recordCommand('updatePaymentApm',[id,apm]);if(apm===t.apm)return;
+  (t.financePayment.apmHistory??=[]).push({before:t.apm,after:apm,at:now(),by:s.actorUserId!});t.apm=apm;t.apmStatus='Valid';log(s,'Nomor APM diperbarui',apm,'/termin/'+id);
 }

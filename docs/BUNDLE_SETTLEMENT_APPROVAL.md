@@ -1,5 +1,17 @@
 # Paket PP dan kasbon sebelum tujuh approval
 
+## 16 November 2026 — Tandai Lunas dengan APM opsional
+
+Finance dapat menekan Tandai Lunas setelah bukti transfer aktif selesai diunggah dan approval/review Finance lengkap, tanpa nomor APM. Upload sendiri tidak membayar otomatis. APM dapat diisi saat pelunasan atau ditambah/diedit sesudah lunas; format/keunikan dan konfirmasi YA/TIDAK tetap. Koreksi nomor menyimpan audit before/after/actor/waktu dan tidak mengubah nilai/tanggal/penerima/bukti/keputusan maupun menambah pembayaran kedua. Berlaku pada alur kasbon-v1/kasbon-settlement-v2; pra-kasbon historis tetap.
+
+Nomor APM dipisahkan dari pelunasan; next-term/CLOSE/inbox/List Payment memakai settlement nyata. Migration nullable APM disiapkan tanpa rewrite data lama dan belum dijalankan pada its aktif. [Aturan, penyimpanan, query dan hasil verifikasi](PAYMENT_SETTLEMENT_OPTIONAL_APM.md).
+
+## 16 November 2026 — Penandatangan fisik kasbon tanpa Admin Area dan Finance
+
+Preview/Word/print template3 menghapus seluruh slot Memeriksa Admin Area dan Menyetujui Finance sesuai permintaan pengguna. Susunan menjadi2/3/2: PM + pengaju; Project Support + Deployment + Head; Mgr Finance & Settlement + EVP. HTML dan Word berbagi spans enam kolom dasar sehingga tiap baris tetap selebar tabel. Slot Mgr Finance & Settlement tetap, nama penerima dan maker tidak berubah. Ketentuan lama di bawah mengenai PM/Admin Area/pengaju dan Mgr Finance/Finance/EVP adalah audit historis yang telah digantikan untuk keluaran dokumen.
+
+**Approval aplikasi tetap tujuh**, Admin Area tahap2 dan Finance tahap7 tetap wajib. Keputusan keduanya tidak dihapus dari database, inbox, timeline, riwayat atau pengikatan kasbon; hanya tidak menjadi sel tanda tangan fisik pada berkas. Nama/mark penandatangan lain tetap berdasarkan saved version/selected actual decisions. Maksimum5cap nyata pada preview, Word/print0cap dan ruang TTD kosong. Template1/2 tetap susunannya; maker Finance historis tidak dihilangkan. Nominal net/PPh, APM/proof/scan/Branch dan SQL snapshots tetap.0SQL/API/schema/migration baru. [Bukti render dan pengujian](qa/kasbon-signatures-20261116.json), [audit](CHANGELOG.md).
+
 ## 16 November 2026 — Net Jasa Mandor pada kasbon baru
 
 Kasbon/transfer/APM baru memakai Material +97,5%Jasa Mandor aktual, bruto tetap tersimpan. Semua tujuh approval/version binding tetap; kasbon terbit/paid tanpa policy baru mempertahankan nominalnya. Payable net melunasi pengajuan tanpa outstanding pajak/blocked next-term. List Payment hanya Finance/Settlement mengikuti Branch. Lihat [KASBON_PPH_PAYMENT_LIST](KASBON_PPH_PAYMENT_LIST.md) untuk canonical quote, data, akses, query dan bukti; tidak perlu migration baru.

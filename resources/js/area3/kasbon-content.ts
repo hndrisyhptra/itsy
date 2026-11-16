@@ -11,8 +11,10 @@ function integerWords(n:number):string {
 }
 export function kasbonTerbilang(amount:number){const cents=Math.round(amount*100),whole=Math.floor(cents/100),sen=cents%100;return ((whole?integerWords(whole):'nol')+' rupiah'+(sen?' '+integerWords(sen)+' sen':'')).replace(/\s+/g,' ').trim();}
 
-export interface KasbonSignature {action:string;name:string;job:string;role?:Role;approved?:Approval}
+export interface KasbonSignature {action:string;name:string;job:string;role?:Role;approved?:Approval;span?:number}
+export function kasbonSignatureColumns(d:KasbonData){return d.templateVersion===3?6:4;}
 export function kasbonDate(d:KasbonData){return `${d.place}, ${bakhDocumentDate(d.date)?.full??'…'}`;}
+export function kasbonTermSuffix(d:Pick<KasbonData,'termNumber'|'termType'>){return d.termNumber===1&&d.termType==='Final'?'':` · Termin ${d.termNumber}`;}
 export function kasbonSignatures(d:KasbonData,t?:Term,kasbonId?:string):KasbonSignature[][]{
   const row=(role:Role,job:string,action='Memeriksa'):KasbonSignature=>{
     const selected=d.signers[role],decision=t?.history.find(a=>a.role===role&&a.decision==='Setujui'&&(d.templateVersion===3?a.kasbonId===kasbonId:kasbonId===t.kasbon?.id)&&(!selected?.userId||a.userId===selected.userId));
@@ -21,9 +23,9 @@ export function kasbonSignatures(d:KasbonData,t?:Term,kasbonId?:string):KasbonSi
   const maker={action:'Membuat',name:d.issuer,job:d.templateVersion===2||d.templateVersion===3?(d.issuerRole??'Admin Konstruksi')+' · Pengaju Kasbon':'Finance · Penerbit Kasbon'};
   const evp={action:'Menyetujui / Mengetahui',name:d.evp,job:'EVP Area Jawa Bali'};
   if(d.templateVersion===3)return [
-    [row('PM Konstruksi','Project Manager'),row('Admin Area','Admin Area'),maker],
+    [row('PM Konstruksi','Project Manager'),maker],
     [row('Mgr Project Support','Mgr Project Support Area Jawa Bali'),row('Mgr Deployment','Mgr Project Deployment Area Jawa Bali'),row('Head of PMO','Head of PMO Area Jawa Bali','Menyetujui')],
-    [row('Mgr Finance & Settlement','Mgr Finance & Settlement Area Jawa Bali','Menyetujui'),row('Finance','Finance','Menyetujui'),evp],
-  ];
-  return [[row('Mgr Deployment','Mgr Project Deployment Area Jawa Bali'),row('Mgr Project Support','Mgr Project Support Area Jawa Bali'),row('PM Konstruksi','Project Manager'),maker],[evp,row('Head of PMO','Head of PMO Area Jawa Bali','Menyetujui / Mengetahui'),{action:'Memeriksa',name:d.businessSupport,job:'Mgr Business Support Area Jawa Bali'}]];
+    [row('Mgr Finance & Settlement','Mgr Finance & Settlement Area Jawa Bali','Menyetujui'),evp],
+  ].map(rows=>rows.map(r=>({...r,span:6/rows.length})));
+  return [[row('Mgr Deployment','Mgr Project Deployment Area Jawa Bali'),row('Mgr Project Support','Mgr Project Support Area Jawa Bali'),row('PM Konstruksi','Project Manager'),maker],[{...evp,span:2},row('Head of PMO','Head of PMO Area Jawa Bali','Menyetujui / Mengetahui'),{action:'Memeriksa',name:d.businessSupport,job:'Mgr Business Support Area Jawa Bali'}]];
 }

@@ -1,5 +1,11 @@
 # Matriks dashboard Region → Branch — 9 November 2026
 
+## 16 November 2026 — Tandai Lunas dengan APM opsional
+
+Finance dapat menekan Tandai Lunas setelah bukti transfer aktif selesai diunggah dan approval/review Finance lengkap, tanpa nomor APM. Upload sendiri tidak membayar otomatis. APM dapat diisi saat pelunasan atau ditambah/diedit sesudah lunas; format/keunikan dan konfirmasi YA/TIDAK tetap. Koreksi nomor menyimpan audit before/after/actor/waktu dan tidak mengubah nilai/tanggal/penerima/bukti/keputusan maupun menambah pembayaran kedua. Berlaku pada alur kasbon-v1/kasbon-settlement-v2; pra-kasbon historis tetap.
+
+Nomor APM dipisahkan dari pelunasan; next-term/CLOSE/inbox/List Payment memakai settlement nyata. Migration nullable APM disiapkan tanpa rewrite data lama dan belum dijalankan pada its aktif. [Aturan, penyimpanan, query dan hasil verifikasi](PAYMENT_SETTLEMENT_OPTIONAL_APM.md).
+
 ## Rincian angka dan rupiah bulat — 11 November 2026
 
 Setiap angka Branch/subtotal Region/TOTAL kini membuka modal kontributor sesuai scope/filter, pencarian dan20baris/halaman. JMLH/OPEN/CLOSE unik per kode; PP termasuk draf/lanjutan; Realisasi berupa termin dibayar; Total Nilai hanya sumber root. Tidak ada SQL/API baru/private-data query. Rupiah tampil bulat; dokumen baru memakai policy pembulatan per komponen, sejarah sen tidak ditulis ulang. [Perilaku, migration dan bukti terbaru](WHOLE_RUPIAH_DASHBOARD_DETAILS.md) menggantikan keterangan tampilan lama di bawah. Inbox auto-sync sebelumnya juga sudah menggantikan kebutuhan refresh manual berulang.

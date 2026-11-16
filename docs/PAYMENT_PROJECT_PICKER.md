@@ -1,5 +1,11 @@
 # Cari ID Project dan pilih SPK Sah untuk pengajuan pembayaran
 
+## 16 November 2026 — Tandai Lunas dengan APM opsional
+
+Finance dapat menekan Tandai Lunas setelah bukti transfer aktif selesai diunggah dan approval/review Finance lengkap, tanpa nomor APM. Upload sendiri tidak membayar otomatis. APM dapat diisi saat pelunasan atau ditambah/diedit sesudah lunas; format/keunikan dan konfirmasi YA/TIDAK tetap. Koreksi nomor menyimpan audit before/after/actor/waktu dan tidak mengubah nilai/tanggal/penerima/bukti/keputusan maupun menambah pembayaran kedua. Berlaku pada alur kasbon-v1/kasbon-settlement-v2; pra-kasbon historis tetap.
+
+Nomor APM dipisahkan dari pelunasan; next-term/CLOSE/inbox/List Payment memakai settlement nyata. Migration nullable APM disiapkan tanpa rewrite data lama dan belum dijalankan pada its aktif. [Aturan, penyimpanan, query dan hasil verifikasi](PAYMENT_SETTLEMENT_OPTIONAL_APM.md).
+
 
 **Pembaruan9 November2026 — Payment Parsial:** Admin dapat mengajukan Payment setelah lima approval/Head tanpa scan, Finance memverifikasi lalu mencatat APM/lunas. Scan dapat disusulkan dan berstatus NOK/OK terpisah; Final/v1/v2 dan histori tetap. Kasbon ditunda sampai format pengguna tersedia. Authority terbaru, migration baru (belum diterapkan pada its aktif), relasi/proyeksi SQL dan bukti: [PARTIAL_PAYMENT](PARTIAL_PAYMENT.md). Penjelasan scan wajib untuk semua dokumen di bawah merupakan aturan sebelumnya bila berbeda.
 

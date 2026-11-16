@@ -1,13 +1,16 @@
+import { ProjectTimeline } from '../../resources/js/area3/project-timeline-page';
+import { settlementRecorded } from '../../resources/js/area3/payment-settlement';
+import { dashboardMatrix } from '../../resources/js/area3/dashboard-matrix';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { seed } from '../../resources/js/area3/seed';
 import { type State,type Role,APPROVERS_V3,normalizeWorkflow,selectActor,assignPaymentApprovers,createTerm,getTerm,decide,nextTermReason,recordApm,termTotal,verifyTermScan } from '../../resources/js/area3/domain';
-import { submitFinanceTerm,decideFinancePayment,usesFinancePayment,adoptFinancePayment,submissionLabel,financePaymentLabel,saveSpkFinance } from '../../resources/js/area3/finance-payment';
+import { submitFinanceTerm,decideFinancePayment,usesFinancePayment,adoptFinancePayment,submissionLabel,financePaymentLabel,saveSpkFinance,settleFinancePayment,updatePaymentApm } from '../../resources/js/area3/finance-payment';
 import { financeTaskPending } from '../../resources/js/area3/partial-payment';
 import { paymentPosition } from '../../resources/js/area3/project-timeline';
-import { paymentStage,paymentLatest } from '../../resources/js/area3/payment-selection';
+import { paymentStage,paymentLatest,paymentAction } from '../../resources/js/area3/payment-selection';
 import { KasbonDocument,kasbonTerbilang,type KasbonData } from '../../resources/js/area3/kasbon-document';
 import { setCommandRecorder } from '../../resources/js/area3/commands';
 import {kasbonQuote} from '../../resources/js/area3/kasbon-settlement';
@@ -78,4 +81,32 @@ test('SPK financial draft emits one explicit command and keeps only financial ma
 test('Current account runtime cannot start another term from historical APM with an unpaid bill',()=>{
   const {s,t}=fixture();t.apmStatus='Valid';t.apm='APM/HISTORICAL';delete t.paymentFlow;delete t.financePayment;t.paid=0;actor(s,'Admin Konstruksi');
   assert.match(nextTermReason(s,t.spkId),/lunas/);assert.throws(()=>createTerm(s,t.spkId),/lunas/);
+});
+
+for(const final of [false,true])test(`transfer-proof settlement with optional APM (${final?'Final':'Partial'}) preserves immutable payments during later reference edits`,()=>{
+  const {s,t}=issued(final);decideFinancePayment(s,t.id,'Setujui','Reviewed');
+  assert.throws(()=>settleFinancePayment(s,t.id,''),/bukti transfer/);
+  t.transferProof={kasbonId:t.kasbon!.id,id:'current-proof',uploadedBy:s.actorUserId!,uploadedAt:new Date().toISOString()};
+  const due=t.kasbon!.amount;settleFinancePayment(s,t.id,'');assert.equal(t.paid,due);assert.equal(t.apm,'');assert.equal(t.apmStatus,'Belum Terbit');assert.ok(settlementRecorded(t));
+  assert.equal(financeTaskPending(t),false);assert.match(paymentPosition(t),/lunas.*APM belum diisi/);assert.equal(dashboardSummary(s).outstanding,0);
+  assert.throws(()=>settleFinancePayment(s,t.id,''),/belum dibayar/);
+  const history=JSON.stringify(t.paymentHistory),approvals=JSON.stringify(t.approvals);
+  actor(s,'Admin Konstruksi');if(final)assert.match(nextTermReason(s,t.spkId),/Final/);else assert.equal(nextTermReason(s,t.spkId),'');
+  assert.throws(()=>updatePaymentApm(s,t.id,'APM/DENIED'),/Finance/);actor(s,'Finance');
+  updatePaymentApm(s,t.id,'apm/late/001');updatePaymentApm(s,t.id,'APM/EDIT/002');assert.equal(t.apm,'APM/EDIT/002');assert.equal(t.financePayment!.apmHistory!.length,2);
+  assert.equal(t.paid,due);assert.equal(JSON.stringify(t.paymentHistory),history);assert.equal(JSON.stringify(t.approvals),approvals);
+  assert.throws(()=>updatePaymentApm(s,t.id,''),/5–60/);assert.throws(()=>updatePaymentApm(s,t.id,'bad space'),/5–60/);
+  s.terms.push({...structuredClone(t),id:'other-paid',apm:'APM/OTHER'});assert.throws(()=>updatePaymentApm(s,t.id,'apm/other'),/sudah digunakan/);
+  assert.equal(paymentAction([paymentLatest(t)],true).action,final?'open':'create');
+});
+
+test('initial APM remains optional but validated when provided, and final closure does not depend on its reference',()=>{
+ const {s,t}=issued(true);decideFinancePayment(s,t.id,'Setujui','');t.transferProof={id:'current-proof',kasbonId:t.kasbon!.id,uploadedBy:s.actorUserId!,uploadedAt:new Date().toISOString()};
+ const before=JSON.stringify(t);assert.throws(()=>settleFinancePayment(s,t.id,'bad space'),/5–60/);assert.equal(JSON.stringify(t),before);
+ settleFinancePayment(s,t.id,'');assert.equal(dashboardMatrix(s).totals.closed,1);assert.match(renderToStaticMarkup(createElement(ProjectTimeline,{s,id:s.projects[0].id})),/Tagihan lunas<\/span><strong>1<\/strong>/);updatePaymentApm(s,t.id,'APM/INITIAL');assert.equal(dashboardMatrix(s).totals.closed,1);
+});
+
+test('Finance can supply a valid APM during settlement without requiring a later reference edit',()=>{
+ const {s,t}=issued();decideFinancePayment(s,t.id,'Setujui','');t.transferProof={id:'initial-proof',kasbonId:t.kasbon!.id,uploadedBy:s.actorUserId!,uploadedAt:new Date().toISOString()};
+ settleFinancePayment(s,t.id,'apm/initial/001');assert.equal(t.apm,'APM/INITIAL/001');assert.equal(t.apmStatus,'Valid');assert.equal(t.paymentHistory.length,1);assert.equal(t.financePayment?.apmHistory,undefined);
 });

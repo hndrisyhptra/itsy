@@ -50,9 +50,9 @@ test('package review exposes only selected PP documents and their exact BA/SPK p
 test('kasbon preview stamps only real decisions matching the displayed kasbon version and selected user',()=>{
   const {t}=payment(),d=structuredClone(vector);t.history=roles.map((role,i)=>({role,userId:role==='Finance'?'qa-finance':d.signers[role]!.userId,actorName:role+' QA',decision:'Setujui',note:'',at:'2026-11-15T02:00:00Z',kasbonId:'current-kasbon'}));
   const html=renderToStaticMarkup(createElement(KasbonDocument,{data:d,term:t,kasbonId:'current-kasbon'}));
-  assert.equal((html.match(/kasbon-approval-stamp/g)??[]).length,7);assert.match(html,/Mgr Finance &amp; Settlement/);assert.doesNotMatch(html,/OLD SLOT|MANDOR SIGNATURE|Ketua Mandor|Business Support|0011223344556677/);
+  assert.equal((html.match(/kasbon-approval-stamp/g)??[]).length,5);assert.match(html,/Mgr Finance &amp; Settlement/);assert.equal((html.match(/class="kasbon-wet-signature"/g)??[]).length,7);assert.deepEqual(kasbonSignatures(d,t,'current-kasbon').map(rows=>rows.reduce((n,r)=>n+(r.span??1),0)),[6,6,6]);assert.equal(roles.length,7);assert.equal(t.history.length,7);assert.doesNotMatch(html,/OLD SLOT|MANDOR SIGNATURE|Ketua Mandor|Business Support|Admin Area|Admin Area QA|Finance QA|0011223344556677/);
   const archived=renderToStaticMarkup(createElement(KasbonDocument,{data:d,term:t,kasbonId:'other-kasbon'}));assert.doesNotMatch(archived,/APPROVED/);
-  t.history[0].userId='different-pm';assert.equal(kasbonSignatures(d,t,'current-kasbon').flat().filter(r=>r.approved).length,6);
+  t.history[0].userId='different-pm';assert.equal(kasbonSignatures(d,t,'current-kasbon').flat().filter(r=>r.approved).length,4);
 });
 
 test('kasbon native Word has editable table, blank physical signature areas and safe names without marks',()=>{
@@ -61,7 +61,23 @@ test('kasbon native Word has editable table, blank physical signature areas and 
   assert.equal(Object.keys(parts).length,8);assert.match(xml,/<w:tblHeader\/>/);assert.match(xml,/<w:gridSpan w:val="4"/);assert.match(xml,/0001234567/);assert.match(xml,/Settlement QA/);assert.match(xml,/&lt;QA&gt; &amp;/);
   assert.doesNotMatch(xml,/APPROVED|MANDOR SIGNATURE|OLD SLOT|Business Support|0011223344556677|altChunk|<html|TargetMode="External"/);assert.match(xml,/<w:line w:val|w:line="800"/);
   const term={history:[{role:'Finance',userId:'qa-finance',actorName:'Finance Aktual QA',decision:'Setujui',note:'',at:'2026-11-15T02:00:00Z',kasbonId:'active'}]} as Term;
-  const actual=docxParts(createKasbonDocx(vector,logo,term,'active'))['word/document.xml'];assert.match(actual,/Finance Aktual QA/);assert.doesNotMatch(actual,/APPROVED/);
+  const actual=docxParts(createKasbonDocx(vector,logo,term,'active'))['word/document.xml'];assert.doesNotMatch(actual,/Finance Aktual QA|Admin Area QA/);assert.doesNotMatch(actual,/APPROVED/);
   assert.equal(JSON.stringify(vector),before);assert.doesNotMatch(kasbonWordFilename({...vector,ppNo:'<>:/\\*?"|'}),/[<>:/\\*?"|]/);
   assert.throws(()=>createKasbonDocx(vector,new Uint8Array()),/Logo/);
+});
+
+test('kasbon preview and Word omit a single final label and retain only installment numbers without mutating snapshots',()=>{
+  const logo=new Uint8Array(readFileSync(new URL('../../resources/js/area3/assets/spk-telkom-akses.png',import.meta.url)));
+  for(const templateVersion of [undefined,2,3] as const)for(const [termNumber,termType] of [[1,'Final'],[1,'Parsial'],[2,'Parsial'],[2,'Final'],[3,'Final']] as const){
+    const d={...structuredClone(vector),templateVersion,termNumber,termType},before=JSON.stringify(d);
+    const html=renderToStaticMarkup(createElement(KasbonDocument,{data:d}));
+    const xml=docxParts(createKasbonDocx(d,logo))['word/document.xml'];
+    for(const output of [html,xml]){
+      assert.ok(output.includes(d.spkNo));
+      assert.doesNotMatch(output,/\(Final\)|\(Parsial\)/);
+      if(termNumber===1&&termType==='Final')assert.doesNotMatch(output,/Termin 1/);
+      else assert.ok(output.includes(` · Termin ${termNumber}`));
+    }
+    assert.equal(JSON.stringify(d),before);
+  }
 });

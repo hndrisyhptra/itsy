@@ -1,6 +1,6 @@
 import type { Term } from './domain';
 import { money } from './currency';
-import { kasbonTerbilang, kasbonSignatures, kasbonDate, type KasbonData } from './kasbon-content';
+import { kasbonTerbilang, kasbonSignatures, kasbonSignatureColumns, kasbonDate, kasbonTermSuffix, type KasbonData } from './kasbon-content';
 import { xmlHeader, wns, relns, officeRel, paragraph, table, tableRow } from './word-ooxml';
 import { ooxmlZip } from './ooxml-zip';
 
@@ -11,7 +11,7 @@ export function createKasbonDocx(d:KasbonData,logo:Uint8Array,term?:Term,kasbonI
   const widths=[2200,1300,1900,3000,1800],meta=[1900,8300];
   let body=paragraph('Pengajuan Kasbon Project',{style:'Title',align:'center',size:26,after:220});
   body+=table([['Unit',d.unit],['Total Nilai',money(d.amount)],['Cost Center',d.costCenter],['WBS',d.wbs],['Jenis Kegiatan',d.activity]].map(([label,value])=>tableRow([{text:label,align:'left',bold:true},{text:value,align:'left'}],meta,false,18)),meta,false);
-  body+=paragraph(`${d.projectCode} · ${d.project}\n${d.ppNo}\n${d.spkNo} · Termin ${d.termNumber} (${d.termType})`,{size:18,before:120,after:140});
+  body+=paragraph(`${d.projectCode} · ${d.project}\n${d.ppNo}\n${d.spkNo}${kasbonTermSuffix(d)}`,{size:18,before:120,after:140});
   body+=table([
     tableRow(['Cost Center / WBS','No Akun','Nama Akun','Teks','Amount (Rp)'].map(text=>({text})),widths,true,16),
     ...d.rows.map(r=>tableRow([`${d.costCenter} / ${d.wbs}`,r.accountCode,r.accountName,r.text,money(Number(r.amount))].map((text,i)=>({text,align:i===4?'right' as const:'left' as const})),widths,false,16)),
@@ -21,9 +21,9 @@ export function createKasbonDocx(d:KasbonData,logo:Uint8Array,term?:Term,kasbonI
   body+=paragraph(kasbonDate(d),{size:18,align:'right',after:120});
   body+=paragraph('Tujuan Transfer',{size:18,keep:true,after:60});
   body+=table([['Nama Penerima',d.payee.accountName],['No Rekening',d.payee.accountNumber],['Nama Bank',d.payee.bank]].map(([label,value])=>tableRow([{text:label,align:'left'},{text:value,align:'left'}],meta,false,18)),meta,false);
-  const groups=kasbonSignatures(d,term,kasbonId),signatureWidths=d.templateVersion===3?[3400,3400,3400]:[2550,2550,2550,2550];
+  const groups=kasbonSignatures(d,term,kasbonId),signatureWidths=Array(kasbonSignatureColumns(d)).fill(10200/kasbonSignatureColumns(d));
   for(let i=0;i<groups.length;i++){
-    const cells=groups[i].map((r,j)=>({span:d.templateVersion!==3&&i===1&&j===0?2:1,paragraphs:paragraph(r.action,{align:'center',size:16,keep:true,before:100,after:0})+paragraph('',{blankHeight:800,keep:true,after:0})+paragraph([{text:r.name,bold:true}],{align:'center',size:16,keep:true,after:0})+paragraph(r.job,{align:'center',size:16,after:80})}));
+    const cells=groups[i].map(r=>({span:r.span??1,paragraphs:paragraph(r.action,{align:'center',size:16,keep:true,before:100,after:0})+paragraph('',{blankHeight:800,keep:true,after:0})+paragraph([{text:r.name,bold:true}],{align:'center',size:16,keep:true,after:0})+paragraph(r.job,{align:'center',size:16,after:80})}));
     body+=table([tableRow(cells,signatureWidths,false,16)],signatureWidths,false);
   }
   const contentTypes=xmlHeader+'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/header1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"/></Types>';

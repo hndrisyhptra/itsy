@@ -1,5 +1,13 @@
 # Antrean upload dan optimasi aplikasi — 6 November 2026
 
+## 16 November 2026 — Bukti transfer ditolak worker lokal lama
+
+Dua task bukti transfer lokal ditolak dengan pesan kasbon belum disetujui Finance. Diagnosis baca-saja pada its menunjukkan flow kasbon-settlement-v2/version3, pengajuan Disetujui, Finance Diverifikasi dengan keputusan Setujui dan kasbonId cocok, belum APM/lunas; context task juga cocok. Worker PID23479 masih berjalan sejak15November16:41, sebelum handler/domain diperbarui16November04:48–04:51. Kode worker yang sudah dimuat berbeda dari kode web; tidak perlu mengubah approval atau status SQL.
+
+Cache file/prefix/lokasi proyek diverifikasi sebelum queue:restart, lalu proses lama dikonfirmasi berhenti. Autostart lokal tetaptrue, worker pengganti mengikuti identitas OS web pada unggahan berikutnya. Pengguna mengonfirmasi unggahan baru berhasil. Task gagal tetap sebagai riwayat; tidak mengedit business rows, membayar, mengulang persetujuan, menghapus jobs, mengubah .env/izin privat atau menyentuh worker aplikasi lain. Setelah pembaruan handler/domain upload, restart worker proyek merupakan bagian penerapan kode; lihat UPLOAD_QUEUE_PERFORMANCE.
+
+Sessionless worker Parsial/Final43query; tidak ada perubahan validator/bisnis/database. [Verifikasi](qa/transfer-worker-restart-20261116.json).
+
 ## 15 November 2026 — Worker harus memuat kode terbaru dan retry privat
 
 Insiden lokal: PID26843 milikdaemon masih menjalankan `area3:work-uploads` sejak7November; task KTP/bank15November gagal walaupun akun/SPK/Branch valid. Long-running PHP worker mempertahankan class lama. Setelah perubahan handler upload, worker perlu dihentikan tertib dan dimulai kembali dengan kode yang sama dengan web. Pada lokal ini cache file telah diverifikasi berada di storage proyek Area3, prefix `its-area-3-cache-`; `php artisan queue:restart` berhasil menghentikan worker lama. Autostart=true memulai penggantinya pada unggahan berikutnya dengan identitas web. Pengguna mengonfirmasi upload KTP lokal berhasil. Tidak mengubah worker Dompis atau konfigurasi/izin daemon, tidak memaksa root/file permissions, tidak membersihkan jobs/failed tasks.

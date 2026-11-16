@@ -1,3 +1,4 @@
+import { settlementRecorded } from './payment-settlement';
 import { paymentDue } from './kasbon-settlement';
 import { type State, boqTotal, canApproveProject, canApproveTerm, dealTotal, round, termTotal } from './domain';
 
@@ -19,7 +20,7 @@ export function dashboardSummary(s: State, branch = '') {
   const completed = new Set(s.bapps.filter(b => b.status === 'Sah').map(b => termProjects.get(b.termId)));
   const approved = terms.filter(t => t.status === 'Disetujui');
   const sum = (values: number[]) => round(values.reduce((a, b) => a + b, 0));
-  const pendingTerms = terms.filter(t => canApproveTerm(s, t) || (s.role === 'Finance' && t.apmStatus !== 'Valid' && ['Menunggu Verifikasi', 'Valid'].includes(t.scan?.status ?? '')));
+  const pendingTerms = terms.filter(t => canApproveTerm(s, t) || (s.role === 'Finance' && !settlementRecorded(t)&&['Menunggu Verifikasi','Valid'].includes(t.scan?.status??'')));
   return {
     projects, spks,
     activeProjects: projects.filter(p => p.status === 'Sah' && !completed.has(p.id)).length,

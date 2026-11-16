@@ -3,6 +3,11 @@ name: area3-prototype-qa
 description: Test the its Area 3 interactive prototype through the linked business scenarios, permissions, persistence, financial/volume invariants, documents and responsive layouts.
 ---
 
+## 16 November 2026 — Tandai Lunas dengan APM opsional
+
+Follow docs/PAYMENT_SETTLEMENT_OPTIONAL_APM.md, superseding mandatory APM number for kasbon-v1/kasbon-settlement-v2 settlement only. Finance explicitly settles after all applicable approvals, current-version private proof, verified scan when present, canonical net and no pending proof upload; APM optional. Server-only settledAt/settledBy and frozen proof/kasbon binding plus shared settlementRecorded govern next-term/inbox/timeline/matrix/list; do not fabricate an APM or mark absent number Valid. Finance may add/correct unique validated APM after full settlement, audit before/after/actor/time without changing original paid/history/SQL settlement amount/date/identity. Legacy pre-kasbon gates remain. Migration2026_11_16_000001 allows nullable unique apm_no only for kasbon+proof, restores SQLite triggers and refuses rollback with nulls; not applied live by agent. Keep Branch/revision/UUID/Head-lock/private file guards, no double settlement/backfill/live write. Query fixture39 per settle/edit, list4; record actual QA/deploy limits.
+
+
 ## Net Mandor service kasbon and Finance list — 16 November 2026
 Follow docs/KASBON_PPH_PAYMENT_LIST.md and latest AGENTS: new explicit kasbon issue/reissue freezes actual Mandor Jasa less2.5%, Material intact, final net truncated, gross retained; no deduction row on cashbon output. Old issued/paid policies remain. Net paid/APM/outstanding/next-term/closure/report parity, seven genuine approvals/private proof/version/Branch/UUID/revision gates and quote validation are mandatory. Finance/Settlement-only20+1 metadata list uses4servicequeries, scoped PPbranch, safe revision refresh and no PII/decryption/aggregate loading. No new migration/live rewrite. Record actual tests, Word render, browser QA vs live/server limits.
 

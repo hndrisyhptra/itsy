@@ -1,0 +1,165 @@
+{
+  "date": "2026-11-16",
+  "change": "Remove Admin Area and Finance signature slots from template3 kasbon preview/Word/print; keep all seven application approvals.",
+  "php": {
+    "passed": 300,
+    "assertions": 6581,
+    "database": "fail-closed SQLite memory"
+  },
+  "frontend": {
+    "passed": 304
+  },
+  "build": "passed",
+  "query_impact": {
+    "new_sql": 0,
+    "new_endpoint": 0,
+    "new_lookup": 0,
+    "new_migration": false,
+    "render": "Fixed seven visible cells; existing versioned loaded props only."
+  },
+  "word": [
+    {
+      "name": "normal",
+      "docx_sha256": "29d07e2f08504b6ca28a2a75b61c3c82beccac91bf691f7f85ea97ea63a08ed6",
+      "word_pages": 1,
+      "all_word_pages_inspected": true,
+      "zip_crc_xml_valid": true
+    },
+    {
+      "name": "long",
+      "docx_sha256": "ef815186a94b25728368f60e4029e033a5583d713073874c535e65c3e073097e",
+      "word_pages": 2,
+      "all_word_pages_inspected": true,
+      "zip_crc_xml_valid": true
+    }
+  ],
+  "browser": [
+    {
+      "name": "normal",
+      "screenMarks": 5,
+      "printMarks": 0,
+      "spans": [
+        [
+          3,
+          3
+        ],
+        [
+          2,
+          2,
+          2
+        ],
+        [
+          3,
+          3
+        ]
+      ],
+      "errors": []
+    },
+    {
+      "name": "normal-nested",
+      "screenMarks": 5,
+      "printMarks": 0,
+      "spans": [
+        [
+          3,
+          3
+        ],
+        [
+          2,
+          2,
+          2
+        ],
+        [
+          3,
+          3
+        ]
+      ],
+      "errors": []
+    },
+    {
+      "name": "long",
+      "screenMarks": 5,
+      "printMarks": 0,
+      "spans": [
+        [
+          3,
+          3
+        ],
+        [
+          2,
+          2,
+          2
+        ],
+        [
+          3,
+          3
+        ]
+      ],
+      "errors": []
+    },
+    {
+      "name": "long-nested",
+      "screenMarks": 5,
+      "printMarks": 0,
+      "spans": [
+        [
+          3,
+          3
+        ],
+        [
+          2,
+          2,
+          2
+        ],
+        [
+          3,
+          3
+        ]
+      ],
+      "errors": []
+    }
+  ],
+  "pdf": [
+    {
+      "name": "normal",
+      "pages": 1,
+      "nonblank_every_page": true,
+      "marks": 0,
+      "removed_signer_names_absent": true
+    },
+    {
+      "name": "normal-nested",
+      "pages": 1,
+      "nonblank_every_page": true,
+      "marks": 0,
+      "removed_signer_names_absent": true
+    },
+    {
+      "name": "long",
+      "pages": 3,
+      "nonblank_every_page": true,
+      "marks": 0,
+      "removed_signer_names_absent": true
+    },
+    {
+      "name": "long-nested",
+      "pages": 3,
+      "nonblank_every_page": true,
+      "marks": 0,
+      "removed_signer_names_absent": true
+    }
+  ],
+  "limits": [
+    "QA fixtures only; authenticated server/aaPanel not tested",
+    "Microsoft Word desktop and physical printing not tested"
+  ],
+  "preserved": [
+    "all seven real application approval stages",
+    "actual decisions/current version binding",
+    "net/gross/PPh calculations and saved money",
+    "kasbon snapshots, recipients and bank data",
+    "Finance proof/APM/scan and Branch gates",
+    "legacy kasbon signature arrangement"
+  ],
+  "live_database_write": false
+}

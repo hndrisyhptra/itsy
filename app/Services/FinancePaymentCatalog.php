@@ -36,7 +36,8 @@ final class FinancePaymentCatalog
             });
         }
         $grammar = $q->getGrammar();
-        $paid = 'a.id_apm_settlement IS NOT NULL AND a.amount > 0 AND COALESCE('.$grammar->wrap('t.document_data->apmStatus').", '') = 'Valid'";
+        $transferPaid = $grammar->wrap('t.document_data->paymentFlow')." IN ('kasbon-v1', 'kasbon-settlement-v2') AND ".$grammar->wrap('t.document_data->financePayment->status')." = 'Dibayar' AND ".$grammar->wrap('t.document_data->financePayment->settledAt').' IS NOT NULL AND '.$grammar->wrap('t.document_data->financePayment->kasbonId').' = a.kasbon_id AND '.$grammar->wrap('t.document_data->financePayment->transferFileId').' = a.transfer_file_id';
+        $paid = 'a.id_apm_settlement IS NOT NULL AND a.amount > 0 AND (COALESCE('.$grammar->wrap('t.document_data->apmStatus').", '') = 'Valid' OR (".$transferPaid.'))';
         $amount = 'COALESCE(k.amount, '.$grammar->wrap('t.document_data->paymentRequest->amount').', t.approved_amount, 0)';
         $paid .= ' AND a.amount >= '.$amount;
         $summary = (clone $q)->selectRaw("COUNT(*) AS total, COUNT(DISTINCT NULLIF(p.project_code, '')) AS projects, SUM(CASE WHEN $paid THEN 1 ELSE 0 END) AS paid_count, SUM(CASE WHEN $paid THEN a.amount ELSE 0 END) AS paid_amount, SUM(CASE WHEN $paid THEN 0 ELSE $amount END) AS unpaid_amount")->first();

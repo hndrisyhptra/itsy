@@ -377,8 +377,9 @@ class RelationalWorkflowStore
                 'verified_by' => $this->user($scan['verifiedBy'] ?? null), 'verified_at' => $this->dateTime($scan['verifiedAt'] ?? null), 'note' => $scan['note'] ?? '',
             ]);
         }
-        if (($term['workflowVersion'] ?? 1) >= 2 && $term['apmStatus'] === 'Valid') {
-            $payment = collect($term['paymentHistory'])->first(fn ($p) => ($p['source'] ?? '') === 'APM' && $p['ref'] === $term['apm']);
+        if (($term['workflowVersion'] ?? 1) >= 2 && PrototypeDomain::settlementRecorded($term)) {
+            $originalApm = $term['financePayment']['apmHistory'][0]['before'] ?? $term['apm'];
+            $payment = collect($term['paymentHistory'])->first(fn ($p) => (($p['source'] ?? '') === 'APM' && $p['ref'] === $originalApm) || (($p['source'] ?? '') === 'TRANSFER_PROOF' && $p['ref'] === ($term['transferProof']['id'] ?? null)));
             if (! $payment) {
                 throw new RuntimeException('Riwayat pembayaran APM tidak ditemukan.');
             }
@@ -388,11 +389,14 @@ class RelationalWorkflowStore
                 'payment_request_id' => PrototypeDomain::usesPartialPayment($term) ? $this->id($workspace->id, 'payment-request', $term['paymentRequest']['id']) : null,
                 'kasbon_id' => PrototypeDomain::usesFinancePayment($term) ? $term['kasbon']['id'] : null,
                 'transfer_file_id' => PrototypeDomain::usesFinancePayment($term) ? $term['transferProof']['id'] : null,
-                'apm_no' => $term['apm'],
+                'apm_no' => $term['apm'] ?: null,
                 'amount' => $payment['amount'], 'recorded_by' => $this->user($payment['actor']), 'recorded_at' => $this->dateTime($payment['at']),
             ];
-            if (! DB::table('apm_settlements')->where('id_apm_settlement', $settlement['id_apm_settlement'])->exists()) {
+            $existingSettlement = DB::table('apm_settlements')->where('id_apm_settlement', $settlement['id_apm_settlement'])->first(['apm_no']);
+            if (! $existingSettlement) {
                 DB::table('apm_settlements')->insert($settlement);
+            } elseif ($existingSettlement->apm_no !== $settlement['apm_no']) {
+                DB::table('apm_settlements')->where('id_apm_settlement', $settlement['id_apm_settlement'])->update(['apm_no' => $settlement['apm_no']]);
             }
         }
     }

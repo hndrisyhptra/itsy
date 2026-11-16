@@ -1,0 +1,105 @@
+{
+  "date": "2026-11-16",
+  "authority": "Finance upload transfer proof then explicitly Tandai Lunas; APM optional, add/edit after paid",
+  "scope": [
+    "kasbon-v1",
+    "kasbon-settlement-v2"
+  ],
+  "behavior": {
+    "uploadDoesNotAutoPay": true,
+    "allApplicableApprovalsAndFinanceRequired": true,
+    "proofBoundToCurrentKasbon": true,
+    "pendingUploadBlocksSettlement": true,
+    "availableScanStillMustBeVerified": true,
+    "fullCanonicalNetOnly": true,
+    "apmWithoutValue": "empty string in snapshot, Belum Terbit; SQL NULL",
+    "apmEditAfterPaid": true,
+    "apmEditAudit": "financePayment.apmHistory before/after/at/by",
+    "paymentHistoryAndSettlementAmountsDatesIdentitiesUnchangedOnApmEdit": true,
+    "doubleSettlementBlocked": true,
+    "legacyPreKasbonRulesPreserved": true
+  },
+  "commands": [
+    "settleFinancePayment",
+    "updatePaymentApm"
+  ],
+  "migration": {
+    "file": "2026_11_16_000001_allow_optional_payment_apm",
+    "nullableColumn": "apm_settlements.apm_no",
+    "preserves": [
+      "unique index/collation",
+      "existing money",
+      "SQL identity/FKs",
+      "settlement authority XOR",
+      "SQLite triggers"
+    ],
+    "nullOnlyFor": "kasbon with transfer proof",
+    "rollback": "refuses existing NULL APM",
+    "activeItsApplied": false,
+    "serverApplied": false,
+    "noDataBackfill": true
+  },
+  "verification": {
+    "phpTests": 303,
+    "phpAssertions": 6749,
+    "frontendTests": 310,
+    "build": "passed",
+    "assets": {
+      "manifestReferences": 36,
+      "preloads": 28,
+      "profiles": 3
+    },
+    "scopedPint": "passed",
+    "diffCheck": "passed",
+    "isolatedDatabase": "SQLite :memory:; fake private storage"
+  },
+  "regressions": [
+    "Partial and Final settlement before/after approval/proof",
+    "pending transfer upload blocks payment",
+    "missing/invalid/duplicate APM",
+    "optional empty APM followed by two edits",
+    "read-only SQL paid catalog includes NULL APM",
+    "replay/stale revision/double payment",
+    "wrong role and revoked Branch",
+    "next-term with no APM, Final blocked",
+    "timeline count and matrix CLOSE without APM",
+    "legacy paid kasbon APM correction preserves original payment history and SQL metadata",
+    "rollback refuses NULL and all migrations reapply safely",
+    "HTML button absent before proof, present after persisted current proof, reference editor after paid",
+    "YA/TIDAK confirmation for both commands"
+  ],
+  "queryEvidence": {
+    "settleAuthenticatedHttp": [
+      39,
+      39
+    ],
+    "referenceEditAuthenticatedHttp": [
+      39,
+      39
+    ],
+    "commandBudget": 80,
+    "catalogServiceQueries": 4,
+    "catalogPage": "20+1",
+    "pureResolverQueries": 0,
+    "newReadinessQueriesPerNewCommand": 1,
+    "noPerApproverOrRowQueries": true,
+    "notALoadBenchmark": true
+  },
+  "backup": {
+    "type": "demo SQLite",
+    "bytes": 233472,
+    "permissions": "0600"
+  },
+  "deployment": {
+    "liveBusinessWrites": false,
+    "envAppKeyChanged": false,
+    "workersRestartedThisChange": false,
+    "noCommitPushServerDeploy": true
+  },
+  "limits": [
+    "No live account browser/end-to-end upload test for this change",
+    "No aaPanel or MySQL/MariaDB DDL applied; migration verified in isolated SQLite",
+    "No real bank transfer; application records user-confirmed settlement",
+    "Production restart and migration remain operator steps"
+  ]
+}

@@ -1,5 +1,20 @@
 # it's Area 3 — Development rules
 
+## 16 November 2026 — Tandai Lunas dengan APM opsional
+
+Follow docs/PAYMENT_SETTLEMENT_OPTIONAL_APM.md, superseding mandatory APM number for kasbon-v1/kasbon-settlement-v2 settlement only. Finance explicitly settles after all applicable approvals, current-version private proof, verified scan when present, canonical net and no pending proof upload; APM optional. Server-only settledAt/settledBy and frozen proof/kasbon binding plus shared settlementRecorded govern next-term/inbox/timeline/matrix/list; do not fabricate an APM or mark absent number Valid. Finance may add/correct unique validated APM after full settlement, audit before/after/actor/time without changing original paid/history/SQL settlement amount/date/identity. Legacy pre-kasbon gates remain. Migration2026_11_16_000001 allows nullable unique apm_no only for kasbon+proof, restores SQLite triggers and refuses rollback with nulls; not applied live by agent. Keep Branch/revision/UUID/Head-lock/private file guards, no double settlement/backfill/live write. Query fixture39 per settle/edit, list4; record actual QA/deploy limits.
+
+## 16 November 2026 — Bukti transfer ditolak worker lokal lama
+
+Local stale daemon rejected valid approved kasbon-settlement-v2 transfer uploads; project-cache queue:restart stopped it and user confirmed retry success. Follow docs/UPLOAD_QUEUE_PERFORMANCE.md: reload the project worker after upload/domain code updates, keep OS web identity, and preserve failed tasks/history. Never rewrite approvals/SQL to bypass the guard. Sessionless transfer regression43queries for Partial/Final.
+
+## 16 November 2026 — Label termin pada kasbon
+
+Kasbon HTML/print/Word uses shared kasbonTermSuffix: first Final omits the whole Termin label; otherwise show only Termin N without (Final)/(Parsial). Keep saved term number/type, filename identity, historical snapshots, BARP and workflow intact. Pure presentation, no SQL/migration. See docs/FINANCE_KASBON.md and docs/qa/kasbon-term-label-20261116.json.
+
+## Kasbon physical signers without Admin Area and Finance — 16 November 2026
+Follow latest docs/BUNDLE_SETTLEMENT_APPROVAL.md: template3 kasbon preview/Word/print omit the entire Admin Area Memeriksa and Finance Menyetujui physical slots. Keep all seven actual application approvals, their decisions/IDs/history/inbox/timeline/FinanceAPM guards unchanged. Render seven visible slots2/3/2: PM/maker; Support/Deployment/Head; Settlement/EVP, using shared6column spans3/2/3; no empty removed slots. At most5genuine version-bound preview marks, Word/print blank. Legacy maker Finance and old template arrangements remain. No SQL/API/schema/money/PII/live snapshot writes; record actual tests and Word/browser/print/query limits.
+
 ## Mandor service withholding and Finance list — 16 November 2026
 Follow docs/KASBON_PPH_PAYMENT_LIST.md. User confirms only actual Mandor Jasa is reduced2.5%, Material unchanged; kasbon AND transfer/APM net, gross retained. New explicit issue/reissue freezes server-owned mandor-service-pph25-v1 quote (gross/material/service/withheld/net), truncating final net Rupiah; no deduction row/label on kasbon form/preview/Word/print. Old issued/paid kasbons stay gross under their saved policy; no GET/bulk repricing. paid/paymentHistory/APM actual net; paymentDue controls next-term/closure/outstanding/reports/manual caps, without rewriting gross approved_amount/BOQ/BARP/volume or weakening seven approvals/version/scan/proof/APM/Branch/revision gates. Preserve conversion preflight quote checks. Finance/Settlement-only List Payment is a Pembayaran submenu,4query bounded SQL metadata catalog scoped by PPworkspace/Branch before search/summary,20+1, no PII/decryption/archive/master/aggregate loads. Use revision-only safe list refresh, no duplicate boot requests. No new migration; record actual query/render/browser/test/deployment limits.
 

@@ -3,7 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\PrototypeWorkspace;
+use App\Services\AccountAccess;
 use App\Services\AuthenticatedWorkspace;
+use App\Services\FinancePaymentCatalog;
 use App\Services\KasbonSettlement;
 use App\Services\NegotiationProjectCatalog;
 use App\Services\PrototypeDomain;
@@ -11,9 +13,11 @@ use App\Services\PrototypeWorkspaceService;
 use App\Services\UploadQueue;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Concerns\AuthenticatesArea3;
 use Tests\TestCase;
@@ -123,8 +127,21 @@ class BundleSettlementTest extends TestCase
         $this->assertDatabaseHas('approval_steps', ['step_no' => 7, 'expected_role' => 'FINANCE', 'assigned_user_id' => $this->accounts['Finance']->getKey()]);
         $this->api('recordApm', [$t['id'], 'QA-APM-7', true])->assertUnprocessable();
         $task = $this->post('/api/finance/uploads/transfer-proof/'.$t['id'], ['file' => UploadedFile::fake()->createWithContent('proof.pdf', "%PDF-1.4\nproof QA\n%%EOF"), 'revision' => (string) PrototypeWorkspace::first()->revision, 'request_id' => (string) Str::uuid()], ['Accept' => 'application/json'])->assertAccepted()->json('task.id');
+        Auth::forgetGuards();
+        Auth::forgetUser();
+        $this->assertNull(Auth::user());
+        DB::enableQueryLog();
+        DB::flushQueryLog();
         app(UploadQueue::class)->process($task);
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+        $this->assertLessThanOrEqual(80, count($queries), 'Sessionless transfer worker must not add per-approver queries.');
+        fwrite(STDERR, "\nSessionless settlement transfer worker: ".count($queries)." queries.\n");
+        $this->assertNull(Auth::user());
         $this->assertDatabaseHas('upload_tasks', ['id_upload_task' => $task, 'status' => 'completed']);
+        $this->assertDatabaseHas('finance_private_files', ['id_finance_file' => $task, 'kind' => 'transfer-proof', 'uploaded_by' => $this->accounts['Finance']->getKey()]);
+        $this->asRole('Finance');
+        $this->get('/api/finance/files/'.$task)->assertOk();
         $this->api('recordApm', [$t['id'], 'QA-APM-7', true])->assertOk();
         $t = $this->term();
         $this->assertSame('Valid', $t['apmStatus']);
@@ -135,6 +152,111 @@ class BundleSettlementTest extends TestCase
         if ($final) {
             $this->assertSame('Draft', collect($this->state()['bapps'])->firstWhere('termId', $t['id'])['status']);
         }
+    }
+
+    #[DataProvider('paymentTypes')]
+    public function test_transfer_settlement_without_apm_then_apm_edits_never_repeat_payment(bool $final): void
+    {
+        $t = $this->draftPayment();
+        if ($final) {
+            $t['type'] = 'Final';
+            $this->api('saveTerm', [$t, false])->assertOk();
+            $t = $this->term();
+        }
+        $this->submitKasbon($t)->assertOk();
+        $this->asRole('Finance');
+        $this->api('settleFinancePayment', [$t['id'], ''])->assertUnprocessable();
+        $this->api('updatePaymentApm', [$t['id'], 'APM/EARLY'])->assertUnprocessable();
+        foreach ([...PrototypeDomain::APPROVERS_V3, 'Mgr Finance & Settlement', 'Finance'] as $role) {
+            $this->asRole($role);
+            $this->api('decide', [$t['id'], 'Setujui', ''])->assertOk();
+        }
+        $this->api('settleFinancePayment', [$t['id'], ''])->assertUnprocessable();
+        $task = $this->post('/api/finance/uploads/transfer-proof/'.$t['id'], ['file' => UploadedFile::fake()->createWithContent('proof.pdf', "%PDF-1.4\nproof QA\n%%EOF"), 'revision' => (string) PrototypeWorkspace::first()->revision, 'request_id' => (string) Str::uuid()], ['Accept' => 'application/json'])->assertAccepted()->json('task.id');
+        $this->api('settleFinancePayment', [$t['id'], ''])->assertUnprocessable();
+        app(UploadQueue::class)->process($task);
+        $this->api('settleFinancePayment', [$t['id'], 'bad space'])->assertUnprocessable();
+        $request = ['command' => 'settleFinancePayment', 'args' => [$t['id'], ''], 'revision' => PrototypeWorkspace::first()->revision, 'request_id' => (string) Str::uuid()];
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $this->postJson('/api/prototype/commands', $request)->assertOk();
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+        $this->assertLessThanOrEqual(80, count($queries));
+        fwrite(STDERR, "\nOptional APM settlement: ".count($queries)." queries.\n");
+        $this->postJson('/api/prototype/commands', $request)->assertOk()->assertJsonPath('replayed', true);
+        $this->api('settleFinancePayment', [$t['id'], ''])->assertUnprocessable();
+        $paid = $this->term();
+        $this->assertSame('', $paid['apm']);
+        $this->assertSame('Belum Terbit', $paid['apmStatus']);
+        $this->assertTrue(PrototypeDomain::settlementRecorded($paid));
+        $this->assertFalse(PrototypeDomain::financeTaskPending($paid));
+        $this->assertCount(1, $paid['paymentHistory']);
+        $this->assertSame('TRANSFER_PROOF', $paid['paymentHistory'][0]['source']);
+        $settlement = (array) DB::table('apm_settlements')->first();
+        $this->assertNull($settlement['apm_no']);
+        $this->assertSame($task, $settlement['transfer_file_id']);
+        $this->assertEquals($paid['paid'], $settlement['amount']);
+        $migration = require base_path('database/migrations/2026_11_16_000001_allow_optional_payment_apm.php');
+        try {
+            $migration->down();
+            $this->fail('Rollback must refuse existing null APM.');
+        } catch (\RuntimeException $e) {
+            $this->assertStringContainsString('rollback ditolak', $e->getMessage());
+        }
+        $account = app(AuthenticatedWorkspace::class)->account();
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $listing = app(FinancePaymentCatalog::class)->listing($account, ['status' => 'paid']);
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+        $this->assertCount(4, $queries);
+        $this->assertSame(1, $listing['summary']['paid']);
+        $this->assertNull($listing['items'][0]['apm']);
+        $this->asRole('Admin Konstruksi');
+        $this->api('updatePaymentApm', [$t['id'], 'APM/FORBIDDEN'])->assertForbidden();
+        $this->api('createTerm', [$t['spkId']])->{ $final ? 'assertUnprocessable' : 'assertOk' }();
+        $this->asRole('Finance');
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $this->api('updatePaymentApm', [$t['id'], 'APM/AFTER/001'])->assertOk();
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+        $this->assertLessThanOrEqual(80, count($queries));
+        fwrite(STDERR, "\nOptional APM reference edit: ".count($queries)." queries.\n");
+        $this->api('updatePaymentApm', [$t['id'], 'APM/EDIT/002'])->assertOk();
+        $this->api('updatePaymentApm', [$t['id'], ''])->assertUnprocessable();
+        $updated = $this->term();
+        $this->assertSame($paid['paymentHistory'], $updated['paymentHistory']);
+        $this->assertSame($paid['approvals'], $updated['approvals']);
+        $this->assertSame($paid['paid'], $updated['paid']);
+        $this->assertCount(2, $updated['financePayment']['apmHistory']);
+        $after = (array) DB::table('apm_settlements')->first();
+        $this->assertSame('APM/EDIT/002', $after['apm_no']);
+        unset($settlement['apm_no'], $after['apm_no']);
+        $this->assertSame($settlement, $after);
+        $this->assertDatabaseCount('apm_settlements', 1);
+        $this->assertSame(1, app(FinancePaymentCatalog::class)->listing($account, ['q' => 'APM/EDIT/002'])['summary']['paid']);
+        $beforeRevision = PrototypeWorkspace::first()->revision;
+        $this->postJson('/api/prototype/commands', ['command' => 'updatePaymentApm', 'args' => [$t['id'], 'APM/STALE'], 'revision' => $beforeRevision - 1, 'request_id' => (string) Str::uuid()])->assertConflict();
+        $this->assertSame($beforeRevision, PrototypeWorkspace::first()->revision);
+        $state = $this->state();
+        $other = $updated;
+        $other['id'] = 'other-payment';
+        $other['apm'] = 'APM/DUPLICATE';
+        $state['terms'][] = $other;
+        try {
+            app(PrototypeDomain::class)->execute($state, 'updatePaymentApm', [$t['id'], 'apm/duplicate']);
+            $this->fail('APM duplicate must fail.');
+        } catch (ValidationException $e) {
+            $this->assertStringContainsString('Nomor APM sudah digunakan', json_encode($e->errors()));
+        }
+        $otherBranch = DB::table('branches')->where('name', '!=', $state['projects'][0]['branch'])->value('id_branch');
+        app(AccountAccess::class)->assign($this->accounts['Finance'], 'FINANCE', [$otherBranch]);
+        $this->asRole('Finance');
+        $this->api('updatePaymentApm', [$t['id'], 'APM/OUTSIDE'])->assertForbidden();
+        $this->assertSame($beforeRevision, PrototypeWorkspace::first()->revision);
+
     }
 
     public static function rejectionStages(): array

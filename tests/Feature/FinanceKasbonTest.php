@@ -154,6 +154,27 @@ class FinanceKasbonTest extends TestCase
         return $this->term($t['id']);
     }
 
+    public function test_existing_paid_kasbon_can_correct_apm_without_rewriting_original_settlement_or_history(): void
+    {
+        $t = $this->setupTerm();
+        $this->payee($t['spkId']);
+        $t = $this->issue($t);
+        $this->api('decideFinancePayment', [$t['id'], 'Setujui', ''])->assertOk();
+        $this->upload('transfer-proof', $t['id']);
+        $this->api('recordApm', [$t['id'], 'APM/OLD/001', true])->assertOk();
+        $paid = $this->term($t['id']);
+        $before = (array) DB::table('apm_settlements')->first();
+        $this->api('updatePaymentApm', [$t['id'], 'APM/CORRECTED/002'])->assertOk();
+        $updated = $this->term($t['id']);
+        $this->assertSame($paid['paymentHistory'], $updated['paymentHistory']);
+        $this->assertSame($paid['paid'], $updated['paid']);
+        $this->assertSame('APM/OLD/001', $updated['financePayment']['apmHistory'][0]['before']);
+        $after = (array) DB::table('apm_settlements')->first();
+        $this->assertSame('APM/CORRECTED/002', $after['apm_no']);
+        unset($before['apm_no'], $after['apm_no']);
+        $this->assertSame($before, $after);
+    }
+
     public function test_partial_and_final_can_pay_without_scan_after_kasbon_finance_and_transfer_then_verify_late_scan(): void
     {
         foreach ([false, true] as $final) {

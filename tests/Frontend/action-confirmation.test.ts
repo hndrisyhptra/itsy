@@ -135,7 +135,7 @@ test('mutation and file entry points explicitly require confirmation; existing f
     'management.tsx': ['saveProfile(', 'saveUser(', 'updateKhs('],
     'upload-tasks.tsx': ['resumeUpload(', 'onUse(task)'],
     'kasbon-preview.tsx': ['download()', 'window.print()'],
-    'finance-private-ui.tsx': ['uploadPrivateDocument(', 'savePrivateDocument(', 'decideFinancePayment(', 'recordApm(', 'submit()'],
+    'finance-private-ui.tsx': ['uploadPrivateDocument(', 'savePrivateDocument(', 'decideFinancePayment(', 'settleFinancePayment(', 'updatePaymentApm(', 'submit()'],
   };
   for (const [file, calls] of Object.entries(cases)) {
     const source = readFileSync(new URL('../../resources/js/area3/' + file, import.meta.url), 'utf8');

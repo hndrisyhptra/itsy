@@ -1,5 +1,37 @@
 # Catatan perubahan it's Area 3
 
+## 16 November 2026 — Tandai Lunas dengan APM opsional
+
+Finance dapat menekan Tandai Lunas setelah bukti transfer aktif selesai diunggah dan approval/review Finance lengkap, tanpa nomor APM. Upload sendiri tidak membayar otomatis. APM dapat diisi saat pelunasan atau ditambah/diedit sesudah lunas; format/keunikan dan konfirmasi YA/TIDAK tetap. Koreksi nomor menyimpan audit before/after/actor/waktu dan tidak mengubah nilai/tanggal/penerima/bukti/keputusan maupun menambah pembayaran kedua. Berlaku pada alur kasbon-v1/kasbon-settlement-v2; pra-kasbon historis tetap.
+
+PHP/React menambah settleFinancePayment/updatePaymentApm dan settlementRecorded; tanda pelunasan terikat kasbon/proof disimpan server, APM kosong tetap Belum Terbit. Next-term/picker, inbox/timeline, matrix CLOSE dan List Payment mengikuti lunas aktual. SQL apm_settlements tetap1baris/pengajuan; hanya apm_no diperbarui saat koreksi, paymentHistory asli tetap. Migration2026_11_16_000001 membuat apm_no nullable dengan unique/collation/FK/authority tetap dan CHECK NULL khusus kasbon+proof, trigger SQLite dipulihkan, rollback ditolak bila masih ada NULL. Tidak ada backfill/pembayaran/adopsi massal; migration belum diterapkan agen pada its aktif/server. Backupdemo233472byte/0600 sebelum edit; env/APP_KEY/PII/Dompis tidak disentuh.
+
+Query:resolver0SQL, readiness1query per command baru, pending upload probe tetap; fixture pelunasan/koreksi39query masing-masing≤80, List Payment4query/20+1 tanpa per-row query/katalog/dekripsi. Uji UI HTML memeriksa tombol sebelum/sesudah proof, tanpa APM, editor setelah lunas dan role; bukan pengujian browser akun/aaPanel/MySQL DDL/transfer bank nyata. 303PHP/6749assertions,310frontend,TypeScript/Vite,scopedPint dan assets36refs/28preloads×3profil lulus. [Perilaku dan penerapan](PAYMENT_SETTLEMENT_OPTIONAL_APM.md), [bukti suite/query/batas](qa/optional-payment-apm-20261116.json).
+
+## 16 November 2026 — Bukti transfer ditolak worker lokal lama
+
+Dua task bukti transfer lokal ditolak dengan pesan kasbon belum disetujui Finance. Diagnosis baca-saja pada its menunjukkan flow kasbon-settlement-v2/version3, pengajuan Disetujui, Finance Diverifikasi dengan keputusan Setujui dan kasbonId cocok, belum APM/lunas; context task juga cocok. Worker PID23479 masih berjalan sejak15November16:41, sebelum handler/domain diperbarui16November04:48–04:51. Kode worker yang sudah dimuat berbeda dari kode web; tidak perlu mengubah approval atau status SQL.
+
+Cache file/prefix/lokasi proyek diverifikasi sebelum queue:restart, lalu proses lama dikonfirmasi berhenti. Autostart lokal tetaptrue, worker pengganti mengikuti identitas OS web pada unggahan berikutnya. Pengguna mengonfirmasi unggahan baru berhasil. Task gagal tetap sebagai riwayat; tidak mengedit business rows, membayar, mengulang persetujuan, menghapus jobs, mengubah .env/izin privat atau menyentuh worker aplikasi lain. Setelah pembaruan handler/domain upload, restart worker proyek merupakan bagian penerapan kode; lihat UPLOAD_QUEUE_PERFORMANCE.
+
+Regresi existing BundleSettlementTest kini benar-benar melepas guard/sesi browser sebelum memproses bukti transfer Parsial dan Final setelah tujuh keputusan, memeriksa pemulihan guard kosong, uploaded_by Finance, file privat/preview dan APM. Worker43query per fixture (batas80), tanpa query tambahan pada aplikasi atau lookup per approver. Tidak ada perubahan kode produksi/schema/migration/dependency; hanya pengujian dan dokumentasi ditambah. Pengujian memakai SQLite memory/fake storage, bukan transfer bank nyata atau load benchmark/server aaPanel. 300PHP/6593assertions,305frontend,TypeScript/Vite,Pint scoped dan assets36manifest/28preload×3profil lulus. [Bukti dan hasil lengkap](qa/transfer-worker-restart-20261116.json).
+
+## 16 November 2026 — Label termin pada kasbon
+
+Pembayaran pertama langsung Final (termNumber1/termTypeFinal) tidak menampilkan label Termin1. Pembayaran bertahap menampilkan hanya TerminN, termasuk termin terakhir, tanpa (Final)/(Parsial). Berlaku pada preview, HTML yang dicetak dan native Word melalui kasbonTermSuffix yang sama, untuk seluruh versi template. Nomor SPK dan metadata tersimpan tetap; nama file tetap memakai nomor termin untuk identifikasi. Tidak mengubah BARP, editor/daftar pembayaran, tujuh approval, cap, nominal net, ledger atau APM.
+
+Presentasi murni dari props authorized yang telah dimuat: helper O(1), tanpa query/lookup SQL/API/dependency/schema/migration baru dan tanpa perubahan snapshot/riwayat. Tidak ada live its/env/Dompis/worker/deploy; tidak memerlukan backup baru karena tanpa write database.
+
+Verifikasi:300PHP/6581assertions,305frontend,TypeScript/Vite dan assets36manifest/28preload×3profil lulus. Regresi mencakup5kombinasi nomor/jenis pada3versi template untuk HTML/Word serta snapshot unchanged. Tiga DOCX sintetis (langsung Final, Parsial1, Final2) lulus ZIP/CRC/XML dan render1halaman per dokumen; ketiga PNG diperiksa, PDF render berisi dan label sesuai. Browser print tidak dijalankan ulang untuk perubahan teks ini; print memakai komponen HTML yang sama. Browser akun/server, Word desktop dan cetak fisik belum diverifikasi. [Bukti](qa/kasbon-term-label-20261116.json).
+
+## 16 November 2026 — Hapus penandatangan Admin Area dan Finance pada kasbon
+
+Permintaan pengguna menghapus slot **Memeriksa · Admin Area** dan **Menyetujui · Finance** dari kasbon template3. Preview, cetak/PDF dan native Word menggunakan model signer yang sama: PM/pengaju; Project Support/Deployment/Head; Mgr Finance & Settlement/EVP. Tujuh slot fisik ditata2/3/2 dengan enam kolom dasar, colspan3/2/3; tidak menyisakan slot kedua peran yang dihapus. Alur aplikasi tetap tujuh approval termasuk Admin Area dan Finance, dengan keputusan, binding kasbonId, inbox/timeline dan Finance/APM yang sama. Maker Finance pada dokumen lama bukan slot Menyetujui Finance dan tetap dipertahankan; susunan template lama tetap.
+
+Perubahan hanya pada kasbon-content, kasbon-document dan kasbon-docx. Nominal net/PPh, tanggal, penerima/rekening, snapshot SQL/riwayat dan kontrol akses tidak dimutasi. Tidak ada query, endpoint, lookup katalog, dependency atau migration baru; render memakai props authorized yang sudah dimuat dan tujuh sel tetap. Tanpa live its/env/Dompis/worker/commit/push/deploy; tidak perlu backup database baru untuk perubahan presentasi tanpa writes.
+
+Verifikasi:300PHP/6581assertions,304frontend,TypeScript/Vite dan assets36manifest/28preload×3profil lulus. Existing semantic tests memastikan peran/nama yang dihapus tidak ada di HTML/Word, history aplikasi tetap7, cap nyata yang masih ditampilkan5 (atau4 bila PM tidak cocok), arsip beda kasbon tidak bercap, dan snapshot sumber tidak berubah. Native Word normal/20baris dirender1+2halaman; seluruh3PNG diperiksa serta ZIP/CRC/XML valid. Browser QA sintetis normal/nested dan panjang/nested menghasilkan PDF1/1/3/3halaman, semua berisi;5cap preview/0print, signer tersisa dan colspan benar. Preview layar juga diperiksa. Browser akun server/aaPanel/Word desktop/cetak fisik belum diverifikasi. [Bukti](qa/kasbon-signatures-20261116.json).
+
 ## 16 November 2026 — Kasbon net Jasa Mandor dan List Payment Finance
 
 - Potongan2,5% hanya Jasa Mandor aktual; Material utuh. Pengguna mengonfirmasi transfer/APM memakai net dan bruto tetap. Quote server-owned/versioned disimpan bersama kasbon; rincian/total/terbilang/Word/cetak hanya net tanpa baris PPh. Kasbon terbit/paid lama tidak dihitung ulang.

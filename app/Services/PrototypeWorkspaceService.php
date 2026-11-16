@@ -122,8 +122,11 @@ class PrototypeWorkspaceService
             if ($input['command'] === '_submitSettlementKasbon') {
                 abort_if(DB::table('upload_tasks')->where('workspace_id', $row->id)->where('document_id', $input['args'][0])->where('kind', 'evidence')->whereIn('status', ['queued', 'processing'])->exists(), 422, 'Tunggu upload eviden selesai sebelum pengajuan kasbon.');
             }
-            if ($input['command'] === 'recordApm' && PrototypeDomain::usesFinancePayment(collect($before['terms'])->firstWhere('id', $input['args'][0]) ?? [])) {
-                abort_if(DB::table('upload_tasks')->where('workspace_id', $row->id)->where('document_id', $input['args'][0])->where('kind', 'transfer-proof')->whereIn('status', ['queued', 'processing'])->exists(), 422, 'Tunggu antrean bukti transfer selesai sebelum APM.');
+            if (in_array($input['command'], ['recordApm', 'settleFinancePayment'], true) && PrototypeDomain::usesFinancePayment(collect($before['terms'])->firstWhere('id', $input['args'][0]) ?? [])) {
+                abort_if(DB::table('upload_tasks')->where('workspace_id', $row->id)->where('document_id', $input['args'][0])->where('kind', 'transfer-proof')->whereIn('status', ['queued', 'processing'])->exists(), 422, 'Tunggu antrean bukti transfer selesai sebelum pelunasan.');
+            }
+            if (in_array($input['command'], ['settleFinancePayment', 'updatePaymentApm'], true)) {
+                abort_unless(DB::table('migrations')->where('migration', '2026_11_16_000001_allow_optional_payment_apm')->exists(), 503, 'Pelunasan dengan APM opsional memerlukan migration terbaru.');
             }
             $domainCommand = $input['command'] === 'saveSpk' && (! $oldSpk || ($oldSpk['financialFlow'] ?? '') === 'kasbon-v1') ? 'saveSpkFinance' : $input['command'];
             if ($input['command'] === 'saveTerm' && ($input['args'][1] ?? false)) {

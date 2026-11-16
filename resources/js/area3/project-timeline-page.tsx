@@ -1,3 +1,4 @@
+import { settlementRecorded } from './payment-settlement';
 import { paymentDue } from './kasbon-settlement';
 import { usesSettlementPayment, usesFinancePayment, financePaymentLabel } from './finance-payment';
 import { usesPartialPayment, documentStatus, partialFinanceHistory, partialPaymentLabel } from './partial-payment';
@@ -50,7 +51,7 @@ export function ProjectTimeline({s,id}:{s:State;id:string}) {
   const [filter,setFilter]=useState(id),data=projectTimeline(s,id);
   if(!data) return <Empty title="Project Plan tidak ditemukan" description="PP tidak tersedia atau berada di luar Branch penugasan akun Anda."/>;
   const shown=data.projects.filter(p=>!filter||p.id===filter),events=data.events.filter(e=>!filter||e.projectId===filter);
-  const settled=data.terms.filter(t=>t.status==='Disetujui'&&t.paid>=paymentDue(t,termTotal(s,t))&&termTotal(s,t)>0&&((t.workflowVersion??1)<2||t.apmStatus==='Valid')).length;
+  const settled=data.terms.filter(t=>t.status==='Disetujui'&&t.paid>=paymentDue(t,termTotal(s,t))&&termTotal(s,t)>0&&((t.workflowVersion??1)<2||settlementRecorded(t))).length;
   return <><PageTitle back="/project-plan" title="Timeline ID Project" description={data.anchor.projectCode}><Badge>{data.projects.length} PP</Badge></PageTitle>
     <Notice>Satu ID Project dapat memiliki beberapa PP. Timeline mengikuti akses Branch akun; BOQ, approval dan pembayaran setiap PP tetap terpisah.</Notice>
     <div className="summary-cards compact"><div><span>Project Plan</span><strong>{data.projects.length}</strong></div><div><span>PP Sah</span><strong>{data.projects.filter(p=>p.status==='Sah').length}</strong></div><div><span>Pengajuan pembayaran</span><strong>{data.terms.length}</strong></div><div><span>Tagihan lunas</span><strong>{settled}</strong></div></div>

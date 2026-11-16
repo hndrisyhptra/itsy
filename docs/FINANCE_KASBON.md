@@ -1,5 +1,29 @@
 # Kasbon, data Mandor dan pembayaran — 11 November 2026
 
+## 16 November 2026 — Tandai Lunas dengan APM opsional
+
+Finance dapat menekan Tandai Lunas setelah bukti transfer aktif selesai diunggah dan approval/review Finance lengkap, tanpa nomor APM. Upload sendiri tidak membayar otomatis. APM dapat diisi saat pelunasan atau ditambah/diedit sesudah lunas; format/keunikan dan konfirmasi YA/TIDAK tetap. Koreksi nomor menyimpan audit before/after/actor/waktu dan tidak mengubah nilai/tanggal/penerima/bukti/keputusan maupun menambah pembayaran kedua. Berlaku pada alur kasbon-v1/kasbon-settlement-v2; pra-kasbon historis tetap.
+
+Nomor APM dipisahkan dari pelunasan; next-term/CLOSE/inbox/List Payment memakai settlement nyata. Migration nullable APM disiapkan tanpa rewrite data lama dan belum dijalankan pada its aktif. [Aturan, penyimpanan, query dan hasil verifikasi](PAYMENT_SETTLEMENT_OPTIONAL_APM.md).
+
+## 16 November 2026 — Bukti transfer ditolak worker lokal lama
+
+Dua task bukti transfer lokal ditolak dengan pesan kasbon belum disetujui Finance. Diagnosis baca-saja pada its menunjukkan flow kasbon-settlement-v2/version3, pengajuan Disetujui, Finance Diverifikasi dengan keputusan Setujui dan kasbonId cocok, belum APM/lunas; context task juga cocok. Worker PID23479 masih berjalan sejak15November16:41, sebelum handler/domain diperbarui16November04:48–04:51. Kode worker yang sudah dimuat berbeda dari kode web; tidak perlu mengubah approval atau status SQL.
+
+Cache file/prefix/lokasi proyek diverifikasi sebelum queue:restart, lalu proses lama dikonfirmasi berhenti. Autostart lokal tetaptrue, worker pengganti mengikuti identitas OS web pada unggahan berikutnya. Pengguna mengonfirmasi unggahan baru berhasil. Task gagal tetap sebagai riwayat; tidak mengedit business rows, membayar, mengulang persetujuan, menghapus jobs, mengubah .env/izin privat atau menyentuh worker aplikasi lain. Setelah pembaruan handler/domain upload, restart worker proyek merupakan bagian penerapan kode; lihat UPLOAD_QUEUE_PERFORMANCE.
+
+Sessionless worker Parsial/Final43query; tidak ada perubahan validator/bisnis/database. [Verifikasi](qa/transfer-worker-restart-20261116.json).
+
+## 16 November 2026 — Label termin pada kasbon
+
+Pembayaran pertama langsung Final (termNumber1/termTypeFinal) tidak menampilkan label Termin1. Pembayaran bertahap menampilkan hanya TerminN, termasuk termin terakhir, tanpa (Final)/(Parsial). Berlaku pada preview, HTML yang dicetak dan native Word melalui kasbonTermSuffix yang sama, untuk seluruh versi template. Nomor SPK dan metadata tersimpan tetap; nama file tetap memakai nomor termin untuk identifikasi. Tidak mengubah BARP, editor/daftar pembayaran, tujuh approval, cap, nominal net, ledger atau APM.
+
+Tanpa perubahan database atau alur approval. [Verifikasi dan batas QA](qa/kasbon-term-label-20261116.json).
+
+## 16 November 2026 — Slot TTD kasbon yang ditampilkan
+
+Slot Memeriksa Admin Area dan Menyetujui Finance dihapus dari template3 preview/Word/print; susunan2/3/2 kini PM/pengaju, Support/Deployment/Head, Settlement/EVP. Admin Area dan Finance tetap approval aplikasi tahap2/7, riwayat dan haknya utuh. Tidak mengubah nominal, kasbon snapshot, pembayaran atau schema. [Aturan terbaru](BUNDLE_SETTLEMENT_APPROVAL.md), [bukti](qa/kasbon-signatures-20261116.json).
+
 ## 16 November 2026 — Kasbon/transfer bersih dan List Payment
 
 Khusus penerbitan kasbon baru/ulang, Material tetap utuh dan Jasa Mandor dipotong2,5% sesuai konfirmasi pengguna. Kasbon/transfer/APM net; bruto tetap untuk rekonsiliasi. Tanpa rincian potongan pada form/preview/Word/cetak. Paid/riwayat/APM/next-term/outstanding/CLOSE memakai payable versioned; tidak mengubah kasbon terbit/paid lama. Halaman Pembayaran → List Payment hanya Finance/Settlement, Branch scoped dan bounded. [Aturan penyimpanan, akses, query, deploy dan verifikasi](KASBON_PPH_PAYMENT_LIST.md) menggantikan aturan full-gross kasbon di bawah untuk policy baru saja. Tidak ada migration baru/live rewrite.

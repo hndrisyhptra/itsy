@@ -9,7 +9,7 @@ final class PaymentSelection
     {
         usort($terms, fn ($a, $b) => $a['number'] <=> $b['number']);
         $latest = $terms ? $terms[array_key_last($terms)] : null;
-        if ($latest && ($latest['status'] !== 'Disetujui' || $latest['apmStatus'] !== 'Valid')) {
+        if ($latest && ($latest['status'] !== 'Disetujui' || ($latest['apmStatus'] !== 'Valid' && empty($latest['settled'])))) {
             $editable = in_array($latest['status'], ['Draft', 'Dikembalikan'], true) || ($latest['status'] === 'Ditolak' && $latest['version'] >= 3);
 
             return ['action' => 'open', 'label' => $editable ? ($latest['status'] === 'Draft' ? 'Lanjutkan Draf' : 'Perbaiki Pengajuan') : 'Buka Pengajuan', 'termId' => $latest['id'], 'nextNumber' => null, 'reason' => ''];

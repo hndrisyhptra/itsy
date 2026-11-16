@@ -31,7 +31,7 @@ export function PaymentEvidencePanel({ s, t }: { s: State; t: Term }) {
     {!partial&&<><Field label="Nomor APM" hint="Nomor APM unik menandai seluruh tagihan termin telah dibayar."><Input disabled={!canPay} value={apm} onChange={setApm}/></Field>
     <Button primary disabled={!canPay || !apm.trim()} onClick={() => setConfirm(true)}>Catat APM & Tandai Lunas</Button>
     </>}
-    {t.apmStatus === 'Valid' && <Notice tone="success">Lunas · APM {t.apm}. Pembayaran dicatat sesuai APM; aplikasi tidak mengirim transfer bank.</Notice>}
+    {!financeFlow&&t.apmStatus === 'Valid' && <Notice tone="success">Lunas · APM {t.apm}. Pembayaran dicatat sesuai APM; aplikasi tidak mengirim transfer bank.</Notice>}
     {confirm && <Modal title="Catat APM dan pelunasan?" onClose={() => setConfirm(false)}><p>APM {apm} akan mencatat pelunasan {money(paymentDue(t,termTotal(s,t)) - t.paid)}. Pastikan scan telah diperiksa dan pembayaran telah dilakukan.</p><div className="modal-actions"><Button onClick={() => setConfirm(false)}>TIDAK</Button><Button primary onClick={() => { const ok = attempt(() => { mutate(d => recordApm(d, t.id, apm)); return true; }, 'APM tersimpan dan tagihan lunas.'); if (ok) setConfirm(false); }}>YA</Button></div></Modal>}
     {preview && <DocumentPreview state={s} kind={t.type === 'Parsial' ? 'BA Rekonsiliasi Pekerjaan – Termin' : 'Persiapan BA Penyelesaian Pekerjaan'} spk={getSpk(s, t.spkId)} term={t} onClose={() => setPreview(false)}/>}
   </Card></>;
