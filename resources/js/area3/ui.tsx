@@ -2,6 +2,9 @@ import { barpStageLabel } from './barp-labels';
 import { moneyLine } from './currency';
 import { BarpAppendix } from './barp-appendix';
 import { BarpDocument } from './barp-document';
+import { BappDocument } from './bapp-document';
+import { BappAppendix } from './bapp-appendix';
+import { bappWordFilename,BAPP_DOCX_MIME } from './bapp-file';
 import { canExportBarp, canPrintBarp } from './barp-content';
 import { syncSpkSigner } from './spk-signer';
 import { ProjectPlanDocument, ProjectPlanAppendix } from './plan-document';
@@ -131,6 +134,19 @@ export function BarpWordDownload({project,deal,spk,term,state,appendix=false}:{p
   }
   return <Button confirm="Unduh dokumen Word sesuai isi preview ini?" disabled={busy||!canExportBarp(term)} aria-busy={busy} reason="Word tersedia setelah pengajuan dikirim. Salinan sebelum approval lengkap diberi penanda review." onClick={()=>void saveWord()}><Download size={14}/>{busy?'Menyiapkan Word…':'Unduh Word (.docx)'}</Button>;
 }
+export function BappWordDownload({state,project,deal,spk,term,appendix=false}:{state:State;project:Project;deal:Deal;spk:Spk;term:Term;appendix?:boolean}){
+  const [busy,setBusy]=useState(false),running=useRef(false);
+  async function saveWord(){
+    if(running.current||!canExportBarp(term))return;
+    running.current=true;setBusy(true);
+    try{
+      const bytes=appendix?(await import('./bapp-appendix-docx')).createBappAppendixDocx(state,project,deal,spk,term):(await import('./bapp-docx')).createBappDocx(project,deal,spk,term);
+      download(bappWordFilename(spk,term,appendix),new Blob([bytes],{type:BAPP_DOCX_MIME}));
+    }catch(error){toast(error instanceof Error?error.message:'Word BA PP belum berhasil dibuat.',true);}
+    finally{running.current=false;setBusy(false);}
+  }
+  return <Button confirm="Unduh dokumen Word sesuai isi preview ini?" disabled={busy||!canExportBarp(term)} aria-busy={busy} aria-label={appendix?'Unduh Lampiran BA PP sebagai Word DOCX':'Unduh BA PP sebagai Word DOCX'} reason="Word tersedia setelah pengajuan dikirim. Salinan sebelum approval lengkap diberi penanda review." onClick={()=>void saveWord()}><Download size={14}/>{busy?'Menyiapkan Word…':'Unduh Word (.docx)'}</Button>;
+}
 export function CsvPreview({ name, csv, count, onClose, backendUrl }: { name: string; csv: string; count: number; onClose: () => void; backendUrl?: string }) {
   const [url, setUrl] = useState('');
   useEffect(() => { const value = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); setUrl(value); return () => URL.revokeObjectURL(value); }, [csv]);
@@ -146,6 +162,8 @@ export function DocumentPreview({ state: s, kind, project: givenProject, deal, s
   if (kind === 'Lampiran SPK' && p && d && spk && !term && !bapp) return <Modal title="Preview · Lampiran SPK" onClose={onClose} wide><div className="preview-toolbar"><span><FileText size={14}/> Lampiran SPK sesuai template · A4 horizontal</span><div className="actions"><SpkWordDownload state={s} project={p} deal={d} spk={spk} kind="appendix"/><Button confirm="Buka pencetakan dokumen ini?" onClick={() => window.print()}><Printer size={14}/> Cetak / Simpan PDF browser</Button></div></div><SpkAppendix state={s} project={p} deal={d} spk={spk}/></Modal>;
   if (kind === 'BA Rekonsiliasi Pekerjaan – Termin' && p && d && spk && term && !bapp) return <Modal title="Preview · BA Rekonsiliasi Pekerjaan" onClose={onClose} wide><div className="preview-toolbar"><span><FileText size={14}/> BARP {barpStageLabel(term)} · A4 vertikal</span><div className="actions"><BarpWordDownload project={p} deal={d} spk={spk} term={term}/><Button confirm="Buka pencetakan dokumen ini?" disabled={!canPrintBarp(term)} reason="Cetak setelah seluruh persetujuan dokumen lengkap." onClick={()=>window.print()}><Printer size={14}/> Cetak / Simpan PDF browser</Button></div></div><BarpDocument project={p} deal={d} spk={spk} term={term}/></Modal>;
   if (kind === 'Lampiran Rekonsiliasi Pekerjaan' && p && d && spk && term && !bapp) return <Modal title="Preview · Lampiran Rekonsiliasi Pekerjaan" onClose={onClose} wide><div className="preview-toolbar"><span><FileText size={14}/> Lampiran Rekonsiliasi {barpStageLabel(term)} · A4 horizontal</span><div className="actions"><BarpWordDownload project={p} deal={d} spk={spk} term={term} state={s} appendix/><Button confirm="Buka pencetakan dokumen ini?" disabled={!canPrintBarp(term)} reason="Cetak setelah seluruh persetujuan dokumen lengkap." onClick={()=>window.print()}><Printer size={14}/> Cetak / Simpan PDF browser</Button></div></div><BarpAppendix state={s} project={p} deal={d} spk={spk} term={term}/></Modal>;
+  if (kind === 'BA Penyelesaian Pekerjaan' && p && d && spk && term) return <Modal title="Preview · BA Penyelesaian Pekerjaan" onClose={onClose} wide><div className="preview-toolbar"><span><FileText size={14}/> BA PP sesuai template · A4 vertikal</span><div className="actions"><BappWordDownload state={s} project={p} deal={d} spk={spk} term={term}/><Button confirm="Buka pencetakan dokumen ini?" disabled={!canPrintBarp(term)} reason="Cetak setelah seluruh persetujuan dokumen lengkap." onClick={()=>window.print()}><Printer size={14}/> Cetak / Simpan PDF browser</Button></div></div><BappDocument project={p} deal={d} spk={spk} term={term}/></Modal>;
+  if (kind === 'Lampiran BA Penyelesaian Pekerjaan' && p && d && spk && term) return <Modal title="Preview · Lampiran BA Penyelesaian Pekerjaan" onClose={onClose} wide><div className="preview-toolbar"><span><FileText size={14}/> Lampiran BA PP · A4 horizontal</span><div className="actions"><BappWordDownload state={s} project={p} deal={d} spk={spk} term={term} appendix/><Button confirm="Buka pencetakan dokumen ini?" disabled={!canPrintBarp(term)} reason="Cetak setelah seluruh persetujuan dokumen lengkap." onClick={()=>window.print()}><Printer size={14}/> Cetak / Simpan PDF browser</Button></div></div><BappAppendix state={s} project={p} deal={d} spk={spk} term={term}/></Modal>;
   const root = p ? p.rootId === p.id ? p : getProject(s, p.rootId) : undefined;
   const total = bapp && spk ? s.terms.filter(t => t.spkId === spk.id && t.status === 'Disetujui').reduce((n,t) => n + termTotal(s,t),0) : term ? termTotal(s, term) : d ? dealTotal(d) : p ? p.parentId ? p.budget : boqTotal(p) : 0;
   if ((kind === 'Lampiran Negosiasi Harga' || kind === 'Lampiran BA KH') && p && d && !spk && !term && !bapp) return <Modal title="Preview · Lampiran BA KH" onClose={onClose} wide><div className="preview-toolbar"><span><FileText size={14}/> Lampiran BA KH · A4 horizontal · harga satuan</span><div className="actions"><BakhWordDownload state={s} project={p} deal={d} kind="appendix"/><Button confirm="Buka pencetakan dokumen ini?" onClick={() => window.print()}><Printer size={14}/> Cetak / Simpan PDF browser</Button></div></div><BakhAppendix state={s} project={p} deal={d}/></Modal>;

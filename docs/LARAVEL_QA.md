@@ -1,5 +1,31 @@
 # Laravel rebuild QA — 2 November 2026
 
+## 16 November 2026 — Word BA PP dan Lampiran BA PP
+
+- 310PHP/7137assertions isolated SQLite memory lulus; PHP/backend/schema tidak diubah.329frontend lulus,4testWord/appendix baru meliputi18parts/15preserved,conditionalstage/currentgross, escapingUnicode/multiline/tokenliteral, HTML/native table equality dengan BARP untuk stages1–3,3vs5signers,stateunchanged,download confirmation/status/review/filename. Existing indexed1000row fixture tetap lulus.
+- TypeScript/Vite dan assets37manifestrefs/29preloads×3profil lulus. MainWord package berada pada lazy bapp-docx chunk55.70kB/8.21gzip; tidak masuk main entry.0newSQL/API/runtimepackage; bukanloadbenchmark.
+- 6nativeDOCX(dirender1/1/1/1/3/1halaman), seluruh8PNG diperiksa:3main(normal/single/staged/long),2appendix(single/long) dan1BARP regression5signers. ZIP/CRC/XML/internalrelationships/bookmarkpairs/sectiongeometry/gridspans/signerwidths dan preserve-only entries dibandingkan sumber. OriginalSHA tetap; sample names/values/number/private references tidak terikut.
+- Browser headless6preview/PDF(1/1/1/1/1/3halaman), semua8PNG diperiksa dan nonblank/orientasi/signers valid. Interactive React harness memakai komponen nyata dan data sintetis: TIDAK0unduh;YA1file per Word button;0JSerror,request hanyaGETfixturelokal,main download byte-identical dengan render dan appendix grid sesuai BARP. Harness pertama tidak mount akibat NODE_ENV testbuild; corrected production harness lulus. Tidak ada request account/server/API atau financial writes.
+- LOPpanjang dapat multipage; Chrome tallheaderrepeat tetap batasexisting, nativeWord berulang. Browser akun/aaPanel/desktopWord/cetakfisik/loadtest belum diverifikasi. Tidak ada migration/liveits/env/archive/Dompis/worker/reset/seed/deploy/commit/push. [Perilaku dan sourcecontract](BAPP_WORD_APPENDIX.md), [bukti](qa/bapp-word-appendix-20261116.json).
+
+## 16 November 2026 — Template preview BA PP
+
+- 310PHP/7137assertions isolated SQLite`:memory:` lulus; tidak ada perubahan PHP produksi/migration sehingga tidak menambah scopedPint baru.
+- 325frontend lulus, termasuk5regresi BA PP: singleFinal tanpaTahap/Termin/nomor/tabelgenerik, stages1/2/3 dengan exact gross-currentbill/valueweightedpercentage, tanggal kosong/invalid tanpa today dan identitas historis, print actual-assignee/YA-TIDAK,1000items tanpa per-item master/source/account find dan state unchanged. Uji kumulatif existing dialihkan ke Lampiran BA PP yang tetap menampilkan kumulatif.
+- TypeScript/Vite dan assets36manifest/28preloads×3profil lulus; `git diff --check` diperiksa.0query/endpoint/backendread baru, bukan load benchmark.
+- Referensi BA-PP.docx dibaca auditsection/style/theme/XML dan dirender1halaman; PNG diperiksa, SHAa919d6e4994acfc22ddc6fdff8d7bc153a971f2b04c8c881146b170f5afba9fb tetap. Source nama/tanggal/nominal/signature contoh tidak diambil sebagai transaksi.
+- Browser headless terisolasi, jaringan hanya HTMLfixture lokal: Final1/Final2/longFinal3 menghasilkan3PDFportraitmasing-masing1halaman, seluruh3PNG akhir diperiksa. Nonblank, nomorabsent,3nama tersimpan,exactgrossbill dan label benar.375/768/1440 no documentoverflow;0JSerror. LOPpanjang dipadatkan jaraknya tanpa mengurangi font/text;3TTD utuh. Ini QA data sintetis, bukan simulasi fitur transaksi yang disimpan.
+- Tidak menjalankan migration/liveDB/env/archive/Dompis write/reset/seed/restart/deploy. Browser akun/aaPanel/cetak fisik/desktopWord belum diverifikasi. Word export bukan cakupan permintaan preview ini. [Perilaku](BAPP_TEMPLATE.md), [bukti](qa/bapp-template-20261116.json).
+
+## 16 November 2026 — Regresi tabel Lampiran BARP bergaya SPK
+
+- **310PHP/7137assertions** lulus via XAMPP `artisan test --compact`, SQLite`:memory:` fail-closed; backend tidak diubah. Fixture BARP HTTP existing59query tetap, bukan angka tambahan render dan bukan load benchmark.
+- **320frontend** lulus. Regresi BARP9test termasuk2kasus baru: penggabungan vektor setara, volume aktual bukan komitmen, LOP label single/Termin1–3, kumulatif berbeda dari tagihan sekarang, split vektor berbeda, pengecualian rejected/future/otherSPK, nol/komponenexcluded, continuation,1000baris tanpa per-row reference find, historical cents dan five signers unchanged. Snapshot sebelum/sesudah render identik; gate Word/print existing tetap.
+- `npm run build` TypeScript/Vite lulus; `npm run check:assets`36manifest references,28preload dependencies×3profil lulus. Tidak ada PHP produksi berubah sehingga tidak menambah scopedPint baru.
+- Empat DOCX sintetis singleFinal/Final2/Review3/Long3 dirender1/1/1/3halaman. Seluruh6PNG diperiksa; angka total tidak terpotong, header berulang, baris panjang utuh, lima TTD tetap. ZIP/CRC/seluruhXML/relationships/11–13grid spans/lebar15704twips/ruangTTD kosong valid; no external relationships/media.
+- Browser headless terisolasi, seluruh permintaan jaringan diblokir kecuali HTML fixture lokal, memeriksa modal nested, jumlah baris/header/TTD, toolbar tersembunyi saatprint dan errorJS0. PDF1/1/1/3halaman; seluruh6PNG diperiksa, landscape/nonblank/signers valid. Tabel layar horizontal-scroll sesuai container modal. Chrome tidak selalu mengulang header yang sangat tinggi pada fixture180karakter; nativeWord mengulangnya. QA browser pertama gagal karena sandbox, retry berizin berhasil.
+- Pengujian sintetis saja; tidak membuka akun/server atau menulis its/env/archive/Dompis. Tidak melakukan migration, restartworker,seed,deploy atau backfill. Browser akun/aaPanel/desktopWord/cetakfisik/loadtest belum diverifikasi. [Bukti](qa/barp-spk-grid-20261116.json).
+
 ## 16 November 2026 — Tandai Lunas dengan APM opsional
 
 Finance dapat menekan Tandai Lunas setelah bukti transfer aktif selesai diunggah dan approval/review Finance lengkap, tanpa nomor APM. Upload sendiri tidak membayar otomatis. APM dapat diisi saat pelunasan atau ditambah/diedit sesudah lunas; format/keunikan dan konfirmasi YA/TIDAK tetap. Koreksi nomor menyimpan audit before/after/actor/waktu dan tidak mengubah nilai/tanggal/penerima/bukti/keputusan maupun menambah pembayaran kedua. Berlaku pada alur kasbon-v1/kasbon-settlement-v2; pra-kasbon historis tetap.

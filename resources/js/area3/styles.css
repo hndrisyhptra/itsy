@@ -319,3 +319,30 @@ body{color:var(--text);background:var(--bg)}[data-theme=dark] .metric-label,[dat
 @media print{.kasbon-document .kasbon-amounts tfoot{display:table-row-group}.kasbon-document,.kasbon-document p,.kasbon-document th{color:#111!important}.kasbon-document .kasbon-signatures,.kasbon-document .kasbon-signatures td{border:0!important;background:#fff!important}.modal:has(.kasbon-document),.modal-body:has(.kasbon-document){background:#fff!important}}
 
 @media print{.kasbon-document dl{break-inside:avoid}body:has(.kasbon-document),.main-shell:has(.kasbon-document){background:#fff!important}}
+
+/* BARP appendix follows the SPK price/LOP/volume grid; five signer styles stay unchanged. */
+.barp-appendix-scroll table{min-width:1050px}.barp-appendix-scroll caption{text-align:right;padding-bottom:6px;font-size:10px;color:#000}
+.document.barp-appendix tfoot th{text-align:left}.barp-appendix-component{display:block;font-size:9px;color:#333;margin-top:2px}
+@media print{.barp-appendix-scroll table{min-width:0}.barp-appendix-component{font-size:6.5pt}}
+
+/* BA PP: portrait reference letter, independent of BARP/SPK appendices. */
+.document.bapp-document{min-width:0;width:100%;max-width:210mm;margin-inline:auto;padding:25.4mm;color:#000;background:#fff;font:11pt/1.45 Calibri,Carlito,Arial,sans-serif}
+.document.bapp-document h2{font:700 14pt/1.3 Calibri,Carlito,Arial,sans-serif;text-align:center;text-decoration:underline;margin:13mm 0 13mm;color:#000;break-after:avoid}
+.document.bapp-document p{font:inherit;color:#000;line-height:1.45;text-align:justify;text-indent:6.35mm;margin:8px 0;overflow-wrap:anywhere;white-space:normal}
+.document.bapp-document .bapp-identity{display:grid;grid-template-columns:24mm minmax(0,1fr);gap:0;margin:8px 0 0 6.35mm;line-height:1.45}
+.bapp-identity dt{font-weight:normal}.bapp-identity dd{margin:0;overflow-wrap:anywhere}.bapp-identity dd:before{content:': '}
+.document.bapp-document .bapp-job{text-align:center;text-indent:0;margin:14px 0}
+.document.bapp-document .bapp-result{margin:14px 0 0}.document.bapp-document .bapp-closing{margin-top:12mm}
+.bapp-signatures{break-inside:avoid;margin-top:12mm}.document.bapp-document .bapp-place-date{text-align:right;text-indent:0;margin:0 0 10mm}
+.bapp-signature-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;text-align:center}.bapp-signature-pair>div{min-width:0;overflow-wrap:anywhere}
+.bapp-signature-space{height:23mm}.bapp-head{text-align:center;margin-top:6mm;overflow-wrap:anywhere}.bapp-head-name{text-decoration:underline}
+.document.bapp-document .bapp-review{text-align:center;text-indent:0;font-weight:700;margin:0 0 10px}
+.document.bapp-document.bapp-compact h2{margin-top:8mm;margin-bottom:8mm}.document.bapp-compact .bapp-closing{margin-top:8mm}.bapp-compact .bapp-signatures{margin-top:8mm}.document.bapp-compact .bapp-place-date{margin-bottom:8mm}.bapp-compact .bapp-signature-space{height:20mm}
+@media(max-width:767px){.document.bapp-document{padding:20px 12px}.document.bapp-document h2{margin:15px 0 28px}.modal-body:has(.bapp-document) .preview-toolbar{min-width:0;flex-wrap:wrap}}
+@page bapp-document-portrait{size:A4 portrait;margin:25.4mm}
+@media print{.document.bapp-document{page:bapp-document-portrait;padding:0;max-width:none;width:100%;font-size:11pt}.document.bapp-document h2{margin-top:13mm}.document.bapp-document.bapp-compact h2{margin-top:8mm}.bapp-document p{orphans:3;widows:3}.modal-body:has(.bapp-document){overflow:visible}html:has(.bapp-document),body:has(.bapp-document),.app:has(.bapp-document),.main-shell:has(.bapp-document),.modal:has(.bapp-document),.modal-body:has(.bapp-document){background:#fff!important}}
+
+/* BA PP reuses the BARP attachment grid; only its three physical signers differ. */
+.bapp-appendix .barp-appendix-signatures{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:767px){.bapp-appendix .barp-appendix-signatures{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media print{.bapp-appendix .barp-appendix-signatures{grid-template-columns:repeat(3,minmax(0,1fr))}}

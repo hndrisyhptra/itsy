@@ -1,5 +1,28 @@
 # Pekerjaan otomatis dan Lampiran Rekonsiliasi — 9 November 2026
 
+## Shared renderer untuk Lampiran BA PP — 16 November 2026
+
+HTML dan nativeWord lampiran BARP kini memakai renderer yang juga digunakan BA PP. Model/table/header/footer dan lima signer BARP tetap; adapter BAPP mengganti judul dan memilih Head/Waspang/Mandor saja. Native table dan HTML table untuk input sama diuji identik per tahap1–3, source Word BARP5signers dirender ulang1halaman. Tidak ada peralihan rekening/nilai/approval/private access/data. Lihat [Word/lampiran BA PP](BAPP_WORD_APPENDIX.md) dan [bukti regresi](qa/bapp-word-appendix-20261116.json).
+
+## Tabel terbaru mengikuti Lampiran SPK — 16 November 2026
+
+Bagian ini menggantikan susunan13kolom ledger dan satu kolom berlabelFinal pada instruksi terdahulu, hanya untuk tabel Lampiran BARP. Surat utama, form Volume Aktual Pekerjaan, lima penandatangan di bawah, approval serta data tersimpan tetap.
+
+| Kelompok kolom | Isi |
+|---|---|
+| No / Designator / Uraian / Satuan | Susunan seperti Lampiran SPK; metadata authorized yang sudah dimuat |
+| Harga Satuan | Dua kolom Material dan Jasa dari kesepakatan tersimpan |
+| Nama LOP → VOL | Single Final1 memakai nama pekerjaan tanpa label Termin; pembayaran bertahap memakai nama pekerjaan + Termin #1, #2, sampai tahap saat ini, maksimal3 |
+| Total Vol | Aktual accepted sebelumnya + aktual saat ini per item/komponen, bukan komitmen keseluruhan SPK atau jumlah lintas satuan |
+| Material / Jasa / Jumlah | Nilai kumulatif aktual sampai tahap ini, mempertahankan nominal dan kebijakan setiap termin |
+| Footer | Jumlah Material, Jasa, Harga per termin dan kumulatif; untuk pembayaran bertahap ada rekap tagihan termin saat ini tersendiri |
+
+Jumlah kolom11/12/13menyesuaikan jumlah tahap. Tidak menampilkan termin masa depan. Termin lain hanya diikutkan bila SPK sama, nomor lebih awal dan status Disetujui; tidak menyatakan semua kumulatif telah dibayar/APM. Nilai BARP tetap bruto; kebijakan kasbon net/PPh tidak mengurangi BARP. Komponen excluded kosong, nol terlihat. M/J boleh satu baris jika komitmen dan seluruh vektor aktual yang ditampilkan sama; volume berbeda dipisah dengan labelMaterial/Jasa pada kolomVOL pertama. Tidak mengalikan total volume dengan satu kebijakan baru untuk mengganti nilai historis.
+
+HTML, print/PDF dan nativeWord berbagi `barpAppendixData`. NativeWord memakai11–13kolom dinamis, harga grup2kolom, header2baris berulang, lebarTotalVol diperbesar pada pembayaran bertahap, margin sel30twips/7pt, serta last body row keep-next bersama footer. Lima TTD existing tidak diubah. Metadata/baris/rekap tetap editableWord asli, bukan screenshot.
+
+Tambahan0SQL/API/schema/migration/dependency. Indeksreferensi/kesepakatan/grup dibuat sekali; maksimal3tahap/2komponen, fixture1000baris tanpa pencarian katalog per baris lulus.310PHP/7137assertions,320frontend/build/assets lulus.4Word/6halaman dan4PDFbrowser/6halaman terisolasi diperiksa; ZIP/CRC/XML,span/lebar,blankTTD dan nonblanklandscape valid. LOP sangat panjang dapat memerlukan beberapa halaman; Chrome dapat tidak mengulang header tinggi, Word tetap berulang. Browser akun/server,desktopWord,cetakfisik/loadtest belum diuji. Tidak mengubah database aktif atau snapshot historis. [Bukti](qa/barp-spk-grid-20261116.json).
+
 ## Otoritas terbaru — 16 November 2026
 
 Kondisi langsung Final satu pembayaran adalah nomor1+jenisFinal, sama dengan main BARP. Header PEKERJAAN tidak menambahkan Termin#1, rekap tidak menambahkan TAHAP1; tiga kolom actual per-termin diproyeksikan menjadi satu kolom **Final** (11kolom total), memakai actual pertama dari ledger yang sama. Catatan menyatakan pembayaran Final satu kali. Parsial pertama dan Final2/3 tetap memakai13kolom dan nomor tahap. Tidak menghapus/mengubah actuals, identity, previous/cumulative/current amounts, signers atau approval.

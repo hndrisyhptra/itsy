@@ -1,0 +1,135 @@
+{
+  "date": "2026-11-16",
+  "feature": "Lampiran BARP table follows Lampiran SPK; five signers preserved",
+  "scope": "presentation only; shared HTML/print/native Word; no stored state/SQL/API/migration change",
+  "columns": {
+    "directFinal1": 11,
+    "staged1": 11,
+    "staged2": 12,
+    "staged3": 13
+  },
+  "labels": {
+    "directFinal1": "LOP only",
+    "staged": "LOP · Termin #N through current term"
+  },
+  "invariants": [
+    "actual component quantity rather than full agreement",
+    "merge only equal commitments and full actual vectors",
+    "cumulative amounts keep each term policy",
+    "current bill distinct from cumulative",
+    "rejected/future/other-SPK previous terms excluded",
+    "original five signers and historical identities preserved",
+    "excluded blank; zero visible",
+    "source state unchanged; existing export/approval/settlement gates retained"
+  ],
+  "verification": {
+    "php": {
+      "tests": 310,
+      "assertions": 7137,
+      "database": "isolated SQLite :memory:"
+    },
+    "frontend": {
+      "tests": 320,
+      "barpAppendixTests": 9,
+      "newCases": 2,
+      "indexed1000RowFixture": true
+    },
+    "build": "TypeScript/Vite passed",
+    "assets": {
+      "manifestReferences": 36,
+      "preloadDependencies": 28,
+      "profiles": 3
+    },
+    "docxAndPdf": [
+      {
+        "name": "single-final",
+        "columns": 11,
+        "displayRows": 7,
+        "wordPages": 1,
+        "browserPages": 1,
+        "nativeZipXmlValid": true,
+        "fiveSigners": true,
+        "nonblankLandscapePages": true
+      },
+      {
+        "name": "second-final",
+        "columns": 12,
+        "displayRows": 7,
+        "wordPages": 1,
+        "browserPages": 1,
+        "nativeZipXmlValid": true,
+        "fiveSigners": true,
+        "nonblankLandscapePages": true
+      },
+      {
+        "name": "third-review",
+        "columns": 13,
+        "displayRows": 7,
+        "wordPages": 1,
+        "browserPages": 1,
+        "nativeZipXmlValid": true,
+        "fiveSigners": true,
+        "nonblankLandscapePages": true
+      },
+      {
+        "name": "third-long",
+        "columns": 13,
+        "displayRows": 21,
+        "wordPages": 3,
+        "browserPages": 3,
+        "nativeZipXmlValid": true,
+        "fiveSigners": true,
+        "nonblankLandscapePages": true
+      }
+    ],
+    "wordPagesVisuallyInspected": 6,
+    "browserPdfPagesVisuallyInspected": 6,
+    "browser": [
+      {
+        "name": "single-final",
+        "columns": 11,
+        "rows": 7,
+        "signers": 5,
+        "errors": []
+      },
+      {
+        "name": "second-final",
+        "columns": 12,
+        "rows": 7,
+        "signers": 5,
+        "errors": []
+      },
+      {
+        "name": "third-review",
+        "columns": 13,
+        "rows": 7,
+        "signers": 5,
+        "errors": []
+      },
+      {
+        "name": "third-long",
+        "columns": 13,
+        "rows": 21,
+        "signers": 5,
+        "errors": []
+      }
+    ],
+    "screen": "nested modal horizontal scroll; five signers; inspected screenshot"
+  },
+  "performance": {
+    "additionalSql": 0,
+    "additionalEndpoints": 0,
+    "additionalPackages": 0,
+    "boundedStages": 3,
+    "boundedComponentsPerItem": 2,
+    "referenceIndexes": "BOQ/KHS and agreement/prior/component maps built once; no per-row reference find",
+    "unchangedBarpHttpFixtureQueries": 59,
+    "notLoadBenchmark": true
+  },
+  "limitations": [
+    "Very long LOP requires multiple pages; Chrome may suppress repeating tall header, native Word repeats it",
+    "Synthetic isolated browser/LibreOffice only; live account/server/desktop Word/physical print/load test not verified",
+    "No live its/PII/env/workspace archive/Dompis write, migration, worker restart, commit, push or server deployment"
+  ],
+  "qaArtifacts": "/private/tmp/area3-barp-spk-grid-20261116"
+}

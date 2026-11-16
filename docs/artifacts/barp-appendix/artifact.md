@@ -1,5 +1,9 @@
 # Lampiran BARP template contract — 9 November 2026
 
+## Latest table authority — 16 November 2026
+
+User now requests the Lampiran SPK table arrangement while explicitly retaining all five BARP signers. This supersedes the original13-column adaptation below: No/Designator/Uraian/Satuan; grouped Material/Jasa unit prices; LOP-named actual volume columns through the selected stage; Total Vol; Material/Jasa/Jumlah cumulative values. Single Final1 has11columns and plain LOP; staged payment uses LOP · Termin #1/#2/#3 and11/12/13columns. Equal commitment plus actual M/J vectors may merge; differing vectors stay separate. Footer current-stage bill remains distinct from informational cumulative values. Existing snapshots, amount policies and five signers unchanged. See ../../BARP_APPENDIX.md and ../../qa/barp-spk-grid-20261116.json for verified behavior and actual limits. Original reference contract remains below for audit.
+
 Reference: reference.png, supplied screenshot. Preserve compact landscape ledger grid, small upper-left title, Pekerjaan/Witel lines, black vertical/horizontal borders, repeated grouped headers, bold summary rows and horizontally aligned physical signoff.
 
 Intentional adaptations requested by the user: use the Volume Aktual Pekerjaan ledger, with 13 columns: No, Designator, Uraian/Komponen, Satuan, Volume SPK, Termin #1/#2/#3, Aktual Saat Ini, Accepted Sebelumnya, Sisa Proyeksi, Harga Satuan, Nilai Saat Ini. Material/Jasa remain independent rows so differing quantities/prices never merge. No mixed-unit volume totals. Recaps show current Material/Jasa/tagihan, previous approved terms and informational cumulative total; do not bill prior amounts twice. No financial addendum or volume release is implied by remaining quantity.

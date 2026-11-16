@@ -1,5 +1,29 @@
 # Catatan perubahan it's Area 3
 
+## 16 November 2026 — Unduh Word BA PP dan Lampiran BA PP mengikuti BARP
+
+Kedua preview kini memiliki Unduh Word (.docx), konfirmasi YA/TIDAK, busy/duplicate guard dan penanda review sesuai pembayaran. Surat nativeWord memakai package template BA-PP.docx dengan slot dari model HTML yang sama, tanpa nomor BAPP, conditional Tahap/Termin dan tiga ruang TTD kosong.18packageentries;15preserve-only byte-exact, metadata core/custom dinetralkan, body editable/unused bookmarkend dibersihkan; sumber asli tetap.
+
+Lampiran BA PP menggantikan tabel generik dengan grid Lampiran BARP yang sama (11/12/13kolom, LOP/Termin, actuals, split M/J, rekap dan cumulative/current bill), tetapi tiga signer Head of PMO/Waspang/Ketua Mandor. Shared HTML/nativeWord renderer menjaga tabel identik; BARP tetap5signer. Tidak mengubah nilai/status/approval/SQL/ledger/archive/Finance/release/continuation.
+
+Tambahan0SQL/API/schema/migration/dependency, indeks existing/max3tahap dan lazyWord package.310PHP/7137assertions,329frontend/build/assets37refs/29preloads×3profil lulus.6nativeWord/8halaman dan6browserPDF/8halaman diperiksa; ZIP/XML/CRC/section/spans/rel/bookmark/source fidelity valid. React button QA: TIDAK0unduh, YA1DOCX per tombol,0JSerror dan hanyaGETfixturelokal. Browser akun/server/desktopWord/cetak fisik/loadtest belum diuji. [Perilaku](BAPP_WORD_APPENDIX.md), [bukti](qa/bapp-word-appendix-20261116.json).
+
+## 16 November 2026 — Preview BA PP mengikuti template surat
+
+Preview BA Penyelesaian Pekerjaan kini mengikuti BA-PP.docx: judul tanpa nomor BA PP, pembuka tanggal terbilang, identitas Mandor, nama pekerjaan, hasil, penutup dan tiga TTD (Waspang, Ketua Mandor, Head of PMO). Single Final1 menghilangkan Tahap1/Termin1; pembayaran bertahap menampilkan TahapN pada hasil/penutup dan TerminN di nilai. Tanggal/periode/identitas bersumber dari BARP pembayaran terkait; nilai bruto tahap ini/persentase terhadap SPK kanonis sesuai slot template. Tidak memaksakan100% Final atau mengganti tagihan dengan kasbon net. Detail dan Lampiran BA PP kumulatif, nomor internal, pengesahan, approval dan pelepasan tetap.
+
+HTML/cetak/PDF memakai model pure khusus, A4portrait25.4mm, Calibri11pt/14ptjudul; nama panjang memakai jarak ringkas tanpa truncation dan tiga TTD bersama. Print mempertahankan YA/TIDAK dan seluruh keputusan assignee aktual.0SQL/API/schema/migration/dependency baru; O(item kesepakatan), tanpa per-row master/account lookup, fixture1000item lulus. Tidak mengubah its aktif/env/arsip/Dompis atau melakukan deploy.
+
+Verifikasi:310PHP/7137assertions SQLite memory,325frontend,TypeScript/Vite/assets36references/28preloads×3profil lulus. Referensi1halaman diperiksa, hash sumber utuh. Tiga PDF browser sintetis Final1/Final2/longFinal3 masing-masing1halaman, seluruh3PNG diperiksa, nonblankportrait/label/nilai/3nama benar, tanpa nomor internal;375/768/1440 tanpa overflow. Browser akun/server/cetak fisik belum diverifikasi. Tidak menambah unduhan Word pada tugas preview ini. [Perilaku](BAPP_TEMPLATE.md), [bukti](qa/bapp-template-20261116.json).
+
+## 16 November 2026 — Tabel Lampiran BARP mengikuti Lampiran SPK
+
+Permintaan pengguna menyesuaikan **tabel saja**: No, Designator, Uraian, Satuan, Harga Satuan Material/Jasa, kolom volume LOP, Total Vol, Material, Jasa dan Jumlah. Pembayaran pertama langsung Final menampilkan nama LOP tanpa Termin; pembayaran bertahap menampilkan nama LOP + Termin #1, #2, sampai tahap dokumen yang dibuka (maksimal tiga). Jumlah kolom menjadi 11/12/13. Lima penandatangan, urutan, identitas historis dan ruang TTD tetap.
+
+HTML/print/native Word memakai satu model. Volume berasal dari aktual, bukan seluruh komitmen SPK. Baris Material/Jasa digabung hanya bila volume komitmen dan seluruh vektor aktualnya sama; selain itu dipisah agar tidak menukar volume komponen. Nilai tabel bersifat kumulatif dari termin terdahulu yang Disetujui dan aktual saat ini; rekap tagihan saat ini tetap dipisahkan. Setiap termin mempertahankan kebijakan nominalnya. Tidak menghitung ulang pembayaran/PP/SPK/kasbon/ledger tersimpan atau mengubah approval.
+
+Tidak ada SQL/API/schema/migration/dependency baru atau mutasi its aktif. Map referensi/kesepakatan/komponen dibangun sekali, maksimal tiga tahap dan dua komponen per item; fixture 1000 baris tetap tanpa pencarian katalog per baris. Bukan benchmark beban. Verifikasi:310 PHP/7137 assertions pada SQLite memory,320 frontend,TypeScript/Vite dan assets36 references/28 preloads×3profil lulus. Empat Word sintetis dan empat PDF browser nested masing-masing1/1/1/3halaman, seluruh12PNG hasil dokumen diperiksa; ZIP/CRC/XML,span/lebar,headerWord berulang,5TTD,landscape dan nonblankPDF valid. Teks LOP sangat panjang dapat menghasilkan beberapa halaman; Chrome tidak selalu mengulang header tinggi, sedangkan Word mengulang dua baris header. Browser akun/server, Word desktop dan cetak fisik belum diuji. [Perilaku](BARP_APPENDIX.md), [bukti](qa/barp-spk-grid-20261116.json).
+
 ## 16 November 2026 — Tandai Lunas dengan APM opsional
 
 Finance dapat menekan Tandai Lunas setelah bukti transfer aktif selesai diunggah dan approval/review Finance lengkap, tanpa nomor APM. Upload sendiri tidak membayar otomatis. APM dapat diisi saat pelunasan atau ditambah/diedit sesudah lunas; format/keunikan dan konfirmasi YA/TIDAK tetap. Koreksi nomor menyimpan audit before/after/actor/waktu dan tidak mengubah nilai/tanggal/penerima/bukti/keputusan maupun menambah pembayaran kedua. Berlaku pada alur kasbon-v1/kasbon-settlement-v2; pra-kasbon historis tetap.

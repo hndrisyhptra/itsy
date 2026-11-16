@@ -1,0 +1,178 @@
+{
+  "date": "2026-11-16",
+  "feature": "BA PP native Word download and BARP-identical appendix with three physical signers",
+  "scope": "frontend document output only; no backend/storage/workflow write",
+  "reference": {
+    "sha256": "a919d6e4994acfc22ddc6fdff8d7bc153a971f2b04c8c881146b170f5afba9fb",
+    "originalUnchanged": true,
+    "entries": 18,
+    "byteExactPreserveOnlyEntries": 15,
+    "editableParts": [
+      "word/document.xml",
+      "docProps/core.xml",
+      "docProps/custom.xml"
+    ],
+    "inventory": "docs/artifacts/bapp/word-source-inventory.json"
+  },
+  "invariants": [
+    "single Final no stage/term labels",
+    "no internal BAPP number on document",
+    "current gross and saved money policies unchanged",
+    "cumulative/current term amounts distinct",
+    "exact BARP table/model/footer for BAPP",
+    "BAPP appendix Head/Waspang/Mandor only; BARP remains5",
+    "blank physical signature spaces",
+    "actual approval/print/status/Branch/release/settlement gates retained",
+    "no source sample people/dates/signatures or private-file reads",
+    "source state unchanged"
+  ],
+  "verification": {
+    "php": {
+      "tests": 310,
+      "assertions": 7137,
+      "database": "isolated SQLite :memory:"
+    },
+    "frontend": {
+      "tests": 329,
+      "newTests": 4
+    },
+    "build": "TypeScript/Vite passed",
+    "assets": {
+      "manifestReferences": 37,
+      "preloadDependencies": 29,
+      "profiles": 3
+    },
+    "nativeWord": [
+      {
+        "name": "main-single",
+        "pages": 1,
+        "zipXmlCrcValid": true,
+        "geometryCorrect": true,
+        "sourcePreserved": true,
+        "physicalSigners": 3
+      },
+      {
+        "name": "main-second",
+        "pages": 1,
+        "zipXmlCrcValid": true,
+        "geometryCorrect": true,
+        "sourcePreserved": true,
+        "physicalSigners": 3
+      },
+      {
+        "name": "main-long",
+        "pages": 1,
+        "zipXmlCrcValid": true,
+        "geometryCorrect": true,
+        "sourcePreserved": true,
+        "physicalSigners": 3
+      },
+      {
+        "name": "appendix-single",
+        "pages": 1,
+        "zipXmlCrcValid": true,
+        "geometryCorrect": true,
+        "sourcePreserved": false,
+        "physicalSigners": 3
+      },
+      {
+        "name": "appendix-long",
+        "pages": 3,
+        "zipXmlCrcValid": true,
+        "geometryCorrect": true,
+        "sourcePreserved": false,
+        "physicalSigners": 3
+      },
+      {
+        "name": "barp-regression",
+        "pages": 1,
+        "zipXmlCrcValid": true,
+        "geometryCorrect": true,
+        "sourcePreserved": false,
+        "physicalSigners": 5
+      }
+    ],
+    "wordPagesInspected": 8,
+    "browserPdfs": [
+      {
+        "name": "main-single",
+        "pages": 1,
+        "nonblank": true,
+        "threeSigners": true,
+        "orientationMatches": true
+      },
+      {
+        "name": "main-second",
+        "pages": 1,
+        "nonblank": true,
+        "threeSigners": true,
+        "orientationMatches": true
+      },
+      {
+        "name": "main-long",
+        "pages": 1,
+        "nonblank": true,
+        "threeSigners": true,
+        "orientationMatches": true
+      },
+      {
+        "name": "appendix-single",
+        "pages": 1,
+        "nonblank": true,
+        "threeSigners": true,
+        "orientationMatches": true
+      },
+      {
+        "name": "appendix-second",
+        "pages": 1,
+        "nonblank": true,
+        "threeSigners": true,
+        "orientationMatches": true
+      },
+      {
+        "name": "appendix-long",
+        "pages": 3,
+        "nonblank": true,
+        "threeSigners": true,
+        "orientationMatches": true
+      }
+    ],
+    "browserPagesInspected": 8,
+    "functionalDownloads": [
+      {
+        "kind": "main",
+        "filename": "BA-PP-Tahap-2_SPK-PP-026-AREA3.docx",
+        "cancelStartsDownload": false,
+        "confirmedCount": 1
+      },
+      {
+        "kind": "appendix",
+        "filename": "Lampiran-BA-PP-Tahap-2_SPK-PP-026-AREA3.docx",
+        "cancelStartsDownload": false,
+        "confirmedCount": 1
+      }
+    ],
+    "browserJsErrors": [],
+    "browserNetwork": "GET-only local fixtures; unknown routes blocked",
+    "mainDownloadedByteIdenticalToRenderedFixture": true,
+    "appendixDownloadedTableMatchesBarp": true
+  },
+  "performance": {
+    "newSql": 0,
+    "newEndpoints": 0,
+    "newPackages": 0,
+    "lazyMainWordChunkBytes": 55700,
+    "lazyMainWordGzipBytes": 8210,
+    "maxStages": 3,
+    "maxComponentsPerSource": 2,
+    "adapterComplexity": "constant; shared indexed ledger model; no new per-row references",
+    "zipCapMiB": 64,
+    "notLoadBenchmark": true
+  },
+  "limits": [
+    "Very long LOP/table spans pages; Chrome may suppress tall repeated header as existing BARP limit",
+    "Only synthetic isolated browser/LibreOffice, no live accounts/server/desktopWord/physical print/load test",
+    "No migration/liveits/env/archive/Dompis/worker/reset/seed/deploy/commit/push"
+  ],
+  "qaPath": "/private/tmp/area3-bapp-word-20261116"
+}

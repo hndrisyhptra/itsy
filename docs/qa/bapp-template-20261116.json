@@ -1,0 +1,120 @@
+{
+  "date": "2026-11-16",
+  "feature": "BA PP portrait letter preview from supplied BA-PP.docx",
+  "scope": "HTML preview and browser print/PDF only; no new Word export/backend/storage change",
+  "reference": {
+    "sha256": "a919d6e4994acfc22ddc6fdff8d7bc153a971f2b04c8c881146b170f5afba9fb",
+    "pages": 1,
+    "section": "A4 portrait25.4mm margins",
+    "font": "Calibri11pt; title14pt",
+    "originalUnchanged": true,
+    "contract": "docs/artifacts/bapp/artifact.md"
+  },
+  "labelPolicy": {
+    "singleFinal1": "no Tahap/Termin labels",
+    "staged": "TahapN in result/closing; TerminN beside current gross bill"
+  },
+  "data": "saved related BARP metadata, selected canonical current gross bill and value-weighted current/SPK progress; no100% Final assumption",
+  "unchanged": [
+    "internal BAPP number/form/SQL identity",
+    "cumulative BA PP detail/appendix",
+    "status/approval decisions/Finance/lunas",
+    "ledger/release/continuation",
+    "historical snapshots/archive",
+    "actual blank wet signatures"
+  ],
+  "performance": {
+    "addedSql": 0,
+    "addedEndpoints": 0,
+    "newPackages": 0,
+    "complexity": "linear selected agreement passes; constant letter DOM; no per-row master/account/source finds",
+    "regressionItems": 1000,
+    "notLoadBenchmark": true
+  },
+  "verification": {
+    "php": {
+      "tests": 310,
+      "assertions": 7137,
+      "database": "isolated SQLite :memory:"
+    },
+    "frontend": {
+      "tests": 325,
+      "newBappTests": 5
+    },
+    "build": "TypeScript/Vite passed",
+    "assets": {
+      "manifestReferences": 36,
+      "preloadDependencies": 28,
+      "profiles": 3
+    },
+    "browser": [
+      {
+        "name": "single-final",
+        "signers": 3,
+        "placeholders": false,
+        "errors": []
+      },
+      {
+        "name": "second-final",
+        "signers": 3,
+        "placeholders": false,
+        "errors": []
+      },
+      {
+        "name": "third-long",
+        "signers": 3,
+        "placeholders": false,
+        "errors": []
+      },
+      {
+        "screenWidth": 375,
+        "noDocumentOverflow": true
+      },
+      {
+        "screenWidth": 768,
+        "noDocumentOverflow": true
+      },
+      {
+        "screenWidth": 1440,
+        "noDocumentOverflow": true
+      }
+    ],
+    "pdf": [
+      {
+        "name": "single-final",
+        "pages": 1,
+        "portrait": true,
+        "nonblank": true,
+        "threeSavedNamesPresent": true,
+        "internalNumberAbsent": true,
+        "currentGrossBillPresent": true
+      },
+      {
+        "name": "second-final",
+        "pages": 1,
+        "portrait": true,
+        "nonblank": true,
+        "threeSavedNamesPresent": true,
+        "internalNumberAbsent": true,
+        "currentGrossBillPresent": true
+      },
+      {
+        "name": "third-long",
+        "pages": 1,
+        "portrait": true,
+        "nonblank": true,
+        "threeSavedNamesPresent": true,
+        "internalNumberAbsent": true,
+        "currentGrossBillPresent": true
+      }
+    ],
+    "finalPdfPagesInspected": 3,
+    "sourceReferencePagesInspected": 1
+  },
+  "limits": [
+    "Synthetic headless browser QA only; no live account/server/desktopWord/physical print/load test",
+    "Very long LOP can still require multiple pages; compact gaps do not truncate text",
+    "No live its/env/archive/Dompis writes; no migration/reset/seed/restart/deploy/commit/push"
+  ],
+  "qaPath": "/private/tmp/area3-bapp-template-20261116"
+}

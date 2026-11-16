@@ -11,10 +11,10 @@ test('unsaved manually entered PP can be previewed before it exists in the store
   assert.ok(html.includes('PP/NEW-PREVIEW'));
   assert.ok(html.includes('Proyek baru belum disimpan'));
 });
-test('BA PP document total uses all approved terms, not only the last Final', () => {
+test('BA PP appendix total uses all approved terms, not only the last Final', () => {
   const s = seed('E'), bapp = s.bapps[0], term = getTerm(s,bapp.termId), spk = getSpk(s,term.spkId), deal = getDeal(s,spk.dealId);
-  const html = renderToStaticMarkup(createElement(DocumentPreview, { state:s, kind:'BA Penyelesaian Pekerjaan', bapp, term, spk, deal, onClose:()=>{} }));
-  const summary = html.match(/class="doc-total"[\s\S]*?<\/div>/)?.[0] ?? '';
+  const html = renderToStaticMarkup(createElement(DocumentPreview, { state:s, kind:'Lampiran BA Penyelesaian Pekerjaan', bapp, term, spk, deal, onClose:()=>{} }));
+  const summary = html.match(/<tfoot>[\s\S]*?<\/tfoot>/)?.[0] ?? '';
   assert.match(summary,/85\.922\.250/);
   assert.match(html,/900/);
 });

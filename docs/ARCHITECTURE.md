@@ -1,5 +1,29 @@
 # Arsitektur aplikasi it's Area 3
 
+## 16 November 2026 — Native Word BA PP dan shared reconciliation appendix
+
+`bapp-content` kini memiliki rich-text opening/result/closing yang dirender HTML dan Word. `bapp-docx` mempatch marker sekali pada retained `bapp-word-template` package (18entries), preserve15entries dan geometry/styles/theme/settings/notes/relationships; hanya body +2descriptive metadata berubah. XML escaping/marker non-recursion, original reference unchanged, blank wetTTD. `bapp-file` lightweight names/MIME; UI lazyimports kedua generator melalui busy/confirmation/status guard tanpa network/private-file query.
+
+`bappAppendixData` adalah adapter model BARP: table data/amounts/widths/recap identik, title BAPP dan signer[Head,Waspang,Mandor]. HTML `ReconciliationAppendix` dan native `createReconciliationAppendixDocx` dibagi; dynamic signer widths3/5 menghasilkan jumlah slot yang tepat, BARP tidak berubah menjadi3. Branch/read/approval/print/settlement/storage guards tetap, tidak ada endpoint/schema/migration/write baru.
+
+0additionalSQL; existing indexed linear model/max3tahap×2komponen, adapter O(1), ZIP memory bounded64MB, lazy package55.70kB/8.21gzip dan tanpa server temporary paths.310PHP/7137assertions,329frontend/build/assets37refs/29preloads×3profil lulus.6DOCX/8halaman dan6PDFbrowser/8halaman diperiksa, functionalReact downloadsNO0/YES1 each; fixture bukan server/loadbenchmark. [Perilaku/sumber/batas](BAPP_WORD_APPENDIX.md), [QA](qa/bapp-word-appendix-20261116.json).
+
+## 16 November 2026 — Model surat BA PP khusus
+
+`bappDocumentData` menggunakan canonical BARP amount/historical identity, calendar-only date formatter, singleFinal helper dan dealTotal dari props authorized. Tidak melakukan lookup akun/KHS/BOQ atau state mutation. Nilai/paragraf template untuk tahap kini tetap bruto; kumulatif tidak dihapus dari detail/lampiran. Kompleksitas linear terhadap item kesepakatan, DOM surat konstan terhadap jumlah item.0query/endpoint/schema/dependency tambahan; tidak mengubah snapshot atau archive.
+
+`BappDocument` merender surat portrait tanpa internalnumber, dua pasangan TTD ditambah Head di bawah, label tahap bersyarat dan blank wet-signature slots. `DocumentPreview` menempatkan cabang khusus sebelum tabel generik dan memakai actual-assignee canPrintBarp + konfirmasi existing. Scoped CSS25.4mm/11pt/14pt, compact gaps untuk LOPpanjang, background putih root/modal dan printpath existing. Tidak mengubah BappDetail/attestation/release/continuation atau menambah Word export.
+
+310PHP/7137assertions,325frontend/build/assets lulus;1000item tanpa per-row references/current account;3PDFheadless1halaman per kasus diperiksa. Bukan browser akun/aaPanel/loadtest/cetak fisik. [Perilaku/sumber](BAPP_TEMPLATE.md), [bukti](qa/bapp-template-20261116.json).
+
+## 16 November 2026 — Proyeksi tabel BARP bergaya Lampiran SPK
+
+`barp-appendix-content.ts` memproyeksikan `termVolumeData` menjadi harga satuan M/J, volume per LOP sampai termin sekarang, total volume per baris dan nilai M/J/Jumlah kumulatif. Single Final1 memakai nama LOP saja. Stage1/2/3 menghasilkan11/12/13kolom; tidak merender termin masa depan. Map agreement, prior accepted dan grup komponen menghindari lookup katalog per baris. Perhitungan maksimum3tahap×2komponen mempertahankan money policy masing-masing sumber. Baris dengan komitmen atau vektor aktual M/J berbeda dipisah. Footer jumlah dan tagihan saat ini dibedakan; tidak menjumlah volume lintas satuan.
+
+`barp-appendix.tsx` dan lazy `barp-appendix-docx.ts` menggunakan header/lebar/body/footer yang sama. Native Word A4 landscape7pt dengan margin sel ringkas, dua header berulang, baris terakhir bersama rekap dan lima TTD existing. CSS khusus lampiran tidak mengubah surat utama/SPK/signers. Tidak ada perubahan backend/state/SQL/API/migration, tidak ada GET write atau penggantian snapshot. Tambahan query0; kompleksitas linear terhadap data authorized yang sudah dimuat, dengan maksimal3tahap. Fixture1000baris bukan load benchmark.
+
+310PHP/7137assertions,320frontend/build/assets lulus; native Word4dokumen/6halaman dan PDF browser4dokumen/6halaman nonblank diperiksa. Header yang sangat tinggi pada Chrome dapat tidak berulang; Word tetap berulang. Lihat [perilaku dan batas](BARP_APPENDIX.md) serta [bukti](qa/barp-spk-grid-20261116.json). Tidak menerapkan perubahan pada server atau database aktif.
+
 ## 16 November 2026 — Tandai Lunas dengan APM opsional
 
 Finance dapat menekan Tandai Lunas setelah bukti transfer aktif selesai diunggah dan approval/review Finance lengkap, tanpa nomor APM. Upload sendiri tidak membayar otomatis. APM dapat diisi saat pelunasan atau ditambah/diedit sesudah lunas; format/keunikan dan konfirmasi YA/TIDAK tetap. Koreksi nomor menyimpan audit before/after/actor/waktu dan tidak mengubah nilai/tanggal/penerima/bukti/keputusan maupun menambah pembayaran kedua. Berlaku pada alur kasbon-v1/kasbon-settlement-v2; pra-kasbon historis tetap.
