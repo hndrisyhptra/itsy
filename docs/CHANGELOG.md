@@ -482,3 +482,8 @@ User mengonfirmasi footer Total Nilai di bagian paling bawah tabel. Item otomati
 ## 17 November 2026 — Lima preview dokumen paket untuk approver
 
 Preview PP, BA KH, Lampiran BA KH, SPK dan Lampiran SPK kini disatukan sebelum tombol approval pada detail, serta dapat dibuka dari Preview Paket pada Inbox. Sebelumnya empat preview kontrak berada di kartu terpisah sesudah panelapproval. Reuse preview/nativeWord/print existing, target exactPP/deal/SPK tanpa first-record fallback, multi-kontrak grouped, single-modal back/Escape, tidak menandai sudah direview atau mengubah keputusan. Nomor/riwayat/stamp/Branch/manifest dan lima tahapan tetap;0API/SQL/migration/live mutation baru. [Aturan dan bukti](BUNDLE_SETTLEMENT_APPROVAL.md).
+
+
+## 17 November 2026 — Ganti kata sandi dan mode tampilan di topbar
+
+Avatar Profil & Preferensi mendapat Ganti Kata Sandi untuk masing-masing akun aktif, meminta current/new/confirmation, min6huruf+angka/max72bytes/different, denganYA/TIDAK. Endpoint auth/active/CSRF/throttle self-only memakai hash terkini underlock, update hash+remember token, migrasi sessionID/currenthash tanpa mengganti CSRF atau menyentuh role/Branch/workflow; securitylog actualuserID saja. Form tidak persist credential atau retry otomatis. Ikon Bulan/Matahari pindah ke sebelah notifikasi, klik langsung tanpa konfirmasi sesuai pengecualian user; tema browserexisting tetap. Tidak ada migration/env/live account/queue/domain data rewrite. [Aturan, query dan QA](SELF_SERVICE_PASSWORD.md).

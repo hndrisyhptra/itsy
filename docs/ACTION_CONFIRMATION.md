@@ -1,5 +1,10 @@
 # Konfirmasi tombol YA / TIDAK — 9 November 2026
 
+## Pengecualian eksplisit tema — 17 November 2026
+
+Pengguna meminta klik mode gelap/terang pada topbar langsung berlaku tanpa konfirmasi. Ketentuan ini menggantikan ganti-tema pada cakupan historis di bawah. Ganti kata sandi akun sendiri tetap memerlukan YA/TIDAK pada submit/Enter; membuka form, tampil/sembunyi password, kembali dan ubah tema tidak. [Perilaku dan pengujian](SELF_SERVICE_PASSWORD.md).
+
+
 Tombol yang menjalankan tindakan meminta konfirmasi sebelum bekerja. **YA** melanjutkan tindakan yang disebutkan, **TIDAK** membatalkan tanpa menjalankan handler tindakan. Dialog konfirmasi yang sudah tersedia memakai dua label yang sama agar tidak ada konfirmasi berulang untuk satu tindakan.
 
 ## Cakupan

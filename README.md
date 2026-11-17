@@ -1,5 +1,7 @@
 # it's Area 3 — Construction Workspace
 
+**17 November 2026 — Profil:** semua akun aktif dapat mengganti kata sandi sendiri melalui Profil & Preferensi, memakai kata sandi saat ini dan konfirmasi baru (minimal6karakter huruf+angka). Tema gelap/terang kini di sebelah notifikasi, langsung tanpa konfirmasi. Tidak perlu migration. [Panduan dan batas](docs/SELF_SERVICE_PASSWORD.md).
+
 **16 November 2026 — Paket Dokumen:** pada BA PP Sah, ikon Aksi menyediakan satu Word atau Cetak/Simpan PDF berisi PP, BA KH/lampiran, SPK/lampiran, BARP/lampiran/kasbon aktif setiap pembayaran, BA PP/lampiran. Ruang TTD hasil unduh/cetak kosong. Timeline/detail mengikuti paket5approval dan kasbon sebelum7approval; List Payment putih tanpa gradient. Tidak perlu migration baru. [Penggunaan, akses dan pengujian](docs/DOCUMENT_PACKAGE.md).
 
 **16 November 2026 — Pelunasan:** Finance mengunggah bukti transfer lalu **Tandai Lunas**; APM opsional, dapat ditambah/diedit setelah lunas tanpa pembayaran ulang. Tetap approval/Finance/proof/Branch dan net kanonis. Migration nullable APM baru perlu dijalankan saat deploy; belum diterapkan agen pada database aktif. [Alur, data, deploy dan verifikasi](docs/PAYMENT_SETTLEMENT_OPTIONAL_APM.md).

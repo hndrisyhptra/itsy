@@ -365,3 +365,9 @@ body{color:var(--text);background:var(--bg)}[data-theme=dark] .metric-label,[dat
 .project-bundle-review-spk{display:flex;flex-direction:column;gap:6px;min-width:0}
 .project-bundle-review .actions{flex-wrap:wrap}
 .project-bundle-review .btn{white-space:normal;text-align:left;max-width:100%}
+
+.change-password-input{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}
+.change-password-input>input{width:100%;min-width:0}
+.change-password-input>.btn{padding:9px;min-width:38px}
+.change-password-error{color:var(--danger)}
+.change-password-form>.modal-actions{margin-top:8px}

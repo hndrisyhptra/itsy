@@ -7,6 +7,7 @@ use App\Http\Controllers\FinancePaymentCatalogController;
 use App\Http\Controllers\MasterDesignatorController;
 use App\Http\Controllers\NegotiationProjectController;
 use App\Http\Controllers\PaymentProjectController;
+use App\Http\Controllers\ProfilePasswordController;
 use App\Http\Controllers\PrototypeBoqController;
 use App\Http\Controllers\PrototypeController;
 use App\Http\Controllers\PrototypeExportController;
@@ -25,6 +26,7 @@ Route::middleware(PrivatePrototype::class)->group(function () {
     });
     Route::middleware(['auth', 'auth.session', ActiveAccount::class])->group(function () {
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+        Route::put('/api/account/password', [ProfilePasswordController::class, 'update'])->middleware('throttle:5,1')->name('account.password.update');
         Route::get('/akun', [AccountController::class, 'index'])->name('accounts.index');
         Route::get('/akun/baru', [AccountController::class, 'edit'])->name('accounts.create');
         Route::post('/akun', [AccountController::class, 'save'])->name('accounts.store');

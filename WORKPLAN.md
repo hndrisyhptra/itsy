@@ -841,3 +841,8 @@ Selesai: IV.2 menampilkan kode designator sumber, tombol tambah dan hapus dengan
 ## 17 November 2026 — Preview paket langsung sebelum approval
 
 Selesai: lima tombol PP/BA KH/lampiran/SPK/lampiran di ProjectApprovalPanel sebelum keputusan; Inbox20rows mendapat Preview Paket read-only. Target UUIDexact, banyak kontrak dikelompokkan, tidak memilih dokumen pertama/sibling; satu modal picker/preview dengan Escape kembali. Detail tidak menduplikasi kartu; operator links terjaga, dokumen kurang diberi status. Existing Word/print/five approval/Branch/manifest tanpa perubahan.0newSQL/API/schema/runtime dependency/migration/livewrite. [Perilaku](docs/BUNDLE_SETTLEMENT_APPROVAL.md), [QA](docs/qa/project-bundle-preview-20261117.json).
+
+
+## 17 November 2026 — Ganti kata sandi sendiri dan tema topbar
+
+Selesai: Profil & Preferensi → Ganti Kata Sandi untuk seluruh akun aktif, konfirmasiYA/TIDAK/current password/new confirmed6letters+numbers/max72bytes. Self-only locked server update/remember/session rotation, sessionlain gagal nextrequest, tanpa role/Branch/workflow change. Form volatile/no auto retry; status/error/eye/autocomplete. Tema dipindah sebelahBell tanpa konfirmasi, keylocalexisting dan fallbackstorageblocked. No schema/migration/env/seed/livepasswordchange/worker. [Perilaku](docs/SELF_SERVICE_PASSWORD.md), [QA](docs/qa/profile-password-theme-20261117.json).
