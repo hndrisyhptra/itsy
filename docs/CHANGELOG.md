@@ -452,3 +452,8 @@ Verifikasi akhir alih inbox:310PHP/7137assertions,318frontend,TypeScript/Vite,Pi
 ## 17 November 2026 — Ikon Unduh Semua Dokumen
 
 Ikon tombol **Unduh Semua Dokumen** pada `DocumentPackageButton` menggunakan Lucide `Download` ukuran16, menggantikan `Files`. Berlaku pada kolom Aksi BA PP, detail dan timeline yang memakai komponen bersama. Tooltip, modal dan alur unduh tetap. Perubahan sumber yang sudah ada dipertahankan; aset dibangun ulang. TypeScript/Vite dan pemeriksaan aset lulus. Tambahan0SQL/API/dependency/migration; browser/server tidak diuji ulang.
+
+
+## 17 November 2026 — Matriks Pengajuan dan Terbayar serta dashboard per peran
+
+Matriks dashboard dirapikan menjadi delapan kolom; Nilai Realisasi diganti **Nilai Pengajuan bruto** sebelum potongan Jasa Mandor (sesuai konfirmasi pengguna), diikuti **Nilai Terbayar** aktual Finance. Pengajuan Diajukan/Disetujui saja, tanpa draf/ditolak/dikembalikan dan tanpa penggandaan riwayat; terbayar tetap nominal aktual/historis/net. Rincian klik kedua kolom konsisten,20baris. CLOSE tetap settlement/net/APMopsional dan TotalNilai tetap BOQroot. Dashboard Admin/approver/Finance memprioritaskan ringkasan/tombol sesuai peran dan Branch SQL; pending mengikuti inbox sebenarnya. Tabel border/colgroup/alignment/accordion diperbaiki dan mini-ringkasan nominal panjang responsif. Summary mengindeks SPK/BA KH, satu kalkulasi perterm;0SQL/API/schema/migration/write baru.311PHP/7241assertions,341frontend,build/assets/Pint dan browser sintetis375/768/1440light/dark lulus. Server/liveakun/loadtest belum diuji. Detail [DASHBOARD_MATRIX](DASHBOARD_MATRIX.md), [bukti](qa/dashboard-matrix-payments-20261117.json).

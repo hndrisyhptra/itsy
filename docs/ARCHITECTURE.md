@@ -406,3 +406,8 @@ Verifikasi akhir alih inbox:310PHP/7137assertions,318frontend,TypeScript/Vite,Pi
 ## 17 November 2026 — Ikon Unduh Semua Dokumen
 
 Presentasi `DocumentPackageButton` memakai Lucide `Download`16 dari import existing; seluruh pemakai komponen mendapat ikon yang sama. Tidak ada dependency, SQL/API, model, workflow atau state baru. Build TypeScript/Vite dan pemeriksaan aset lulus; browser/server tidak diuji ulang.
+
+
+## 17 November 2026 — Matriks Pengajuan dan Terbayar serta dashboard per peran
+
+`dashboard-matrix` memproyeksikan requested=bruto canonical tiap term Diajukan/Disetujui dan paid=nominal aktual Disetujui pada SPK Sah. Model/total/detail contributor dibagi, tanpa sum history atau reprice. `dashboard-detail` memfilter sumber per metric/scope dan modal20baris. CLOSE tetap settlementRecorded/paymentDue, root BOQ dedupe tidak berubah. `dashboard-summary` membangun orderDeals Map dan satu kalkulasi gross perterm; pending reuse canApproveTerm/canReviewLegacySettlement/financeTaskPending. Dashboard memprioritaskan role SQL tanpa mengubah visible()/Branch SQL permission atau menambah private reads. Scoped fixedcolgroup8/header2rows/grid/rightalign/horizontal panel overflow dan responsive mini values.0newSQL/API/dependency/schema/migration/livewrite; bind5query/1join fixture200masters dan indexed1000row tetap, bukan loadtest.311PHP/7241assertions,341frontend/build/assets/Pint/browser sintetis6screen+interaksi lulus; server/akunlive belum. [Aturan dan bukti](DASHBOARD_MATRIX.md).

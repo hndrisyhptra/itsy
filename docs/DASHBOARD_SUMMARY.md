@@ -30,3 +30,8 @@ Kartu **Progress Pekerjaan per PP**, **Aktivitas Terbaru**, **Monitoring Volume*
 Perubahan hanya tampilan/perhitungan ringkasan, tanpa migration, penggantian data, perubahan alur atau transaksi live MySQL. Angka akun berasal dari data tersimpan Laravel, bukan simulasi. Tidak mengubah Dompis Prov. Muat ulang dashboard untuk mengambil aset build terbaru; **Muat ulang data** mengambil perubahan transaksi dari pengguna lain.
 
 Pemeriksaan visual/browser tidak diulang karena akses pratinjau sebelumnya ditolak; layout responsif/tema dan klik dropdown belum diverifikasi langsung di browser untuk revisi ini. Tes markup/perhitungan tidak diklaim sebagai uji visual.
+
+
+## 17 November 2026 — Matriks Pengajuan dan Terbayar serta dashboard per peran
+
+Prioritas dashboard mengikuti role SQL: Admin/Superadmin operasional + buatPP; approver konstruksi ApprovalMenunggu milikakun +Inbox; Finance/Settlement Pengajuanbruto/Terbayar/Outstandingbersih +ListPayment; rolelain monitoringtanpaoperationalaction. Semua angka/Branch mengikuti state yang discope Laravel; tidak ada penambahan hakakses. Matriks bersama menampilkan NilaiPengajuanbruto sebelumpotongan lalu NilaiTerbayaractual,modal20rows. Summary memakai indexedSPK→BAKH dan satu kalkulasi gross perterm; pending memakai helperinboxcurrent/legacy. [Definisi terbaru dan QA](DASHBOARD_MATRIX.md).

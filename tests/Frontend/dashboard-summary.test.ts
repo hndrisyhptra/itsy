@@ -47,7 +47,30 @@ test('Branch filter updates all related financial and project metrics, including
   assert.equal(all.projects.length, 2); assert.equal(all.contractValue, surabaya.contractValue); assert.equal(surabaya.billed, 200);
   assert.equal(malang.projects.length, 1); assert.equal(malang.activeProjects, 0); assert.equal(malang.contractValue, 0); assert.equal(malang.billed, 0);
   assert.equal(empty.projects.length, 0);
-  for (const key of ['activeProjects', 'continuations', 'activeMandors', 'contractValue', 'totalBoq', 'billed', 'paid', 'outstanding', 'pendingApprovals'] as const) assert.equal(empty[key], 0);
+  for (const key of ['activeProjects', 'continuations', 'activeMandors', 'contractValue', 'totalBoq', 'requested', 'billed', 'paid', 'outstanding', 'pendingApprovals'] as const) assert.equal(empty[key], 0);
+});
+
+test('dashboard priorities and actions follow SQL role without changing Branch-authorized totals',()=>{
+  const s=state();s.terms=[invoice(s,'pending','Diajukan'),invoice(s,'paid','Disetujui')];s.terms[1].paid=195;
+  const baseline=dashboardSummary(s).requested;
+  for(const role of ['Admin Konstruksi','Superadmin','PM Konstruksi','Admin Area','Mgr Project Support','Mgr Deployment','Head of PMO','Mgr Finance & Settlement','Finance','Officer 1 Operation'] as const){
+    s.role=role;const html=renderToStaticMarkup(createElement(Dashboard,{s}));
+    assert.equal(dashboardSummary(s).requested,baseline);assert.match(html,/Nilai Pengajuan/);assert.match(html,/Nilai Terbayar/);
+    assert.match(html,/Branch sesuai akses akun/);
+    if(['Admin Konstruksi','Superadmin'].includes(role))assert.match(html,/href="\/project-plan\/new"/);
+    else assert.doesNotMatch(html,/href="\/project-plan\/new"/);
+    if(['Mgr Finance & Settlement','Finance'].includes(role))assert.match(html,/href="\/termin\/list-payment"/);
+    else assert.doesNotMatch(html,/href="\/termin\/list-payment"/);
+    if(['PM Konstruksi','Admin Area','Mgr Project Support','Mgr Deployment','Head of PMO'].includes(role))assert.match(html,/Buka Approval Saya/);
+  }
+});
+
+test('dashboard summary indexes money once per current term and matches matrix gross/paid without root rebilling',()=>{
+  const s=state();s.terms=[invoice(s,'pending','Diajukan'),invoice(s,'approved','Disetujui'),invoice(s,'returned','Dikembalikan')];s.terms[1].paid=195;
+  for(const rows of [s.projects,s.deals,s.spks,s.terms,s.khs])Object.defineProperty(rows,'find',{value:()=>{throw new Error('Per-row relation lookup');}});
+  const before=JSON.stringify(s),v=dashboardSummary(s);
+  assert.equal(v.requested,400);assert.equal(v.billed,200);assert.equal(v.paid,195);
+  assert.equal(JSON.stringify(s),before);
 });
 
 test('approved current-term totals preserve historical partial payments and exclude pending, draft and rejected invoices', () => {

@@ -23,10 +23,23 @@ test('every matrix cell opens contributors matching unique ID counts, PP, BOQ an
   const s=fixture();s.projects.push({...structuredClone(s.projects[0]),id:'second',rootId:'second',projectCode:'OPEN'});
   const data=dashboardMatrix(s),before=JSON.stringify(s);
   for(const metric of ['projects','open','closed','plans'] as const)assert.equal(matrixDetailRows(data,selection(metric)).length,data.totals[metric]);
-  assert.equal(matrixDetailRows(data,selection('realized')).reduce((n,r)=>n+r.realized,0),data.totals.realized);
+  assert.equal(matrixDetailRows(data,selection('paid')).reduce((n,r)=>n+r.paid,0),data.totals.paid);
+  assert.equal(matrixDetailRows(data,selection('requested')).reduce((n,r)=>n+r.requested,0),data.totals.requested);
   assert.equal(matrixDetailRows(data,selection('total')).reduce((n,r)=>n+r.total,0),data.totals.total);
-  assert.equal(matrixDetailRows(data,selection('realized'))[0].route,'/termin/paid');
+  assert.equal(matrixDetailRows(data,selection('paid'))[0].route,'/termin/paid');
   assert.equal(JSON.stringify(s),before);
+});
+
+test('request and paid drilldowns show exact contributors and scoped totals with bounded rows',()=>{
+  const s=fixture(),paid=s.terms[0];paid.paid=780;
+  s.terms.push({...structuredClone(paid),id:'pending',status:'Diajukan',paid:0},{...structuredClone(paid),id:'returned',status:'Dikembalikan'});
+  const data=dashboardMatrix(s),requests=matrixDetailRows(data,selection('requested')),payments=matrixDetailRows(data,selection('paid'));
+  assert.deepEqual(requests.map(r=>r.id),['paid','pending']);assert.deepEqual(payments.map(r=>r.id),['paid']);
+  assert.equal(requests.reduce((n,r)=>n+r.requested,0),1600);assert.equal(payments[0].paid,780);
+  assert.equal(matrixDetailRows(data,{...selection('requested'),scope:{kind:'branch',id:'mlg'}}).length,0);
+  const html=renderToStaticMarkup(createElement(DashboardDetailModal,{data,selection:selection('requested'),onClose(){}}));
+  assert.match(html,/Tagihan bruto sebelum potongan/);assert.ok(html.indexOf('Nilai Pengajuan')<html.indexOf('Nilai Terbayar'));
+  assert.doesNotMatch(html,/Nilai Realisasi/);
 });
 
 test('Branch and Region drilldown preserve shared-ID global classification and never reveal omitted siblings',()=>{
@@ -48,7 +61,7 @@ test('continuation never adds root BOQ twice, missing codes stay in PP and unpai
   const data=dashboardMatrix(s);
   assert.equal(matrixDetailRows(data,selection('plans')).length,3);
   assert.equal(matrixDetailRows(data,selection('projects')).length,1);
-  assert.equal(matrixDetailRows(data,selection('realized')).length,1);
+  assert.equal(matrixDetailRows(data,selection('paid')).length,1);
   assert.equal(matrixDetailRows(data,selection('total')).reduce((n,r)=>n+r.total,0),1000);
   assert.equal(matrixDetailRows(data,selection('total')).some(r=>r.id==='child'),false);
 });
@@ -67,8 +80,8 @@ test('1000-row drilldown uses indexed relationships with bounded search paginati
 test('zero cells remain clickable, subtotal scopes are labeled and modal escapes names without writes',()=>{
   const s=fixture();s.projects[0].name='<script>bad</script>';
   const data=dashboardMatrix(s),html=renderToStaticMarkup(createElement(DashboardMatrix,{s}));
-  assert.equal((html.match(/class="matrix-value"/g)??[]).length,24); // Region, two Branches, total × six cells.
-  assert.match(html,/Lihat Nilai Realisasi · Malang/);
+  assert.equal((html.match(/class="matrix-value"/g)??[]).length,28); // Region, two Branches, total × seven cells.
+  assert.match(html,/Lihat Nilai Terbayar · Malang/);
   const detail=renderToStaticMarkup(createElement(DashboardDetailModal,{data,selection:selection('plans'),onClose(){}}));
   assert.match(detail,/&lt;script&gt;bad&lt;\/script&gt;/);assert.doesNotMatch(detail,/<script>|storage_key|accountNumber/);
   assert.equal(matrixDetailPage([]).pages,1);

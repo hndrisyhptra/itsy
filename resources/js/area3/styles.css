@@ -235,13 +235,15 @@ body{color:var(--text);background:var(--bg)}[data-theme=dark] .metric-label,[dat
 @media print{.document.barp-appendix{page:barp-appendix-landscape;padding:0;max-width:none;}.barp-appendix-scroll{overflow:visible;}.barp-appendix-scroll table{min-width:0;width:100%;}.document.barp-appendix th,.document.barp-appendix td{font-size:7pt;padding:2.5pt;}.barp-appendix thead{display:table-header-group}.barp-appendix tfoot{display:table-row-group}.barp-appendix tr{break-inside:avoid}.barp-appendix-signatures{grid-template-columns:repeat(5,minmax(0,1fr));}.barp-appendix-signatures h3,.barp-appendix-signatures strong,.barp-appendix-signatures p{font-size:7pt;}.modal-body:has(.barp-appendix){overflow:visible;}}
 
 /* Region/Branch matrix shares the existing dashboard filter and theme. */
-.dashboard-matrix table{min-width:820px;width:100%;border-collapse:collapse;}
+.dashboard-overview .mini-metrics>div{min-width:0}.dashboard-overview .mini-metrics strong{font-size:clamp(12px,1.15vw,16px);overflow-wrap:anywhere;white-space:normal;}
+.dashboard-matrix table{min-width:1050px;width:100%;table-layout:fixed;border-collapse:collapse;font-size:12px;}
+.dashboard-matrix .matrix-col-branch{width:22%}.dashboard-matrix .matrix-col-count{width:6%}.dashboard-matrix .matrix-col-plans{width:8%}.dashboard-matrix .matrix-col-money{width:17.333%}
 .dashboard-matrix .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
 .dashboard-matrix th,.dashboard-matrix td{border:1px solid var(--border);padding:10px 12px;vertical-align:middle;}
-.dashboard-matrix thead th{text-align:center;position:static;background:var(--bg);}.dashboard-matrix th.numeric,.dashboard-matrix td.numeric{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;}
-.dashboard-matrix .matrix-region{background:var(--primary-soft);}.dashboard-matrix .matrix-region th{padding:0;min-width:200px;}
-.matrix-region button{display:flex;align-items:center;gap:9px;width:100%;padding:12px;text-align:left;font-weight:600;color:var(--text);}.matrix-region small{display:block;color:var(--muted);font-weight:400;font-size:10px;}
-.dashboard-matrix .matrix-branch{padding-left:36px;text-align:left;font-weight:500;}.dashboard-matrix tbody[hidden]{display:none;}.dashboard-matrix tfoot{background:var(--bg);font-weight:600;}
+.dashboard-matrix thead th{text-align:center;position:static;background:var(--bg);font-size:11px;line-height:1.5;white-space:normal;}.dashboard-matrix td.numeric{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.dashboard-matrix .matrix-region{background:var(--primary-soft);}.dashboard-matrix .matrix-region th{padding:0;}
+.matrix-region th button{display:flex;align-items:center;gap:9px;width:100%;padding:12px;text-align:left;font-weight:600;color:var(--text);}.matrix-region th small{display:block;color:var(--muted);font-weight:400;font-size:10px;}
+.dashboard-matrix .matrix-branch{padding-left:36px;overflow-wrap:anywhere;text-align:left;font-weight:500;}.dashboard-matrix tbody tr:not(.matrix-region):hover{background:var(--bg);}.dashboard-matrix tfoot th{font-size:11px;text-align:left;white-space:normal;}.dashboard-matrix tbody[hidden]{display:none;}.dashboard-matrix tfoot{background:var(--bg);font-weight:600;}
 .matrix-explanation{padding:14px 18px;color:var(--muted);font-size:10px;line-height:1.6;}.matrix-explanation p+p{margin-top:5px;}
 
 /* Upload percentages measure request bytes; worker phases remain indeterminate. */
@@ -267,7 +269,7 @@ body{color:var(--text);background:var(--bg)}[data-theme=dark] .metric-label,[dat
 .demo-bar small[role="status"]{display:block;font-size:11px;margin-top:2px}
 
 /* Dashboard source drilldown: scoped to the matrix and its modal. */
-.dashboard-matrix .matrix-value{font:inherit;color:var(--text);background:transparent;border:0;padding:4px 2px;cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:4px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.dashboard-matrix .matrix-value{display:inline-block;max-width:100%;font:inherit;color:var(--text);background:transparent;border:0;padding:4px 2px;cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:4px;font-variant-numeric:tabular-nums;white-space:nowrap}
 .dashboard-matrix .matrix-value:hover{color:#756bd3}.dashboard-matrix .matrix-value:focus-visible{outline:2px solid #9FA1FF;outline-offset:3px;border-radius:3px}
 .dashboard-detail{display:grid;gap:12px}.dashboard-detail .search-field input{width:100%}.dashboard-detail-table table{font-size:12px}.dashboard-detail-table th,.dashboard-detail-table td{border:1px solid var(--border);padding:7px 8px}.dashboard-detail-table small{display:block;color:var(--muted)}
 

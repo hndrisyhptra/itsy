@@ -2,14 +2,14 @@ import { settlementRecorded } from './payment-settlement';
 import { paymentDue } from './kasbon-settlement';
 import { type State, type Project, type Deal, type Spk, type Term, boqTotal, round, termTotalForDeal } from './domain';
 
-export interface MatrixTotals { projects:number; open:number; closed:number; plans:number; realized:number; total:number; missingCodes:number }
+export interface MatrixTotals { projects:number; open:number; closed:number; plans:number; requested:number; paid:number; total:number; missingCodes:number }
 export interface MatrixBranch { id:string; name:string; regionId:string; regionName:string; totals:MatrixTotals }
 export interface MatrixRegion { id:string; name:string; branches:MatrixBranch[]; totals:MatrixTotals }
-export interface MatrixPlanDetail { id:string; no:string; name:string; code:string; branch:string; branchId:string; regionId:string; status:Project['status']; parentId?:string; closed:boolean; realized:number; total:number }
-export interface MatrixPaymentDetail { id:string; planId:string; spkNo:string; number:number; type:Term['type']; apm:string; amount:number }
+export interface MatrixPlanDetail { id:string; no:string; name:string; code:string; branch:string; branchId:string; regionId:string; status:Project['status']; parentId?:string; closed:boolean; requested:number; paid:number; total:number }
+export interface MatrixPaymentDetail { id:string; planId:string; spkNo:string; number:number; type:Term['type']; apm:string; status:Term['status']; requested:number; amount:number }
 export interface DashboardMatrixData { regions:MatrixRegion[]; totals:MatrixTotals; plans:MatrixPlanDetail[]; payments:MatrixPaymentDetail[] }
 const normalized=(value:string)=>value.trim().toUpperCase();
-const empty=():MatrixTotals=>({projects:0,open:0,closed:0,plans:0,realized:0,total:0,missingCodes:0});
+const empty=():MatrixTotals=>({projects:0,open:0,closed:0,plans:0,requested:0,paid:0,total:0,missingCodes:0});
 
 /** Read model of authorized saved rows only. Classification sees all visible PP, even when a Branch is selected. */
 export function dashboardMatrix(s:State,branch=''):DashboardMatrixData {
@@ -18,10 +18,10 @@ export function dashboardMatrix(s:State,branch=''):DashboardMatrixData {
     const key=normalized(b.name);if(!key)continue;
     branches.set(key,{id:b.id,name:b.name,regionId:b.regionId||'unassigned',regionName:b.regionName?.trim()||'Region belum ditetapkan',totals:empty()});
   }
-  const plans=new Map<string,{project:Project;deals:Deal[];realized:number;closed:boolean}>();
+  const plans=new Map<string,{project:Project;deals:Deal[];requested:number;paid:number;closed:boolean}>();
   const codes=new Map<string,{closed:boolean}>();
   for(const p of s.projects){
-    plans.set(p.id,{project:p,deals:[],realized:0,closed:false});
+    plans.set(p.id,{project:p,deals:[],requested:0,paid:0,closed:false});
     const code=normalized(p.projectCode);if(code)codes.set(code,{closed:true});
     const key=normalized(p.branch);
     if(!branches.has(key))branches.set(key,{id:`legacy:${key}`,name:p.branch,regionId:'unassigned',regionName:'Region belum ditetapkan',totals:empty()});
@@ -36,9 +36,10 @@ export function dashboardMatrix(s:State,branch=''):DashboardMatrixData {
     order.terms.push(t);const d=deals.get(order.spk.dealId)!.deal;
     const amount=termTotalForDeal(d,t),paid=Number.isFinite(t.paid)?Math.max(0,round(t.paid)):0;
     settled.set(t.id,t.status==='Disetujui'&&settlementRecorded(t)&&amount>0&&paid>=paymentDue(t,amount));
-    if(order.spk.status==='Sah'&&t.status==='Disetujui'){
-      plans.get(d.projectId)!.realized+=paid;
-      if(paid>0)payments.push({id:t.id,planId:d.projectId,spkNo:order.spk.no,number:t.number,type:t.type,apm:t.apm,amount:paid});
+    if(order.spk.status==='Sah'&&['Diajukan','Disetujui'].includes(t.status)){
+      const requested=amount,actualPaid=t.status==='Disetujui'?paid:0;
+      const plan=plans.get(d.projectId)!;plan.requested+=requested;plan.paid+=actualPaid;
+      payments.push({id:t.id,planId:d.projectId,spkNo:order.spk.no,number:t.number,type:t.type,apm:t.apm,status:t.status,requested,amount:actualPaid});
     }
   }
   for(const order of orders.values()){
@@ -60,16 +61,16 @@ export function dashboardMatrix(s:State,branch=''):DashboardMatrixData {
     if(!region){region={id:b.regionId,name:b.regionName,branches:[],totals:empty()};regions.set(b.regionId,region);regionCodes.set(b.regionId,new Set());}
     region.branches.push(b);branchCodes.set(key,new Set());
   }
-  for(const {project:p,realized} of plans.values()){
+  for(const {project:p,requested,paid} of plans.values()){
     const key=normalized(p.branch);if(!branchCodes.has(key))continue;
     const b=branches.get(key)!,r=regions.get(b.regionId)!;
     const code=normalized(p.projectCode);
     if(code){branchCodes.get(key)!.add(code);regionCodes.get(r.id)!.add(code);allCodes.add(code);}
     const boq=p.parentId?0:boqTotal(p);
-    details.push({id:p.id,no:p.no,name:p.name,code,branch:p.branch,branchId:b.id,regionId:r.id,status:p.status,parentId:p.parentId,closed:!!code&&codes.get(code)!.closed,realized:round(realized),total:boq});
-    for(const sum of [b.totals,r.totals,totals]){sum.plans++;sum.realized+=realized;sum.total+=boq;if(!code)sum.missingCodes++;}
+    details.push({id:p.id,no:p.no,name:p.name,code,branch:p.branch,branchId:b.id,regionId:r.id,status:p.status,parentId:p.parentId,closed:!!code&&codes.get(code)!.closed,requested:round(requested),paid:round(paid),total:boq});
+    for(const sum of [b.totals,r.totals,totals]){sum.plans++;sum.requested+=requested;sum.paid+=paid;sum.total+=boq;if(!code)sum.missingCodes++;}
   }
-  function finish(sum:MatrixTotals,ids:Set<string>){sum.projects=ids.size;sum.closed=[...ids].filter(code=>codes.get(code)!.closed).length;sum.open=sum.projects-sum.closed;sum.realized=round(sum.realized);sum.total=round(sum.total);}
+  function finish(sum:MatrixTotals,ids:Set<string>){sum.projects=ids.size;sum.closed=[...ids].filter(code=>codes.get(code)!.closed).length;sum.open=sum.projects-sum.closed;sum.requested=round(sum.requested);sum.paid=round(sum.paid);sum.total=round(sum.total);}
   for(const [key,b] of branches)if(branchCodes.has(key))finish(b.totals,branchCodes.get(key)!);
   for(const r of regions.values()){finish(r.totals,regionCodes.get(r.id)!);r.branches.sort((a,b)=>a.name.localeCompare(b.name,'id'));}
   finish(totals,allCodes);

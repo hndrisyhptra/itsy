@@ -31,7 +31,7 @@ test('matrix counts ten unique Project IDs, all PP and only a fully paid final p
   for(let i=2;i<=10;i++)addPlan(s,`p${i}`,`PROJECT-${i}`);
   addPlan(s,'extra','PROJECT-2');
   const before=JSON.stringify(s),v=dashboardMatrix(s).totals;
-  assert.deepEqual(v,{projects:10,open:9,closed:1,plans:11,realized:800,total:11000,missingCodes:0});
+  assert.deepEqual(v,{projects:10,open:9,closed:1,plans:11,requested:800,paid:800,total:11000,missingCodes:0});
   assert.equal(JSON.stringify(s),before);
 });
 
@@ -51,7 +51,7 @@ test('CLOSE requires every PP, every agreement and every SPK to finish final pay
 test('approved final alone, nonfinal terms, partial historical payments and missing APM remain OPEN',()=>{
   const s=state(),t=invoice(s);s.terms=[t];
   t.paid=0;assert.equal(dashboardMatrix(s).totals.open,1);
-  t.workflowVersion=1;t.paid=75.25;assert.equal(dashboardMatrix(s).totals.realized,75.25);assert.equal(dashboardMatrix(s).totals.open,1);
+  t.workflowVersion=1;t.paid=75.25;assert.equal(dashboardMatrix(s).totals.paid,75.25);assert.equal(dashboardMatrix(s).totals.open,1);
   t.paid=800;t.apmStatus='Belum Terbit';assert.equal(dashboardMatrix(s).totals.open,1);
   t.apmStatus='Valid';t.type='Parsial';assert.equal(dashboardMatrix(s).totals.open,1);
   t.type='Final';t.status='Diajukan';assert.equal(dashboardMatrix(s).totals.open,1);
@@ -60,11 +60,11 @@ test('approved final alone, nonfinal terms, partial historical payments and miss
 
 test('current-term actual payments sum without rebilling previous terms, and ignore unapproved/orphan amounts',()=>{
   const s=state(),partial=invoice(s,'t1',1,4),final=invoice(s,'t2',2,6);partial.type='Parsial';
-  s.terms=[partial,final];assert.equal(dashboardMatrix(s).totals.realized,800);assert.equal(dashboardMatrix(s).totals.closed,1);
-  final.paid=0;assert.equal(dashboardMatrix(s).totals.realized,320);assert.equal(dashboardMatrix(s).totals.open,1);
+  s.terms=[partial,final];assert.equal(dashboardMatrix(s).totals.paid,800);assert.equal(dashboardMatrix(s).totals.closed,1);
+  final.paid=0;assert.equal(dashboardMatrix(s).totals.paid,320);assert.equal(dashboardMatrix(s).totals.open,1);
   s.terms.push({...invoice(s,'pending',3),status:'Diajukan'}, {...invoice(s,'rejected',3),status:'Ditolak'}, {...invoice(s,'draft',3),status:'Draft'}, {...invoice(s,'orphan'),spkId:'missing'});
-  assert.equal(dashboardMatrix(s).totals.realized,320);
-  s.spks[0].status='Draft';assert.equal(dashboardMatrix(s).totals.realized,0);
+  assert.equal(dashboardMatrix(s).totals.paid,320);
+  s.spks[0].status='Draft';assert.equal(dashboardMatrix(s).totals.paid,0);
 });
 
 test('BOQ includes saved draft values, deduplicates continuation allocation and never invents missing Project IDs',()=>{
@@ -82,7 +82,7 @@ test('Region/global unique counts handle shared IDs, while Branch filter keeps v
   const all=dashboardMatrix(s),east=all.regions.find(r=>r.id==='east')!;
   assert.equal(east.totals.projects,1);assert.equal(east.branches.reduce((n,b)=>n+b.totals.projects,0),2);
   assert.equal(all.regions.reduce((n,r)=>n+r.totals.projects,0),2);assert.equal(all.totals.projects,1);assert.equal(all.totals.plans,3);
-  const selected=dashboardMatrix(s,' surabaya ');assert.equal(selected.totals.plans,1);assert.equal(selected.totals.open,1);assert.equal(selected.totals.realized,800);
+  const selected=dashboardMatrix(s,' surabaya ');assert.equal(selected.totals.plans,1);assert.equal(selected.totals.open,1);assert.equal(selected.totals.paid,800);
   // Server supplies only authorized PP: the model cannot infer hidden siblings.
   s.projects=s.projects.slice(0,1);assert.equal(dashboardMatrix(s,'Surabaya').totals.closed,1);
 });
@@ -110,13 +110,37 @@ test('1000 PP use indexed relations without repeated collection find and preserv
     s.deals.push(d);s.spks.push(v);s.terms.push({...invoice(s,`t-${i}`),spkId:v.id});
   }
   for(const rows of [s.projects,s.deals,s.spks,s.terms,s.khs])Object.defineProperty(rows,'find',{value:()=>{throw new Error('Repeated collection find');},configurable:true});
-  const totals=dashboardMatrix(s).totals;assert.equal(totals.projects,1000);assert.equal(totals.closed,1000);assert.equal(totals.realized,800000);assert.equal(totals.total,1000000);
+  const totals=dashboardMatrix(s).totals;assert.equal(totals.projects,1000);assert.equal(totals.closed,1000);assert.equal(totals.paid,800000);assert.equal(totals.total,1000000);
 });
 
 test('matrix markup includes grouped headings, accessible Region disclosure, Branch rows and distinct total',()=>{
   const s=state();s.branches![0].regionName='Jawa <Timur>';
   const html=renderToStaticMarkup(createElement(DashboardMatrix,{s}));
-  for(const label of ['Matriks Project per Region','JMLH','OPEN','CLOSE','Jumlah PP','Nilai Realisasi','Total Nilai','Surabaya','Malang','Semarang','TOTAL · ID Project unik'])assert.ok(html.includes(label));
+  for(const label of ['Matriks Project per Region','JMLH','OPEN','CLOSE','Jumlah PP','Nilai Pengajuan','Nilai Terbayar','Total Nilai','Surabaya','Malang','Semarang','TOTAL · ID Project unik'])assert.ok(html.includes(label));
   assert.match(html,/colSpan="3"/);assert.match(html,/aria-expanded="true" aria-controls="([^"]+)"/);assert.match(html,/<tbody id="/);assert.match(html,/Jawa &lt;Timur&gt;/);assert.doesNotMatch(html,/NaN|Infinity/);
   const empty=renderToStaticMarkup(createElement(DashboardMatrix,{s,branch:'hidden'}));assert.match(empty,/Belum ada Branch dalam cakupan filter dan akses Anda/);
+});
+
+test('submitted gross and actual paid remain separate across pending, returned, rejected and resubmitted terms',()=>{
+  const s=state(),t=invoice(s);t.paid=780;
+  t.kasbon={id:'net-quote',version:1,amount:780,issuedBy:'admin',issuedAt:'2026-11-17',settlement:{policy:'mandor-service-pph25-v1',gross:800,material:0,service:800,withheld:20,net:780}};
+  const pending={...structuredClone(t),id:'pending',status:'Diajukan' as const,paid:0};
+  s.terms=[t,pending,...(['Draft','Dikembalikan','Ditolak'] as const).map(status=>({...structuredClone(t),id:status,status}))];
+  const before=JSON.stringify(s),data=dashboardMatrix(s);
+  assert.equal(data.totals.requested,1600);assert.equal(data.totals.paid,780);
+  assert.equal(data.payments.length,2);assert.equal(data.payments.find(p=>p.id==='pending')!.amount,0);
+  assert.equal(JSON.stringify(s),before);
+  pending.status='Diajukan'; // Reusing the same document never sums its historical approval cycles.
+  pending.history=[{role:'PM Konstruksi',decision:'Tolak',note:'Revisi',at:'2026-11-16'}];
+  assert.equal(dashboardMatrix(s).totals.requested,1600);
+  s.spks[0].status='Draft';assert.equal(dashboardMatrix(s).totals.requested,0);
+});
+
+test('Finance settlement without APM contributes net paid and closes final while gross request stays unchanged',()=>{
+  const s=state(),t=invoice(s);t.workflowVersion=3;t.paymentFlow='kasbon-settlement-v2';t.paid=780;t.apm='';t.apmStatus='Belum Terbit';
+  t.kasbon={id:'k1',version:1,amount:780,issuedBy:'admin',issuedAt:'2026-11-17',settlement:{policy:'mandor-service-pph25-v1',gross:800,material:0,service:800,withheld:20,net:780}};
+  t.transferProof={id:'proof',kasbonId:'k1',uploadedBy:'finance',uploadedAt:'2026-11-17'};
+  t.financePayment={status:'Dibayar',settledAt:'2026-11-17',settledBy:'finance',kasbonId:'k1',transferFileId:'proof'};
+  s.terms=[t];const v=dashboardMatrix(s).totals;
+  assert.equal(v.requested,800);assert.equal(v.paid,780);assert.equal(v.closed,1);
 });

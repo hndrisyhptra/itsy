@@ -1,6 +1,7 @@
-import { settlementRecorded } from './payment-settlement';
+import { financeTaskPending } from './partial-payment';
+import { canReviewLegacySettlement } from './legacy-settlement-review';
 import { paymentDue } from './kasbon-settlement';
-import { type State, boqTotal, canApproveProject, canApproveTerm, dealTotal, round, termTotal } from './domain';
+import { type State, boqTotal, canApproveProject, canApproveTerm, dealTotal, round, termTotalForDeal } from './domain';
 
 /** Include Branches without transactions; Laravel already scopes the master list to the account. */
 export function dashboardBranches(s: State): string[] {
@@ -18,9 +19,15 @@ export function dashboardSummary(s: State, branch = '') {
   const terms = s.terms.filter(t => spkProjects.has(t.spkId));
   const termProjects = new Map(terms.map(t => [t.id, spkProjects.get(t.spkId)!]));
   const completed = new Set(s.bapps.filter(b => b.status === 'Sah').map(b => termProjects.get(b.termId)));
-  const approved = terms.filter(t => t.status === 'Disetujui');
   const sum = (values: number[]) => round(values.reduce((a, b) => a + b, 0));
-  const pendingTerms = terms.filter(t => canApproveTerm(s, t) || (s.role === 'Finance' && !settlementRecorded(t)&&['Menunggu Verifikasi','Valid'].includes(t.scan?.status??'')));
+  const pendingTerms = terms.filter(t => canApproveTerm(s,t)||canReviewLegacySettlement(s,t)||(s.role==='Finance'&&financeTaskPending(t)));
+  const orderDeals=new Map(spks.map(v=>[v.id,deals.get(v.dealId)!]));
+  let requested=0,billed=0,paid=0,outstanding=0;
+  for(const t of terms){
+    if(!['Diajukan','Disetujui'].includes(t.status))continue;
+    const gross=termTotalForDeal(orderDeals.get(t.spkId)!,t);requested+=gross;
+    if(t.status==='Disetujui'){billed+=gross;paid+=t.paid;outstanding+=Math.max(0,round(paymentDue(t,gross)-t.paid));}
+  }
   return {
     projects, spks,
     activeProjects: projects.filter(p => p.status === 'Sah' && !completed.has(p.id)).length,
@@ -28,9 +35,7 @@ export function dashboardSummary(s: State, branch = '') {
     activeMandors: new Set(spks.map(v => deals.get(v.dealId)!.mandor)).size,
     contractValue: sum(spks.map(v => dealTotal(deals.get(v.dealId)!))),
     totalBoq: sum(projects.filter(p => !p.parentId && p.boqStatus === 'Final').map(boqTotal)),
-    billed: sum(approved.map(t => termTotal(s, t))),
-    paid: sum(approved.map(t => t.paid)),
-    outstanding: sum(approved.map(t => Math.max(0, round(paymentDue(t,termTotal(s,t)) - t.paid)))),
+    requested:round(requested),billed:round(billed),paid:round(paid),outstanding:round(outstanding),
     pendingApprovals: pendingTerms.length + projects.filter(p => canApproveProject(s, p)).length,
   };
 }

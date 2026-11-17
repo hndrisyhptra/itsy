@@ -79,3 +79,8 @@ Backup lokal sebelum perubahan workflow: `storage/app/private/backups/its-before
 **275 PHP / 5837 assertions,279 frontend,TypeScript/Vite build,31 manifest refs/24 preload deps ×3 profiles, scoped Pint dan diff check lulus.** Enam PHP/sembilan frontend baru; regression expectation format/current-save disesuaikan, pengujian sen historis tetap. Bukti meliputi schema/null/source-preservation, guard sebelum DDL, retry setelah konflik, trigger/XOR/FK APM, pending snapshot dengan approved_amount NULL, CLI read-only, per-component BCMath/BigInt/legacy, agreement caps, SQL catalog policy+4queries, modal scopes/counts/route/search/1000rows/20DOM/escaping.
 
 Semua tes database memakai fail-closed SQLite memory/fake disk; frontend fixture/SSR. Tidak menjalankan migration, transaksi, preflight SQL terhadap its aktif/server, mengubah `.env`/APP_KEY/permission, worker live, master source workbook, atau Dompis. Browser klik akun/visual/dark/responsif/keyboard dan cetak fisik/desktop Word, MySQL/MariaDB DDL pada server, beban produksi belum diverifikasi. Modal memakai data tersimpan, bukan data simulasi yang ditanam pada runtime.
+
+
+## 17 November 2026 — Matriks Pengajuan dan Terbayar serta dashboard per peran
+
+Label/metric realisasi historis digantikan dua metric: NilaiPengajuanbruto statusDiajukan/Disetujui dan NilaiTerbayaractualFinance. Klikmasing-masing menampilkan kontributor yang sama dengan subtotal/total/filterBranch; modalID/PP jugamemuatkeduanya. DisplayRupiahbulat/policyhistoris/20rows/private-scope/0SQL tambahan tetap. Tidak ada perubahan storage/konversi/settlement dari fitur ini. [Aturan terbaru dan QA](DASHBOARD_MATRIX.md).

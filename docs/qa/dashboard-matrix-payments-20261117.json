@@ -1,0 +1,113 @@
+{
+  "date": "2026-11-17",
+  "feature": "Dashboard matrix gross requests and actual paid; role priorities",
+  "authority": {
+    "requested": "User confirmed gross before Mandor withholding",
+    "paid": "Actual saved paid; no fabricated payment or APM"
+  },
+  "changes": {
+    "columns": [
+      "Branch",
+      "JMLH",
+      "OPEN",
+      "CLOSE",
+      "Jumlah PP",
+      "Nilai Pengajuan",
+      "Nilai Terbayar",
+      "Total Nilai"
+    ],
+    "requestedStatuses": [
+      "Diajukan",
+      "Disetujui"
+    ],
+    "requires": "SPK Sah and exact authorized PP lineage",
+    "scope": "Existing Laravel SQL account/assigned Branches",
+    "roles": "Operational Admin/Superadmin; construction approver inbox; Finance/Settlement payment summary and list; other roles monitoring"
+  },
+  "verification": {
+    "php": {
+      "passed": 311,
+      "assertions": 7241,
+      "database": "isolated SQLite :memory:",
+      "dashboardScope": {
+        "tests": 3,
+        "assertions": 93,
+        "roles": 9
+      },
+      "bindQueries": 5,
+      "joinedRegionBranchQueries": 1,
+      "extraMasterSize": 200
+    },
+    "frontend": {
+      "passed": 341,
+      "indexedFixturePP": 1000,
+      "modalPageSize": 20
+    },
+    "build": "TypeScript and Vite passed",
+    "assets": {
+      "manifestReferences": 41,
+      "preloadDependencies": 32,
+      "profiles": 3
+    },
+    "pint": "scoped passed",
+    "browser": {
+      "errors": [],
+      "requests": [
+        "/",
+        "/harness.js"
+      ],
+      "checks": [
+        {
+          "theme": "light",
+          "width": 1440,
+          "noPageOverflow": true,
+          "eightColumns": true
+        },
+        {
+          "theme": "light",
+          "width": 768,
+          "noPageOverflow": true,
+          "eightColumns": true
+        },
+        {
+          "theme": "light",
+          "width": 375,
+          "noPageOverflow": true,
+          "eightColumns": true
+        },
+        {
+          "theme": "dark",
+          "width": 1440,
+          "noPageOverflow": true,
+          "eightColumns": true
+        },
+        {
+          "theme": "dark",
+          "width": 768,
+          "noPageOverflow": true,
+          "eightColumns": true
+        },
+        {
+          "theme": "dark",
+          "width": 375,
+          "noPageOverflow": true,
+          "eightColumns": true
+        }
+      ],
+      "interactions": "accordion click/Enter, request2/paid1 modal rows, Escape/close, empty Branch filter, role actions"
+    }
+  },
+  "performance": {
+    "additionalSql": 0,
+    "additionalApi": 0,
+    "summary": "Indexed agreement reference and one gross calculation per current term; memoized state/Branch",
+    "limit": "Existing aggregate boot remains; no concurrency/load benchmark"
+  },
+  "dataChanges": false,
+  "migrationRequired": false,
+  "limitations": [
+    "Synthetic browser state only; no authenticated server/account QA",
+    "No aaPanel deployment, MySQL load, actual bank transfer or physical print verification"
+  ],
+  "qaArtifacts": "/private/tmp/area3-matrix-20261117"
+}

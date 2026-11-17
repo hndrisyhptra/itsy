@@ -1,5 +1,24 @@
 # Matriks dashboard Region → Branch — 9 November 2026
 
+## 17 November 2026 — Nilai Pengajuan bruto, Nilai Terbayar dan dashboard per peran
+
+Aturan terbaru menggantikan label/definisi Nilai Realisasi pada catatan historis di bawah. Urutan kolom: **Branch | ID Project (JMLH/OPEN/CLOSE) | Jumlah PP | Nilai Pengajuan | Nilai Terbayar | Total Nilai**.
+
+- **Nilai Pengajuan**: pengguna mengonfirmasi **bruto sebelum potongan Jasa Mandor**. Jumlah tagihan aktual tiap pembayaran berstatus `Diajukan` atau `Disetujui` pada SPK Sah, dihitung dengan `termTotalForDeal` dan policy tersimpan. Draf, Dikembalikan, Ditolak dan orphan tidak ikut. Satu term dihitung sekali; riwayat siklus/resubmission dan kumulatif BARP tidak dijumlah ulang. Pengajuan yang sudah dibayar tetap termasuk. Tidak memakai nilai PP/SPK penuh atau kasbon net sebagai bruto.
+- **Nilai Terbayar**: nominal `paid` aktual tersimpan pada pembayaran Disetujui/SPK Sah, termasuk pembayaran historis parsial. Bukan tagihan yang baru disetujui, nominal kasbon, atau keberadaan file transfer saja. Pelunasan aktual tanpa APM tetap masuk. Kebijakan potongan Jasa Mandor dapat membuat nilai bersih terbayar lebih kecil dari Nilai Pengajuan bruto; kasbon lama tetap memakai policy yang tersimpan.
+- CLOSE tetap mengikuti settlement nyata + `paymentDue` net bila berlaku, bukan membandingkan terbayar terhadap bruto baru ini. Root BOQ, Project ID unik lintas Branch, seluruh PP sebelum filter untuk OPEN/CLOSE dan histori tetap.
+
+Klik kedua angka membuka modal kontribusi dari model berizin yang sama. Pengajuan menampilkan term aktif/disetujui; Terbayar hanya term dengan pembayaran positif. Keduanya menampilkan bruto dan terbayar, status/PP/SPK/termin/APM opsional; pencarian dan20baris/halaman tetap, tanpa PII/file privat atau fetch baru. Rincian ID Project dan PP juga menampilkan kedua nominal.
+
+Tabel memakai delapan kolom nyata, grouped header dua tingkat, colgroup/lebar tetap, border horizontal/vertikal, nominal rata kanan/tabular, subtotal/total berbeda dan gulir horizontal dalam panel di layar kecil. Selector accordion dibatasi ke tombol judul Region, sehingga style tersebut tidak memperbesar atau meratakan kiri tombol angka. Nominal panjang pada mini-ringkasan memakai ukuran responsif dan dapat membungkus tanpa terpotong. Tema putih/gelap dan aksen #9FA1FF tetap.
+
+Dashboard memakai role SQL/state akun yang sudah diikat Laravel: Admin Konstruksi/Superadmin mempertahankan ringkasan operasional + Project Plan Baru; approver konstruksi memprioritaskan Approval Menunggu milik akun + Buka Approval Saya; Finance/Mgr Finance & Settlement memprioritaskan Pengajuan bruto, Terbayar dan Outstanding bersih + List Payment. Role Operation/pemantau tetap ringkasan baca-saja tanpa tombol membuat PP/akses List Payment. Matriks tersedia dalam cakupan Branch akun pada semua peran; tidak menambah izin atau mengambil Branch tersembunyi. Tugas pending memakai helper yang sama dengan inbox, termasuk kasbon Finance dan review legacy terpilih.
+
+Arsitektur: read model saja, tanpa domain command/SQL/API/schema/migration/live data write. Map PP/BA KH/SPK/term dan Set ID tetap; summary sekarang juga mengindeks referensi SPK→BA KH dan menghitung gross/due/paid satu kali per term, menggantikan repeated relation find. Memoisasi state/filter tetap. Tambahan query0; direct bind fixture tetap5SELECT termasuk1joinedBranch/Region pada katalog awal/+200. Ini bukan benchmark beban; boot aggregate existing belum diganti SQL pagination.
+
+Verifikasi17November:311PHP/7241assertions SQLite memory,341frontend,TypeScript/Vite,assets41refs/32preloads×3profil,scopedPint dan diff check lulus. Fixture1000PP melarang per-row collectionfind; tes memeriksa gross/net, status, pengajuanulang tanpa doublecount, tanpaAPM, contributor totals, role action dan Branch hidden untuk9role. Browser sintetis Chrome:375/768/1440×light/dark,8kolom,nominalbesar,accordion klik/Enter,dua modal kontribusi,Escape/tutup,filterBranchkosong dan3roleactions;0JSerror/0APIrequest. Browser awal gagal karena sandbox lalu retry berizin; selector uji accordion diperjelas setelah strictlocator ambiguity, bukan perubahan workflow. Screenshot hasil diperiksa. Bukan login akun/server aaPanel, data bank nyata atau loadtest. Tidak migrate/restartworker/deploy dan tidak memutasi its/env/archive/Dompis. [Bukti QA](qa/dashboard-matrix-payments-20261117.json).
+
+
 ## 16 November 2026 — Tandai Lunas dengan APM opsional
 
 Finance dapat menekan Tandai Lunas setelah bukti transfer aktif selesai diunggah dan approval/review Finance lengkap, tanpa nomor APM. Upload sendiri tidak membayar otomatis. APM dapat diisi saat pelunasan atau ditambah/diedit sesudah lunas; format/keunikan dan konfirmasi YA/TIDAK tetap. Koreksi nomor menyimpan audit before/after/actor/waktu dan tidak mengubah nilai/tanggal/penerima/bukti/keputusan maupun menambah pembayaran kedua. Berlaku pada alur kasbon-v1/kasbon-settlement-v2; pra-kasbon historis tetap.

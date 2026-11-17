@@ -811,3 +811,8 @@ Verifikasi akhir alih inbox:310PHP/7137assertions,318frontend,TypeScript/Vite,Pi
 ## 17 November 2026 — Ikon Unduh Semua Dokumen
 
 Selesai: gunakan ikon `Download`16 pada tombol Unduh Semua Dokumen bersama; pertahankan tooltip/status/modal. Sumber sudah sesuai saat diperiksa dan dipertahankan. TypeScript/Vite build serta check:assets lulus; tanpa backend/database/migration. Browser/server belum diuji ulang.
+
+
+## 17 November 2026 — Matriks Pengajuan dan Terbayar serta dashboard per peran
+
+Selesai: rapikan matriks Region/Branch, Nilai Pengajuan bruto (konfirmasi pengguna) + Nilai Terbayar, modal kontribusi, dashboard prioritas/tombol per role dan akun/Branch. Simpan seluruh aturan CLOSE/BOQroot/settlementnet/riwayat. Summary memakai indeks dan satu total perterm, tanpa tambahan query/API/schema/migration/live mutation.311PHP/7241assertions,341frontend,TypeScript/Vite/assets/Pint,fixture1000row,9roleBranchscope serta browser sintetis6viewport/theme dan interaksi lulus. Server/akunlive/loadtest belum diverifikasi. [Perilaku](docs/DASHBOARD_MATRIX.md), [QA](docs/qa/dashboard-matrix-payments-20261117.json).

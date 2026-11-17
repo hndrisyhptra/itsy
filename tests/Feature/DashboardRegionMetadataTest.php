@@ -77,7 +77,7 @@ class DashboardRegionMetadataTest extends TestCase
         array_unshift($s['projects'], $hidden);
         DB::transaction(fn () => app(RelationalWorkflowStore::class)->write(PrototypeWorkspace::firstOrFail(), $s));
         $before = (array) DB::table('prototype_workspaces')->first(['state', 'revision']);
-        foreach (['Admin Konstruksi', 'Head of PMO', 'Finance'] as $role) {
+        foreach (['Admin Konstruksi', 'PM Konstruksi', 'Admin Area', 'Mgr Project Support', 'Mgr Deployment', 'Head of PMO', 'Mgr Finance & Settlement', 'Finance', 'Superadmin'] as $role) {
             $user = $this->asRole($role);
             app(AccountAccess::class)->assign($user, array_search($role, AccountAccess::ROLES, true), [$branch]);
             $response = $this->getJson('/api/prototype/state')->assertOk();

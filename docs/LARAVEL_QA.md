@@ -857,3 +857,8 @@ Satu native DOCX sintetis dengan identitas Manager yang sudah benar-benar menyet
 ## 17 November 2026 — Ikon Unduh Semua Dokumen
 
 Perubahan hanya ikon `Files`→`Download`16 di `DocumentPackageButton`; sumber existing diperiksa dan dipertahankan. `npm run build` (TypeScript/Vite) dan `npm run check:assets` lulus,41manifest references/32preload dependencies pada3profil. Tidak menambah tes untuk perubahan ikon; suite PHP/frontend dan browser/server tidak dijalankan ulang. Tidak ada query/API/schema/live data baru.
+
+
+## 17 November 2026 — Matriks Pengajuan dan Terbayar serta dashboard per peran
+
+311PHP/7241assertions pada fail-closed SQLite`:memory:`; DashboardRegionMetadataTest3test/93assertions mencakup9role dan hidden siblingProject/Region/Branch tanpa audit/receipt/archive/revisionwrite. Bind tetap5query termasuk1joinBranch/Region di0/+200masters.341frontend lulus: gross/net terpisah,status draft/return/reject excluded,resubmission tidakdoublecount,actual net settlementtanpaAPM,CLOSE tetapnet,kontributor/route/filter/20rows,roleactions dan1000PP tanpa collectionfind. TypeScript/Vite dan assets41manifestrefs/32preloads×3profil lulus; scopedPint/diffcheck lulus. Browser sintetis375/768/1440×light/dark memeriksa8kolom/largevalues/no-pageoverflow,accordionklik/Enter,request2rows/paid1row modal,Escape/tutup,emptyBranchfilter danPM/Settlement/Financeactions;0JSerror,2GETstaticfixture/0API. Sandbox retry berizin; locator harness diperjelas setelah strict ambiguity. Screenshot diperiksa; CSS mini values diperbaiki dari temuan mobile. Browser akun/server/MySQLload belum diuji. Tidak ada migration/workflow/SQLwrite/worker/liveits/env/archive/Dompis/deploy. [Perilaku](DASHBOARD_MATRIX.md), [bukti](qa/dashboard-matrix-payments-20261117.json).

@@ -1,26 +1,26 @@
 import { round } from './domain';
 import type { DashboardMatrixData, MatrixPlanDetail } from './dashboard-matrix';
 
-export type MatrixMetric = 'projects' | 'open' | 'closed' | 'plans' | 'realized' | 'total';
+export type MatrixMetric = 'projects' | 'open' | 'closed' | 'plans' | 'requested' | 'paid' | 'total';
 export type MatrixScope = { kind:'all' } | { kind:'region'|'branch'; id:string };
 export interface MatrixSelection { metric:MatrixMetric; scope:MatrixScope; label:string; code?:string }
 export const MATRIX_LABELS:Record<MatrixMetric,string> = {
   projects:'ID Project · JMLH',open:'ID Project · OPEN',closed:'ID Project · CLOSE',
-  plans:'Jumlah PP',realized:'Nilai Realisasi',total:'Total Nilai BOQ Plan',
+  plans:'Jumlah PP',requested:'Nilai Pengajuan',paid:'Nilai Terbayar',total:'Total Nilai BOQ Plan',
 };
 export interface MatrixDetailRow {
   id:string; code:string; name:string; branch:string; status:string; plans:number;
-  realized:number; total:number; route?:string; parentId?:string; no?:string; spkNo?:string; term?:string; apm?:string;
+  requested:number; paid:number; total:number; route?:string; parentId?:string; no?:string; spkNo?:string; term?:string; apm?:string;
 }
 
 /** Derive contributors from the same authorized model used by the visible cell. Never load another Branch. */
 export function matrixDetailRows(data:DashboardMatrixData,selection:MatrixSelection):MatrixDetailRow[] {
   const scope=selection.scope;
   const plans=data.plans.filter(p=>(scope.kind==='all'||(scope.kind==='region'?p.regionId:p.branchId)===scope.id)&&(!selection.code||p.code===selection.code));
-  const row=(p:MatrixPlanDetail):MatrixDetailRow=>({id:p.id,code:p.code,name:p.name,branch:p.branch,status:p.status,plans:1,realized:p.realized,total:p.total,parentId:p.parentId,no:p.no,route:'/project-plan/'+p.id});
-  if(selection.metric==='realized'){
+  const row=(p:MatrixPlanDetail):MatrixDetailRow=>({id:p.id,code:p.code,name:p.name,branch:p.branch,status:p.status,plans:1,requested:p.requested,paid:p.paid,total:p.total,parentId:p.parentId,no:p.no,route:'/project-plan/'+p.id});
+  if(selection.metric==='requested'||selection.metric==='paid'){
     const index=new Map(plans.map(p=>[p.id,p]));
-    return data.payments.flatMap(t=>{const p=index.get(t.planId);return p?[{...row(p),id:t.id,status:'Pembayaran tercatat',realized:t.amount,spkNo:t.spkNo,term:`${t.number} · ${t.type}`,apm:t.apm,route:'/termin/'+t.id}]:[];});
+    return data.payments.flatMap(t=>{const p=index.get(t.planId);return p&&(selection.metric==='requested'||t.amount>0)?[{...row(p),id:t.id,status:t.status,requested:t.requested,paid:t.amount,spkNo:t.spkNo,term:`${t.number} · ${t.type}`,apm:t.apm,route:'/termin/'+t.id}]:[];});
   }
   // Show all saved root plans, including zero drafts, because those are the source set for Total Nilai.
   if(selection.metric==='total'||selection.metric==='plans')return plans.filter(p=>selection.metric!=='total'||!p.parentId).map(row);
@@ -28,10 +28,10 @@ export function matrixDetailRows(data:DashboardMatrixData,selection:MatrixSelect
   for(const p of plans){
     if(!p.code||(selection.metric==='open'&&p.closed)||(selection.metric==='closed'&&!p.closed))continue;
     let group=groups.get(p.code);
-    if(!group){group={row:{id:p.code,code:p.code,name:p.name,branch:'',status:p.closed?'CLOSE':'OPEN',plans:0,realized:0,total:0},branches:new Set()};groups.set(p.code,group);}
-    group.branches.add(p.branch);group.row.plans++;group.row.realized+=p.realized;group.row.total+=p.total;
+    if(!group){group={row:{id:p.code,code:p.code,name:p.name,branch:'',status:p.closed?'CLOSE':'OPEN',plans:0,requested:0,paid:0,total:0},branches:new Set()};groups.set(p.code,group);}
+    group.branches.add(p.branch);group.row.plans++;group.row.requested+=p.requested;group.row.paid+=p.paid;group.row.total+=p.total;
   }
-  return [...groups.values()].map(({row,branches})=>({...row,branch:[...branches].join(', '),realized:round(row.realized),total:round(row.total)}));
+  return [...groups.values()].map(({row,branches})=>({...row,branch:[...branches].join(', '),requested:round(row.requested),paid:round(row.paid),total:round(row.total)}));
 }
 
 export function matrixDetailPage(rows:MatrixDetailRow[],query='',page=1){
