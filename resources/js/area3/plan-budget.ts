@@ -5,13 +5,14 @@ import { canReviseSubmission } from './workflow';
 
 export type BudgetCategory = 'mandor' | 'material' | 'bop' | 'permit';
 export interface MandorPlanRow { rowId:string; qtyM:number; qtyS:number; priceM:number; priceS:number }
-export interface MaterialPlanRow { id:string; sourceRowId?:string; name:string; qty:number; unit:string; price:number }
+export interface MaterialPlanRow { id:string; sourceRowId?:string; code?:string; name:string; qty:number; unit:string; price:number }
 export interface BopPlanRow { id:string; description:string; unit:string; qty:number; total:number }
 export interface UsagePlanRow { id:string; category:BudgetCategory; component?:'m'|'s'; term?:string; date?:string; amount:number }
 export interface SignaturePlanRow { id:string; label:'Dibuat Oleh'|'Diperiksa Oleh'|'Disetujui Oleh'; role:Role; job:string }
 export const MATERIAL_REVENUE_POLICY='mandor-material-revenue-v1' as const;
 export const OWNER_MATERIAL_POLICY='selected-owner-material-nonstock-v2' as const;
-export interface PlanBudget { marginPolicy?:typeof MATERIAL_REVENUE_POLICY|typeof OWNER_MATERIAL_POLICY; moneyPolicy?:typeof WHOLE_RUPIAH|typeof HALF_RUPIAH; version:1|2; mandor:MandorPlanRow[]; materials:MaterialPlanRow[]; bop:BopPlanRow[]; permit:number; bopLimit?:number|null; bopReference?:string; usage:UsagePlanRow[] }
+export const EDITABLE_NONSTOCK_POLICY='selected-owner-material-nonstock-v3' as const;
+export interface PlanBudget { excludedMaterialRowIds?:string[]; marginPolicy?:typeof MATERIAL_REVENUE_POLICY|typeof OWNER_MATERIAL_POLICY|typeof EDITABLE_NONSTOCK_POLICY; moneyPolicy?:typeof WHOLE_RUPIAH|typeof HALF_RUPIAH; version:1|2; mandor:MandorPlanRow[]; materials:MaterialPlanRow[]; bop:BopPlanRow[]; permit:number; bopLimit?:number|null; bopReference?:string; usage:UsagePlanRow[] }
 export interface OwnerPlanRow { rowId:string; code:string; name:string; unit:string; m:number|null; s:number|null; qm:number; qs:number }
 export const categories: Record<BudgetCategory,string> = {mandor:'Jasa Mandor',material:'Material Non Stock',bop:'BOP',permit:'Perizinan (Preliminary) Reimburse'};
 export const printRoles:Role[]=['Admin Konstruksi','PM Konstruksi','Admin Area','Mgr Deployment','Mgr Bussiness Support','Mgr Project Support','Head of PMO'];
@@ -47,15 +48,18 @@ export function draftPlanBudget(s:State,p:Project):PlanBudget {
   const version=canReviseSubmission(p)?2:previous?.version??2;
   const b:PlanBudget={version,mandor:ownerPlanRows(s,p).map(row=>mandorByRow.get(row.rowId)??{rowId:row.rowId,qtyM:row.qm,qtyS:row.qs,priceM:0,priceS:0}),materials:previous?.materials??[],bop:previous?.bop??[],permit:previous?.permit??p.costs.permit,usage:previous?.usage??[],...(!canReviseSubmission(p)&&previous?{...(previous.bopLimit!==undefined?{bopLimit:previous.bopLimit}:{}),...(previous.bopReference!==undefined?{bopReference:previous.bopReference}:{})}:{})};
   const workflowVersion=(p.workflowVersion??1)>=2?p.workflowVersion!:s.schema>=3?3:2;
-  if(workflowVersion>=3&&canReviseSubmission(p))b.marginPolicy=OWNER_MATERIAL_POLICY;
+  if(workflowVersion>=3&&canReviseSubmission(p))b.marginPolicy=EDITABLE_NONSTOCK_POLICY;
   else if(previous?.marginPolicy)b.marginPolicy=previous.marginPolicy;
   const moneyValue=(n:number)=>!Number.isFinite(n)||n<0||n>1e12||Math.abs(n*100-Math.round(n*100))>0.0001?n:wholeRupiah(n);
   if(p.moneyPolicy===WHOLE_RUPIAH){b.moneyPolicy=WHOLE_RUPIAH;b.mandor=b.mandor.map(r=>({...r,priceM:moneyValue(r.priceM),priceS:moneyValue(r.priceS)}));b.materials=b.materials.map(r=>({...r,price:moneyValue(r.price)}));b.bop=b.bop.map(r=>({...r,total:moneyValue(r.total)}));b.permit=moneyValue(b.permit);}
-  if(b.marginPolicy===OWNER_MATERIAL_POLICY&&canReviseSubmission(p)){
+  if((b.marginPolicy===OWNER_MATERIAL_POLICY||b.marginPolicy===EDITABLE_NONSTOCK_POLICY)&&canReviseSubmission(p)){
     const owners=new Map(ownerPlanRows(s,p).map(row=>[row.rowId,row]));
-    b.materials=b.mandor.filter(row=>row.qtyM>0&&row.priceM>0&&owners.get(row.rowId)?.m!==null).map((row,i)=>({id:`material-mandor-${i+1}`,sourceRowId:row.rowId,name:owners.get(row.rowId)?.name??'',unit:owners.get(row.rowId)?.unit??'',qty:row.qtyM,price:row.priceM}));
+    const editable=b.marginPolicy===EDITABLE_NONSTOCK_POLICY,excludedIds=editable?previous?.excludedMaterialRowIds??[]:[],excluded=new Set(excludedIds),manual=editable?b.materials.filter(row=>!Object.hasOwn(row,'sourceRowId')):[];
+    if(editable)b.excludedMaterialRowIds=excludedIds;
+    b.materials=b.mandor.filter(row=>!excluded.has(row.rowId)&&row.qtyM>0&&row.priceM>0&&owners.get(row.rowId)?.m!==null).map<MaterialPlanRow>((row,i)=>({id:`material-mandor-${i+1}`,sourceRowId:row.rowId,name:owners.get(row.rowId)?.name??'',unit:owners.get(row.rowId)?.unit??'',qty:row.qtyM,price:row.priceM,...(editable?{code:owners.get(row.rowId)?.code??''}:{})})).concat(manual);
   }
-  if(version===2)b.usage=automaticBudgetUsage(budgetSummary(s,p,b),b.marginPolicy===OWNER_MATERIAL_POLICY);
+  if(!canReviseSubmission(p)&&previous?.excludedMaterialRowIds)b.excludedMaterialRowIds=previous.excludedMaterialRowIds;
+  if(version===2)b.usage=automaticBudgetUsage(budgetSummary(s,p,b),(b.marginPolicy===OWNER_MATERIAL_POLICY||b.marginPolicy===EDITABLE_NONSTOCK_POLICY));
   return b;
 }
 export function budgetSummary(s:State,p:Project,b=draftPlanBudget(s,p)) {
@@ -63,9 +67,9 @@ export function budgetSummary(s:State,p:Project,b=draftPlanBudget(s,p)) {
   const owners=ownerPlanRows(s,p),sum=(values:number[])=>values.reduce((n,v)=>n+cents(v),0)/100;
   const ownerM=sum(owners.map(r=>lineAmount(r.qm,r.m??0,whole))),ownerS=sum(owners.map(r=>lineAmount(r.qs,r.s??0,whole)));
   const mandorM=sum(b.mandor.map(r=>lineAmount(r.qtyM,r.priceM,whole))),mandorS=sum(b.mandor.map(r=>lineAmount(r.qtyS,r.priceS,whole)));
-  const selected=b.marginPolicy===OWNER_MATERIAL_POLICY,mandorByRow=new Map(b.mandor.map(row=>[row.rowId,row]));
+  const selected=b.marginPolicy===OWNER_MATERIAL_POLICY||b.marginPolicy===EDITABLE_NONSTOCK_POLICY,mandorByRow=new Map(b.mandor.map(row=>[row.rowId,row]));
   const selectedOwnerM=sum(owners.map(owner=>{const row=mandorByRow.get(owner.rowId);return row&&row.qtyM>0&&row.priceM>0&&owner.m!==null?lineAmount(row.qtyM,owner.m,whole):0;}));
-  const material=selected?mandorM:sum(b.materials.map(r=>lineAmount(r.qty,r.price,whole))),bop=sum(b.bop.map(r=>r.total)),permit=b.permit;
+  const material=b.marginPolicy===OWNER_MATERIAL_POLICY?mandorM:sum(b.materials.map(r=>lineAmount(r.qty,r.price,whole))),bop=sum(b.bop.map(r=>r.total)),permit=b.permit;
   const mandor=amount(mandorM+mandorS),total=amount((selected?mandorS:mandor)+material+bop),revenue=amount(ownerS+(selected?selectedOwnerM:b.marginPolicy===MATERIAL_REVENUE_POLICY?mandorM:0)),grossProfit=amount(revenue-total);
   const usage={mandor:0,material:0,bop:0,permit:0};
   const usageRows=b.version===2||canReviseSubmission(p)?automaticBudgetUsage({mandorM,mandorS,material,bop,permit},selected):b.usage;
@@ -87,10 +91,11 @@ export function validatePlanBudget(s:State,p:Project,submit:boolean) {
   const ownersByRow=new Map(owners.map(row=>[row.rowId,row]));
   const number=(v:number,volume=false)=>{if(!Number.isFinite(v)||v<0||v>1000000000000||(volume&&(v>1000000000||Math.abs(v*1000-Math.round(v*1000))>0.000001))||(!volume&&Math.abs(v*100-Math.round(v*100))>0.0001))throw new Error('Angka anggaran harus nonnegatif; uang maksimal dua desimal, volume tiga desimal.');};
   const ids=(rows:{id:string}[])=>{if(rows.length>200||new Set(rows.map(r=>r.id)).size!==rows.length||rows.some(r=>!/^[a-zA-Z0-9-]{3,100}$/.test(r.id)))throw new Error('Baris anggaran harus memiliki ID unik, maksimal 200 baris per tabel.');};
-  if(b.marginPolicy!==OWNER_MATERIAL_POLICY)ids(b.materials);ids(b.bop); number(b.permit);
+  if(b.marginPolicy===EDITABLE_NONSTOCK_POLICY){const manual=b.materials.filter(row=>!row.sourceRowId);ids(manual);if(manual.some(row=>row.id.startsWith('material-mandor-')))throw new Error('ID tambahan Material Non Stock memakai kode yang dicadangkan.');const excluded=b.excludedMaterialRowIds??[];if(excluded.length>500||new Set(excluded).size!==excluded.length||excluded.some(id=>!ownersByRow.has(id)||ownersByRow.get(id)!.m===null))throw new Error('Daftar penghapusan Material Non Stock tidak valid.');}
+  else if(b.marginPolicy!==OWNER_MATERIAL_POLICY)ids(b.materials);ids(b.bop); number(b.permit);
   if(b.mandor.length!==owners.length||new Set(b.mandor.map(r=>r.rowId)).size!==owners.length)throw new Error('Designator BOQ Mandor harus sesuai BOQ Plan.');
   for(const row of b.mandor){const owner=ownersByRow.get(row.rowId);number(row.qtyM,true);number(row.qtyS,true);number(row.priceM);number(row.priceS);if(!owner||row.qtyM>owner.qm||row.qtyS>owner.qs||row.priceM>(owner.m??0)||row.priceS>(owner.s??0))throw new Error('Harga atau volume BOQ Mandor melebihi BOQ Plan per komponen.');}
-  for(const row of b.materials){number(row.qty,true);number(row.price);if(b.marginPolicy!==OWNER_MATERIAL_POLICY&&submit&&(!row.name.trim()||!row.unit.trim()||!row.qty))throw new Error('Lengkapi Material Non Stock, satuan dan volume positif.');}
+  for(const row of b.materials){number(row.qty,true);number(row.price);if(b.marginPolicy!==OWNER_MATERIAL_POLICY&&!row.sourceRowId&&submit&&(!row.name.trim()||!row.unit.trim()||!row.qty))throw new Error('Lengkapi Material Non Stock, satuan dan volume positif.');}
   for(const row of b.bop){number(row.qty,true);number(row.total);if(submit&&(!row.description.trim()||!row.unit.trim()||!row.qty))throw new Error('Lengkapi uraian BOP, satuan dan jumlah positif.');}
   const totals=budgetSummary(s,p,b);
   if([totals.total,totals.ownerTotal].some(v=>!Number.isFinite(v)||v>1000000000000))throw new Error('Total anggaran di luar batas yang didukung.');
@@ -105,5 +110,5 @@ export function applyBudgetPlan(s:State,p:Project,submit=false,strict=false):Pro
   if(strict&&p.planBudget){const ids=new Set(ownerPlanRows(s,p).map(r=>r.rowId)),rows=p.planBudget.mandor;if(rows.length!==ids.size||new Set(rows.map(r=>r.rowId)).size!==ids.size||rows.some(r=>!ids.has(r.rowId)))throw new Error('Designator BOQ Mandor harus sesuai BOQ Plan.');}
   const b=draftPlanBudget(s,strict?{...p,status:'Draft'}:p), result={...p,planBudget:b,riskLevel:p.riskLevel??'',risk:p.riskLevel??'',communication:ppTemplate.communicationRows.map(row=>row.join(' | ')).join('\n'),quality:ppTemplate.quality.join('\n'),closing:ppTemplate.closing,signatureRows:p.signatureRows??defaultSignatureRows()};
   const totals=strict?validatePlanBudget(s,result,submit):budgetSummary(s,result,b);
-  return {...result,costs:{mandor:b.marginPolicy===OWNER_MATERIAL_POLICY?totals.mandorS:totals.mandor,material:totals.material,bop:totals.bop,permit:totals.permit},planBudgetTotals:totals};
+  return {...result,costs:{mandor:(b.marginPolicy===OWNER_MATERIAL_POLICY||b.marginPolicy===EDITABLE_NONSTOCK_POLICY)?totals.mandorS:totals.mandor,material:totals.material,bop:totals.bop,permit:totals.permit},planBudgetTotals:totals};
 }

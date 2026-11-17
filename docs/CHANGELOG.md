@@ -472,3 +472,8 @@ Total Jml_Mat BOQ TA–Mandor kini mengisi baris1.1 Material dan menambah Revenu
 ## 17 November 2026 — Revisi Revenue Material dan daftar Non Stock PP
 
 Menggantikan perubahan margin sebelumnya pada draf v3:1.1 Material sekarang memakai harga Material Owner untuk item yang diisi di BOQ Mandor; Revenue=Jasa Owner+Material Owner terpilih. IV.2 menampilkan otomatis item/volume/harga Material Mandor,2.2 sama dengan total Jml_Mat Mandor. COGS dan rekap IV.5 menghitung Material sekali, Header mengikuti rekap. Daftar Non Stock readonly, edit dari BOQ Mandor. Policy server-owned dan sourceRowId disimpan di JSON/rincian existing,0SQL/API/migration tambahan; histori terkunci/policy sebelumnya tetap tanpa backfill. [Rumus, penyimpanan dan QA](PP_BUDGET_TEMPLATE.md).
+
+
+## 17 November 2026 — Designator, tambah/hapus Non Stock dan footer Total Nilai
+
+User mengonfirmasi footer Total Nilai di bagian paling bawah tabel. Item otomatis kini menampilkan kode designator saja; Admin dapat menambahkan material lain dan menghapus sumber/tambahan dengan YA/TIDAK. Source exclusions samePP disimpan, tambahan max200 tervalidasi, sumber tetap canonical. Total aktif menjadi2.2/COGS/IV.5/Header sekali; Revenue dan BOQ Mandor tidak berubah saat rincian NonStock dihapus. Policy server-owned v3 pada editable save/submit/continuation menjaga locked v2/v1/history. Tidak ada migration/SQL read perbaris/API baru/live backfill. [Perilaku, data, performance dan QA](PP_BUDGET_TEMPLATE.md).

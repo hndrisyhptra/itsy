@@ -188,5 +188,44 @@
       "category": "permit",
       "amount": 7.03
     }
+  ],
+  "expectedEditableNonStock": {
+    "ownerM": 1000,
+    "ownerS": 2000,
+    "ownerTotal": 3000,
+    "mandorM": 40,
+    "mandorS": 100,
+    "mandor": 140,
+    "material": 65.03,
+    "bop": 30.02,
+    "permit": 7.03,
+    "total": 195.05,
+    "revenue": 2400,
+    "cogs": 195.05,
+    "grossProfit": 2204.95,
+    "margin": 91.87
+  },
+  "editableMaterialUsage": [
+    {
+      "id": "usage-mandor-s",
+      "category": "mandor",
+      "component": "s",
+      "amount": 100
+    },
+    {
+      "id": "usage-material",
+      "category": "material",
+      "amount": 65.03
+    },
+    {
+      "id": "usage-bop",
+      "category": "bop",
+      "amount": 30.02
+    },
+    {
+      "id": "usage-permit",
+      "category": "permit",
+      "amount": 7.03
+    }
   ]
 }

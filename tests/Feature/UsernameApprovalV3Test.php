@@ -115,10 +115,10 @@ class UsernameApprovalV3Test extends TestCase
         $p['planBudgetTotals'] = ['revenue' => 999999, 'grossProfit' => 999999];
         $this->api('saveProject', [$p, false])->assertOk();
         $saved = $this->projectRecord($p['id']);
-        $this->assertSame(ProjectPlanBudget::OWNER_MATERIAL_POLICY, $saved['planBudget']['marginPolicy']);
+        $this->assertSame(ProjectPlanBudget::EDITABLE_NONSTOCK_POLICY, $saved['planBudget']['marginPolicy']);
         $this->assertEquals(100, $saved['planBudgetTotals']['mandorM']);
         $this->assertEquals($saved['planBudgetTotals']['ownerS'] + 2 * $m['m'], $saved['planBudgetTotals']['revenue']);
-        $this->assertEquals(100, $saved['planBudgetTotals']['material']);
+        $this->assertEquals(125, $saved['planBudgetTotals']['material']);
         $this->assertSame($m['name'], $saved['planBudget']['materials'][0]['name']);
         $this->assertSame('boq-margin-material', $saved['planBudget']['materials'][0]['sourceRowId']);
         $boqBudget = $saved['budget'];
@@ -143,6 +143,27 @@ class UsernameApprovalV3Test extends TestCase
         $this->assertEquals($updated['planBudgetTotals'], $snapshot['planBudgetTotals']);
         $rows = DB::table('project_plan_budget_rows')->where('pp_id', $sql->id_pp)->where('category', 'mandor')->pluck('row_data')->map(fn ($row) => json_decode($row, true));
         $this->assertEquals(75, $rows->firstWhere('rowId', 'boq-margin-material')['priceM']);
+
+        $updated['planBudget']['excludedMaterialRowIds'] = ['boq-margin-material'];
+        $updated['planBudget']['materials'][] = ['id' => 'extra-http', 'name' => 'M-EXTRA', 'qty' => 2, 'unit' => 'Pcs', 'price' => 15];
+        $revenue = $updated['planBudgetTotals']['revenue'];
+        $this->api('saveProject', [$updated, false])->assertOk();
+        $deleted = $this->projectRecord($p['id']);
+        $this->assertSame(['boq-margin-material'], $deleted['planBudget']['excludedMaterialRowIds']);
+        $this->assertCount(2, $deleted['planBudget']['materials']);
+        $this->assertEquals(55, $deleted['planBudgetTotals']['material']);
+        $this->assertEquals($revenue, $deleted['planBudgetTotals']['revenue']);
+        $this->assertEquals($updated['boq'], $deleted['boq']);
+        $this->assertEquals($updated['planBudget']['mandor'], $deleted['planBudget']['mandor']);
+        $this->assertCount(0, array_filter($deleted['planBudget']['materials'], fn ($row) => isset($row['sourceRowId'])));
+        $stored = json_decode(DB::table('project_plans')->where('source_id', $p['id'])->value('document_data'), true);
+        $this->assertEquals($deleted['planBudget'], $stored['planBudget']);
+        $before = $this->getJson('/api/prototype/state')->json();
+        $deleted['planBudget']['excludedMaterialRowIds'][] = 'other-pp-row';
+        $this->api('saveProject', [$deleted, false])->assertUnprocessable();
+        $after = $this->getJson('/api/prototype/state')->json();
+        $this->assertEquals($before['revision'], $after['revision']);
+        $this->assertEquals($before['state']['projects'], $after['state']['projects']);
     }
 
     public function test_complete_header_can_save_a_real_draft_without_boq_schedule_budget_or_approvers(): void
@@ -211,7 +232,7 @@ class UsernameApprovalV3Test extends TestCase
         $this->assertSame('Diajukan', $saved['status']);
         $this->assertEquals(30, $saved['costs']['bop']);
         $this->assertEquals(30, $saved['planBudgetTotals']['usage']['bop']);
-        $this->assertEquals(530, $saved['planBudgetTotals']['total']);
+        $this->assertEquals(555, $saved['planBudgetTotals']['total']);
         $this->assertArrayNotHasKey('bopLimit', $saved['planBudget']);
         $this->assertArrayNotHasKey('bopReference', $saved['planBudget']);
         $sql = DB::table('project_plans')->where('source_id', $p['id'])->first();
@@ -474,11 +495,11 @@ class UsernameApprovalV3Test extends TestCase
         $p['signatureRows'] = [['id' => 'signature-qa', 'label' => 'Disetujui Oleh', 'role' => 'Head of PMO', 'job' => 'Jabatan pada cetakan', 'name' => 'FAKE', 'date' => '2000-01-01']];
         $this->api('saveProject', [$p, true])->assertOk();
         $saved = $this->projectRecord($p['id']);
-        $this->assertEquals(530, $saved['planBudgetTotals']['total']);
-        $this->assertEquals(530, $saved['planBudgetTotals']['cogs']);
+        $this->assertEquals(555, $saved['planBudgetTotals']['total']);
+        $this->assertEquals(555, $saved['planBudgetTotals']['cogs']);
         $this->assertEquals(7, $saved['planBudgetTotals']['permit']);
         $this->assertEquals(500, $saved['costs']['mandor']);
-        $this->assertEquals(0, $saved['costs']['material']);
+        $this->assertEquals(25, $saved['costs']['material']);
         $this->assertEquals($saved['boq'][0]['s'] * 10, $saved['planBudgetTotals']['revenue']);
         $this->assertStringContainsString('Lensa Pro/Group Chat', $saved['communication']);
         $this->assertStringContainsString('Commissioning Test dan Uji Terima', $saved['quality']);
@@ -549,7 +570,7 @@ class UsernameApprovalV3Test extends TestCase
         $saved = $this->projectRecord($p['id']);
         $this->assertSame('Diajukan', $saved['status']);
         $this->assertCount(0, $saved['approvals']);
-        $this->assertEquals(530, $saved['planBudgetTotals']['total']);
+        $this->assertEquals(555, $saved['planBudgetTotals']['total']);
         $this->assertEquals(7, $saved['planBudgetTotals']['usage']['permit']);
         $sql = DB::table('project_plans')->where('source_id', $p['id'])->first();
         $rows = DB::table('project_plan_budget_rows')->where('pp_id', $sql->id_pp)->where('category', 'usage')->orderBy('position')->pluck('row_data')->map(fn ($row) => json_decode($row, true))->all();

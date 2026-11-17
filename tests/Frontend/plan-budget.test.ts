@@ -6,7 +6,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { seed } from '../../resources/js/area3/seed';
 import { type Project, type State, type Role, APPROVERS_V3, normalizeWorkflow, saveProject, getProject, decideProject, selectActor, money } from '../../resources/js/area3/domain';
 import { applyPlanTemplate } from '../../resources/js/area3/plan-template';
-import { OWNER_MATERIAL_POLICY, MATERIAL_REVENUE_POLICY, applyBudgetPlan, budgetSummary, lineAmount, ratioPercent, draftPlanBudget, projectPlanHeaderTotal } from '../../resources/js/area3/plan-budget';
+import { EDITABLE_NONSTOCK_POLICY, OWNER_MATERIAL_POLICY, MATERIAL_REVENUE_POLICY, applyBudgetPlan, budgetSummary, lineAmount, ratioPercent, draftPlanBudget, projectPlanHeaderTotal } from '../../resources/js/area3/plan-budget';
 import { BudgetPlanSection, RiskQualitySection, signaturePerson } from '../../resources/js/area3/plan-budget-ui';
 import { DocumentPreview } from '../../resources/js/area3/ui';
 import { ProjectEditor } from '../../resources/js/area3/projects';
@@ -26,13 +26,13 @@ test('budget recap derives positive source amounts without installments, dates o
   p.planBudget!.usage=[{id:'usage-stale',category:'mandor',amount:999999,term:'',date:'2026-02-30'}];
   const result=applyBudgetPlan(s,p,true,true);
   assert.equal(result.planBudget!.version,2);
-  assert.deepEqual(result.planBudget!.usage,vector.selectedMaterialUsage);
+  assert.deepEqual(result.planBudget!.usage,vector.editableMaterialUsage);
   assert.deepEqual(p.planBudget!.mandor,before.planBudget!.mandor);
   assert.equal(p.planBudget!.usage[0].date,'2026-02-30');
   saveProject(s,p,true);const saved=getProject(s,p.id);
-  assert.equal(saved.status,'Diajukan');assert.deepEqual(saved.planBudget!.usage,vector.selectedMaterialUsage.map((r:{amount:number})=>({...r,amount:Math.round(r.amount)})));
+  assert.equal(saved.status,'Diajukan');assert.deepEqual(saved.planBudget!.usage,vector.editableMaterialUsage.map((r:{amount:number})=>({...r,amount:Math.round(r.amount)})));
   assert.equal(saved.approvals!.length,0);
-  assert.equal(projectPlanHeaderTotal(saved),177);assert.equal(saved.budget,3000);
+  assert.equal(projectPlanHeaderTotal(saved),202);assert.equal(saved.budget,3000);
 });
 
 test('source edits refresh the automatic recap and remove categories when their total becomes zero',()=>{
@@ -41,7 +41,7 @@ test('source edits refresh the automatic recap and remove categories when their 
   const next=applyBudgetPlan(s,changed,true,true);
   assert.deepEqual(next.planBudget!.usage,[{id:'usage-mandor-s',category:'mandor',component:'s',amount:150},{id:'usage-material',category:'material',amount:40}]);
   assert.equal(next.planBudgetTotals!.total,190);assert.equal(next.planBudgetTotals!.usage.mandor,150);
-  assert.equal(next.planBudgetTotals!.usage.permit,0);assert.deepEqual(initial.planBudget!.usage,vector.selectedMaterialUsage);
+  assert.equal(next.planBudgetTotals!.usage.permit,0);assert.deepEqual(initial.planBudget!.usage,vector.editableMaterialUsage);
   const html=renderToStaticMarkup(createElement(BudgetPlanSection,{s,p:next,editable:true}));
   const recap=html.match(/<div class="table-scroll budget-recap-table">([\s\S]*?)<\/table><\/div>/)![1];
   assert.ok(recap.includes('Jasa Mandor'));assert.ok(recap.includes('Material Non Stock'));
@@ -81,9 +81,9 @@ test('continuation recap uses its component allocation and never adds the root b
 
 test('shared budget vector computes rounded component costs, selected Owner material plus Owner service revenue and margin without counting reimbursement twice',()=>{
   const {s,p}=fixture(),result=applyBudgetPlan(s,p,true,true);
-  for(const[key,expected]of Object.entries(vector.expectedSelectedOwnerRevenue))assert.equal(result.planBudgetTotals![key as keyof typeof result.planBudgetTotals],expected,key);
-  assert.deepEqual(result.costs,{mandor:100,material:40,bop:30.02,permit:7.03});
-  assert.equal(result.planBudgetTotals?.usage.mandor,100);assert.equal(result.planBudgetTotals?.cogs,170.02);
+  for(const[key,expected]of Object.entries(vector.expectedEditableNonStock))assert.equal(result.planBudgetTotals![key as keyof typeof result.planBudgetTotals],expected,key);
+  assert.deepEqual(result.costs,{mandor:100,material:65.03,bop:30.02,permit:7.03});
+  assert.equal(result.planBudgetTotals?.usage.mandor,100);assert.equal(result.planBudgetTotals?.cogs,195.05);
   const zero=structuredClone(p);zero.boq[0].s=null;zero.planBudget=undefined;zero.costs.permit=0;
   assert.equal(budgetSummary(s,zero).margin,null);
   assert.equal(lineAmount(.001,995),1);
@@ -94,7 +94,7 @@ test('shared budget vector computes rounded component costs, selected Owner mate
 
 test('Selected Owner material feeds row 1.1 and Revenue in forms/preview, with live source edits and frozen historical totals',()=>{
   const {s,p}=fixture(),current=applyBudgetPlan(s,p),before=JSON.stringify(current);
-  assert.equal(current.planBudget!.marginPolicy,OWNER_MATERIAL_POLICY);
+  assert.equal(current.planBudget!.marginPolicy,EDITABLE_NONSTOCK_POLICY);
   const unsaved=structuredClone(p);delete unsaved.workflowVersion;
   assert.equal(applyBudgetPlan(s,unsaved).planBudgetTotals!.revenue,2400,'New PP has no workflowVersion until its first saved command.');
   assert.equal(applyBudgetPlan({...s,schema:2},unsaved).planBudgetTotals!.revenue,2000,'Historical v2 form does not adopt the v3 rule.');
@@ -102,12 +102,12 @@ test('Selected Owner material feeds row 1.1 and Revenue in forms/preview, with l
   for(const printing of [false,true]){
     const html=renderToStaticMarkup(createElement(BudgetPlanSection,{s,p:current,printing}));
     assert.ok(html.includes(materialRow));assert.ok(html.includes(`<td>Revenue</td><td class="numeric">${money(2400)}</td>`));
-    assert.ok(html.includes(`<td>Gross Profit Margin</td><td class="numeric">${money(2229.98)}</td>`));
+    assert.ok(html.includes(`<td>Gross Profit Margin</td><td class="numeric">${money(2204.95)}</td>`));
   }
   assert.equal(JSON.stringify(current),before);
   const edit=structuredClone(current);edit.planBudget!.mandor[0].qtyM=2;edit.planBudget!.mandor[0].priceM=12;
   const total=budgetSummary(s,edit);assert.equal(total.mandorM,24);assert.equal(total.revenue,2200);
-  assert.equal(total.cogs,154.02);assert.equal(total.grossProfit,2045.98);
+  assert.equal(total.cogs,179.05);assert.equal(total.grossProfit,2020.95);
   const old=structuredClone(p);old.status='Sah';old.planBudgetTotals={...vector.expected,usage:{mandor:140,material:25.03,bop:30.02,permit:7.03}};
   const oldBefore=JSON.stringify(old),html=renderToStaticMarkup(createElement(BudgetPlanSection,{s,p:old,printing:true}));
   assert.ok(html.includes(`<td>Revenue</td><td class="numeric">${money(2000)}</td>`));
@@ -118,19 +118,19 @@ test('Selected Owner material feeds row 1.1 and Revenue in forms/preview, with l
   assert.equal(budgetSummary(s,child).revenue,500);
 });
 
-test('automatic Non Stock uses selected Mandor rows, ignores forged manual rows and preserves locked saved descriptions',()=>{
+test('Non Stock shows designators and actions, ignores forged source rows and preserves locked saved descriptions',()=>{
   const {s,p}=fixture();
   const next=applyBudgetPlan(s,p,true,true);
-  assert.deepEqual(next.planBudget!.materials,[{id:'material-mandor-1',sourceRowId:'boq-qa',name:s.khs[0].name,unit:s.khs[0].unit,qty:4,price:10}]);
+  assert.deepEqual(next.planBudget!.materials,[{id:'material-mandor-1',sourceRowId:'boq-qa',code:'DESIGNATOR-QA',name:s.khs[0].name,unit:s.khs[0].unit,qty:4,price:10},...p.planBudget!.materials]);
   const form=renderToStaticMarkup(createElement(BudgetPlanSection,{s,p:next,editable:true}));
-  assert.doesNotMatch(form,/Tambah Material|Hapus Material|aria-label="Harga Material Non Stock/);
-  assert.match(form,/Material Non Stock otomatis/);
-  const edit=structuredClone(next);edit.planBudget!.materials=[{id:'forged',name:'Forged',unit:'bad',qty:999,price:999}];
-  assert.equal(applyBudgetPlan(s,edit,true,true).planBudgetTotals!.material,40);
+  assert.match(form,/Tambah Material|Hapus Material/);
+  assert.match(form,/kode designator/);assert.match(form,/<td colSpan="5">Total Nilai<\/td>/);
+  const edit=structuredClone(next);edit.planBudget!.materials[0]={...edit.planBudget!.materials[0],code:'Forged',name:'Forged',qty:999,price:999};
+  assert.equal(applyBudgetPlan(s,edit,true,true).planBudgetTotals!.material,65.03);
   for(const key of ['qtyM','priceM'] as const){
     const empty=structuredClone(next);empty.planBudget!.mandor[0][key]=0;
     const result=applyBudgetPlan(s,empty,true,true);
-    assert.deepEqual(result.planBudget!.materials,[]);assert.equal(result.planBudgetTotals!.revenue,2000);assert.equal(result.planBudgetTotals!.material,0);
+    assert.deepEqual(result.planBudget!.materials,p.planBudget!.materials);assert.equal(result.planBudgetTotals!.revenue,2000);assert.equal(result.planBudgetTotals!.material,25.03);
   }
   const locked=structuredClone(next);locked.status='Sah';const before=JSON.stringify(locked);
   s.khs[0].name='Changed master description';
@@ -143,12 +143,39 @@ test('automatic Non Stock uses selected Mandor rows, ignores forged manual rows 
   assert.ok(html.includes(`<td>Revenue</td><td class="numeric">${money(2040)}</td>`));
 });
 
+test('editable Non Stock additions/deletions update recap, margin and Total Nilai without changing Owner Revenue',()=>{
+  const {s,p}=fixture(),base=applyBudgetPlan(s,p);
+  const added=structuredClone(base);added.planBudget!.materials.push({id:'manual-extra',name:'M-EXTRA',unit:'Pcs',qty:2,price:15});
+  const saved=applyBudgetPlan(s,added,true,true);
+  assert.equal(saved.planBudgetTotals!.material,95.03);assert.equal(saved.planBudgetTotals!.cogs,225.05);assert.equal(saved.planBudgetTotals!.revenue,2400);
+  const deleted=structuredClone(saved);deleted.planBudget!.excludedMaterialRowIds=['boq-qa'];deleted.planBudget!.materials=deleted.planBudget!.materials.filter(row=>row.id!=='material-qa');
+  const result=applyBudgetPlan(s,deleted,true,true);
+  assert.deepEqual(result.planBudget!.materials,[{id:'manual-extra',name:'M-EXTRA',unit:'Pcs',qty:2,price:15}]);
+  assert.equal(result.planBudgetTotals!.material,30);assert.equal(result.planBudgetTotals!.cogs,160.02);assert.equal(result.planBudgetTotals!.revenue,2400);
+  assert.deepEqual(result.planBudget!.mandor,base.planBudget!.mandor);
+  assert.equal(projectPlanHeaderTotal(result),167.05);
+  for(const printing of [false,true]){
+    const html=renderToStaticMarkup(createElement(BudgetPlanSection,{s,p:result,printing,editable:!printing}));
+    assert.ok(html.includes(`<td colSpan="5">Total Nilai</td><td class="numeric">${money(30)}</td>`));
+    assert.equal(html.includes('Tambah Material'),!printing);
+  }
+  const locked=structuredClone(base);locked.status='Sah';locked.planBudget!.marginPolicy=OWNER_MATERIAL_POLICY;delete locked.planBudget!.excludedMaterialRowIds;
+  locked.planBudget!.materials=locked.planBudget!.materials.filter(row=>row.sourceRowId).map(({code,...row})=>row);
+  locked.planBudgetTotals={...vector.expectedSelectedOwnerRevenue,usage:{mandor:100,material:40,bop:30.02,permit:7.03}};
+  const before=JSON.stringify(locked),old=renderToStaticMarkup(createElement(BudgetPlanSection,{s,p:locked,printing:true}));
+  assert.ok(old.includes('DESIGNATOR-QA'));assert.ok(old.includes(`<td colSpan="5">Total Nilai</td><td class="numeric">${money(40)}</td>`));
+  assert.equal(JSON.stringify(locked),before);
+});
+
 test('plan saves reject exceeded component ceilings, invalid source amounts, duplicate IDs and missing risk without replacing saved state',()=>{
   const {s,p}=fixture();saveProject(s,p,false);
   const baseline=JSON.stringify(s),variants:Project[]=[];
   for(const[key,value]of [['priceM',101],['qtyS',11],['priceS',-.01],['priceM',.001],['qtyS',.0001]]as const){const bad=structuredClone(p);bad.planBudget!.mandor[0][key]=value;variants.push(bad);}
   let bad=structuredClone(p);bad.planBudget!.bop[0].total=-1;variants.push(bad);
-  // Non Stock is derived server-side; arbitrary manual rows are ignored on current drafts.
+  bad=structuredClone(p);bad.planBudget!.materials[0].price=-1;variants.push(bad);
+  bad=structuredClone(p);bad.planBudget!.materials.push(bad.planBudget!.materials[0]);variants.push(bad);
+  bad=structuredClone(p);bad.planBudget!.excludedMaterialRowIds=['other-pp'];variants.push(bad);
+  bad=structuredClone(p);bad.planBudget!.excludedMaterialRowIds=['boq-qa','boq-qa'];variants.push(bad);
   bad=structuredClone(p);bad.planBudget!.bop[0].qty=.0001;variants.push(bad);
 
   bad=structuredClone(p);bad.riskLevel='';variants.push(bad);
@@ -169,7 +196,7 @@ test('budget form exposes template columns and working row actions; risk text is
   const {s,p}=fixture(),result=applyBudgetPlan(s,p);
   const budget=renderToStaticMarkup(createElement(BudgetPlanSection,{s,p:result,editable:true,onChange:()=>{}}));
   const before=JSON.stringify(result);
-  for(const label of ['BoQ TA - Telkom / Owner Project','BoQ TA - Mandor','Jml_Mat','Jml_Jasa','Tambah BOP','Uraian Pekerjaan','Satuan','170','92,92'])assert.ok(budget.includes(label),label);
+  for(const label of ['BoQ TA - Telkom / Owner Project','BoQ TA - Mandor','Jml_Mat','Jml_Jasa','Tambah BOP','Uraian Pekerjaan','Satuan','195','91,87'])assert.ok(budget.includes(label),label);
   assert.doesNotMatch(budget,/Termin Bayar|Tanggal Penggunaan|Tambah Waktu Penggunaan|Nilai Penggunaan/);
   assert.equal((budget.match(/>Uraian Pekerjaan<\/th>/g)??[]).length,2);
   assert.equal((budget.match(/class="budget-description"/g)??[]).length,2);
@@ -183,9 +210,9 @@ test('budget form exposes template columns and working row actions; risk text is
   assert.match(preview,/pp-signature-print/);assert.match(preview,/IV\. KEBUTUHAN ANGGARAN/);assert.match(preview,/VIII\. PENUTUP/);assert.match(preview,/budget-recap-table/);assert.doesNotMatch(preview,/Termin Bayar \/ Reimburse/);
   for(const html of [budget,preview]) {
     const recap=html.match(/<div class="table-scroll budget-recap-table">([\s\S]*?)<\/table><\/div>/)![1];
-    assert.ok(recap.includes(`Subtotal (IV.1 + IV.2 + IV.3)</td><td class="numeric">${money(170.02)}</td>`));
-    assert.ok(recap.endsWith(`Total Anggaran</td><td class="numeric">${money(177.05)}</td><td>Jumlah seluruh rincian, termasuk perizinan bila ada</td></tr></tbody>`));
+    assert.ok(recap.includes(`Subtotal (IV.1 + IV.2 + IV.3)</td><td class="numeric">${money(195.05)}</td>`));
+    assert.ok(recap.endsWith(`Total Anggaran</td><td class="numeric">${money(202.08)}</td><td>Jumlah seluruh rincian, termasuk perizinan bila ada</td></tr></tbody>`));
   }
-  assert.equal(result.planBudgetTotals!.cogs,170.02);assert.equal(result.planBudgetTotals!.margin,92.92);assert.equal(JSON.stringify(result),before);
-  assert.ok(preview.includes(`<th scope="row">Total Nilai (Rp)</th><td>:</td><td>${money(177.05).replace(/^Rp\s*/,'')}</td>`));
+  assert.equal(result.planBudgetTotals!.cogs,195.05);assert.equal(result.planBudgetTotals!.margin,91.87);assert.equal(JSON.stringify(result),before);
+  assert.ok(preview.includes(`<th scope="row">Total Nilai (Rp)</th><td>:</td><td>${money(202.08).replace(/^Rp\s*/,'')}</td>`));
 });

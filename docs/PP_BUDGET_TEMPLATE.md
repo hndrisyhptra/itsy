@@ -1,5 +1,22 @@
 # Anggaran, margin dan penutup Project Plan
 
+## 17 November 2026 — Designator, tambahan/hapus Non Stock dan Total Nilai
+
+Permintaan terbaru menggantikan ketentuan IV.2 readonly di bawah untuk draf PP v3 yang dapat diedit. Kolom **Material** pada item bawaan menampilkan **kode designator saja**, tanpa uraian pekerjaan. Kode disimpan dari referensi sumber canonical; uraian lama tetap disimpan sebagai metadata. Item lama yang belum mempunyai kode memakai kecocokan sourceRowId pada referensi Owner yang sudah dimuat; item manual historis tetap teks tersimpannya bila tidak ada identitas sumber untuk menentukan kode.
+
+**Tambah Material** membuat baris tambahan berisi designator, volume, satuan dan harga satuan, maksimal200 tambahan di luar500 item BOQ otomatis. Admin dapat menghapus item tambahan maupun item bawaan melalui ikon tooltip Hapus Material Non Stock. Tambah/hapus memerlukan konfirmasi YA/TIDAK; TIDAK/Escape membatalkan. Item bawaan tetap mengikuti volume/harga BOQ Mandor; rincian tambahan dapat diedit. Tidak membuat master designator atau mengarang harga resmi baru.
+
+Penghapusan item bawaan disimpan dalam `planBudget.excludedMaterialRowIds`: hanya sourceRowId komponen Material PP ini, tanpa duplikasi/ID PP lain. Item tidak muncul kembali saat render, reload atau perubahan harga Mandor. Tambahan manual memakai `materials` tanpa sourceRowId, ID unik di luar prefix sumber yang dicadangkan, maksimal200, validasi nominal/volume/teks dan kelengkapan saat submit. Server membentuk ulang setiap baris sumber beserta kode/nama/satuan/volume/harga; pemalsuan properti baris sumber diabaikan. Penghapusan rincian biaya tidak mengubah BOQ Mandor, alokasi, harga negosiasi atau Revenue Material Owner. Untuk mengubah Revenue/source BOQ, tetap perbaiki BOQ Mandor.
+
+Baris **Total Nilai** di bagian paling bawah tabel IV.2 menjumlahkan rincian yang aktif (sumber yang tidak dihapus + tambahan), pada form/preview/cetak dan sumber DOCX yang sama. Preview mempunyai6kolom dan tanpa Aksi; editor7kolom. Total ini mengisi baris2.2 Non Stock, biaya NONSTOCK, COGS, rekap IV.5 dan Header, tanpa menghitung Material kedua kali. Maka aturan sebelumnya “2.2 selalu sama total Mandor Material” kini berlaku hanya bila tidak ada tambahan/penghapusan.
+
+Rumus Revenue tetap Owner Jasa+Owner Material terpilih sesuai BOQ Mandor; COGS tetap Jasa Mandor+NonStock aktif+BOP; permit terpisah dari COGS dan ikut grand Header. Contoh sumber Mandor Material40, tambahan30 → NonStock70, COGS200 jika Jasa100/BOP30, Revenue tetap2400. Hapus sumber40 → NonStock30/COGS160, Revenue tetap2400. Menghapus semua → Total Nilai0; baris total tetap ada.
+
+Server-owned `selected-owner-material-nonstock-v3` menggantikan v2 hanya pada save/submit/continuation editable yang diizinkan. Policy v2, v1 atau tanpa marker pada dokumen terkunci tetap memakai nilai/rincian historis; GET tidak mengonversi. Draf yang mengadopsi v3 dapat mempertahankan tambahan manual yang valid, bukan mengabaikannya lagi. Existing `project_plans.document_data`, `project_plan_budget_rows.row_data`, `project_plan_costs` dan revision/lock/receipt/audit dipakai; tidak ada migration/kolom/endpoint baru atau perubahan its aktif/server. Monetary maintenance memahami policy tersimpan dan kode/metadata sumber tersimpan tanpa lookup master tambahan.
+
+Performa: indeks sumber/kode dan Set/array-key penghapusan O(BOQ+katalog+tambahan), list bounded500+200. Tidak menambah SELECT/katalog/API per baris; jumlah write rincian existing mengikuti perubahan yang diizinkan pengguna. Fixture HTTP dua komponen83query/budget90 (termasuk tambahan manual), master reads batched≤2; layanan hitung tetap0SQL. Bukan benchmark latency/load. [Verifikasi dan batas](qa/pp-editable-nonstock-20261117.json). Catatan sebelumnya di bawah dipertahankan sebagai audit historis.
+
+
 ## 17 November 2026 — Revisi: Material Owner terpilih dan Non Stock otomatis
 
 Aturan ini menggantikan bagian Revenue Material Mandor di bawah untuk PP v3 baru atau draf yang disimpan/diajukan ulang secara eksplisit. Pengguna mengonfirmasi volume material Mandor sama dengan Owner. Pilihan item ditandai oleh volume Material Mandor dan harga Material Mandor keduanya positif; volume bawaan dengan harga0 belum menjadi pilihan material. Komponen null tetap tidak tersedia, bukan material yang dibuat otomatis.

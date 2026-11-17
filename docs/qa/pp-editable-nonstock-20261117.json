@@ -1,0 +1,110 @@
+{
+  "date": "2026-11-17",
+  "request": "IV.2 Material displays designator only; add/delete Non Stock; user confirms bottom Total Nilai footer.",
+  "policy": "selected-owner-material-nonstock-v3",
+  "behavior": {
+    "source": "Canonical Owner code/name/unit + Mandor qty/price; source fields read-only, display code only",
+    "extra": "Up to200 manual designator/qty/unit/price rows; validated amounts, IDs, completeness on submit",
+    "deletion": "Source excludes same-PP IDs in excludedMaterialRowIds; manual row removal; YA/TIDAK before either action",
+    "total": "Active source rows + manual extras; footer and2.2/COGS/recap/Header match, no double material count",
+    "revenue": "Unchanged from selected Owner material and Owner Jasa; expense deletion does not change Mandor BOQ or Revenue",
+    "history": "Locked old policies preserved; no GET/backfill/live data rewrite"
+  },
+  "verification": {
+    "php": {
+      "passed": 317,
+      "assertions": 7367,
+      "database": "isolated SQLite :memory:"
+    },
+    "frontend": {
+      "passed": 348
+    },
+    "build": "TypeScript/Vite passed",
+    "assets": {
+      "manifestReferences": 41,
+      "preloads": 32,
+      "profiles": 3
+    },
+    "pint": "changed PHP files passed",
+    "diffCheck": "passed",
+    "browser": {
+      "errors": [],
+      "requests": [
+        "/",
+        "/harness.js"
+      ],
+      "checks": [
+        {
+          "theme": "light",
+          "width": 1440,
+          "noPageOverflow": true
+        },
+        {
+          "theme": "light",
+          "width": 768,
+          "noPageOverflow": true
+        },
+        {
+          "theme": "light",
+          "width": 375,
+          "noPageOverflow": true
+        },
+        {
+          "theme": "dark",
+          "width": 1440,
+          "noPageOverflow": true
+        },
+        {
+          "theme": "dark",
+          "width": 768,
+          "noPageOverflow": true
+        },
+        {
+          "theme": "dark",
+          "width": 375,
+          "noPageOverflow": true
+        }
+      ],
+      "interactions": [
+        "Source Material cell shows designator only",
+        "Add TIDAK cancels, YA adds editable code/quantity/unit/price; Total Nilai40\u219270/COGS170\u2192200/Revenue2400 unchanged",
+        "Source delete TIDAK cancels, YA persists exclusion across subsequent Mandor price edit; Total30/COGS160",
+        "Manual row delete leaves Total Nilai0",
+        "Preview has6columns, designator, Total Nilai40 and no actions"
+      ]
+    },
+    "cases": [
+      "Source property forgery ignored; manual extras retained and validated; code canonical",
+      "Delete/add/save SQL snapshot readback, source suppression persists, revenue/BOQ unchanged, invalid cross-PP ID fails with no revision/state write",
+      "Manual201limit/negativeqty/price/reservedID/crossPP/duplicate exclusion rejected",
+      "500 auto sources still supported; old v2/v1 monetary maintenance preserved",
+      "Empty and manual-only totals; editor7columns vs preview6, no preview action fields; negative margin/risk/approval/source ceiling suites retained"
+    ]
+  },
+  "performance": {
+    "newReferenceQueries": 0,
+    "pureServiceQueries": 0,
+    "twoComponentHttpUpdateQueries": 83,
+    "fixtureBudget": 90,
+    "masterReadsMax": 2,
+    "notes": "Existing writes scale with active added/removed rows; extra persisted manual detail accounts for one fixture write versus prior82. Not a concurrency/load benchmark."
+  },
+  "backup": {
+    "path": "storage/app/private/backups/area3-before-editable-nonstock-20261117.sqlite",
+    "bytes": 233472,
+    "sha256": "e2c39eba72710da656307627909f32267b6738c861509a3a70c78bddf8bb10bc"
+  },
+  "runtime": {
+    "migration": false,
+    "liveBusinessWrites": false,
+    "serverDeploy": false,
+    "envDompisChanged": false,
+    "localWorker": "Project queue restart signal broadcast successfully using previously verified Area3 file cache; no task/job/history deletion. PID lifecycle/upload retry not checked."
+  },
+  "limits": [
+    "Synthetic local browser, not live authenticated server/account QA",
+    "No fresh native Word/PDF render, desktop Word or physical print; existing export tests/shared preview source passed",
+    "Browser harness initial preview assertion read old React mode; wait for6-column commit added and rerun passed; no application bug"
+  ],
+  "qaArtifacts": "/private/tmp/area3-nonstock-20261117"
+}

@@ -11,6 +11,8 @@ final class ProjectPlanBudget
 
     public const OWNER_MATERIAL_POLICY = 'selected-owner-material-nonstock-v2';
 
+    public const EDITABLE_NONSTOCK_POLICY = 'selected-owner-material-nonstock-v3';
+
     public const CATEGORIES = ['mandor' => 'Jasa Mandor', 'material' => 'Material Non Stock', 'bop' => 'BOP', 'permit' => 'Perizinan (Preliminary) Reimburse'];
 
     public const PRINT_ROLES = ['Admin Konstruksi', 'PM Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Bussiness Support', 'Mgr Project Support', 'Head of PMO'];
@@ -26,10 +28,26 @@ final class ProjectPlanBudget
         }
         $b = ['version' => 2, 'mandor' => [], 'materials' => [], 'bop' => [], 'usage' => [], 'permit' => $number($input['permit'] ?? $p['costs']['permit'] ?? 0)];
         // Explicit editable saves adopt the rule; maintenance retains each saved policy.
-        $selectedMaterial = $adoptMaterialRevenue || ($input['marginPolicy'] ?? null) === self::OWNER_MATERIAL_POLICY;
+        $editableMaterials = $adoptMaterialRevenue || ($input['marginPolicy'] ?? null) === self::EDITABLE_NONSTOCK_POLICY;
+        $selectedMaterial = $editableMaterials || ($input['marginPolicy'] ?? null) === self::OWNER_MATERIAL_POLICY;
         $materialRevenue = $selectedMaterial || ($input['marginPolicy'] ?? null) === self::MATERIAL_REVENUE_POLICY;
         if ($materialRevenue) {
-            $b['marginPolicy'] = $selectedMaterial ? self::OWNER_MATERIAL_POLICY : self::MATERIAL_REVENUE_POLICY;
+            $b['marginPolicy'] = $editableMaterials ? self::EDITABLE_NONSTOCK_POLICY : ($selectedMaterial ? self::OWNER_MATERIAL_POLICY : self::MATERIAL_REVENUE_POLICY);
+        }
+        $excluded = [];
+        if ($editableMaterials) {
+            $ids = $input['excludedMaterialRowIds'] ?? [];
+            $allowed = array_fill_keys(array_column(array_filter($owners, fn ($row) => $row['m'] !== null), 'rowId'), true);
+            if (! is_array($ids) || ! array_is_list($ids) || count($ids) > 500) {
+                self::fail('Daftar penghapusan Material Non Stock tidak valid.');
+            }
+            foreach ($ids as $id) {
+                if (! is_string($id) || ! isset($allowed[$id]) || isset($excluded[$id])) {
+                    self::fail('Item Material Non Stock yang dihapus harus berasal dari BOQ PP ini dan tidak duplikat.');
+                }
+                $excluded[$id] = true;
+            }
+            $b['excludedMaterialRowIds'] = array_keys($excluded);
         }
         $revenueMaterial = 0.0;
         $savedMaterials = ! $adoptMaterialRevenue && is_array($input['materials'] ?? null) ? array_column($input['materials'], null, 'sourceRowId') : [];
@@ -62,10 +80,13 @@ final class ProjectPlanBudget
             $totals['mandorS'] = self::add($totals['mandorS'], $product($r['qtyS'], $r['priceS']));
             if ($selectedMaterial && $r['qtyM'] > 0 && $r['priceM'] > 0 && $owner['m'] !== null) {
                 $revenueMaterial = self::add($revenueMaterial, $product($r['qtyM'], $owner['m']));
+                if (isset($excluded[$owner['rowId']])) {
+                    continue;
+                }
                 $saved = $savedMaterials[$owner['rowId']] ?? [];
                 $b['materials'][] = ['id' => 'material-mandor-'.(count($b['materials']) + 1), 'sourceRowId' => $owner['rowId'],
                     'name' => $owner['name'] ?? $saved['name'] ?? $owner['rowId'], 'unit' => $owner['unit'] ?? $saved['unit'] ?? '',
-                    'qty' => $r['qtyM'], 'price' => $r['priceM']];
+                    'qty' => $r['qtyM'], 'price' => $r['priceM']] + ($editableMaterials ? ['code' => $owner['code'] ?? $saved['code'] ?? $owner['rowId']] : []);
             }
         }
         foreach ($selectedMaterial ? $b['materials'] : self::rows($input['materials'] ?? []) as $row) {
@@ -77,6 +98,32 @@ final class ProjectPlanBudget
                 $b['materials'][] = $r;
             }
             $totals['material'] = self::add($totals['material'], $product($r['qty'], $r['price']));
+        }
+        if ($editableMaterials) {
+            $materials = $input['materials'] ?? [];
+            if (! is_array($materials) || ! array_is_list($materials) || count($materials) > 700) {
+                self::fail('Maksimal 500 item sumber dan 200 tambahan Material Non Stock.');
+            }
+            $manual = [];
+            foreach ($materials as $row) {
+                if (! is_array($row)) {
+                    self::fail('Baris Material Non Stock tidak valid.');
+                }
+                if (! array_key_exists('sourceRowId', $row)) {
+                    $manual[] = $row;
+                }
+            }
+            foreach (self::rows($manual) as $row) {
+                if (str_starts_with($row['id'], 'material-mandor-')) {
+                    self::fail('ID tambahan Material Non Stock memakai kode yang dicadangkan.');
+                }
+                $r = ['id' => $row['id'], 'name' => self::text($row['name'] ?? '', 1000), 'qty' => $number($row['qty'] ?? null, true), 'unit' => self::text($row['unit'] ?? '', 100), 'price' => $number($row['price'] ?? null)];
+                if ($submit && (! $r['name'] || ! $r['unit'] || ! $r['qty'])) {
+                    self::fail('Lengkapi designator Material Non Stock tambahan, satuan dan volume positif.');
+                }
+                $b['materials'][] = $r;
+                $totals['material'] = self::add($totals['material'], $product($r['qty'], $r['price']));
+            }
         }
         foreach (self::rows($input['bop'] ?? []) as $row) {
             $r = ['id' => $row['id'], 'description' => self::text($row['description'] ?? '', 1000), 'unit' => self::text($row['unit'] ?? '', 100), 'qty' => $number($row['qty'] ?? null, true), 'total' => $number($row['total'] ?? null)];

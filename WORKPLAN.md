@@ -831,3 +831,8 @@ Selesai: Jml_Mat BOQ TA–Mandor masuk Material1.1 dan Revenue margin PP; Jasa1.
 ## 17 November 2026 — Revisi Material Owner terpilih / Non Stock otomatis
 
 Selesai implementasi Laravel/React policy selected-owner-material-nonstock-v2 untuk editable v3: Revenue Jasa Owner+Material Owner hanya item yang diisi Mandor; user menegaskan volume sama. IV.2 otomatis readonly dari Mandor,2.2=Jml_Mat Mandor; COGS/IV.5/Header menghitung biaya sekali. Simpan canonical memakai sourceRowId/referensi batched, current inputs/totals palsu diabaikan; histori locked/oldpolicy tetap. Tidak ada migration/live write. [Aturan](docs/PP_BUDGET_TEMPLATE.md), [QA](docs/qa/pp-selected-owner-material-20261117.json).
+
+
+## 17 November 2026 — Designator dan tambah/hapus Material Non Stock
+
+Selesai: IV.2 menampilkan kode designator sumber, tombol tambah dan hapus dengan YA/TIDAK, baris Total Nilai paling bawah pada editor/preview/Word source. Tambahan manual tervalidasi max200; penghapusan sumber samePP disimpan agar tidak muncul kembali. Latest policy v3 editable saja;2.2/COGS/rekap/Header mengikuti rincian aktif sekali, Revenue/BOQ tetap, histori locked v2/v1 dipertahankan. Existing JSON/rincian/biaya dan indexed source references tanpa migration/API/lookup perbaris. [Aturan](docs/PP_BUDGET_TEMPLATE.md), [bukti](docs/qa/pp-editable-nonstock-20261117.json).

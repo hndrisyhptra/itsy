@@ -9,15 +9,80 @@ use Tests\TestCase;
 
 class ProjectPlanBudgetTest extends TestCase
 {
+    public function test_nonstock_additions_deletions_and_designator_are_canonical_and_do_not_change_revenue(): void
+    {
+        $fixture = json_decode(file_get_contents(base_path('tests/Fixtures/pp-budget-vector.json')), true);
+        $owners = $fixture['owners'];
+        $owners[0]['code'] = 'DESIGNATOR-QA';
+        $p = $fixture['project'];
+        $current = ProjectPlanBudget::apply($p, $owners, true, true);
+        $this->assertSame(ProjectPlanBudget::EDITABLE_NONSTOCK_POLICY, $current['planBudget']['marginPolicy']);
+        foreach ($fixture['expectedEditableNonStock'] as $key => $value) {
+            $this->assertEquals($value, $current['planBudgetTotals'][$key], $key);
+        }
+        $this->assertSame('DESIGNATOR-QA', $current['planBudget']['materials'][0]['code']);
+        $current['planBudget']['materials'][0] = array_replace($current['planBudget']['materials'][0], ['code' => 'FAKE', 'qty' => 999, 'price' => 999]);
+        $current['planBudget']['materials'][] = ['id' => 'extra-material', 'name' => 'M-EXTRA', 'unit' => 'Pcs', 'qty' => 2, 'price' => 15];
+        $saved = ProjectPlanBudget::apply($current, $owners, true, true);
+        $this->assertSame('DESIGNATOR-QA', $saved['planBudget']['materials'][0]['code']);
+        $this->assertEquals(95.03, $saved['planBudgetTotals']['material']);
+        $this->assertEquals(225.05, $saved['planBudgetTotals']['cogs']);
+        $this->assertEquals(2400, $saved['planBudgetTotals']['revenue']);
+        $saved['planBudget']['excludedMaterialRowIds'] = ['boq-qa'];
+        $saved['planBudget']['materials'] = array_values(array_filter($saved['planBudget']['materials'], fn ($row) => $row['id'] !== 'material-qa'));
+        $deleted = ProjectPlanBudget::apply($saved, $owners, true, true);
+        $this->assertSame([['id' => 'extra-material', 'name' => 'M-EXTRA', 'qty' => 2.0, 'unit' => 'Pcs', 'price' => 15.0]], $deleted['planBudget']['materials']);
+        $this->assertEquals(30, $deleted['planBudgetTotals']['material']);
+        $this->assertEquals(160.02, $deleted['planBudgetTotals']['cogs']);
+        $this->assertEquals(2400, $deleted['planBudgetTotals']['revenue']);
+        $this->assertSame($saved['planBudget']['mandor'], $deleted['planBudget']['mandor']);
+        $this->assertEquals($deleted, ProjectPlanBudget::apply($deleted, $owners, true));
+        $deleted['planBudget']['excludedMaterialRowIds'] = [];
+        $restored = ProjectPlanBudget::apply($deleted, $owners, true, true);
+        $this->assertCount(2, $restored['planBudget']['materials']);
+        $this->assertEquals(70, $restored['planBudgetTotals']['material']);
+    }
+
+    public function test_nonstock_manual_limits_and_deleted_source_ids_fail_closed(): void
+    {
+        $fixture = json_decode(file_get_contents(base_path('tests/Fixtures/pp-budget-vector.json')), true);
+        $valid = $fixture['project'];
+        $cases = [];
+        foreach ([['outside-pp'], ['boq-qa', 'boq-qa'], 'invalid'] as $ids) {
+            $bad = $valid;
+            $bad['planBudget']['excludedMaterialRowIds'] = $ids;
+            $cases[] = $bad;
+        }
+        foreach (['price', 'qty'] as $key) {
+            $bad = $valid;
+            $bad['planBudget']['materials'][0][$key] = -1;
+            $cases[] = $bad;
+        }
+        $bad = $valid;
+        $bad['planBudget']['materials'][0]['id'] = 'material-mandor-1';
+        $cases[] = $bad;
+        $bad = $valid;
+        $bad['planBudget']['materials'] = array_map(fn ($i) => ['id' => 'extra-'.$i, 'name' => 'M-X', 'unit' => 'Pcs', 'qty' => 1, 'price' => 1], range(1, 201));
+        $cases[] = $bad;
+        foreach ($cases as $p) {
+            try {
+                ProjectPlanBudget::apply($p, $fixture['owners'], true, true);
+                $this->fail('Invalid Non Stock detail accepted.');
+            } catch (ValidationException $e) {
+                $this->assertNotEmpty($e->errors());
+            }
+        }
+    }
+
     public function test_selected_owner_revenue_and_automatic_nonstock_count_material_cost_once(): void
     {
         $fixture = json_decode(file_get_contents(base_path('tests/Fixtures/pp-budget-vector.json')), true);
         $p = $fixture['project'];
         $p['planBudget']['materials'] = [['id' => 'forged-material', 'name' => 'Forged', 'unit' => 'bad', 'qty' => 999, 'price' => 999]];
-        $p['planBudget']['marginPolicy'] = ProjectPlanBudget::MATERIAL_REVENUE_POLICY;
+        $p['planBudget']['marginPolicy'] = ProjectPlanBudget::OWNER_MATERIAL_POLICY;
         DB::enableQueryLog();
         DB::flushQueryLog();
-        $current = ProjectPlanBudget::apply($p, $fixture['owners'], true, true);
+        $current = ProjectPlanBudget::apply($p, $fixture['owners'], true);
         $this->assertSame([], DB::getQueryLog());
         DB::disableQueryLog();
         foreach ($fixture['expectedSelectedOwnerRevenue'] as $key => $value) {
