@@ -36,3 +36,8 @@ Scan fisik/NOK/OK tetap terpisah dari pembayaran. Timeline membedakan bruto, nil
 Lihat [bukti QA](qa/document-package-20261116.json) dan [LARAVEL_QA](LARAVEL_QA.md). Pengujian memakai SQLite memory, fixture sintetis dan browser sementara dengan semua request diarahkan ke fixture lokal. Dua Word gabungan (13/17halaman) dirender dengan bundled LibreOffice; PDF browser14/18halaman, orientasi campuran/nonblank/ruang TTD kosong diperiksa. Paging Word dan browser memang dapat berbeda. Teks/tabel panjang dapat menambah halaman.
 
 Belum diuji pada akun server aaPanel, Microsoft Word desktop, cetak fisik atau MySQL concurrent load. Tidak ada deploy/pull/migration/restart worker oleh agen. Setelah operator menerapkan kode, build aset (`npm run build`, `npm run check:assets`) dan refresh halaman. Fitur ini tidak memerlukan migration baru atau reset data; migration fitur sebelumnya tetap mengikuti panduannya sendiri.
+
+
+## 17 November 2026 — Ikon Unduh Semua Dokumen
+
+Tombol pembuka paket bersama memakai Lucide `Download` ukuran16 pada Aksi BA PP/detail/timeline. Ikon `Files` pada label isi modal tetap. Tooltip, akses/status Sah, isi paket, konfirmasi unduh dan cetak tetap. TypeScript/Vite serta pemeriksaan aset lulus; tanpa SQL/API/migration baru atau pengujian browser/server ulang.

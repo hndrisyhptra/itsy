@@ -806,3 +806,8 @@ Metadata penugasan/keputusan aktual dan riwayat disimpan server-side pada paymen
 
 
 Verifikasi akhir alih inbox:310PHP/7137assertions,318frontend,TypeScript/Vite,Pint dan assets36manifest/28preload×3profil lulus; satu DOCX/1halaman dirender/diperiksa, cap hanya preview. Query single36/batch8=51, batas50/120; list tetap4query. Tidak ada private_data query per target atau perubahan proyeksi lima approval/ledger/nominal lama. Browser akun/server/MySQL load/Word desktop/cetak fisik belum diverifikasi. [Bukti](docs/qa/legacy-finance-routing-20261116.json), [catatan QA](docs/LARAVEL_QA.md).
+
+
+## 17 November 2026 — Ikon Unduh Semua Dokumen
+
+Selesai: gunakan ikon `Download`16 pada tombol Unduh Semua Dokumen bersama; pertahankan tooltip/status/modal. Sumber sudah sesuai saat diperiksa dan dipertahankan. TypeScript/Vite build serta check:assets lulus; tanpa backend/database/migration. Browser/server belum diuji ulang.

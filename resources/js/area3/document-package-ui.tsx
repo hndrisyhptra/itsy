@@ -20,7 +20,7 @@ import { appUrl } from './laravel';
 export function DocumentPackageButton({s,bappId,bapp}:{s:State;bappId:string;bapp?:Bapp}){
   const [open,setOpen]=useState(false);
   if((bapp??s.bapps.find(b=>b.id===bappId))?.status!=='Sah')return null;
-  return <><Button className="icon-action" aria-label="Unduh semua dokumen PP sampai Lampiran BA PP" title="Unduh semua dokumen · Word / PDF" onClick={()=>setOpen(true)}><Files size={16}/></Button>{open&&<DocumentPackageModal s={s} bappId={bappId} onClose={()=>setOpen(false)}/>}</>;
+  return <><Button className="icon-action" aria-label="Unduh semua dokumen PP sampai Lampiran BA PP" title="Unduh semua dokumen · Word / PDF" onClick={()=>setOpen(true)}><Download size={16}/></Button>{open&&<DocumentPackageModal s={s} bappId={bappId} onClose={()=>setOpen(false)}/>}</>;
 }
 export function DocumentPackageContents({s,c,kasbons=new Map()}:{s:State;c:DocumentPackage;kasbons?:Map<string,KasbonData>}){
   const {project:p,deal:d,spk:v,final}=c;

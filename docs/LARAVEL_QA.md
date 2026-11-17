@@ -852,3 +852,8 @@ Regresi:1–50 target/tipe field/UUID/divergensi versi/duplikasi, wrong role/Bra
 Query fixture HTTP single36 (batas50), batch8=51 (batas120); satu batch read assignment akun, satu query probe antrean untuk seluruh pilihan, tanpa dekripsi/private_data read per target. Writes hanya metadata/event/revision/audit/receipt terkait; regresi single melarang perubahan finance_kasbons/APM/PP/actual/approval/ledger lama. List Payment tetap4query/fixture100pengajuan dan hanya menambah proyeksi status JSON yang diperlukan. Boot/command masih memuat aggregate/katalog seperti sebelumnya; ini bukan load benchmark/MySQL throughput claim.
 
 Satu native DOCX sintetis dengan identitas Manager yang sudah benar-benar menyetujui fixture lulus ZIP/CRC/XML independen, render1halaman dan seluruh PNG diperiksa; PDF render tidak kosong. Preview memuat cap aktual yang terikat kasbon/account, Word tidak memuat cap dan ruang TTD kosong. Cetak memakai CSS stamp-hidden yang telah ada; browser print baru, interaksi login/keyboard/responsif, aaPanel/MySQL nyata, Word desktop dan cetak fisik belum diuji untuk perubahan ini. Tidak menjalankan migration/backfill/SQL live, mengubah .env/APP_KEY, membayar bank atau menyentuh Dompis. Backup demo SQLite privat dibuat sebelum edit. [Bukti terstruktur](qa/legacy-finance-routing-20261116.json).
+
+
+## 17 November 2026 — Ikon Unduh Semua Dokumen
+
+Perubahan hanya ikon `Files`→`Download`16 di `DocumentPackageButton`; sumber existing diperiksa dan dipertahankan. `npm run build` (TypeScript/Vite) dan `npm run check:assets` lulus,41manifest references/32preload dependencies pada3profil. Tidak menambah tes untuk perubahan ikon; suite PHP/frontend dan browser/server tidak dijalankan ulang. Tidak ada query/API/schema/live data baru.

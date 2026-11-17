@@ -401,3 +401,8 @@ Metadata penugasan/keputusan aktual dan riwayat disimpan server-side pada paymen
 
 
 Verifikasi akhir alih inbox:310PHP/7137assertions,318frontend,TypeScript/Vite,Pint dan assets36manifest/28preload×3profil lulus; satu DOCX/1halaman dirender/diperiksa, cap hanya preview. Query single36/batch8=51, batas50/120; list tetap4query. Tidak ada private_data query per target atau perubahan proyeksi lima approval/ledger/nominal lama. Browser akun/server/MySQL load/Word desktop/cetak fisik belum diverifikasi. [Bukti](qa/legacy-finance-routing-20261116.json), [catatan QA](LARAVEL_QA.md).
+
+
+## 17 November 2026 — Ikon Unduh Semua Dokumen
+
+Presentasi `DocumentPackageButton` memakai Lucide `Download`16 dari import existing; seluruh pemakai komponen mendapat ikon yang sama. Tidak ada dependency, SQL/API, model, workflow atau state baru. Build TypeScript/Vite dan pemeriksaan aset lulus; browser/server tidak diuji ulang.
