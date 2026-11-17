@@ -816,3 +816,8 @@ Selesai: gunakan ikon `Download`16 pada tombol Unduh Semua Dokumen bersama; pert
 ## 17 November 2026 — Matriks Pengajuan dan Terbayar serta dashboard per peran
 
 Selesai: rapikan matriks Region/Branch, Nilai Pengajuan bruto (konfirmasi pengguna) + Nilai Terbayar, modal kontribusi, dashboard prioritas/tombol per role dan akun/Branch. Simpan seluruh aturan CLOSE/BOQroot/settlementnet/riwayat. Summary memakai indeks dan satu total perterm, tanpa tambahan query/API/schema/migration/live mutation.311PHP/7241assertions,341frontend,TypeScript/Vite/assets/Pint,fixture1000row,9roleBranchscope serta browser sintetis6viewport/theme dan interaksi lulus. Server/akunlive/loadtest belum diverifikasi. [Perilaku](docs/DASHBOARD_MATRIX.md), [QA](docs/qa/dashboard-matrix-payments-20261117.json).
+
+
+## 17 November 2026 — Keterangan PPh dan label pembayaran Final satu kali
+
+Selesai: keterangan PPh2,5% khusus Jasa Mandor pada UI pengajuan/review kasbon dengan bruto/potongan/net; berkas tetap net-only dan histori tidak repricing. Final1 menghilangkan Termin dari label/editor/list/inbox/review/BA PP/dashboard/report; Parsial1/Final2/3 tetap bernomor. Finance legacy tetap tersedia, next-term card Final1 disembunyikan, nama Word kasbon Final1 memakai _Final. Tidak ada perubahan workflow/SQL/migration/data aktif. 311PHP/7241assertions,345frontend/build/assets dan browser sintetis6viewport/theme/interaksi lulus; belum server/liveakun/Wordrender/cetakfisik. [Perilaku](docs/KASBON_PPH_PAYMENT_LIST.md), [QA](docs/qa/payment-presentation-20261117.json).

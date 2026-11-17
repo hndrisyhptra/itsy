@@ -1,3 +1,4 @@
+import { paymentDescription } from './payment-labels';
 import { useEffect, useRef, useState } from 'react';
 import { ArrowUpRight, CheckCircle2, Clock3, CreditCard, FolderKanban, RefreshCw, Search, Wallet } from 'lucide-react';
 import type { State } from './domain';
@@ -34,7 +35,7 @@ export function PaymentListView({data,filters,branches,busy,error,onFilter,onRef
       {data&&data.items.length>0&&<Table className="payment-list-table" headers={['LOP / ID Project','Dokumen / Mandor','Pengajuan','Nilai Pengajuan','Status Pembayaran','Approval / Berkas','Aksi']}>{data.items.map(row=><tr key={row.id}>
         <td><strong className="payment-list-job">{row.name}</strong><small className="payment-list-code">{row.projectCode}</small><span className="payment-list-branch">{row.branch}</span></td>
         <td><Link className="record-no" to={'/project-plan/'+row.ppId}>{row.ppNo}</Link><small>{row.spkNo}</small><small>{row.mandor}</small></td>
-        <td><b>{row.type==='Final'&&row.number===1?'Final':`Termin ${row.number} · ${row.type}`}</b><small>{row.submittedAt?dateLabel(row.submittedAt):'Tanggal belum tersedia'}</small></td>
+        <td><b>{paymentDescription(row)}</b><small>{row.submittedAt?dateLabel(row.submittedAt):'Tanggal belum tersedia'}</small></td>
         <td className="numeric"><strong>{money(row.amount)}</strong></td>
         <td><span className={`payment-list-status ${row.paid?'paid':'unpaid'}`}>{row.paid?<CheckCircle2 size={14}/>:<Clock3 size={14}/>} {row.paid?'Sudah Terbayar':'Belum Terbayar'}</span>{row.paid&&<><small>{money(row.paidAmount)}</small><small>{row.apm?`APM ${row.apm}`:'APM belum diisi (opsional)'}</small><small>{row.paidAt?dateLabel(row.paidAt):''}</small></>}</td>
         <td><small className="payment-list-approval">{row.approval}</small><Badge>{row.documents}</Badge><small>{row.documents==='NOK'?'Scan TTD belum diunggah':row.scanStatus==='Valid'?'Berkas terverifikasi':'Scan TTD tersedia'}</small></td>

@@ -25,9 +25,9 @@ export function TermWorkEvidencePanel({s,term,embedded=false,onBusy}:{s:State;te
   const editable=!embedded&&operational(s)&&canReviseSubmission(term);
   async function upload(selected:File[]) {
     if(!selected.length)return;
-    if(!await confirmAction(`Unggah ${selected.length} file eviden pekerjaan ke termin ini?`))return;
+    if(!await confirmAction(`Unggah ${selected.length} file eviden pekerjaan ke pembayaran ini?`))return;
     setError('');
-    if(active.length+pendingCount+selected.length>10){setError('Maksimal 10 lampiran eviden pekerjaan aktif per termin.');return;}
+    if(active.length+pendingCount+selected.length>10){setError('Maksimal 10 lampiran eviden pekerjaan aktif per pengajuan pembayaran.');return;}
     if(selected.some(f=>!(/\.(pdf|jpe?g|png|webp)$/i).test(f.name)||f.size<=0||f.size>10*1024*1024)) {setError('Pilih PDF atau foto JPG, PNG, WebP; maksimal 10 MB per file.');return;}
     setBusy(true);const token=++batch.current;let sending=-1;
     setProgress(selected.map(file=>({name:file.name,progress:{phase:'pending',percent:0}})));

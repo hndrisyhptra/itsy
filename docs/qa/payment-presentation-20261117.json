@@ -1,0 +1,123 @@
+{
+  "date": "2026-11-17",
+  "changes": [
+    "PPh service-only information on Admin/Finance UI; frozen quote for issued, historical policy retained",
+    "Single first Final labels across payment views; numbered installments otherwise",
+    "Final1 editor actual table8columns vs installment11; BA PP one actual column",
+    "Kasbon Final1 filename omits Termin; paper net-only unchanged"
+  ],
+  "tests": {
+    "php": {
+      "passed": 311,
+      "assertions": 7241,
+      "database": "isolated SQLite :memory:"
+    },
+    "frontend": {
+      "passed": 345,
+      "newRegressionTests": 4
+    },
+    "build": "TypeScript/Vite passed",
+    "assets": {
+      "manifestReferences": 41,
+      "preloadDependencies": 32,
+      "profiles": 3
+    },
+    "browser": {
+      "errors": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/"
+        },
+        {
+          "method": "GET",
+          "path": "/harness.js"
+        },
+        {
+          "method": "GET",
+          "path": "/api/uploads"
+        },
+        {
+          "method": "GET",
+          "path": "/api/finance/terms/payment-qa/kasbon"
+        },
+        {
+          "method": "GET",
+          "path": "/api/finance/spk/spk-776ec6a1-3639-4c5d-8d72-f3c6be1438a0/payee"
+        },
+        {
+          "method": "GET",
+          "path": "/api/uploads"
+        },
+        {
+          "method": "GET",
+          "path": "/api/finance/terms/payment-qa/kasbon"
+        },
+        {
+          "method": "GET",
+          "path": "/api/uploads"
+        },
+        {
+          "method": "GET",
+          "path": "/api/finance/terms/payment-qa/kasbon"
+        }
+      ],
+      "checks": [
+        {
+          "theme": "light",
+          "width": 1440,
+          "noPageOverflow": true
+        },
+        {
+          "theme": "light",
+          "width": 768,
+          "noPageOverflow": true
+        },
+        {
+          "theme": "light",
+          "width": 375,
+          "noPageOverflow": true
+        },
+        {
+          "theme": "dark",
+          "width": 1440,
+          "noPageOverflow": true
+        },
+        {
+          "theme": "dark",
+          "width": 768,
+          "noPageOverflow": true
+        },
+        {
+          "theme": "dark",
+          "width": 375,
+          "noPageOverflow": true
+        }
+      ],
+      "interactions": [
+        "Final→Parsial→Final actual table8/11/8columns",
+        "Admin issue form PPh information",
+        "Finance frozen gross300000/deduction5000/net295000",
+        "Kasbon preview document DOM stays net-only without PPh row or Termin1",
+        "Legacy cashbon remains saved gross"
+      ]
+    }
+  },
+  "performance": {
+    "extraSql": 0,
+    "extraApi": 0,
+    "extraPrivateRead": 0,
+    "helpers": "O(1) shared display labels; reuse saved quote/summary; Finance gross calculated once",
+    "limit": "Existing aggregate reads remain; not a concurrency/load benchmark"
+  },
+  "dataChanges": false,
+  "migrationRequired": false,
+  "backendChanged": false,
+  "output": "Kasbon paper HTML/native Word keeps net-only/no PPh row; filename display changed for Final1 only",
+  "limitations": [
+    "Browser synthetic fixtures only; no live account/aaPanel/bank verification",
+    "No new Word/PDF render or physical printing; existing XML/HTML regression tests passed",
+    "No rewriting original audit text, saved types/numbers, private uploaded filenames/paths or policies"
+  ],
+  "qaArtifacts": "/private/tmp/area3-payment-presentation-20261117"
+}

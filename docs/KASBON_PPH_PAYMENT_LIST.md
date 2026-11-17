@@ -1,5 +1,22 @@
 # Kasbon bersih dan List Payment — 16 November 2026
 
+## 17 November 2026 — Keterangan PPh dan label pembayaran Final satu kali
+
+Pengguna meminta keterangan selisih bruto dan transfer pada **Kasbon Admin & Review Pembayaran Finance** serta penghapusan label Termin untuk pembayaran pertama langsung Final. Ketentuan ini menggantikan larangan keterangan potongan **pada UI pengajuan/review saja**; isi formulir kasbon yang menjadi berkas preview/Word/cetak tetap nilai bersih tanpa baris potongan seperti sebelumnya.
+
+Panel dan modal pengajuan menampilkan penjelasan PPh2,5% hanya untuk Jasa Mandor, Material utuh, serta nilai pengajuan bruto → potongan Jasa Mandor → **Nilai setelah potongan PPh**. Form baru memakai quote kanonis existing dan menandai nilai sebelum pengajuan sebagai perkiraan. Panel kasbon terbit memakai `t.kasbon.settlement` dan `t.kasbon.amount` yang sudah tersimpan; tidak menghitung ulang dokumen lama. Bila belum ada kasbon, angka summary disebut Tagihan bruto, bukan Nilai transfer. Kasbon historis tanpa policy menjelaskan nominal tersimpan tanpa menerapkan potongan baru. Finance tetap mentransfer nominal versi yang disetujui; status, approval, nominal, PII, rekening dan riwayat tidak diubah.
+
+`payment-labels.ts` membagi aturan `number===1 && type==='Final'`: **Pembayaran Final/Final**, **Total Pembayaran**, tanpa kolom Nomor Termin dan tanpa tiga kolom historis Termin pada editor Volume Aktual. Kolom input aktual, harga, nilai, saldo dan ledger tetap dari model yang sama. Bila memilih Parsial atau Final2/3, nomor Termin dan kolom historis tetap muncul. Sebelum jenis dipilih, picker menyebut Pembayaran pertama; tahap2/3 tetap Termin. Card pembuatan Termin Berikutnya tidak ditampilkan pada Final1 karena tidak tersedia; panel Finance historis tetap tersedia.
+
+Aturan diterapkan pada editor, list pembayaran, inbox/task/konfirmasi, pengajuan kasbon Admin, review Finance, list Finance, legacy routing, rincian dashboard, laporan layar, generic preview dan detail BA PP. Nama dokumen BARP pada tombol review tidak memuat akhiran Termin untuk Final1; key internal jenis dokumen/route tetap. BARP/BAPP/kasbon paper tetap memakai aturan single-Final yang sudah ada. Nama file Word kasbon Final1 sekarang `Kasbon_<PP>_Final.docx`; pembayaran bertahap tetap `_Termin-N`. Nomor tersimpan, jenis, cycle, actuals, filename/path unggahan privat dan teks riwayat audit/note asli tidak ditulis ulang.
+
+Tidak ada endpoint, query SQL, migration, dependency atau mutasi workflow/data. Notice memakai quote/saved summary berizin yang sudah tersedia, helper label O(1), daftar tetap20baris dan akses Branch/private unchanged. Panel Finance menghitung gross existing satu kali untuk summary/notice/konfirmasi, menggantikan pemanggilan berulang. Boot/read aggregate existing tetap, bukan klaim benchmark throughput.
+
+Verifikasi: **311PHP/7241assertions** pada SQLite`:memory:`, **345frontend**, TypeScript/Vite dan assets41refs/32preloads×3profil lulus. Empat tes baru mencakup editor/list/BA PP Final1 dan Parsial1/Final2/3, kolom8/11, panel Finance historis tidak hilang, bruto/potongan/net/historical unchanged, serta nama file. Regresi HTML/native Word kasbon net-only dan BARP/BAPP single-Final existing tetap lulus. Tidak merender ulang Word/PDF atau mencetak fisik karena tata letak berkas tidak berubah.
+
+Browser sintetis Chrome memeriksa Final→Parsial→Final, form Admin, panel Finance dengan frozen300.000/5.000/295.000, kasbon historis tanpa repricing, dokumen preview net-only tanpa PPh/Termin1, dan viewport375/768/1440 light/dark tanpa page overflow. Seluruh request diintersep fixture lokal dan hanyaGET,0JSerror; screenshot diperiksa. Peluncuran pertama terkena sandbox lalu retry berizin; locator teks total diperbaiki karena total dan nominal ada dalam satu elemen. Tidak memakai akun/server/transfer bank nyata, tidak deploy/migrate/restart worker dan tidak mengubah its/.env/archive/Dompis. [Bukti](qa/payment-presentation-20261117.json).
+
+
 ## 16 November 2026 — Tandai Lunas dengan APM opsional
 
 Finance dapat menekan Tandai Lunas setelah bukti transfer aktif selesai diunggah dan approval/review Finance lengkap, tanpa nomor APM. Upload sendiri tidak membayar otomatis. APM dapat diisi saat pelunasan atau ditambah/diedit sesudah lunas; format/keunikan dan konfirmasi YA/TIDAK tetap. Koreksi nomor menyimpan audit before/after/actor/waktu dan tidak mengubah nilai/tanggal/penerima/bukti/keputusan maupun menambah pembayaran kedua. Berlaku pada alur kasbon-v1/kasbon-settlement-v2; pra-kasbon historis tetap.

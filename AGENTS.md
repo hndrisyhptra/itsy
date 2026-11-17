@@ -1,5 +1,10 @@
 # it's Area 3 — Development rules
 
+## 17 November 2026 — Keterangan PPh dan label pembayaran Final satu kali
+
+User requests PPh2.5% information in Admin submission/Finance review UI, superseding older no-deduction-UI wording only. Follow latest docs/KASBON_PPH_PAYMENT_LIST.md. Use new quote for explicit issue form, frozen summary for issued; never reprice legacy. Paper KasbonDocument/Word/print stays net-only. Shared payment-labels omits installment wording only for number1+Final throughout display/editor/list/inbox/review/BA PP/dashboard/report and uses _Final for its Word filename; keep Parsial1/Final2/3 numbered, saved identities/types/audit/ledger/approval/paths unchanged. Hide unavailable next-term card without hiding legacy Finance panel. No SQL/API/migration/live write; record actual tests/browser limits.
+
+
 ## 16 November 2026 — Complete document package and current workflow presentation
 
 Follow docs/DOCUMENT_PACKAGE.md. Sah BA PP action exports one native DOCX / browser-print PDF, exact BAPP→Final→SPK→BA KH→PP plus only same-SPK approved previous payments and active saved kasbon each. Preserve per-document portrait/landscape, actual identities/net/gross/history and blank wetTTD on Word/print. Package resolver keeps PP/BA KH/SPK Sah/Final approval/Head correction gates. Kasbon GET current_only=1 remains authorized UUID-bound,3query service/max1 record/no files/history decryption; modal pins ID/UUID fingerprint, abort/no-store, no localStorage or fallback when access/version fails. Legacy without kasbon never invents one. Internal generated ZIP merge only, isolated styles/numbering/media/headers, explicit blank headers prevent SPK logo inheritance,20parts/48MiB sources/64MiB output; do not silently drop data. Timeline/detail use actual bundle5 and pre-kasbon7 workflow, current-user/version-bound decisions, optional APM/scan separate; old routes/history unchanged. BA PP lists20/indexed totals; timeline grouped/activities20. List Payment solid white/surface, no gradients. No new migration/runtime dependency/live mutation; log actual QA/server/Word/print limits.

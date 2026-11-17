@@ -1,3 +1,4 @@
+import { paymentDescription } from './payment-labels';
 import { settlementRecorded } from './payment-settlement';
 import { usesFinancePayment, financePaymentLabel } from './finance-payment';
 import { usesPartialPayment } from './partial-payment';
@@ -12,18 +13,18 @@ export function paymentAction(terms:PaymentLatest[],ppApproved:boolean):PaymentA
     const editable=canReviseSubmission({status:latest.status,workflowVersion:latest.version} as Term);
     return {action:'open',label:editable?(latest.status==='Draft'?'Lanjutkan Draf':'Perbaiki Pengajuan'):'Buka Pengajuan',termId:latest.id,nextNumber:null,reason:''};
   }
-  if(terms.length>=3||terms.some(t=>t.type==='Final')) return {action:'open',label:'Buka Pengajuan',termId:latest!.id,nextNumber:null,reason:'Termin Final sudah dibuat atau batas tiga termin tercapai.'};
+  if(terms.length>=3||terms.some(t=>t.type==='Final')) return {action:'open',label:'Buka Pengajuan',termId:latest!.id,nextNumber:null,reason:'Pembayaran Final sudah dibuat atau batas tiga pembayaran tercapai.'};
   return {action:ppApproved?'create':'blocked',label:'Pilih SPK',termId:'',nextNumber:terms.length+1,reason:ppApproved?'':'PP belum Sah.'};
 }
 export const paymentLatest=(t:Term):PaymentLatest=>({id:t.id,number:t.number,type:t.type,status:t.status,version:t.workflowVersion??1,apmStatus:t.apmStatus,settled:settlementRecorded(t),scanStatus:t.scan?.status??'',financeApproved:!!t.financeApproval,...(usesFinancePayment(t)?{financePaymentStatus:financePaymentLabel(t)}:{}),...(usesPartialPayment(t)?{partialPaymentStatus:t.paymentRequest?.status}:{} )});
 export function paymentStage(latest:PaymentLatest|null):string {
   if(!latest)return 'Belum ada pengajuan';
-  if(latest.financePaymentStatus)return `Termin ${latest.number} · ${latest.type} · ${latest.apmStatus==='Valid'?'APM valid':latest.financePaymentStatus}`;
-  if(latest.partialPaymentStatus&&latest.apmStatus!=='Valid')return `Termin ${latest.number} · ${latest.type} · ${latest.partialPaymentStatus==='Diajukan'?'Menunggu verifikasi Payment Finance':latest.partialPaymentStatus==='Diverifikasi'?'Menunggu APM':'Payment dikembalikan'}`;
-  if(latest.version===3&&latest.type==='Parsial'&&latest.status==='Disetujui'&&latest.apmStatus!=='Valid'&&!latest.scanStatus&&!latest.financeApproved)return `Termin ${latest.number} · ${latest.type} · Menunggu Admin Ajukan Payment` ;
+  if(latest.financePaymentStatus)return `${paymentDescription(latest)} · ${latest.apmStatus==='Valid'?'APM valid':latest.financePaymentStatus}`;
+  if(latest.partialPaymentStatus&&latest.apmStatus!=='Valid')return `${paymentDescription(latest)} · ${latest.partialPaymentStatus==='Diajukan'?'Menunggu verifikasi Payment Finance':latest.partialPaymentStatus==='Diverifikasi'?'Menunggu APM':'Payment dikembalikan'}`;
+  if(latest.version===3&&latest.type==='Parsial'&&latest.status==='Disetujui'&&latest.apmStatus!=='Valid'&&!latest.scanStatus&&!latest.financeApproved)return `${paymentDescription(latest)} · Menunggu Admin Ajukan Payment` ;
   const verified=latest.version>=3?latest.financeApproved:latest.scanStatus==='Valid';
   const stage=latest.status!=='Disetujui'?latest.status==='Diajukan'?'Menunggu approval':latest.status:latest.apmStatus==='Valid'?'APM valid':latest.version>=2&&!verified?(latest.scanStatus==='Perlu Koreksi'?'Scan perlu koreksi':latest.scanStatus==='Menunggu Verifikasi'?'Menunggu Finance':'Menunggu scan TTD'):'Menunggu APM';
-  return `Termin ${latest.number} · ${latest.type} · ${stage}`;
+  return `${paymentDescription(latest)} · ${stage}`;
 }
 export function paymentStartAction(s:State,spkId:string):PaymentAction {
   if(!operational(s))throw new Error('Pengajuan pembayaran hanya untuk Admin Konstruksi atau Superadmin.');

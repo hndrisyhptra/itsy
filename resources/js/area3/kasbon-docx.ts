@@ -1,10 +1,11 @@
+import { isSinglePayment } from './payment-labels';
 import type { Term } from './domain';
 import { money } from './currency';
 import { kasbonTerbilang, kasbonSignatures, kasbonSignatureColumns, kasbonDate, kasbonTermSuffix, type KasbonData } from './kasbon-content';
 import { xmlHeader, wns, relns, officeRel, paragraph, table, tableRow } from './word-ooxml';
 import { ooxmlZip } from './ooxml-zip';
 
-export function kasbonWordFilename(d:KasbonData){return `Kasbon_${d.ppNo}_Termin-${d.termNumber}`.replace(/[\\/:*?"<>|\u0000-\u001f]/g,'-').slice(0,150)+'.docx';}
+export function kasbonWordFilename(d:KasbonData){return `Kasbon_${d.ppNo}${isSinglePayment({number:d.termNumber,type:d.termType??''})?'_Final':`_Termin-${d.termNumber}`}`.replace(/[\\/:*?"<>|\u0000-\u001f]/g,'-').slice(0,150)+'.docx';}
 /** Same saved fields as preview; approval marks and all signature images are intentionally absent. */
 export function createKasbonDocx(d:KasbonData,logo:Uint8Array,term?:Term,kasbonId?:string){
   if(logo.length<8||[137,80,78,71,13,10,26,10].some((b,i)=>logo[i]!==b))throw new Error('Logo kasbon belum dapat dimuat.');
