@@ -355,3 +355,13 @@ body{color:var(--text);background:var(--bg)}[data-theme=dark] .metric-label,[dat
 @media print{.workflow-overview,.document-package-info,.document-package-label{display:none!important}.document-package-content,.document-package-part{display:block!important;overflow:visible!important;height:auto!important;max-height:none!important;margin:0!important;padding:0!important;border:0!important}.document-package-part{break-before:page}.document-package-part:first-child{break-before:auto}.document-package-content .document{break-before:page}.document-package-content .document:first-child{break-before:auto}.document-package-content [data-package-pp] .document{page:pp-document-portrait}.document-package-content .pp-signature-screen,.document-package-content .pp-approval-stamp,.document-package-content .kasbon-approval-stamp{display:none!important}}
 /* Avoid a negative SPK letterhead crossing a preceding landscape page in a combined PDF. */
 @media print{.document-package-content .spk-letter-brand{margin:0 0 1mm;height:13mm;break-inside:avoid}.document-package-content .spk-letter-brand img{max-width:100%}.document-package-content .spk-letter-table th,.document-package-content .spk-letter-table td{border:1px solid #111!important}}
+
+/* Package previews sit before approval decisions; references use loaded scoped state. */
+.project-bundle-review-section{border:1px solid var(--border);border-radius:6px;padding:14px;margin:16px 0;background:var(--surface);min-width:0}
+.project-bundle-review-section>h3{margin-bottom:12px}
+.project-bundle-review{display:flex;flex-direction:column;gap:12px;min-width:0}
+.project-bundle-review-group{border-top:1px solid var(--border);padding-top:12px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.project-bundle-review-group>strong,.project-bundle-review-spk>small{overflow-wrap:anywhere}
+.project-bundle-review-spk{display:flex;flex-direction:column;gap:6px;min-width:0}
+.project-bundle-review .actions{flex-wrap:wrap}
+.project-bundle-review .btn{white-space:normal;text-align:left;max-width:100%}

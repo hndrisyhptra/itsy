@@ -477,3 +477,8 @@ Menggantikan perubahan margin sebelumnya pada draf v3:1.1 Material sekarang mema
 ## 17 November 2026 — Designator, tambah/hapus Non Stock dan footer Total Nilai
 
 User mengonfirmasi footer Total Nilai di bagian paling bawah tabel. Item otomatis kini menampilkan kode designator saja; Admin dapat menambahkan material lain dan menghapus sumber/tambahan dengan YA/TIDAK. Source exclusions samePP disimpan, tambahan max200 tervalidasi, sumber tetap canonical. Total aktif menjadi2.2/COGS/IV.5/Header sekali; Revenue dan BOQ Mandor tidak berubah saat rincian NonStock dihapus. Policy server-owned v3 pada editable save/submit/continuation menjaga locked v2/v1/history. Tidak ada migration/SQL read perbaris/API baru/live backfill. [Perilaku, data, performance dan QA](PP_BUDGET_TEMPLATE.md).
+
+
+## 17 November 2026 — Lima preview dokumen paket untuk approver
+
+Preview PP, BA KH, Lampiran BA KH, SPK dan Lampiran SPK kini disatukan sebelum tombol approval pada detail, serta dapat dibuka dari Preview Paket pada Inbox. Sebelumnya empat preview kontrak berada di kartu terpisah sesudah panelapproval. Reuse preview/nativeWord/print existing, target exactPP/deal/SPK tanpa first-record fallback, multi-kontrak grouped, single-modal back/Escape, tidak menandai sudah direview atau mengubah keputusan. Nomor/riwayat/stamp/Branch/manifest dan lima tahapan tetap;0API/SQL/migration/live mutation baru. [Aturan dan bukti](BUNDLE_SETTLEMENT_APPROVAL.md).

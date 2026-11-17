@@ -1,5 +1,24 @@
 # Paket PP dan kasbon sebelum tujuh approval
 
+## 17 November 2026 — Preview paket untuk approver sebelum keputusan
+
+Sebelumnya halaman detail sudah memiliki empat preview BA KH/lampiran/SPK/lampiran pada kartu terpisah sesudah approval, dan Preview PP di judul halaman. Kini bagian **Berkas Paket untuk Ditinjau** berada langsung dalam panel approval, sebelum catatan dan tombol keputusan. Semua lima approver terpilih dapat membuka tombol tersendiri:
+
+- Preview PP
+- Preview BA KH
+- Preview Lampiran BA KH
+- Preview SPK
+- Preview Lampiran SPK
+
+Inbox Approval Project Plan tetap20baris/halaman dan mempertahankan Tinjau PP/Preview BOQ Mandor; tambahan **Preview Paket** membuka pemilih lima dokumen yang sama. Nomor BA KH, Mandor dan nomor SPK mengelompokkan dokumen bila satu PP memiliki beberapa kontrak. Tidak otomatis memilih dokumen pertama. PP header-only dapat dipreview; BA KH/SPK yang belum tersedia diberi keterangan, bukan berkas kosong yang dianggap tersedia. Link melanjutkan/membuka dokumen operasional tetap untuk Admin/Superadmin pada konteks detail, sedangkan picker Inbox hanya untuk review. Riwayat PP tanpa contractBundle tetap memakai tampilan sebelumnya.
+
+Target preview memuat projectId/kind/dealId/spkId. Resolver hanya menerima PP target yang sama, BA KH milik UUID PP itu, dan SPK milik BA KH yang sama. ID Project yang sama, PP induk/lanjutan maupun urutan koleksi tidak menjadi fallback; target hilang/tidak cocok tidak merender dokumen lain. Preview memakai sumber tersimpan yang sudah dibaca melalui cakupan Branch Laravel. Tidak menambah hak akses/API private, membaca KTP/bank, mengubah approval, memberi cap baru, menandai sudah diperiksa atau mewajibkan pengguna membuka semua berkas untuk menyetujui.
+
+Dalam picker Inbox, modal pemilih diganti sementara dengan DocumentPreview, bukan ditumpuk. Escape/Tutup dari dokumen kembali ke pemilih; Escape/Tutup pemilih kembali ke Inbox. Ini menjaga satu pemilik focus/Escape/print. Halaman detail cukup memiliki satu section tombol sebelum keputusan, tanpa kartu duplikat setelah approval. Word/print/stamp/orientasi memakai komponen existing dan aturan aslinya; tidak ada generator/template baru. Notice paket memperjelas BA KH/SPK dapat ditinjau sebelum Sah, sedangkan pengesahan mengikuti Head PMO.
+
+Performa: closed Inbox action hanya tombol/state, tidak membangun preview atau memindai semua dokumen setiap baris. Saat dibuka/detail, existing bundleDocuments memfilter satu PP dan indeks Map mengelompokkan SPK sekali (linear), menggantikan pencarian SPK per BA KH; target resolve hanya saat preview terpilih.0SQL/API/private fetch/schema/migration/new runtime dependencies, tidak membuat command atau mengubah live data; pemuatan aggregate awal yang sudah ada tetap. Ini bukan klaim benchmark produksi. [Bukti dan batas](qa/project-bundle-preview-20261117.json).
+
+
 ## 16 November 2026 — Tandai Lunas dengan APM opsional
 
 Finance dapat menekan Tandai Lunas setelah bukti transfer aktif selesai diunggah dan approval/review Finance lengkap, tanpa nomor APM. Upload sendiri tidak membayar otomatis. APM dapat diisi saat pelunasan atau ditambah/diedit sesudah lunas; format/keunikan dan konfirmasi YA/TIDAK tetap. Koreksi nomor menyimpan audit before/after/actor/waktu dan tidak mengubah nilai/tanggal/penerima/bukti/keputusan maupun menambah pembayaran kedua. Berlaku pada alur kasbon-v1/kasbon-settlement-v2; pra-kasbon historis tetap.

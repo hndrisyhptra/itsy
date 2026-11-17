@@ -836,3 +836,8 @@ Selesai implementasi Laravel/React policy selected-owner-material-nonstock-v2 un
 ## 17 November 2026 — Designator dan tambah/hapus Material Non Stock
 
 Selesai: IV.2 menampilkan kode designator sumber, tombol tambah dan hapus dengan YA/TIDAK, baris Total Nilai paling bawah pada editor/preview/Word source. Tambahan manual tervalidasi max200; penghapusan sumber samePP disimpan agar tidak muncul kembali. Latest policy v3 editable saja;2.2/COGS/rekap/Header mengikuti rincian aktif sekali, Revenue/BOQ tetap, histori locked v2/v1 dipertahankan. Existing JSON/rincian/biaya dan indexed source references tanpa migration/API/lookup perbaris. [Aturan](docs/PP_BUDGET_TEMPLATE.md), [bukti](docs/qa/pp-editable-nonstock-20261117.json).
+
+
+## 17 November 2026 — Preview paket langsung sebelum approval
+
+Selesai: lima tombol PP/BA KH/lampiran/SPK/lampiran di ProjectApprovalPanel sebelum keputusan; Inbox20rows mendapat Preview Paket read-only. Target UUIDexact, banyak kontrak dikelompokkan, tidak memilih dokumen pertama/sibling; satu modal picker/preview dengan Escape kembali. Detail tidak menduplikasi kartu; operator links terjaga, dokumen kurang diberi status. Existing Word/print/five approval/Branch/manifest tanpa perubahan.0newSQL/API/schema/runtime dependency/migration/livewrite. [Perilaku](docs/BUNDLE_SETTLEMENT_APPROVAL.md), [QA](docs/qa/project-bundle-preview-20261117.json).

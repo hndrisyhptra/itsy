@@ -1,0 +1,110 @@
+{
+  "date": "2026-11-17",
+  "request": "Make PP, BA KH and appendix, SPK and appendix individually previewable by approvers before package decision.",
+  "finding": "Four BA KH/SPK previews existed in a separate detail card after approval; PP preview existed in PageTitle, not grouped before decisions.",
+  "implementation": {
+    "detail": "Five explicit preview buttons embedded in ProjectApprovalPanel before notes/decisions; removes duplicate separate review card",
+    "inbox": "Preview Paket button on current assigned waiting row; picker mounts only on open",
+    "identity": "Target projectId and deal/project and SPK/deal UUID relationships; no first-record/root/shared Project-code fallback",
+    "modal": "Picker replaced temporarily by one DocumentPreview; close/Escape returns picker; picker close returns Inbox",
+    "workflow": "Read-only existing preview; no reviewed marker, decision, manifest or financial change",
+    "availability": "Missing documents stated; operational creation links only when draft allowed, absent in Inbox picker"
+  },
+  "verification": {
+    "php": {
+      "passed": 317,
+      "assertions": 7367,
+      "database": "fail-closed SQLite :memory:",
+      "backendChanged": false
+    },
+    "frontend": {
+      "passed": 351,
+      "newTests": 3,
+      "cases": [
+        "All five assigned roles see previews before decision; unassigned Inbox empty",
+        "Exact five targets, second PP with shared Project code, multiple same-PP contracts, cross-deal/foreign/missing targets fail closed",
+        "Unavailable documents and operational draft creation links; legacy package absent; no state mutation"
+      ]
+    },
+    "build": "TypeScript/Vite passed",
+    "assets": {
+      "manifestReferences": 42,
+      "preloadDependencies": 33,
+      "profiles": 3
+    },
+    "diffCheck": "passed",
+    "browser": {
+      "errors": [],
+      "requests": [
+        "/",
+        "/harness.js"
+      ],
+      "checks": [
+        {
+          "theme": "light",
+          "width": 1440,
+          "noPageOverflow": true
+        },
+        {
+          "theme": "light",
+          "width": 768,
+          "noPageOverflow": true
+        },
+        {
+          "theme": "light",
+          "width": 375,
+          "noPageOverflow": true
+        },
+        {
+          "theme": "dark",
+          "width": 1440,
+          "noPageOverflow": true
+        },
+        {
+          "theme": "dark",
+          "width": 768,
+          "noPageOverflow": true
+        },
+        {
+          "theme": "dark",
+          "width": 375,
+          "noPageOverflow": true
+        }
+      ],
+      "interactions": [
+        "Second PP selected in Inbox despite shared Project ID; all five buttons visible",
+        "All five document modals resolve exact second PP/BA KH/SPK and no first PP content",
+        "One modal owner, Escape returns from each preview to picker; picker Escape closes",
+        "Five previews render before Setujui PP on detail",
+        "No state mutation or API/private fetch"
+      ]
+    },
+    "screenshotsReviewed": [
+      "chooser.png",
+      "light-375.png",
+      "Preview-BA-KH.png"
+    ]
+  },
+  "performance": {
+    "newSqlQueries": 0,
+    "newApiOrPrivateRequests": 0,
+    "newRuntimePackages": 0,
+    "closedInbox": "Existing20rows; no package collection scan or document mount in closed row button",
+    "openedPicker": "Existing loaded PP filter + SPK Map grouping linear; target lookups only on selection, replacing per-deal SPK find",
+    "limit": "Existing aggregate loads remain; not a MySQL throughput/load benchmark"
+  },
+  "data": {
+    "migration": false,
+    "liveDatabaseWrites": false,
+    "envOrDompisChanged": false,
+    "workerRestart": false,
+    "serverDeploy": false,
+    "backup": "Not required for read-only UI relocation; no workflow/backend/storage mutation."
+  },
+  "limits": [
+    "Synthetic local browser with seeded fixtures, not live authenticated server/account verification",
+    "Native Word/print templates/generators unchanged and existing export tests pass; no new Word/PDF render or physical print performed",
+    "All HTML document interactions used local fixture data and were not actual approvals or transactions"
+  ],
+  "qaArtifacts": "/private/tmp/area3-bundle-preview-20261117"
+}
