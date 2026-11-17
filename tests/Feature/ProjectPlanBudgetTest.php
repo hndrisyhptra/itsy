@@ -9,13 +9,77 @@ use Tests\TestCase;
 
 class ProjectPlanBudgetTest extends TestCase
 {
+    public function test_selected_owner_revenue_and_automatic_nonstock_count_material_cost_once(): void
+    {
+        $fixture = json_decode(file_get_contents(base_path('tests/Fixtures/pp-budget-vector.json')), true);
+        $p = $fixture['project'];
+        $p['planBudget']['materials'] = [['id' => 'forged-material', 'name' => 'Forged', 'unit' => 'bad', 'qty' => 999, 'price' => 999]];
+        $p['planBudget']['marginPolicy'] = ProjectPlanBudget::MATERIAL_REVENUE_POLICY;
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $current = ProjectPlanBudget::apply($p, $fixture['owners'], true, true);
+        $this->assertSame([], DB::getQueryLog());
+        DB::disableQueryLog();
+        foreach ($fixture['expectedSelectedOwnerRevenue'] as $key => $value) {
+            $this->assertEquals($value, $current['planBudgetTotals'][$key], $key);
+        }
+        $this->assertSame(ProjectPlanBudget::OWNER_MATERIAL_POLICY, $current['planBudget']['marginPolicy']);
+        $this->assertSame([['id' => 'material-mandor-1', 'sourceRowId' => 'boq-qa', 'name' => 'Material dan Jasa QA', 'unit' => 'Pcs', 'qty' => 4.0, 'price' => 10.0]], $current['planBudget']['materials']);
+        $this->assertEquals($fixture['selectedMaterialUsage'], $current['planBudget']['usage']);
+        $this->assertEquals(['mandor' => 100, 'material' => 40, 'bop' => 30.02, 'permit' => 7.03], $current['costs']);
+        $this->assertEquals($current, ProjectPlanBudget::apply($current, $fixture['owners'], true));
+        foreach (['qtyM', 'priceM'] as $key) {
+            $empty = $current;
+            $empty['planBudget']['mandor'][0][$key] = 0;
+            $result = ProjectPlanBudget::apply($empty, $fixture['owners'], true, true);
+            $this->assertSame([], $result['planBudget']['materials']);
+            $this->assertEquals(2000, $result['planBudgetTotals']['revenue']);
+            $this->assertEquals(0, $result['planBudgetTotals']['material']);
+            $this->assertEquals(130.02, $result['planBudgetTotals']['cogs']);
+        }
+        // A positive-volume, zero-price default is not an Admin-selected material item.
+        $owner = $fixture['owners'];
+        $owner[] = ['rowId' => 'unselected', 'name' => 'Not selected', 'unit' => 'Pcs', 'm' => 1000, 's' => null, 'qm' => 10, 'qs' => 0];
+        $current['planBudget']['mandor'][] = ['rowId' => 'unselected', 'qtyM' => 10, 'qtyS' => 0, 'priceM' => 0, 'priceS' => 0];
+        $next = ProjectPlanBudget::apply($current, $owner, true, true);
+        $this->assertCount(1, $next['planBudget']['materials']);
+        $this->assertEquals(2400, $next['planBudgetTotals']['revenue']);
+        $this->assertEquals(11000, $next['planBudgetTotals']['ownerM']);
+    }
+
+    public function test_automatic_materials_support_all_500_boq_rows_without_manual_row_cap_or_queries(): void
+    {
+        $p = ['costs' => ['permit' => 0], 'riskLevel' => 'SEDANG', 'planBudget' => ['mandor' => []]];
+        $owners = [];
+        for ($i = 0; $i < 500; $i++) {
+            $owners[] = ['rowId' => 'boq-'.$i, 'name' => 'Material '.$i, 'unit' => 'Pcs', 'm' => 100, 's' => null, 'qm' => 1, 'qs' => 0];
+            $p['planBudget']['mandor'][] = ['rowId' => 'boq-'.$i, 'qtyM' => 1, 'priceM' => 50, 'qtyS' => 0, 'priceS' => 0];
+        }
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $result = ProjectPlanBudget::apply($p, $owners, true, true);
+        $this->assertSame([], DB::getQueryLog());
+        DB::disableQueryLog();
+        $this->assertCount(500, $result['planBudget']['materials']);
+        $this->assertCount(500, array_unique(array_column($result['planBudget']['materials'], 'id')));
+        $this->assertEquals(50000, $result['planBudgetTotals']['revenue']);
+        $this->assertEquals(25000, $result['planBudgetTotals']['cogs']);
+        // Monetary maintenance has saved material metadata even without a current master lookup.
+        foreach ($owners as &$owner) {
+            unset($owner['name'], $owner['unit']);
+        }
+        $this->assertSame($result, ProjectPlanBudget::apply($result, $owners, true));
+    }
+
     public function test_material_revenue_policy_uses_mandor_material_plus_owner_service_and_preserves_costs(): void
     {
         $fixture = json_decode(file_get_contents(base_path('tests/Fixtures/pp-budget-vector.json')), true);
         $before = $fixture['project'];
         DB::enableQueryLog();
         DB::flushQueryLog();
-        $current = ProjectPlanBudget::apply($fixture['project'], $fixture['owners'], true, true);
+        $legacy = $fixture['project'];
+        $legacy['planBudget']['marginPolicy'] = ProjectPlanBudget::MATERIAL_REVENUE_POLICY;
+        $current = ProjectPlanBudget::apply($legacy, $fixture['owners'], true);
         $queries = DB::getQueryLog();
         DB::disableQueryLog();
         $this->assertSame([], $queries);
@@ -34,7 +98,8 @@ class ProjectPlanBudgetTest extends TestCase
         $owner[0]['qs'] = 0;
         $p = $fixture['project'];
         $p['planBudget']['mandor'][0]['qtyS'] = $p['planBudget']['mandor'][0]['priceS'] = 0;
-        $onlyMaterial = ProjectPlanBudget::apply($p, $owner, true, true)['planBudgetTotals'];
+        $p['planBudget']['marginPolicy'] = ProjectPlanBudget::MATERIAL_REVENUE_POLICY;
+        $onlyMaterial = ProjectPlanBudget::apply($p, $owner, true)['planBudgetTotals'];
         $this->assertEquals(40, $onlyMaterial['revenue']);
         $this->assertNotNull($onlyMaterial['margin']);
     }

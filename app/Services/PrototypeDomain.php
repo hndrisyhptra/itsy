@@ -1086,9 +1086,10 @@ class PrototypeDomain
                 $p['schedule'] = array_fill(0, 5, ['days' => 1]);
                 $p = ProjectPlanTemplate::apply($p);
                 $owners = [];
+                $budgetKhs = array_column($this->state['khs'], null, 'id');
                 foreach ($root['boq'] as $row) {
                     if (isset($allocations[$row['id']])) {
-                        $owners[] = ['rowId' => $row['id'], 'm' => $row['m'], 's' => $row['s'], 'qm' => $row['m'] === null ? 0 : $allocations[$row['id']]['m'], 'qs' => $row['s'] === null ? 0 : $allocations[$row['id']]['s']];
+                        $owners[] = ['rowId' => $row['id'], 'name' => $budgetKhs[$row['khsId']]['name'] ?? '', 'unit' => $budgetKhs[$row['khsId']]['unit'] ?? '', 'm' => $row['m'], 's' => $row['s'], 'qm' => $row['m'] === null ? 0 : $allocations[$row['id']]['m'], 'qs' => $row['s'] === null ? 0 : $allocations[$row['id']]['s']];
                     }
                 }
                 $p = ProjectPlanBudget::apply($p, $owners, false, true);

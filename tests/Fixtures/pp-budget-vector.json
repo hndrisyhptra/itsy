@@ -5,7 +5,9 @@
       "m": 100,
       "s": 200,
       "qm": 10,
-      "qs": 10
+      "qs": 10,
+      "name": "Material dan Jasa QA",
+      "unit": "Pcs"
     }
   ],
   "project": {
@@ -147,5 +149,44 @@
     "cogs": 195.05,
     "grossProfit": 1844.95,
     "margin": 90.44
-  }
+  },
+  "expectedSelectedOwnerRevenue": {
+    "ownerM": 1000,
+    "ownerS": 2000,
+    "ownerTotal": 3000,
+    "mandorM": 40,
+    "mandorS": 100,
+    "mandor": 140,
+    "material": 40,
+    "bop": 30.02,
+    "permit": 7.03,
+    "total": 170.02,
+    "revenue": 2400,
+    "cogs": 170.02,
+    "grossProfit": 2229.98,
+    "margin": 92.92
+  },
+  "selectedMaterialUsage": [
+    {
+      "id": "usage-mandor-s",
+      "category": "mandor",
+      "component": "s",
+      "amount": 100
+    },
+    {
+      "id": "usage-material",
+      "category": "material",
+      "amount": 40
+    },
+    {
+      "id": "usage-bop",
+      "category": "bop",
+      "amount": 30.02
+    },
+    {
+      "id": "usage-permit",
+      "category": "permit",
+      "amount": 7.03
+    }
+  ]
 }

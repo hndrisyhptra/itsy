@@ -1,5 +1,10 @@
 # it's Area 3 — Development rules
 
+## 17 November 2026 — Selected Owner Material Revenue and automatic Non Stock
+
+Latest user supersedes the earlier same-day Mandor-material Revenue rule for explicit editable v3 saves/submissions/continuations. Follow latest docs/PP_BUDGET_TEMPLATE.md: Admin selects material by positive Mandor qtyM and priceM; user confirms its volume matches Owner. Revenue=Owner Jasa + selected Mandor qtyM×saved Owner Material unit price; never all unselected Owner material or Mandor cost price. IV.2 list derives sourceRowId/name/unit/qty/price from canonical Mandor + loaded Owner reference;2.2 Non Stock=mandorM. COGS/IV.5/Header count Mandor Jasa+that Non Stock+BOP once, separate permit; keep full Mandor M+J BOQ subtotal, ceilings/BOQ ledger/payment/PPh unchanged. Server owns selected-owner-material-nonstock-v2 marker, generated rows/usage/totals; ignore forged manual Non Stock and client policy/totals. Locked/unmarked/mandor-material-revenue-v1 snapshots and monetary maintenance retain saved rule/metadata, no GET/live backfill. Auto list is readonly, remove item by editing Mandor; up to500 BOQ items, old manual200 cap retained historically. Existing JSON/budget rows, batched in-memory references,0extraSQL/API/schema/migration; document actual query/test/browser/export/server limits.
+
+
 ## 17 November 2026 — Material BOQ Mandor masuk Revenue pada margin PP
 
 User explicitly maps total BOQ TA–Mandor Jml_Mat to margin row1.1 Material and Revenue. Follow latest docs/PP_BUDGET_TEMPLATE.md, superseding service-only Revenue for new/explicitly saved editable v3 only. Revenue=Mandor Material+Owner Jasa, GrossProfit/percent use it; COGS/permit/BOQ/Header/ledger/PPh/payment gates stay. Server save/submit/continuation owns planBudget.marginPolicy=mandor-material-revenue-v1 and totals; ignore client opt-out/forged totals. Locked snapshots and default maintenance keep saved policy; no GET/live backfill. React shares policy and preview/Word DOM model. Existing JSON only,0extraSQL/pure0queries/HTTPfixture83budget90 with batched references; record actual tests/browser/server/Word limits.

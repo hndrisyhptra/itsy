@@ -157,11 +157,12 @@ trait PrototypeWorkflowV2
         if ($version >= 3) {
             $source = ! empty($old['parentId']) ? $this->record('projects', $old['rootId'])['boq'] : $rows;
             $owners = [];
+            $budgetKhs = array_column($this->state['khs'], null, 'id');
             foreach ($source as $row) {
                 if (! empty($old['parentId']) && ! isset($old['allocations'][$row['id']])) {
                     continue;
                 }
-                $owners[] = ['rowId' => $row['id'], 'm' => $row['m'], 's' => $row['s'],
+                $owners[] = ['rowId' => $row['id'], 'name' => $budgetKhs[$row['khsId']]['name'] ?? '', 'unit' => $budgetKhs[$row['khsId']]['unit'] ?? '', 'm' => $row['m'], 's' => $row['s'],
                     'qm' => $row['m'] === null ? 0 : (! empty($old['parentId']) ? ($old['allocations'][$row['id']]['m'] ?? 0) : $row['qty']),
                     'qs' => $row['s'] === null ? 0 : (! empty($old['parentId']) ? ($old['allocations'][$row['id']]['s'] ?? 0) : $row['qty'])];
             }

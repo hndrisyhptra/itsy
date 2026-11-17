@@ -115,9 +115,12 @@ class UsernameApprovalV3Test extends TestCase
         $p['planBudgetTotals'] = ['revenue' => 999999, 'grossProfit' => 999999];
         $this->api('saveProject', [$p, false])->assertOk();
         $saved = $this->projectRecord($p['id']);
-        $this->assertSame(ProjectPlanBudget::MATERIAL_REVENUE_POLICY, $saved['planBudget']['marginPolicy']);
+        $this->assertSame(ProjectPlanBudget::OWNER_MATERIAL_POLICY, $saved['planBudget']['marginPolicy']);
         $this->assertEquals(100, $saved['planBudgetTotals']['mandorM']);
-        $this->assertEquals($saved['planBudgetTotals']['ownerS'] + 100, $saved['planBudgetTotals']['revenue']);
+        $this->assertEquals($saved['planBudgetTotals']['ownerS'] + 2 * $m['m'], $saved['planBudgetTotals']['revenue']);
+        $this->assertEquals(100, $saved['planBudgetTotals']['material']);
+        $this->assertSame($m['name'], $saved['planBudget']['materials'][0]['name']);
+        $this->assertSame('boq-margin-material', $saved['planBudget']['materials'][0]['sourceRowId']);
         $boqBudget = $saved['budget'];
         $saved['planBudget']['mandor'][0]['qtyM'] = 1;
         $saved['planBudget']['mandor'][0]['priceM'] = 75;
@@ -133,7 +136,7 @@ class UsernameApprovalV3Test extends TestCase
         $this->assertLessThanOrEqual(2, count($catalogReads), 'Reference reads stay batched rather than per budget row.');
         $updated = $this->projectRecord($p['id']);
         $this->assertEquals(75, $updated['planBudgetTotals']['mandorM']);
-        $this->assertEquals($updated['planBudgetTotals']['ownerS'] + 75, $updated['planBudgetTotals']['revenue']);
+        $this->assertEquals($updated['planBudgetTotals']['ownerS'] + $m['m'], $updated['planBudgetTotals']['revenue']);
         $this->assertEquals($boqBudget, $updated['budget']);
         $sql = DB::table('project_plans')->where('source_id', $p['id'])->first();
         $snapshot = json_decode($sql->document_data, true);
@@ -208,7 +211,7 @@ class UsernameApprovalV3Test extends TestCase
         $this->assertSame('Diajukan', $saved['status']);
         $this->assertEquals(30, $saved['costs']['bop']);
         $this->assertEquals(30, $saved['planBudgetTotals']['usage']['bop']);
-        $this->assertEquals(555, $saved['planBudgetTotals']['total']);
+        $this->assertEquals(530, $saved['planBudgetTotals']['total']);
         $this->assertArrayNotHasKey('bopLimit', $saved['planBudget']);
         $this->assertArrayNotHasKey('bopReference', $saved['planBudget']);
         $sql = DB::table('project_plans')->where('source_id', $p['id'])->first();
@@ -471,11 +474,11 @@ class UsernameApprovalV3Test extends TestCase
         $p['signatureRows'] = [['id' => 'signature-qa', 'label' => 'Disetujui Oleh', 'role' => 'Head of PMO', 'job' => 'Jabatan pada cetakan', 'name' => 'FAKE', 'date' => '2000-01-01']];
         $this->api('saveProject', [$p, true])->assertOk();
         $saved = $this->projectRecord($p['id']);
-        $this->assertEquals(555, $saved['planBudgetTotals']['total']);
-        $this->assertEquals(555, $saved['planBudgetTotals']['cogs']);
+        $this->assertEquals(530, $saved['planBudgetTotals']['total']);
+        $this->assertEquals(530, $saved['planBudgetTotals']['cogs']);
         $this->assertEquals(7, $saved['planBudgetTotals']['permit']);
         $this->assertEquals(500, $saved['costs']['mandor']);
-        $this->assertEquals(25, $saved['costs']['material']);
+        $this->assertEquals(0, $saved['costs']['material']);
         $this->assertEquals($saved['boq'][0]['s'] * 10, $saved['planBudgetTotals']['revenue']);
         $this->assertStringContainsString('Lensa Pro/Group Chat', $saved['communication']);
         $this->assertStringContainsString('Commissioning Test dan Uji Terima', $saved['quality']);
@@ -505,13 +508,13 @@ class UsernameApprovalV3Test extends TestCase
         foreach (['sourceAmount', 'bopAmount', 'ids', 'component', 'risk'] as $case) {
             $bad = $p;
             if ($case === 'sourceAmount') {
-                $bad['planBudget']['materials'][0]['price'] = -1;
+                $bad['planBudget']['mandor'][0]['qtyM'] = -1;
             }
             if ($case === 'bopAmount') {
                 $bad['planBudget']['bop'][0]['total'] = -1;
             }
             if ($case === 'ids') {
-                $bad['planBudget']['materials'][] = $bad['planBudget']['materials'][0];
+                $bad['planBudget']['bop'][] = $bad['planBudget']['bop'][0];
             }
             if ($case === 'component') {
                 $bad['planBudget']['mandor'][0]['priceM'] = 1;
@@ -546,7 +549,7 @@ class UsernameApprovalV3Test extends TestCase
         $saved = $this->projectRecord($p['id']);
         $this->assertSame('Diajukan', $saved['status']);
         $this->assertCount(0, $saved['approvals']);
-        $this->assertEquals(555, $saved['planBudgetTotals']['total']);
+        $this->assertEquals(530, $saved['planBudgetTotals']['total']);
         $this->assertEquals(7, $saved['planBudgetTotals']['usage']['permit']);
         $sql = DB::table('project_plans')->where('source_id', $p['id'])->first();
         $rows = DB::table('project_plan_budget_rows')->where('pp_id', $sql->id_pp)->where('category', 'usage')->orderBy('position')->pluck('row_data')->map(fn ($row) => json_decode($row, true))->all();

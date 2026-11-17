@@ -467,3 +467,8 @@ UI Kasbon Admin/Finance kini menjelaskan PPh2,5% khusus Jasa Mandor (Material ti
 ## 17 November 2026 — Material BOQ Mandor masuk Revenue pada margin PP
 
 Total Jml_Mat BOQ TA–Mandor kini mengisi baris1.1 Material dan menambah Revenue bersama Jasa Owner. Gross Profit dan persentase memakai Revenue baru. COGS, rekap/permit/Header/BOQ/ledger/kasbon/approval tetap. Policy server-owned pada JSON save/submit v3 baru/draf/continuation menjaga snapshot PP Diajukan/Sah dan maintenance lama tetap. React/Laravel konsisten; preview dan sumber Word/PDF berbagi tabel. Tidak ada SQL/API/schema/migration tambahan atau mutasi its aktif.313PHP/7278assertions,346frontend/build/assets/Pint serta browser sintetis6viewport/theme/source edits/history lulus. Layanan0query; fixtureHTTP83query (budget90), bukan load benchmark. [Rumus, kompatibilitas dan bukti](PP_BUDGET_TEMPLATE.md).
+
+
+## 17 November 2026 — Revisi Revenue Material dan daftar Non Stock PP
+
+Menggantikan perubahan margin sebelumnya pada draf v3:1.1 Material sekarang memakai harga Material Owner untuk item yang diisi di BOQ Mandor; Revenue=Jasa Owner+Material Owner terpilih. IV.2 menampilkan otomatis item/volume/harga Material Mandor,2.2 sama dengan total Jml_Mat Mandor. COGS dan rekap IV.5 menghitung Material sekali, Header mengikuti rekap. Daftar Non Stock readonly, edit dari BOQ Mandor. Policy server-owned dan sourceRowId disimpan di JSON/rincian existing,0SQL/API/migration tambahan; histori terkunci/policy sebelumnya tetap tanpa backfill. [Rumus, penyimpanan dan QA](PP_BUDGET_TEMPLATE.md).

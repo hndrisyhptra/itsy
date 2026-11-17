@@ -826,3 +826,8 @@ Selesai: keterangan PPh2,5% khusus Jasa Mandor pada UI pengajuan/review kasbon d
 ## 17 November 2026 — Material BOQ Mandor masuk Revenue pada margin PP
 
 Selesai: Jml_Mat BOQ TA–Mandor masuk Material1.1 dan Revenue margin PP; Jasa1.2 tetap Owner, COGS tidak berubah, GP/persentase mengikuti Revenue baru. Laravel/React memakai marker JSON server-owned untuk explicit editable save/submit/continuation; locked history/maintenance tetap policy tersimpan, tanpa migration/backfill/live write.313PHP/7278assertions,346frontend/build/assets/Pint serta browser sintetis6viewport/theme dan source edits lulus. Layanan0query/HTTPfixture83 (budget90), bukan load benchmark. [Perilaku dan batas](docs/PP_BUDGET_TEMPLATE.md), [QA](docs/qa/pp-mandor-material-revenue-20261117.json).
+
+
+## 17 November 2026 — Revisi Material Owner terpilih / Non Stock otomatis
+
+Selesai implementasi Laravel/React policy selected-owner-material-nonstock-v2 untuk editable v3: Revenue Jasa Owner+Material Owner hanya item yang diisi Mandor; user menegaskan volume sama. IV.2 otomatis readonly dari Mandor,2.2=Jml_Mat Mandor; COGS/IV.5/Header menghitung biaya sekali. Simpan canonical memakai sourceRowId/referensi batched, current inputs/totals palsu diabaikan; histori locked/oldpolicy tetap. Tidak ada migration/live write. [Aturan](docs/PP_BUDGET_TEMPLATE.md), [QA](docs/qa/pp-selected-owner-material-20261117.json).

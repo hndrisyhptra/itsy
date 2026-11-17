@@ -1,5 +1,30 @@
 # Anggaran, margin dan penutup Project Plan
 
+## 17 November 2026 — Revisi: Material Owner terpilih dan Non Stock otomatis
+
+Aturan ini menggantikan bagian Revenue Material Mandor di bawah untuk PP v3 baru atau draf yang disimpan/diajukan ulang secara eksplisit. Pengguna mengonfirmasi volume material Mandor sama dengan Owner. Pilihan item ditandai oleh volume Material Mandor dan harga Material Mandor keduanya positif; volume bawaan dengan harga0 belum menjadi pilihan material. Komponen null tetap tidak tersedia, bukan material yang dibuat otomatis.
+
+| Bagian | Sumber terbaru |
+| --- | --- |
+|1.1 Material|Jumlah volume Material Mandor × harga satuan Material Owner **hanya untuk item material yang dipilih**|
+|1.2 Jasa|Total Jasa Owner, tetap|
+|Revenue|Jasa Owner + Material Owner terpilih|
+|IV.2 Rincian Material Non Stock|Item terpilih otomatis: uraian/satuan dari referensi Owner, volume/harga dari BOQ Mandor, total per baris mengikuti policy nominal PP|
+|2.2 Material Non Stock|Total Jml_Mat BOQ Mandor, sama dengan total IV.2|
+|COGS / subtotal IV.5|Jasa Mandor + Material Non Stock + BOP; material dihitung satu kali|
+|Gross Profit / margin|Revenue − COGS; persentase dibagi Revenue, Revenue0 tetap aman|
+
+Total BOQ Mandor tetap Material+Jasa untuk perbandingan dan batas harga SPH/BA KH. Supaya biaya tidak ganda, rekap IV.5 memuat Jasa Mandor dan Non Stock, tanpa baris Material BOQ Mandor kedua. `costs.mandor` adalah Jasa Mandor pada aturan baru; `planBudgetTotals.mandor` tetap subtotal BOQ M+J. Header mengikuti grand total rekap termasuk permit seperti sebelumnya; permit tetap terpisah dari COGS. BOQ Owner total, proyeksi SQL `budget`, reservasi volume, agreement/SPK, PPh kasbon, pembayaran dan approval tidak direkayasa ulang.
+
+Form IV.2 baru otomatis dan baca saja, tanpa tambah/hapus manual; perbaiki item/volume/harga di BOQ Mandor. Mengosongkan volume/harga material menghapus item Non Stock dan kontribusi Revenue Material. Laravel menghitung ulang dari sumber canonical; payload `materials`, `usage`, total dan pilihan policy client tidak dipercaya. Identitas `sourceRowId` mengikat item tepat pada baris BOQ (bukan pencocokan nama/kode), ID baris otomatis unik, maksimal500 sesuai batas BOQ;200 baris manual historis tetap. Nama/satuan memakai indeks katalog yang sudah dimuat, bukan query per baris. Maintenance memakai metadata sumber tersimpan jika tidak membawa referensi katalog.
+
+Marker baru server-owned `planBudget.marginPolicy=selected-owner-material-nonstock-v2` pada save/submit/continuation yang diizinkan. PP Diajukan/Sah dan riwayat dengan policy lama/tanpa marker mempertahankan snapshot, manual Non Stock, baris Revenue dan rekap tersimpan. GET tidak melakukan konversi. Draf yang masih editable mengadopsi rincian otomatis ketika disimpan lagi; rincian manual lamanya bukan lagi sumber biaya aktif. Tidak ada migration/kolom SQL/endpoint baru: rincian ke `project_plan_budget_rows.row_data`, snapshot/totals ke `project_plans.document_data`, biaya canonical ke `project_plan_costs` melalui lock/revision/audit/receipt existing. Tidak menerapkan apa pun ke database its aktif/server.
+
+Contoh vector regresi: Owner M100×10, J200×10; Mandor M10×4 dan J20×5; BOP30,02; permit7,03. Material Revenue400, Revenue2400, Non Stock40, COGS170,02, GP2229,98, margin92,92%, grand anggaran177,05. Owner Material yang tidak dipilih tidak masuk Revenue. Harga Mandor10→25 pada volume4 membuat Non Stock40→100 dan COGS170,02→230,02; Revenue tetap2400. Volume berubah memakai volume terisi dengan harga Owner, tidak mengambil seluruh anggaran induk pada PP lanjutan.
+
+Performa: satu indeks reference/Mandor dan lintasan baris terpilih, O(katalog+BOQ), bukan lookup/query per baris. Layanan rumus0SQL bahkan500BOQ; HTTP dua komponen tetap bounded (hasil aktual dan anggaran di QA). Persistensi existing menulis rincian berubah dan audit; bukan klaim HTTP0query/benchmark beban produksi. Semua layar/preview/DOM Word/PDF memakai BudgetPlanSection yang sama. Catatan lama di bawah disimpan sebagai riwayat dan tidak menggantikan aturan ini. [Hasil QA](qa/pp-selected-owner-material-20261117.json).
+
+
 ## 17 November 2026 — Material BOQ Mandor masuk Revenue pada margin PP
 
 Pengguna meminta total **Jml_Mat pada BOQ TA–Mandor** masuk ke baris **1.1 Material** dan dijumlahkan menjadi Revenue. Aturan ini menggantikan Revenue hanya dari Jasa Owner untuk PP v3 baru/draf yang disimpan atau diajukan ulang.

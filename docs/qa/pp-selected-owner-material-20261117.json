@@ -1,0 +1,115 @@
+{
+  "date": "2026-11-17",
+  "authority": "User revises margin to selected Owner Material Revenue and automatic Mandor Material Non Stock; confirms material quantity matches Owner.",
+  "policy": "selected-owner-material-nonstock-v2",
+  "formula": {
+    "selection": "Mandor qtyM>0 and priceM>0, included Owner material component",
+    "materialRevenue": "sum(selected Mandor qtyM \u00d7 saved Owner priceM)",
+    "revenue": "Owner Jasa + selected Owner Material",
+    "nonStock": "Mandor Jml_Mat, automatic sourceRowId-linked item list",
+    "cogs": "Mandor Jasa + Non Stock + BOP, each once",
+    "grossProfit": "Revenue - COGS",
+    "permit": "separate reimbursement; included in Header/grand recap only"
+  },
+  "preservation": {
+    "historical": "Locked unmarked and mandor-material-revenue-v1 keep saved totals, manual rows, policy and metadata; no GET conversion",
+    "currentDrafts": "Explicit permitted save/submission/continuation adopts canonical generated rows; forged materials/policy/usage/totals ignored",
+    "sql": "Existing document_data, budget rows and cost rows; no new schema, migration or endpoint",
+    "liveBusinessWrites": false,
+    "envOrDompisChanged": false
+  },
+  "verification": {
+    "php": {
+      "passed": 315,
+      "assertions": 7315,
+      "database": "fail-closed isolated SQLite :memory:"
+    },
+    "frontend": {
+      "passed": 347
+    },
+    "build": "TypeScript/Vite passed",
+    "assets": {
+      "manifestReferences": 41,
+      "preloadDependencies": 32,
+      "profiles": 3
+    },
+    "pint": "changed PHP files passed",
+    "diffCheck": "passed",
+    "browser": {
+      "errors": [],
+      "requests": [
+        "/",
+        "/harness.js"
+      ],
+      "checks": [
+        {
+          "theme": "light",
+          "width": 1440,
+          "noPageOverflow": true
+        },
+        {
+          "theme": "light",
+          "width": 768,
+          "noPageOverflow": true
+        },
+        {
+          "theme": "light",
+          "width": 375,
+          "noPageOverflow": true
+        },
+        {
+          "theme": "dark",
+          "width": 1440,
+          "noPageOverflow": true
+        },
+        {
+          "theme": "dark",
+          "width": 768,
+          "noPageOverflow": true
+        },
+        {
+          "theme": "dark",
+          "width": 375,
+          "noPageOverflow": true
+        }
+      ],
+      "interactions": [
+        "Selected Owner Material400 + Owner Jasa2000 = Revenue2400",
+        "Mandor Material price10\u219225 keeps Owner Revenue2400, Non Stock40\u2192100, COGS170\u2192230, GP2230\u21922170",
+        "Non Stock list read-only and sourced from selected Mandor item; zero volume removes it and Material Revenue",
+        "New preview Owner Material400/Revenue2400; frozen old preview Material blank/Revenue2000"
+      ]
+    },
+    "scenarios": [
+      "Canonical selected source rows ignore forged manual rows and totals; HTTP SQL JSON/budget-row readback",
+      "Source price/volume zero removes Non Stock and Material Revenue",
+      "500 automatic items, unique IDs, 0 calculation SQL, maintenance metadata parity without current catalog",
+      "Old base policy and Mandor Material Revenue policy kept; locked material descriptions immutable on master metadata edit",
+      "Continuation uses its own allocation, COGS/recap/header count material once",
+      "Current editable form removes manual Non Stock actions, shared form/preview margin row sources correct"
+    ]
+  },
+  "performance": {
+    "additionalRuntimeSql": 0,
+    "pureCalculationQueriesAt500Items": 0,
+    "twoComponentHttpUpdateQueries": 82,
+    "httpBudget": 90,
+    "batchedReferenceReadsMax": 2,
+    "notes": "Linear indexed in-memory source traversal. Existing incremental writes scale with changed detail rows; HTTP count includes auth/reference/readback/audit/receipt and is not a load benchmark."
+  },
+  "backup": {
+    "path": "storage/app/private/backups/area3-before-owner-material-margin-v2-20261117.sqlite",
+    "bytes": 233472,
+    "sha256": "e2c39eba72710da656307627909f32267b6738c861509a3a70c78bddf8bb10bc"
+  },
+  "worker": {
+    "local": "Project-only file cache and its-area-3-cache- prefix verified; queue:restart broadcast succeeded. Autostart remains existing configuration. No jobs/tasks/history deleted.",
+    "limits": "No worker PID lifecycle/upload retry or server Supervisor verification performed. Initial console cache inspection needed approved retry because shell history path was sandboxed."
+  },
+  "limitations": [
+    "Browser uses synthetic local fixture, not live authenticated user/server data",
+    "No fresh DOCX/PDF render, desktop Word or physical print validation; shared preview/export tests passed",
+    "No active its SQL mutation, migration, .env edit, server deploy or Dompis access"
+  ],
+  "qaArtifacts": "/private/tmp/area3-margin-20261117"
+}

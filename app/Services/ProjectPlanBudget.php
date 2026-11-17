@@ -9,6 +9,8 @@ final class ProjectPlanBudget
 {
     public const MATERIAL_REVENUE_POLICY = 'mandor-material-revenue-v1';
 
+    public const OWNER_MATERIAL_POLICY = 'selected-owner-material-nonstock-v2';
+
     public const CATEGORIES = ['mandor' => 'Jasa Mandor', 'material' => 'Material Non Stock', 'bop' => 'BOP', 'permit' => 'Perizinan (Preliminary) Reimburse'];
 
     public const PRINT_ROLES = ['Admin Konstruksi', 'PM Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Bussiness Support', 'Mgr Project Support', 'Head of PMO'];
@@ -24,10 +26,13 @@ final class ProjectPlanBudget
         }
         $b = ['version' => 2, 'mandor' => [], 'materials' => [], 'bop' => [], 'usage' => [], 'permit' => $number($input['permit'] ?? $p['costs']['permit'] ?? 0)];
         // Explicit editable saves adopt the rule; maintenance retains each saved policy.
-        $materialRevenue = $adoptMaterialRevenue || ($input['marginPolicy'] ?? null) === self::MATERIAL_REVENUE_POLICY;
+        $selectedMaterial = $adoptMaterialRevenue || ($input['marginPolicy'] ?? null) === self::OWNER_MATERIAL_POLICY;
+        $materialRevenue = $selectedMaterial || ($input['marginPolicy'] ?? null) === self::MATERIAL_REVENUE_POLICY;
         if ($materialRevenue) {
-            $b['marginPolicy'] = self::MATERIAL_REVENUE_POLICY;
+            $b['marginPolicy'] = $selectedMaterial ? self::OWNER_MATERIAL_POLICY : self::MATERIAL_REVENUE_POLICY;
         }
+        $revenueMaterial = 0.0;
+        $savedMaterials = ! $adoptMaterialRevenue && is_array($input['materials'] ?? null) ? array_column($input['materials'], null, 'sourceRowId') : [];
         $rows = $input['mandor'] ?? array_map(fn ($r) => ['rowId' => $r['rowId'], 'qtyM' => $r['qm'], 'qtyS' => $r['qs'], 'priceM' => 0, 'priceS' => 0], $owners);
         if (! is_array($rows) || ! array_is_list($rows) || count($rows) !== count($owners) || count(array_unique(array_column($rows, 'rowId'))) !== count($owners)) {
             self::fail('Designator BOQ Mandor harus sesuai BOQ Plan.');
@@ -55,13 +60,22 @@ final class ProjectPlanBudget
             $b['mandor'][] = $r;
             $totals['mandorM'] = self::add($totals['mandorM'], $product($r['qtyM'], $r['priceM']));
             $totals['mandorS'] = self::add($totals['mandorS'], $product($r['qtyS'], $r['priceS']));
+            if ($selectedMaterial && $r['qtyM'] > 0 && $r['priceM'] > 0 && $owner['m'] !== null) {
+                $revenueMaterial = self::add($revenueMaterial, $product($r['qtyM'], $owner['m']));
+                $saved = $savedMaterials[$owner['rowId']] ?? [];
+                $b['materials'][] = ['id' => 'material-mandor-'.(count($b['materials']) + 1), 'sourceRowId' => $owner['rowId'],
+                    'name' => $owner['name'] ?? $saved['name'] ?? $owner['rowId'], 'unit' => $owner['unit'] ?? $saved['unit'] ?? '',
+                    'qty' => $r['qtyM'], 'price' => $r['priceM']];
+            }
         }
-        foreach (self::rows($input['materials'] ?? []) as $row) {
+        foreach ($selectedMaterial ? $b['materials'] : self::rows($input['materials'] ?? []) as $row) {
             $r = ['id' => $row['id'], 'name' => self::text($row['name'] ?? '', 1000), 'qty' => $number($row['qty'] ?? null, true), 'unit' => self::text($row['unit'] ?? '', 100), 'price' => $number($row['price'] ?? null)];
-            if ($submit && (! $r['name'] || ! $r['unit'] || ! $r['qty'])) {
+            if (! $selectedMaterial && $submit && (! $r['name'] || ! $r['unit'] || ! $r['qty'])) {
                 self::fail('Lengkapi Material Non Stock, satuan dan volume positif.');
             }
-            $b['materials'][] = $r;
+            if (! $selectedMaterial) {
+                $b['materials'][] = $r;
+            }
             $totals['material'] = self::add($totals['material'], $product($r['qty'], $r['price']));
         }
         foreach (self::rows($input['bop'] ?? []) as $row) {
@@ -75,11 +89,11 @@ final class ProjectPlanBudget
         $totals['ownerTotal'] = self::add($totals['ownerM'], $totals['ownerS']);
         $totals['mandor'] = self::add($totals['mandorM'], $totals['mandorS']);
         $totals['permit'] = $b['permit'];
-        $totals['total'] = self::add(self::add($totals['mandor'], $totals['material']), $totals['bop']);
+        $totals['total'] = self::add(self::add($selectedMaterial ? $totals['mandorS'] : $totals['mandor'], $totals['material']), $totals['bop']);
         if ($totals['total'] > 1000000000000 || $totals['ownerTotal'] > 1000000000000) {
             self::fail('Total anggaran di luar batas yang didukung.');
         }
-        $totals['revenue'] = self::add($totals['ownerS'], $materialRevenue ? $totals['mandorM'] : 0);
+        $totals['revenue'] = self::add($totals['ownerS'], $selectedMaterial ? $revenueMaterial : ($materialRevenue ? $totals['mandorM'] : 0));
         $totals['cogs'] = $totals['total'];
         $totals['grossProfit'] = self::add($totals['revenue'], -$totals['cogs']);
         $totals['margin'] = $totals['revenue'] ? round((float) bcdiv(bcmul((string) $totals['grossProfit'], '100', 6), (string) $totals['revenue'], 6), 2) : null;
@@ -87,6 +101,9 @@ final class ProjectPlanBudget
         // Point IV.5 is a server-owned recap, not a payment/installment schedule.
         // Ignore old/client usage rows, including term/date/amount and version overrides.
         foreach ([['mandor', 's', 'mandorS'], ['mandor', 'm', 'mandorM'], ['material', null, 'material'], ['bop', null, 'bop'], ['permit', null, 'permit']] as [$category, $component, $source]) {
+            if ($selectedMaterial && $source === 'mandorM') {
+                continue;
+            }
             if ($totals[$source] <= 0) {
                 continue;
             }
@@ -120,6 +137,9 @@ final class ProjectPlanBudget
         $p['planBudget'] = $b;
         $p['planBudgetTotals'] = $totals;
         $p['costs'] = array_intersect_key($totals, array_flip(['mandor', 'material', 'bop', 'permit']));
+        if ($selectedMaterial) {
+            $p['costs']['mandor'] = $totals['mandorS'];
+        }
 
         return $p;
     }
