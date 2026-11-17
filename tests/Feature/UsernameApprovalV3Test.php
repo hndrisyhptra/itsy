@@ -6,6 +6,7 @@ use App\Models\PrototypeWorkspace;
 use App\Models\User;
 use App\Services\AccountAccess;
 use App\Services\ContractNumber;
+use App\Services\ProjectPlanBudget;
 use App\Services\ProjectPlanTemplate;
 use App\Services\PrototypeDomain;
 use App\Services\PrototypeWorkspaceService;
@@ -94,6 +95,51 @@ class UsernameApprovalV3Test extends TestCase
         $p['planBudget'] = $b;
 
         return $p;
+    }
+
+    public function test_mandor_material_revenue_is_server_owned_persisted_and_does_not_add_row_queries(): void
+    {
+        $p = $this->budgetProject();
+        $state = $this->getJson('/api/prototype/state')->json('state');
+        $m = collect($state['khs'])->first(fn ($row) => $row['active'] && ($row['m'] ?? 0) >= 100);
+        $j = collect($state['khs'])->first(fn ($row) => $row['active'] && ($row['s'] ?? 0) >= 100);
+        $p['boq'] = [
+            ['id' => 'boq-margin-material', 'khsId' => $m['id'], 'qty' => 2, 'm' => 0, 's' => 0],
+            ['id' => 'boq-margin-service', 'khsId' => $j['id'], 'qty' => 10, 'm' => 0, 's' => 0],
+        ];
+        $p['planBudget']['mandor'] = [
+            ['rowId' => 'boq-margin-material', 'qtyM' => 2, 'qtyS' => 0, 'priceM' => 50, 'priceS' => 0],
+            ['rowId' => 'boq-margin-service', 'qtyM' => 0, 'qtyS' => 5, 'priceM' => 0, 'priceS' => 100],
+        ];
+        $p['planBudget']['marginPolicy'] = 'client-opt-out';
+        $p['planBudgetTotals'] = ['revenue' => 999999, 'grossProfit' => 999999];
+        $this->api('saveProject', [$p, false])->assertOk();
+        $saved = $this->projectRecord($p['id']);
+        $this->assertSame(ProjectPlanBudget::MATERIAL_REVENUE_POLICY, $saved['planBudget']['marginPolicy']);
+        $this->assertEquals(100, $saved['planBudgetTotals']['mandorM']);
+        $this->assertEquals($saved['planBudgetTotals']['ownerS'] + 100, $saved['planBudgetTotals']['revenue']);
+        $boqBudget = $saved['budget'];
+        $saved['planBudget']['mandor'][0]['qtyM'] = 1;
+        $saved['planBudget']['mandor'][0]['priceM'] = 75;
+        $revision = $this->getJson('/api/prototype/state')->json('revision');
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $this->postJson('/api/prototype/commands', ['command' => 'saveProject', 'args' => [$saved, false], 'revision' => $revision, 'request_id' => (string) Str::uuid()])->assertOk();
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+        fwrite(STDERR, "\nMandor material revenue HTTP draft update: ".count($queries)." queries.\n");
+        $this->assertLessThanOrEqual(90, count($queries), 'Two-component draft HTTP fixture including existing authentication, canonical references, incremental writes, receipt/audit and response reads.');
+        $catalogReads = array_filter($queries, fn ($query) => str_contains($query['query'], 'from "designator_package_prices"'));
+        $this->assertLessThanOrEqual(2, count($catalogReads), 'Reference reads stay batched rather than per budget row.');
+        $updated = $this->projectRecord($p['id']);
+        $this->assertEquals(75, $updated['planBudgetTotals']['mandorM']);
+        $this->assertEquals($updated['planBudgetTotals']['ownerS'] + 75, $updated['planBudgetTotals']['revenue']);
+        $this->assertEquals($boqBudget, $updated['budget']);
+        $sql = DB::table('project_plans')->where('source_id', $p['id'])->first();
+        $snapshot = json_decode($sql->document_data, true);
+        $this->assertEquals($updated['planBudgetTotals'], $snapshot['planBudgetTotals']);
+        $rows = DB::table('project_plan_budget_rows')->where('pp_id', $sql->id_pp)->where('category', 'mandor')->pluck('row_data')->map(fn ($row) => json_decode($row, true));
+        $this->assertEquals(75, $rows->firstWhere('rowId', 'boq-margin-material')['priceM']);
     }
 
     public function test_complete_header_can_save_a_real_draft_without_boq_schedule_budget_or_approvers(): void

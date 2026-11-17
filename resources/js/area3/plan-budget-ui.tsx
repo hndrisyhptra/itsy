@@ -1,7 +1,7 @@
 import { WHOLE_RUPIAH, HALF_RUPIAH } from './currency';
 import { Plus, Trash2 } from 'lucide-react';
 import { canReviseSubmission, type State, type Project, type Role, money, num, dateLabel, uid, usesBusinessSupport, selectedApprover } from './domain';
-import { type PlanBudget, type SignaturePlanRow, categories, defaultSignatureRows, printRoles, ownerPlanRows, draftPlanBudget, budgetSummary, budgetRecapTotal, cents, lineAmount as budgetLineAmount, ratioPercent, usageLabel } from './plan-budget';
+import { MATERIAL_REVENUE_POLICY, type PlanBudget, type SignaturePlanRow, categories, defaultSignatureRows, printRoles, ownerPlanRows, draftPlanBudget, budgetSummary, budgetRecapTotal, cents, lineAmount as budgetLineAmount, ratioPercent, usageLabel } from './plan-budget';
 import { ppTemplate } from './plan-template';
 import { ppEvpSignatory } from './pp-evp-signatory';
 import { Table, Notice, Button, Field, Input } from './ui';
@@ -32,11 +32,11 @@ export function BudgetPlanSection({s,p,editable=false,onChange,printing=false}:{
       <tr className="budget-total"><td colSpan={2}>Subtotal (IV.1 + IV.2 + IV.3)</td><td className="numeric">{money(totals.total)}</td><td>Di luar reimbursement perizinan</td></tr>
       <tr className="budget-total"><td colSpan={2}>Total Anggaran</td><td className="numeric">{money(recapTotal)}</td><td>Jumlah seluruh rincian, termasuk perizinan bila ada</td></tr>
     </Table></>:<><p className="muted">Rincian penggunaan historis pada dokumen yang sudah diajukan.</p><Table headers={['No','Kebutuhan Anggaran','Termin Bayar / Reimburse','Tanggal','Nilai','Total Nilai']}>{b.usage.map((row,i)=><tr key={row.id}><td>{i+1}</td><td>{usageLabel(row)}</td><td>{row.term}</td><td>{dateLabel(row.date)}</td><td className="numeric">{money(row.amount)}</td><td className="numeric">{money(totals.usage[row.category])}</td></tr>)}<tr className="budget-total"><td colSpan={5}>Total Anggaran</td><td className="numeric">{money(recapTotal)}</td></tr></Table></>}
-    <h4>6. Perkiraan Margin yang dilaksanakan</h4><p>Swakelola: <strong>{totals.margin===null?'—':`${num(totals.margin)}%`}</strong></p><MarginTable totals={totals}/>{!printing&&<Notice>Revenue menggunakan nilai Jasa Owner. COGS mengikuti subtotal IV.1 + IV.2 + IV.3, di luar reimbursement perizinan dan tanpa menambahkan ulang rincian biaya. Gross Profit = Revenue − COGS. Material pada BOQ Mandor, jika diisi, tetap termasuk total poin 1 dan COGS; Material Stock dan Sewa pada ringkasan tetap kosong. Persentase memakai Revenue sebagai pembagi; jika Revenue nol, persentase ditampilkan “—”.</Notice>}</div>;
+    <h4>6. Perkiraan Margin yang dilaksanakan</h4><p>Swakelola: <strong>{totals.margin===null?'—':`${num(totals.margin)}%`}</strong></p><MarginTable totals={totals} materialRevenue={b.marginPolicy===MATERIAL_REVENUE_POLICY}/>{!printing&&<Notice>Revenue menggunakan nilai Jasa Owner{b.marginPolicy===MATERIAL_REVENUE_POLICY?' ditambah total Jml_Mat BOQ TA - Mandor pada baris 1.1 Material':''}. COGS mengikuti subtotal IV.1 + IV.2 + IV.3, di luar reimbursement perizinan dan tanpa menambahkan ulang rincian biaya. Gross Profit = Revenue − COGS. Material pada BOQ Mandor, jika diisi, tetap termasuk total poin 1 dan COGS; Material Stock dan Sewa pada ringkasan tetap kosong. Persentase memakai Revenue sebagai pembagi; jika Revenue nol, persentase ditampilkan “—”.</Notice>}</div>;
 }
 
-function MarginTable({totals:t}:{totals:ReturnType<typeof budgetSummary>}) {
-  const rows:[string,string,number|null][]=[['1','Revenue',t.revenue],['1.1','Material',null],['1.2','Jasa',t.ownerS],['2','COGS',t.cogs],['2.1','Material Stock',null],['2.2','Material Non Stock',t.material],['2.3','Jasa',t.mandorS],['2.4','Sewa',null],['2.5','Operasional',t.bop],['','Gross Profit Margin',t.grossProfit]];
+function MarginTable({totals:t,materialRevenue}:{totals:ReturnType<typeof budgetSummary>;materialRevenue:boolean}) {
+  const rows:[string,string,number|null][]=[['1','Revenue',t.revenue],['1.1','Material',materialRevenue?t.mandorM:null],['1.2','Jasa',t.ownerS],['2','COGS',t.cogs],['2.1','Material Stock',null],['2.2','Material Non Stock',t.material],['2.3','Jasa',t.mandorS],['2.4','Sewa',null],['2.5','Operasional',t.bop],['','Gross Profit Margin',t.grossProfit]];
   return <Table headers={['No','Uraian','Nilai','%']}>{rows.map(([no,label,value])=><tr key={label+no}><td>{no}</td><td>{label}</td><td className="numeric">{value===null?'':money(value)}</td><td className="numeric">{value===null?'':percentage(value,t.revenue)}</td></tr>)}</Table>;
 }
 

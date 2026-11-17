@@ -131,5 +131,21 @@
       "category": "permit",
       "amount": 7.03
     }
-  ]
+  ],
+  "expectedMaterialRevenue": {
+    "ownerM": 1000,
+    "ownerS": 2000,
+    "ownerTotal": 3000,
+    "mandorM": 40,
+    "mandorS": 100,
+    "mandor": 140,
+    "material": 25.03,
+    "bop": 30.02,
+    "permit": 7.03,
+    "total": 195.05,
+    "revenue": 2040,
+    "cogs": 195.05,
+    "grossProfit": 1844.95,
+    "margin": 90.44
+  }
 }

@@ -1,5 +1,10 @@
 # it's Area 3 — Development rules
 
+## 17 November 2026 — Material BOQ Mandor masuk Revenue pada margin PP
+
+User explicitly maps total BOQ TA–Mandor Jml_Mat to margin row1.1 Material and Revenue. Follow latest docs/PP_BUDGET_TEMPLATE.md, superseding service-only Revenue for new/explicitly saved editable v3 only. Revenue=Mandor Material+Owner Jasa, GrossProfit/percent use it; COGS/permit/BOQ/Header/ledger/PPh/payment gates stay. Server save/submit/continuation owns planBudget.marginPolicy=mandor-material-revenue-v1 and totals; ignore client opt-out/forged totals. Locked snapshots and default maintenance keep saved policy; no GET/live backfill. React shares policy and preview/Word DOM model. Existing JSON only,0extraSQL/pure0queries/HTTPfixture83budget90 with batched references; record actual tests/browser/server/Word limits.
+
+
 ## 17 November 2026 — Keterangan PPh dan label pembayaran Final satu kali
 
 User requests PPh2.5% information in Admin submission/Finance review UI, superseding older no-deduction-UI wording only. Follow latest docs/KASBON_PPH_PAYMENT_LIST.md. Use new quote for explicit issue form, frozen summary for issued; never reprice legacy. Paper KasbonDocument/Word/print stays net-only. Shared payment-labels omits installment wording only for number1+Final throughout display/editor/list/inbox/review/BA PP/dashboard/report and uses _Final for its Word filename; keep Parsial1/Final2/3 numbered, saved identities/types/audit/ledger/approval/paths unchanged. Hide unavailable next-term card without hiding legacy Finance panel. No SQL/API/migration/live write; record actual tests/browser limits.

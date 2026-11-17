@@ -9,7 +9,8 @@ export interface MaterialPlanRow { id:string; name:string; qty:number; unit:stri
 export interface BopPlanRow { id:string; description:string; unit:string; qty:number; total:number }
 export interface UsagePlanRow { id:string; category:BudgetCategory; component?:'m'|'s'; term?:string; date?:string; amount:number }
 export interface SignaturePlanRow { id:string; label:'Dibuat Oleh'|'Diperiksa Oleh'|'Disetujui Oleh'; role:Role; job:string }
-export interface PlanBudget { moneyPolicy?:typeof WHOLE_RUPIAH|typeof HALF_RUPIAH; version:1|2; mandor:MandorPlanRow[]; materials:MaterialPlanRow[]; bop:BopPlanRow[]; permit:number; bopLimit?:number|null; bopReference?:string; usage:UsagePlanRow[] }
+export const MATERIAL_REVENUE_POLICY='mandor-material-revenue-v1' as const;
+export interface PlanBudget { marginPolicy?:typeof MATERIAL_REVENUE_POLICY; moneyPolicy?:typeof WHOLE_RUPIAH|typeof HALF_RUPIAH; version:1|2; mandor:MandorPlanRow[]; materials:MaterialPlanRow[]; bop:BopPlanRow[]; permit:number; bopLimit?:number|null; bopReference?:string; usage:UsagePlanRow[] }
 export interface OwnerPlanRow { rowId:string; code:string; name:string; unit:string; m:number|null; s:number|null; qm:number; qs:number }
 export const categories: Record<BudgetCategory,string> = {mandor:'Jasa Mandor',material:'Material Non Stock',bop:'BOP',permit:'Perizinan (Preliminary) Reimburse'};
 export const printRoles:Role[]=['Admin Konstruksi','PM Konstruksi','Admin Area','Mgr Deployment','Mgr Bussiness Support','Mgr Project Support','Head of PMO'];
@@ -44,6 +45,8 @@ export function draftPlanBudget(s:State,p:Project):PlanBudget {
   const mandorByRow=new Map(previous?.mandor.map(row=>[row.rowId,row])??[]);
   const version=canReviseSubmission(p)?2:previous?.version??2;
   const b:PlanBudget={version,mandor:ownerPlanRows(s,p).map(row=>mandorByRow.get(row.rowId)??{rowId:row.rowId,qtyM:row.qm,qtyS:row.qs,priceM:0,priceS:0}),materials:previous?.materials??[],bop:previous?.bop??[],permit:previous?.permit??p.costs.permit,usage:previous?.usage??[],...(!canReviseSubmission(p)&&previous?{...(previous.bopLimit!==undefined?{bopLimit:previous.bopLimit}:{}),...(previous.bopReference!==undefined?{bopReference:previous.bopReference}:{})}:{})};
+  const workflowVersion=(p.workflowVersion??1)>=2?p.workflowVersion!:s.schema>=3?3:2;
+  if(previous?.marginPolicy===MATERIAL_REVENUE_POLICY||(workflowVersion>=3&&canReviseSubmission(p)))b.marginPolicy=MATERIAL_REVENUE_POLICY;
   const moneyValue=(n:number)=>!Number.isFinite(n)||n<0||n>1e12||Math.abs(n*100-Math.round(n*100))>0.0001?n:wholeRupiah(n);
   if(p.moneyPolicy===WHOLE_RUPIAH){b.moneyPolicy=WHOLE_RUPIAH;b.mandor=b.mandor.map(r=>({...r,priceM:moneyValue(r.priceM),priceS:moneyValue(r.priceS)}));b.materials=b.materials.map(r=>({...r,price:moneyValue(r.price)}));b.bop=b.bop.map(r=>({...r,total:moneyValue(r.total)}));b.permit=moneyValue(b.permit);}
   if(version===2)b.usage=automaticBudgetUsage(budgetSummary(s,p,b));
@@ -55,11 +58,11 @@ export function budgetSummary(s:State,p:Project,b=draftPlanBudget(s,p)) {
   const ownerM=sum(owners.map(r=>lineAmount(r.qm,r.m??0,whole))),ownerS=sum(owners.map(r=>lineAmount(r.qs,r.s??0,whole)));
   const mandorM=sum(b.mandor.map(r=>lineAmount(r.qtyM,r.priceM,whole))),mandorS=sum(b.mandor.map(r=>lineAmount(r.qtyS,r.priceS,whole)));
   const material=sum(b.materials.map(r=>lineAmount(r.qty,r.price,whole))),bop=sum(b.bop.map(r=>r.total)),permit=b.permit;
-  const mandor=amount(mandorM+mandorS),total=amount(mandor+material+bop),grossProfit=amount(ownerS-total);
+  const mandor=amount(mandorM+mandorS),total=amount(mandor+material+bop),revenue=amount(ownerS+(b.marginPolicy===MATERIAL_REVENUE_POLICY?mandorM:0)),grossProfit=amount(revenue-total);
   const usage={mandor:0,material:0,bop:0,permit:0};
   const usageRows=b.version===2||canReviseSubmission(p)?automaticBudgetUsage({mandorM,mandorS,material,bop,permit}):b.usage;
   for(const row of usageRows) if(Object.hasOwn(usage,row.category)) usage[row.category]=amount(usage[row.category]+row.amount);
-  return {ownerM,ownerS,ownerTotal:amount(ownerM+ownerS),mandorM,mandorS,mandor,material,bop,permit,total,revenue:ownerS,cogs:total,grossProfit,margin:ratioPercent(grossProfit,ownerS),usage};
+  return {ownerM,ownerS,ownerTotal:amount(ownerM+ownerS),mandorM,mandorS,mandor,material,bop,permit,total,revenue,cogs:total,grossProfit,margin:ratioPercent(grossProfit,revenue),usage};
 }
 
 /** Canonical positive rows for point IV.5; no client installments or dates. */

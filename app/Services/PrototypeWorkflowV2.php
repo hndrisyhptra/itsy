@@ -172,7 +172,7 @@ trait PrototypeWorkflowV2
                     $p[$key] = $old[$key];
                 }
             }
-            $p = ProjectPlanBudget::apply($p, $owners, $submit);
+            $p = ProjectPlanBudget::apply($p, $owners, $submit, true);
             $actor = $this->existing('users', $this->state['actorUserId'] ?? '') ?? [];
             $p['preparedBy'] = $old['preparedBy'] ?? ['userId' => $actor['id'] ?? '', 'name' => $actor['name'] ?? '', 'nik' => $actor['nik'] ?? '', 'role' => $this->state['role'], 'at' => now()->toISOString()];
             if (isset($old['previousPlanning'])) {

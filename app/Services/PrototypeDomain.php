@@ -1091,7 +1091,7 @@ class PrototypeDomain
                         $owners[] = ['rowId' => $row['id'], 'm' => $row['m'], 's' => $row['s'], 'qm' => $row['m'] === null ? 0 : $allocations[$row['id']]['m'], 'qs' => $row['s'] === null ? 0 : $allocations[$row['id']]['s']];
                     }
                 }
-                $p = ProjectPlanBudget::apply($p, $owners, false);
+                $p = ProjectPlanBudget::apply($p, $owners, false, true);
                 $actor = $this->existing('users', $this->state['actorUserId'] ?? '') ?? [];
                 $p['preparedBy'] = ['userId' => $actor['id'] ?? '', 'name' => $actor['name'] ?? '', 'nik' => $actor['nik'] ?? '', 'role' => $this->state['role'], 'at' => now()->toISOString()];
             }

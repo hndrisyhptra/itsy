@@ -1,0 +1,103 @@
+{
+  "date": "2026-11-17",
+  "authority": "User requests total Mandor Jml_Mat as Material1.1 and part of Revenue",
+  "formula": {
+    "materialRevenue": "Saved Mandor qtyM ×priceM per row/policy",
+    "serviceRevenue": "Owner Jasa",
+    "revenue": "mandorM+ownerS",
+    "cogs": "unchanged IV.1+IV.2+IV.3, permit separate",
+    "grossProfit": "revenue-cogs",
+    "percent": "value/revenue×100; null if zero"
+  },
+  "storage": {
+    "marker": "planBudget.marginPolicy=mandor-material-revenue-v1",
+    "sql": "existing project_plans.document_data and budget rows",
+    "history": "locked submitted/Sah totals preserved; legacy maintenance does not adopt automatically",
+    "migration": false,
+    "liveWrites": false
+  },
+  "verification": {
+    "php": {
+      "passed": 313,
+      "assertions": 7278,
+      "database": "isolated SQLite :memory:",
+      "newTests": 2
+    },
+    "frontend": {
+      "passed": 346,
+      "newTests": 1,
+      "newUnsavedPlan": "Schema3 without workflowVersion adopts material revenue; schema2 retains old calculation. Browser rerun passed with workflowVersion absent."
+    },
+    "build": "TypeScript/Vite passed",
+    "assets": {
+      "manifestReferences": 41,
+      "preloadDependencies": 32,
+      "profiles": 3
+    },
+    "pint": "5 changed PHP files passed",
+    "browser": {
+      "errors": [],
+      "requests": [
+        "/",
+        "/harness.js"
+      ],
+      "checks": [
+        {
+          "theme": "light",
+          "width": 1440,
+          "noPageOverflow": true
+        },
+        {
+          "theme": "light",
+          "width": 768,
+          "noPageOverflow": true
+        },
+        {
+          "theme": "light",
+          "width": 375,
+          "noPageOverflow": true
+        },
+        {
+          "theme": "dark",
+          "width": 1440,
+          "noPageOverflow": true
+        },
+        {
+          "theme": "dark",
+          "width": 768,
+          "noPageOverflow": true
+        },
+        {
+          "theme": "dark",
+          "width": 375,
+          "noPageOverflow": true
+        }
+      ],
+      "interactions": [
+        "Material price10→25 gives Mandor Material40→100 and Revenue2040→2100",
+        "Zero material volume resets Material0/Revenue2000",
+        "New preview Material40/Revenue2040; frozen old preview Material blank/Revenue2000"
+      ]
+    }
+  },
+  "performance": {
+    "additionalSql": 0,
+    "pureServiceQueries": 0,
+    "httpTwoComponentDraftUpdateQueries": 83,
+    "httpFixtureBudget": 90,
+    "referencePriceReadsMax": 2,
+    "model": "reuse existing mandorM accumulation, no per-row lookup; same incremental persistence",
+    "limit": "not a load/latency benchmark"
+  },
+  "backup": {
+    "path": "storage/app/private/backups/area3-before-mandor-revenue-20261117.sqlite",
+    "bytes": 233472,
+    "sha256": "e2c39eba72710da656307627909f32267b6738c861509a3a70c78bddf8bb10bc"
+  },
+  "limitations": [
+    "Synthetic browser only; not live server/account QA",
+    "No new native Word/PDF render, Word desktop or physical print check; existing export tests passed",
+    "No live its/env/archive/Dompis migration/backfill/deploy/worker restart"
+  ],
+  "qaArtifacts": "/private/tmp/area3-margin-20261117"
+}

@@ -3,11 +3,42 @@
 namespace Tests\Feature;
 
 use App\Services\ProjectPlanBudget;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class ProjectPlanBudgetTest extends TestCase
 {
+    public function test_material_revenue_policy_uses_mandor_material_plus_owner_service_and_preserves_costs(): void
+    {
+        $fixture = json_decode(file_get_contents(base_path('tests/Fixtures/pp-budget-vector.json')), true);
+        $before = $fixture['project'];
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $current = ProjectPlanBudget::apply($fixture['project'], $fixture['owners'], true, true);
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+        $this->assertSame([], $queries);
+        foreach ($fixture['expectedMaterialRevenue'] as $key => $expected) {
+            $this->assertEquals($expected, $current['planBudgetTotals'][$key], $key);
+        }
+        $this->assertSame(ProjectPlanBudget::MATERIAL_REVENUE_POLICY, $current['planBudget']['marginPolicy']);
+        $this->assertSame($before, $fixture['project']);
+        // Maintenance retains a saved new policy, but does not adopt it for historical records.
+        $this->assertEquals(2040, ProjectPlanBudget::apply($current, $fixture['owners'], false)['planBudgetTotals']['revenue']);
+        $this->assertEquals(2000, ProjectPlanBudget::apply($fixture['project'], $fixture['owners'], false)['planBudgetTotals']['revenue']);
+        $current['planBudget']['mandor'][0]['qtyM'] = 0;
+        $this->assertEquals(2000, ProjectPlanBudget::apply($current, $fixture['owners'], false)['planBudgetTotals']['revenue']);
+        $owner = $fixture['owners'];
+        $owner[0]['s'] = null;
+        $owner[0]['qs'] = 0;
+        $p = $fixture['project'];
+        $p['planBudget']['mandor'][0]['qtyS'] = $p['planBudget']['mandor'][0]['priceS'] = 0;
+        $onlyMaterial = ProjectPlanBudget::apply($p, $owner, true, true)['planBudgetTotals'];
+        $this->assertEquals(40, $onlyMaterial['revenue']);
+        $this->assertNotNull($onlyMaterial['margin']);
+    }
+
     public function test_shared_budget_vector_uses_service_revenue_half_up_rounding_and_no_double_counting(): void
     {
         $fixture = json_decode(file_get_contents(base_path('tests/Fixtures/pp-budget-vector.json')), true);

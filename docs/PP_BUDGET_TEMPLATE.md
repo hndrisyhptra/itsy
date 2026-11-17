@@ -1,5 +1,33 @@
 # Anggaran, margin dan penutup Project Plan
 
+## 17 November 2026 — Material BOQ Mandor masuk Revenue pada margin PP
+
+Pengguna meminta total **Jml_Mat pada BOQ TA–Mandor** masuk ke baris **1.1 Material** dan dijumlahkan menjadi Revenue. Aturan ini menggantikan Revenue hanya dari Jasa Owner untuk PP v3 baru/draf yang disimpan atau diajukan ulang.
+
+| Baris | Rumus terbaru |
+| --- | --- |
+| 1.1 Material | Total volume Material Mandor × harga Material Mandor per baris, sesuai kebijakan nominal PP |
+| 1.2 Jasa | Total Jasa BOQ TA–Telkom / Owner yang sudah berlaku |
+| 1 Revenue | 1.1 Material + 1.2 Jasa |
+| 2 COGS | Total IV.1 + IV.2 + IV.3, tetap; perizinan reimbursement terpisah |
+| Gross Profit Margin (nilai) | Revenue − COGS |
+| Swakelola / persentase setiap baris | Nilai ÷ Revenue ×100%; Revenue nol tetap “—” |
+
+Sumber Material adalah **Mandor**, bukan Material BOQ Owner atau Material Non Stock. Baris Material nol pada rumus baru tampil Rp0. Material Mandor tetap masuk biaya IV.1/COGS satu kali; tidak menggandakan rincian, reimbursement atau anggaran. Harga/volume tetap dibatasi per komponen terhadap BOQ Plan. Owner BOQ, `project_plans.budget`, Header dari IV.5, kasbon/PPh/pembayaran/ledger dan alur approval tidak berubah.
+
+Laravel membentuk `planBudget.marginPolicy=mandor-material-revenue-v1` pada save/submit v3 yang memang bisa diedit, termasuk pembuatan PP lanjutan. Nilai total dan policy milik server; client tidak bisa menolak/memalsukan rumus. React memakai policy yang sama untuk draf dan menampilkan baris Material serta rumus yang benar. Perubahan harga/volume otomatis memperbarui Revenue/Gross Profit/margin. PP lanjutan memakai Mandor dan alokasi PP itu sendiri, bukan anggaran induk penuh.
+
+Preview PP, DOM sumber Word/PDF dan layar memakai `BudgetPlanSection` yang sama. PP Diajukan/Sah tetap memakai `planBudgetTotals` dan policy yang tersimpan, tanpa backfill atau read-time rewrite. Dokumen historis tanpa marker mempertahankan Revenue Jasa Owner/baris Material kosong. Setelah penolakan/pengembalian, penyimpanan eksplisit draf yang diizinkan mengadopsi rumus terbaru tanpa menghapus riwayat. Maintenance pemotongan pecahan tetap memakai policy yang tersimpan; tidak otomatis mengadopsi perubahan margin. Tidak ada kolom SQL atau migration baru; marker/totals memakai JSON dokumen existing dan rincian budget existing.
+
+Contoh vector bersama: Owner Material1.000 (bukan sumber Revenue Material), Owner Jasa2.000, Mandor Material40, Mandor Jasa100, Non Stock25,03, BOP30,02. Revenue2.040; COGS195,05; Gross Profit1.844,95; margin90,44%. Perizinan7,03 tetap terpisah. Policy rupiah penuh memakai sumber terpotong yang sama seperti sebelumnya. Harga Material10→25 pada volume4 mengubah Material40→100 dan Revenue2.040→2.100; Gross Profit tetap1.845 pada fixture rupiah penuh karena komponen Material ikut pada biaya.
+
+Performa: memakai akumulasi `mandorM` yang sudah ada, satu tambahan penjumlahan pada formula, tanpa SQL/endpoint/private lookup/katalog tambahan atau pencarian per baris. Uji layanan murni **0 query**. Fixture HTTP pembaruan draf dua komponen **83 query**, budget90 termasuk autentikasi/reference/incremental writes/audit/receipt/response; master price reads tetap batched (maksimal2), bukan per baris. Ini bukan benchmark latency/load produksi; tidak mengklaim total HTTP0 query.
+
+Verifikasi: **313 tes PHP /7278 assertions**, **346 frontend**, TypeScript/Vite, assets41manifest refs/32preloads×3profil, Pint lima file dan diff check lulus. Vector lama dipertahankan, vector expectedMaterialRevenue baru dibagi PHP/TS. Tes mencakup canonical policy/forged totals, SQL document_data dan budget row readback, source edits, zero/Material-only, continuation, frozen history, margin negatif dan tanpa pembagian nol. Browser sintetis memeriksa perubahan harga/volume langsung, preview baru vs historis,375/768/1440 light/dark tanpa overflow,0JSerror/0API request; screenshot diperiksa. Selector tabel terakhir pada skrip browser diperbaiki setelah timeout; bukan kesalahan rumus.
+
+Cadangan SQLite demo sebelum perubahan: `storage/app/private/backups/area3-before-mandor-revenue-20261117.sqlite`,233472byte,SHA256e2c39eba72710da656307627909f32267b6738c861509a3a70c78bddf8bb10bc. Tidak mengubah MySQL its aktif, .env, snapshot/arsip, Dompis, atau menjalankan migration/deploy/restart worker. Server/akun live, Microsoft Word desktop, render Word/PDF baru, cetak fisik dan concurrent load belum diverifikasi pada perubahan angka ini; pengujian export existing tetap lulus. [Bukti QA](qa/pp-mandor-material-revenue-20261117.json).
+
+
 ## Perapian BOQ preview dan unduhan — 15 November 2026
 
 Kedua tabel BoQ Owner/Mandor pada preview, cetak/PDF dan Word kini lebih kecil: font/padding rapat, proporsi kolom terpisah dan kode panjang membungkus tanpa mengubah teks/nominal. Input editor tetap pada ukuran sebelumnya. Pengguna mengonfirmasi tabel persetujuan penutup tetap sesuai; tidak dikembalikan/diubah. Header mengikuti Total Anggaran IV.5 seperti sebelumnya. [Ukuran, arsitektur, verifikasi dan batas](PP_WORD_PRINT.md).

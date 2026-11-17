@@ -7,11 +7,13 @@ use Illuminate\Validation\ValidationException;
 
 final class ProjectPlanBudget
 {
+    public const MATERIAL_REVENUE_POLICY = 'mandor-material-revenue-v1';
+
     public const CATEGORIES = ['mandor' => 'Jasa Mandor', 'material' => 'Material Non Stock', 'bop' => 'BOP', 'permit' => 'Perizinan (Preliminary) Reimburse'];
 
     public const PRINT_ROLES = ['Admin Konstruksi', 'PM Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Bussiness Support', 'Mgr Project Support', 'Head of PMO'];
 
-    public static function apply(array $p, array $owners, bool $submit): array
+    public static function apply(array $p, array $owners, bool $submit, bool $adoptMaterialRevenue = false): array
     {
         $whole = WholeRupiah::enabled($p);
         $number = fn ($n, $volume = false) => ! $volume && $whole ? WholeRupiah::round(self::number($n)) : self::number($n, $volume);
@@ -21,6 +23,11 @@ final class ProjectPlanBudget
             self::fail('Form anggaran tidak valid.');
         }
         $b = ['version' => 2, 'mandor' => [], 'materials' => [], 'bop' => [], 'usage' => [], 'permit' => $number($input['permit'] ?? $p['costs']['permit'] ?? 0)];
+        // Explicit editable saves adopt the rule; maintenance retains each saved policy.
+        $materialRevenue = $adoptMaterialRevenue || ($input['marginPolicy'] ?? null) === self::MATERIAL_REVENUE_POLICY;
+        if ($materialRevenue) {
+            $b['marginPolicy'] = self::MATERIAL_REVENUE_POLICY;
+        }
         $rows = $input['mandor'] ?? array_map(fn ($r) => ['rowId' => $r['rowId'], 'qtyM' => $r['qm'], 'qtyS' => $r['qs'], 'priceM' => 0, 'priceS' => 0], $owners);
         if (! is_array($rows) || ! array_is_list($rows) || count($rows) !== count($owners) || count(array_unique(array_column($rows, 'rowId'))) !== count($owners)) {
             self::fail('Designator BOQ Mandor harus sesuai BOQ Plan.');
@@ -72,7 +79,7 @@ final class ProjectPlanBudget
         if ($totals['total'] > 1000000000000 || $totals['ownerTotal'] > 1000000000000) {
             self::fail('Total anggaran di luar batas yang didukung.');
         }
-        $totals['revenue'] = $totals['ownerS'];
+        $totals['revenue'] = self::add($totals['ownerS'], $materialRevenue ? $totals['mandorM'] : 0);
         $totals['cogs'] = $totals['total'];
         $totals['grossProfit'] = self::add($totals['revenue'], -$totals['cogs']);
         $totals['margin'] = $totals['revenue'] ? round((float) bcdiv(bcmul((string) $totals['grossProfit'], '100', 6), (string) $totals['revenue'], 6), 2) : null;

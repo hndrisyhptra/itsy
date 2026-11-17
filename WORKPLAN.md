@@ -821,3 +821,8 @@ Selesai: rapikan matriks Region/Branch, Nilai Pengajuan bruto (konfirmasi penggu
 ## 17 November 2026 — Keterangan PPh dan label pembayaran Final satu kali
 
 Selesai: keterangan PPh2,5% khusus Jasa Mandor pada UI pengajuan/review kasbon dengan bruto/potongan/net; berkas tetap net-only dan histori tidak repricing. Final1 menghilangkan Termin dari label/editor/list/inbox/review/BA PP/dashboard/report; Parsial1/Final2/3 tetap bernomor. Finance legacy tetap tersedia, next-term card Final1 disembunyikan, nama Word kasbon Final1 memakai _Final. Tidak ada perubahan workflow/SQL/migration/data aktif. 311PHP/7241assertions,345frontend/build/assets dan browser sintetis6viewport/theme/interaksi lulus; belum server/liveakun/Wordrender/cetakfisik. [Perilaku](docs/KASBON_PPH_PAYMENT_LIST.md), [QA](docs/qa/payment-presentation-20261117.json).
+
+
+## 17 November 2026 — Material BOQ Mandor masuk Revenue pada margin PP
+
+Selesai: Jml_Mat BOQ TA–Mandor masuk Material1.1 dan Revenue margin PP; Jasa1.2 tetap Owner, COGS tidak berubah, GP/persentase mengikuti Revenue baru. Laravel/React memakai marker JSON server-owned untuk explicit editable save/submit/continuation; locked history/maintenance tetap policy tersimpan, tanpa migration/backfill/live write.313PHP/7278assertions,346frontend/build/assets/Pint serta browser sintetis6viewport/theme dan source edits lulus. Layanan0query/HTTPfixture83 (budget90), bukan load benchmark. [Perilaku dan batas](docs/PP_BUDGET_TEMPLATE.md), [QA](docs/qa/pp-mandor-material-revenue-20261117.json).

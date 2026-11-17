@@ -6,7 +6,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { seed } from '../../resources/js/area3/seed';
 import { type Project, type State, type Role, APPROVERS_V3, normalizeWorkflow, saveProject, getProject, decideProject, selectActor, money } from '../../resources/js/area3/domain';
 import { applyPlanTemplate } from '../../resources/js/area3/plan-template';
-import { applyBudgetPlan, budgetSummary, lineAmount, ratioPercent, draftPlanBudget, projectPlanHeaderTotal } from '../../resources/js/area3/plan-budget';
+import { MATERIAL_REVENUE_POLICY, applyBudgetPlan, budgetSummary, lineAmount, ratioPercent, draftPlanBudget, projectPlanHeaderTotal } from '../../resources/js/area3/plan-budget';
 import { BudgetPlanSection, RiskQualitySection, signaturePerson } from '../../resources/js/area3/plan-budget-ui';
 import { DocumentPreview } from '../../resources/js/area3/ui';
 import { ProjectEditor } from '../../resources/js/area3/projects';
@@ -79,9 +79,9 @@ test('continuation recap uses its component allocation and never adds the root b
   assert.equal(JSON.stringify(p),before);
 });
 
-test('shared budget vector computes rounded component costs, service-only revenue and margin without counting reimbursement twice',()=>{
+test('shared budget vector computes rounded component costs, Mandor material plus Owner service revenue and margin without counting reimbursement twice',()=>{
   const {s,p}=fixture(),result=applyBudgetPlan(s,p,true,true);
-  for(const[key,expected]of Object.entries(vector.expected))assert.equal(result.planBudgetTotals![key as keyof typeof result.planBudgetTotals],expected,key);
+  for(const[key,expected]of Object.entries(vector.expectedMaterialRevenue))assert.equal(result.planBudgetTotals![key as keyof typeof result.planBudgetTotals],expected,key);
   assert.deepEqual(result.costs,{mandor:140,material:25.03,bop:30.02,permit:7.03});
   assert.equal(result.planBudgetTotals?.usage.mandor,140);assert.equal(result.planBudgetTotals?.cogs,195.05);
   const zero=structuredClone(p);zero.boq[0].s=null;zero.planBudget=undefined;zero.costs.permit=0;
@@ -90,6 +90,32 @@ test('shared budget vector computes rounded component costs, service-only revenu
   assert.equal(ratioPercent(-246.9,2000),-12.35);
   const negative=structuredClone(p);negative.planBudget!.mandor.forEach(r=>{r.qtyM=r.qtyS=0;});negative.planBudget!.materials=[];negative.planBudget!.permit=0;negative.planBudget!.bop=[{id:'bop-negative-margin',description:'QA',unit:'Ls',qty:1,total:2246.9}];negative.planBudget!.bopLimit=3000;negative.planBudget!.usage=[{id:'usage-negative-margin',category:'bop',term:'1',date:p.date,amount:2246.9}];
   assert.equal(applyBudgetPlan(s,negative,true,true).planBudgetTotals?.margin,-12.35);
+});
+
+test('Mandor Jml_Mat feeds row 1.1 and Revenue in forms/preview, with live source edits and frozen historical totals',()=>{
+  const {s,p}=fixture(),current=applyBudgetPlan(s,p),before=JSON.stringify(current);
+  assert.equal(current.planBudget!.marginPolicy,MATERIAL_REVENUE_POLICY);
+  const unsaved=structuredClone(p);delete unsaved.workflowVersion;
+  assert.equal(applyBudgetPlan(s,unsaved).planBudgetTotals!.revenue,2040,'New PP has no workflowVersion until its first saved command.');
+  assert.equal(applyBudgetPlan({...s,schema:2},unsaved).planBudgetTotals!.revenue,2000,'Historical v2 form does not adopt the v3 rule.');
+  const materialRow=`<td>1.1</td><td>Material</td><td class="numeric">${money(40)}</td>`;
+  for(const printing of [false,true]){
+    const html=renderToStaticMarkup(createElement(BudgetPlanSection,{s,p:current,printing}));
+    assert.ok(html.includes(materialRow));assert.ok(html.includes(`<td>Revenue</td><td class="numeric">${money(2040)}</td>`));
+    assert.ok(html.includes(`<td>Gross Profit Margin</td><td class="numeric">${money(1844.95)}</td>`));
+  }
+  assert.equal(JSON.stringify(current),before);
+  const edit=structuredClone(current);edit.planBudget!.mandor[0].qtyM=2;edit.planBudget!.mandor[0].priceM=12;
+  const total=budgetSummary(s,edit);assert.equal(total.mandorM,24);assert.equal(total.revenue,2024);
+  assert.equal(total.cogs,179.05);assert.equal(total.grossProfit,1844.95);
+  const old=structuredClone(p);old.status='Sah';old.planBudgetTotals={...vector.expected,usage:{mandor:140,material:25.03,bop:30.02,permit:7.03}};
+  const oldBefore=JSON.stringify(old),html=renderToStaticMarkup(createElement(BudgetPlanSection,{s,p:old,printing:true}));
+  assert.ok(html.includes(`<td>Revenue</td><td class="numeric">${money(2000)}</td>`));
+  assert.match(html,/<td>1\.1<\/td><td>Material<\/td><td class="numeric"><\/td>/);
+  assert.equal(JSON.stringify(old),oldBefore);
+  const child={...structuredClone(current),id:'child-margin',parentId:p.id,rootId:p.id,boq:[],allocations:{'boq-qa':{m:1,s:2}}};
+  child.planBudget!.mandor[0].qtyM=1;child.planBudget!.mandor[0].qtyS=2;s.projects=[p];
+  assert.equal(budgetSummary(s,child).revenue,410);
 });
 
 test('plan saves reject exceeded component ceilings, invalid source amounts, duplicate IDs and missing risk without replacing saved state',()=>{
@@ -118,7 +144,7 @@ test('budget form exposes template columns and working row actions; risk text is
   const {s,p}=fixture(),result=applyBudgetPlan(s,p);
   const budget=renderToStaticMarkup(createElement(BudgetPlanSection,{s,p:result,editable:true,onChange:()=>{}}));
   const before=JSON.stringify(result);
-  for(const label of ['BoQ TA - Telkom / Owner Project','BoQ TA - Mandor','Jml_Mat','Jml_Jasa','Tambah Material','Tambah BOP','Uraian Pekerjaan','Satuan','195','90,25'])assert.ok(budget.includes(label),label);
+  for(const label of ['BoQ TA - Telkom / Owner Project','BoQ TA - Mandor','Jml_Mat','Jml_Jasa','Tambah Material','Tambah BOP','Uraian Pekerjaan','Satuan','195','90,44'])assert.ok(budget.includes(label),label);
   assert.doesNotMatch(budget,/Termin Bayar|Tanggal Penggunaan|Tambah Waktu Penggunaan|Nilai Penggunaan/);
   assert.equal((budget.match(/>Uraian Pekerjaan<\/th>/g)??[]).length,2);
   assert.equal((budget.match(/class="budget-description"/g)??[]).length,2);
@@ -135,6 +161,6 @@ test('budget form exposes template columns and working row actions; risk text is
     assert.ok(recap.includes(`Subtotal (IV.1 + IV.2 + IV.3)</td><td class="numeric">${money(195.05)}</td>`));
     assert.ok(recap.endsWith(`Total Anggaran</td><td class="numeric">${money(202.08)}</td><td>Jumlah seluruh rincian, termasuk perizinan bila ada</td></tr></tbody>`));
   }
-  assert.equal(result.planBudgetTotals!.cogs,195.05);assert.equal(result.planBudgetTotals!.margin,90.25);assert.equal(JSON.stringify(result),before);
+  assert.equal(result.planBudgetTotals!.cogs,195.05);assert.equal(result.planBudgetTotals!.margin,90.44);assert.equal(JSON.stringify(result),before);
   assert.ok(preview.includes(`<th scope="row">Total Nilai (Rp)</th><td>:</td><td>${money(202.08).replace(/^Rp\s*/,'')}</td>`));
 });
