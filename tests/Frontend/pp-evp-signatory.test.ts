@@ -18,11 +18,16 @@ test('PP form and preview always append the fixed read-only EVP row; only the pr
   const {s,p,deal}=fixture();s.deals=[deal('2026-11-13')];
   for(const printing of [false,true]) {
     const html=renderToStaticMarkup(createElement(RiskQualitySection,{s,p,editable:true,onChange:()=>{},printing})),row=evpRow(html);
-    for(const text of ['Disetujui Oleh:','I GEDE WAHYU DANYNDRA','730371','EVP Area Jawa Bali','12 Nov 2026'])assert.ok(row.includes(text),text);
+    for(const text of ['Disetujui Oleh:','I GEDE WAHYU DANYNDRA','730371','EVP Area Jawa Bali'])assert.ok(row.includes(text),text);
+    const table=html.match(/<div class="[^"]*pp-signatures-table[^"]*"><table[\s\S]*?<\/table>/)?.[0]??'';
+    const rows=[...table.matchAll(/<tr(?:\s[^>]*)?>([\s\S]*?)<\/tr>/g)].filter(r=>r[1].includes('<td'));
+    assert.equal(rows.length,5);
+    for(const r of rows){const cells=[...r[1].matchAll(/<td(?:\s[^>]*)?>([\s\S]*?)<\/td>/g)];assert.equal(cells[3]?.[1],'','Every account and EVP date cell stays empty.');}
     assert.ok(html.indexOf('Head of PMO Area Jawa Bali')<html.indexOf('data-approval-kind="automatic-evp"'));
     assert.doesNotMatch(row,/<input|<select|<button|<img|<svg|Persetujuan aplikasi/);
     if(printing) {
       assert.match(row,/>APPROVED</);assert.match(row,/Persetujuan otomatis/);
+      assert.doesNotMatch(row,/12 Nov 2026/,'Approval marks no longer display dates; the underlying reference is retained.');
       assert.match(row,/<div class="pp-signature-print" aria-hidden="true"><\/div>/);
     } else assert.match(row,/Disetujui otomatis/);
   }
@@ -36,7 +41,7 @@ test('EVP reference date takes the earliest valid saved BA KH of the exact PP, i
   s.deals=s.deals.filter(d=>d.projectId!==p.id);
   assert.equal(ppEvpSignatory(s,p).date,undefined);
   const row=evpRow(renderToStaticMarkup(createElement(RiskQualitySection,{s,p,printing:true})));
-  assert.match(row,/Menunggu tanggal BA KH/);assert.match(row,/>APPROVED</);
+  assert.doesNotMatch(row,/Menunggu tanggal BA KH/);assert.match(row,/>APPROVED</);
   assert.doesNotMatch(row,/Invalid Date|1970|NaN/);
 });
 

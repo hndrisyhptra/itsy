@@ -1,0 +1,87 @@
+{
+  "date": "2026-11-18",
+  "feature": "Undated PP/kasbon marks and automatic issued maker/Manager-dependent EVP",
+  "php": {
+    "tests": 327,
+    "assertions": 8061,
+    "database": "SQLite :memory:",
+    "passed": true
+  },
+  "frontend": {
+    "tests": 363,
+    "passed": true
+  },
+  "typescript_vite_build": "passed",
+  "assets": {
+    "manifest_references": 42,
+    "preload_dependencies": 33,
+    "profiles": 3,
+    "passed": true
+  },
+  "browser": {
+    "method": "Chrome headless, isolated synthetic SSR fixture, route-intercepted HTML; no login/live backend",
+    "cases": 18,
+    "scenarios": [
+      "PP",
+      "kasbon before Manager",
+      "kasbon after Manager"
+    ],
+    "widths": [
+      375,
+      768,
+      1440
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "javascript_errors": 0,
+    "api_requests": 0,
+    "page_overflow": 0,
+    "screenshots_inspected": 3
+  },
+  "print": {
+    "pdf_documents": 2,
+    "pages": 2,
+    "all_pages_nonblank": true,
+    "all_rendered_pages_visually_inspected": true,
+    "printed_marks": 0,
+    "wet_signature_spaces_blank": true
+  },
+  "word": {
+    "native_xml_and_regression_suite": "passed, no stamps or automatic labels",
+    "fresh_docx_visual_render": false
+  },
+  "performance": {
+    "additional_sql": 0,
+    "additional_api": 0,
+    "active_issuance_lookup": "O(1)",
+    "current_approval_scan": "bounded by 7 workflow stages",
+    "archive_issuance_lookup": "existing in-memory history only"
+  },
+  "preserved": [
+    "actual decisions and timestamps",
+    "seven payment approval stages",
+    "UUID/current assignee guards",
+    "Branch scope",
+    "money and encrypted history",
+    "blank Word/print wet signatures"
+  ],
+  "live_database_writes": false,
+  "migration_added": false,
+  "env_changed": false,
+  "worker_restarted": false,
+  "operation_workflow_executed": false,
+  "limits": [
+    "synthetic browser fixtures, not live account interaction",
+    "no aaPanel/MySQL/concurrency/load verification",
+    "no fresh desktop Microsoft Word or physical print"
+  ],
+  "artifact_directory": "/private/tmp/area3-automatic-stamps-20261118",
+  "logs": [
+    "/tmp/area3-automatic-stamps-php.log",
+    "/tmp/area3-automatic-stamps-frontend.log",
+    "/tmp/area3-automatic-stamps-build.log",
+    "/tmp/area3-automatic-stamps-assets.log"
+  ]
+}

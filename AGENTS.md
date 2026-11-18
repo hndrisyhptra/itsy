@@ -1,5 +1,14 @@
 # it's Area 3 — Development rules
 
+## 18 November 2026 — Undated preview stamps and automatic kasbon maker/EVP
+
+Follow docs/KASBON_PREVIEW_STAMPS.md. Latest user removes dates from all PP/kasbon approval marks, superseding earlier retention of separate stamp dates; keep actual timestamps/history/document dates/EVP reference and blank PP date cells. Kasbon maker auto mark requires actual issuedBy/issuedAt for displayed UUID; EVP kasbon auto mark requires actual selected Mgr Finance & Settlement Setujui bound to active UUID/current assignee, not prior-version/history/physical reassignment alone. Legacy supplemental review must match UUID and printSigner Manager. No EVP auto on draft/rejected/returned/archived or Finance return; reissue needs own decision. Keep automatic marker separate from real Approval, no fabricated accounts/decisions/workflow writes. Template3 max5 genuine marks+2administrative marks; seven application stages and2/3/2physical slots unchanged. PP EVP retains PP-specific rule. Word/print/package blank wetTTD;0SQL/API/migration/live state writes, loaded-data-only resolver. Append actual QA/browser/print/query limits and audits.
+
+## 18 November 2026 — Blank PP closing date column
+
+Latest user asks every TANGGAL cell in VIII.PENUTUP PP to be empty, including EVP. Keep column/header and render literal empty cells in editor/preview/DOM Word/print, no dash/waiting-BA-KH hint. Preserve actual approval timestamps/history/EVP calendar reference and separate preview-stamp dates in TANDA TANGAN, blank wetTTD on print, identities/jobs/workflow and all other document dates. Editor notice no longer implies a visible date-column reference. Presentation only,0SQL/API/schema/migration/live writes; update PP_WORD_PRINT/PP_EVP_SIGNATORY and chronological architecture/QA/audits with actual evidence.
+
+
 ## 18 November 2026 — Legacy approved PP title fallback
 
 User confirms PP is Sah and account Jabatan was filled afterward. Follow latest docs/USER_JABATAN.md: only when matching saved PP job/actual actorJob are missing/blank, signaturePerson may display current active same-ID/same-role/PP-Branch account jabatan before template fallback. Preserve nonblank historical jobs; never backfill SQL/snapshots or change names/NIK/dates/decisions/status/EVP/other document identities. Draft retains account-first. Shared PP HTML/DOM Word/print use same resolver, blank printedTTD. No API/SQL/migration/live mutation; role/Branch mismatches/missing accounts fall back safely. Document actual tests and new browser/render limits.

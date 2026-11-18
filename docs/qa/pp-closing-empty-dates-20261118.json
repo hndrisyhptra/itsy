@@ -1,0 +1,55 @@
+{
+  "date": "2026-11-18",
+  "feature": "Empty TANGGAL cells in PP VIII.PENUTUP",
+  "scope": {
+    "date_column_header_retained": true,
+    "all_account_and_evp_date_cells_empty": true,
+    "editor_and_preview": true,
+    "word_print_source": "same PP DOM",
+    "placeholder_or_waiting_hint": false
+  },
+  "preserved": [
+    "actual approval timestamps/history/status",
+    "EVP calendar reference",
+    "preview stamp dates in separate signature column",
+    "signer names/NIK/jabatan",
+    "blank printed wet signatures",
+    "PP Header/schedule and other document dates"
+  ],
+  "verification": {
+    "frontend_tests": 360,
+    "frontend_passed": true,
+    "typescript_vite_build": "passed",
+    "assets": {
+      "manifest_references": 42,
+      "preload_dependencies": 33,
+      "profiles": 3
+    },
+    "diff_check": "passed",
+    "php_result": "passed, isolated SQLite :memory:",
+    "php_tests": 327,
+    "php_assertions": 8061
+  },
+  "regressions": [
+    "All five date cells are empty in editor and preview output",
+    "EVP/actual markers retained",
+    "No missing-BA-KH placeholder in date column",
+    "Calendar boundary/earliest exact PP reference helper unchanged",
+    "Existing PP Word/print suites pass"
+  ],
+  "performance": {
+    "new_sql": 0,
+    "new_api": 0,
+    "new_schema": 0,
+    "new_migration": 0,
+    "new_dependencies": 0,
+    "notes": "Presentation only; existing in-memory signer/reference resolution retained."
+  },
+  "limits": [
+    "No new browser/DOCX/PDF render for this cell-content-only change.",
+    "No live its/environment/Dompis/accounts/approval/history mutation or deploy/worker restart."
+  ],
+  "notes": [
+    "Initial test selector expected class on table; corrected to existing table-scroll wrapper before final suite."
+  ]
+}

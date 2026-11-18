@@ -12,17 +12,33 @@ function integerWords(n:number):string {
 }
 export function kasbonTerbilang(amount:number){const cents=Math.round(amount*100),whole=Math.floor(cents/100),sen=cents%100;return ((whole?integerWords(whole):'nol')+' rupiah'+(sen?' '+integerWords(sen)+' sen':'')).replace(/\s+/g,' ').trim();}
 
-export interface KasbonSignature {action:string;name:string;job:string;role?:Role;approved?:Approval;span?:number}
+export interface KasbonSignature {action:string;name:string;job:string;role?:Role;approved?:Approval;automatic?:'issuer'|'evp';span?:number}
 export function kasbonSignatureColumns(d:KasbonData){return d.templateVersion===3?6:4;}
 export function kasbonDate(d:KasbonData){return `${d.place}, ${bakhDocumentDate(d.date)?.full??'…'}`;}
 export function kasbonTermSuffix(d:Pick<KasbonData,'termNumber'|'termType'>){return d.termNumber===1&&d.termType==='Final'?'':` · Termin ${d.termNumber}`;}
+/** Presentation markers only: no synthetic EVP/maker decisions or read-time writes. */
+function automaticKasbonMarks(d:KasbonData,t?:Term,kasbonId?:string):{issuer?:'issuer';evp?:'evp'} {
+  if(!t||!kasbonId)return {};
+  const issued=t.kasbon?.id===kasbonId?t.kasbon:t.kasbonHistory?.find(k=>k.id===kasbonId);
+  if(!issued?.issuedBy?.trim()||!issued.issuedAt?.trim())return {};
+  const issuer=d.issuer.trim()?'issuer' as const:undefined;
+  // The EVP mark follows only the selected Manager's actual decision for the active version.
+  if(t.kasbon?.id!==kasbonId||!['Diajukan','Disetujui'].includes(t.status)||t.financePayment?.status==='Dikembalikan')return {issuer};
+  const role='Mgr Finance & Settlement' as const,selected=d.signers[role]?.userId;
+  const manager=d.templateVersion===3&&t.workflowVersion===3&&t.paymentFlow==='kasbon-settlement-v2'&&!!selected&&t.approverUserIds?.[role]===selected
+    ?t.approvals.find(a=>a.role===role&&a.userId===selected&&a.kasbonId===kasbonId&&a.decision==='Setujui'):undefined;
+  const review=t.legacySettlementReview;
+  const legacy=d.templateVersion!==3&&t.paymentFlow==='kasbon-v1'&&review?.kasbonId===kasbonId&&!!review.userId&&d.printSigner?.userId===review.userId&&review.decision?.role===role&&review.decision.userId===review.userId&&review.decision.kasbonId===kasbonId&&review.decision.decision==='Setujui';
+  return {issuer,evp:manager||legacy?'evp':undefined};
+}
 export function kasbonSignatures(d:KasbonData,t?:Term,kasbonId?:string):KasbonSignature[][]{
+  const automatic=automaticKasbonMarks(d,t,kasbonId);
   const row=(role:Role,job:string,action='Memeriksa'):KasbonSignature=>{
     const selected=d.signers[role],decision=t?.history.find(a=>a.role===role&&a.decision==='Setujui'&&(d.templateVersion===3?a.kasbonId===kasbonId:kasbonId===t.kasbon?.id)&&(!selected?.userId||a.userId===selected.userId));
     return {action,role,job:selected?.job?.trim()||job,name:selected?.name??decision?.actorName??'',approved:decision};
   };
-  const maker={action:'Membuat',name:d.issuer,job:d.issuerJob?.trim()||(d.templateVersion===2||d.templateVersion===3?(d.issuerRole??'Admin Konstruksi')+' · Pengaju Kasbon':'Finance · Penerbit Kasbon')};
-  const evp={action:'Menyetujui / Mengetahui',name:d.evp,job:'EVP Area Jawa Bali'};
+  const maker={action:'Membuat',name:d.issuer,job:d.issuerJob?.trim()||(d.templateVersion===2||d.templateVersion===3?(d.issuerRole??'Admin Konstruksi')+' · Pengaju Kasbon':'Finance · Penerbit Kasbon'),automatic:automatic.issuer};
+  const evp={action:'Menyetujui / Mengetahui',name:d.evp,job:'EVP Area Jawa Bali',automatic:d.evp.trim()?automatic.evp:undefined};
   if(d.templateVersion===3)return [
     [row('PM Konstruksi','Project Manager'),maker],
     [row('Mgr Project Support','Mgr Project Support Area Jawa Bali'),row('Mgr Deployment','Mgr Project Deployment Area Jawa Bali'),row('Head of PMO','Head of PMO Area Jawa Bali','Menyetujui')],

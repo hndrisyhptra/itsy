@@ -53,3 +53,13 @@ Lima tes frontend baru mencakup ZIP/parts/relationships/OOXML native, portrait/s
 QA memakai HTML dari komponen React sebenarnya dengan fixture empat dan 36 baris BOQ. Browser headless dengan profil sementara dan jaringan di-intercept ke file fixture/aset lokal mengambil salinan DOM dan memanggil **modul build produksi** untuk membuat dua DOCX. Preview biasa dan nested review menghasilkan PDF; capture tidak mengubah DOM, seluruh bagian I–VIII/identitas EVP ada, cap TTD dan konteks luar tidak tercetak. ZIP/CRC dan semua XML dibaca ulang secara independen dengan Python; native Word dirender melalui bundled LibreOffice/render_docx.py dan seluruh sembilan PNG halaman diperiksa. Ini tidak menggunakan akun/data live/profil browser pengguna.
 
 Hasil final jumlah tes, halaman, hash dan cakupan visual tercatat pada [LARAVEL_QA](LARAVEL_QA.md) dan [bukti terstruktur](qa/pp-word-print-20261113.json). Peninjauan hasil LibreOffice bukan verifikasi desktop Microsoft Word. Klik native print dialog/penyimpanan lokasi PDF di akun server, Safari/Firefox, pengujian keyboard/akun/Branch live dan cetak fisik belum dilakukan. Tidak melakukan commit/push/deploy. Operator perlu deploy kode **dan build aset**; fitur ini tidak membutuhkan migration.
+
+
+## 18 November 2026 — Kolom TANGGAL tabel penutup kosong
+
+Instruksi terbaru pengguna menggantikan penampilan tanggal pada kolom TANGGAL VIII.PENUTUP untuk semua baris akun dan EVP. Kolom/header dipertahankan tetapi seluruh sel isi kosong, tanpa dash atau pesan menunggu BA KH. Berlaku pada form/preview dan hasil Word/cetak dari DOM PP yang sama. Referensi EVP/actual approval timestamps/model/history tetap, termasuk tanggal pada cap preview di kolom TANDA TANGAN yang terpisah. Nama/NIK/jabatan/EVP mark, blank printedTTD, alur dan dokumen lain tidak berubah. Tidak ada SQL/API/schema/migration/backfill baru. Bukti dan batas verifikasi: qa/pp-closing-empty-dates-20261118.json.
+
+
+## 18 November 2026 — Cap tanpa tanggal dan cap otomatis pengaju/EVP kasbon
+
+Tanggal cap PP/kasbon tidak ditampilkan. Pengaju kasbon otomatis ditandai setelah penerbitan UUID tercatat; EVP kasbon hanya setelah persetujuan nyata Manager untuk UUID aktif dengan assignee sesuai. Dua cap administratif terpisah dari keputusan, Word/cetak tetap kosong; tanggal/audit/tahapan dan uang tidak diubah. Ini menggantikan batas lama lima cap preview kasbon saja: kini lima keputusan nyata + dua otomatis, tanpa menambah approval aplikasi. PP EVP tetap memakai aturan PP sebelumnya. Rincian gate/version/legacy, kinerja dan verifikasi aktual ada pada [KASBON_PREVIEW_STAMPS](KASBON_PREVIEW_STAMPS.md).

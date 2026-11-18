@@ -39,3 +39,13 @@ Helper melakukan satu lintasan BA KH yang sudah dimuat, O(jumlah BA KH), memori 
 Empat regression frontend baru menguji form/preview/read-only/posisi, earliest exact-PP (termasuk draft tersimpan, tanggal invalid, urutan terbalik dan tanpa BA KH), batas tahun/bulan/kabisat dan state/routing/approval history tidak berubah pada lima status PP. Regresi lama tetap menguji cap empat akun dari keputusan aktual serta CSS print yang mengosongkan sel TTD; ekspektasi dipisahkan dari penanda otomatis EVP.
 
 Hasil suite dan aset akhir dicatat pada [LARAVEL_QA](LARAVEL_QA.md) dan [bukti terstruktur](qa/pp-evp-signatory-20261113.json). Tes PHP tetap fail-closed SQLite memory; tidak memakai its aktif. Browser akun/responsif/visual print, cetak fisik dan deployment server belum diverifikasi. Tidak ada simulasi approval pengguna/transfer/TTD yang ditambahkan ke runtime.
+
+
+## 18 November 2026 — Kolom TANGGAL tabel penutup kosong
+
+Instruksi terbaru pengguna menggantikan penampilan tanggal pada kolom TANGGAL VIII.PENUTUP untuk semua baris akun dan EVP. Kolom/header dipertahankan tetapi seluruh sel isi kosong, tanpa dash atau pesan menunggu BA KH. Berlaku pada form/preview dan hasil Word/cetak dari DOM PP yang sama. Referensi EVP/actual approval timestamps/model/history tetap, termasuk tanggal pada cap preview di kolom TANDA TANGAN yang terpisah. Nama/NIK/jabatan/EVP mark, blank printedTTD, alur dan dokumen lain tidak berubah. Tidak ada SQL/API/schema/migration/backfill baru. Bukti dan batas verifikasi: qa/pp-closing-empty-dates-20261118.json.
+
+
+## 18 November 2026 — Cap tanpa tanggal dan cap otomatis pengaju/EVP kasbon
+
+Tanggal cap PP/kasbon tidak ditampilkan. Pengaju kasbon otomatis ditandai setelah penerbitan UUID tercatat; EVP kasbon hanya setelah persetujuan nyata Manager untuk UUID aktif dengan assignee sesuai. Dua cap administratif terpisah dari keputusan, Word/cetak tetap kosong; tanggal/audit/tahapan dan uang tidak diubah. Ini menggantikan batas lama lima cap preview kasbon saja: kini lima keputusan nyata + dua otomatis, tanpa menambah approval aplikasi. PP EVP tetap memakai aturan PP sebelumnya. Rincian gate/version/legacy, kinerja dan verifikasi aktual ada pada [KASBON_PREVIEW_STAMPS](KASBON_PREVIEW_STAMPS.md).

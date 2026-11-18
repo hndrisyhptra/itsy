@@ -47,12 +47,54 @@ test('package review exposes only selected PP documents and their exact BA/SPK p
   assert.match(html,/Paket Approval/);assert.match(html,/Lampiran BA KH/);assert.match(html,/Lampiran SPK/);assert.match(html,new RegExp('/spk/'+s.spks[0].id));assert.equal(JSON.stringify(s),original);
 });
 
-test('kasbon preview stamps only real decisions matching the displayed kasbon version and selected user',()=>{
+test('kasbon preview separates genuine matching decisions from maker/EVP administrative marks without dates',()=>{
   const {t}=payment(),d=structuredClone(vector);t.history=roles.map((role,i)=>({role,userId:role==='Finance'?'qa-finance':d.signers[role]!.userId,actorName:role+' QA',decision:'Setujui',note:'',at:'2026-11-15T02:00:00Z',kasbonId:'current-kasbon'}));
+  t.approvals=structuredClone(t.history);t.approverUserIds=Object.fromEntries(t.approvals.map(a=>[a.role,a.userId!]));
   const html=renderToStaticMarkup(createElement(KasbonDocument,{data:d,term:t,kasbonId:'current-kasbon'}));
-  assert.equal((html.match(/kasbon-approval-stamp/g)??[]).length,5);assert.match(html,/Mgr Finance &amp; Settlement/);assert.equal((html.match(/class="kasbon-wet-signature"/g)??[]).length,7);assert.deepEqual(kasbonSignatures(d,t,'current-kasbon').map(rows=>rows.reduce((n,r)=>n+(r.span??1),0)),[6,6,6]);assert.equal(roles.length,7);assert.equal(t.history.length,7);assert.doesNotMatch(html,/OLD SLOT|MANDOR SIGNATURE|Ketua Mandor|Business Support|Admin Area|Admin Area QA|Finance QA|0011223344556677/);
+  assert.equal((html.match(/kasbon-approval-stamp/g)??[]).length,7);assert.match(html,/Mgr Finance &amp; Settlement/);assert.equal((html.match(/class="kasbon-wet-signature"/g)??[]).length,7);assert.deepEqual(kasbonSignatures(d,t,'current-kasbon').map(rows=>rows.reduce((n,r)=>n+(r.span??1),0)),[6,6,6]);assert.equal(roles.length,7);assert.equal(t.history.length,7);assert.doesNotMatch(html,/OLD SLOT|MANDOR SIGNATURE|Ketua Mandor|Business Support|Admin Area|Admin Area QA|Finance QA|0011223344556677/);
+  const marks=[...html.matchAll(/class="kasbon-approval-stamp"[^>]*>([\s\S]*?)<\/span>/g)];assert.equal(marks.filter(m=>m[1].includes('Persetujuan otomatis')).length,2);for(const mark of marks)assert.doesNotMatch(mark[1],/\d{1,2}[/. -]\d{1,2}[/. -]\d{4}|2026/);
   const archived=renderToStaticMarkup(createElement(KasbonDocument,{data:d,term:t,kasbonId:'other-kasbon'}));assert.doesNotMatch(archived,/APPROVED/);
   t.history[0].userId='different-pm';assert.equal(kasbonSignatures(d,t,'current-kasbon').flat().filter(r=>r.approved).length,4);
+});
+
+test('maker mark requires recorded issuance, and EVP follows the actual Manager decision for this current kasbon only',()=>{
+  const {s,t}=payment(),d=structuredClone(vector);
+  for(const role of [...APPROVERS_V3,'Mgr Finance & Settlement'] as Role[])d.signers[role]!.userId=t.approverUserIds![role]!;
+  const marks=()=>kasbonSignatures(d,t,'current-kasbon').flat().filter(r=>r.automatic).map(r=>r.automatic);
+  assert.deepEqual(marks(),['issuer']);
+  for(const role of roles.slice(0,6)){actor(s,role);decide(s,t.id,'Setujui','');if(role!=='Mgr Finance & Settlement')assert.deepEqual(marks(),['issuer']);}
+  const before=JSON.stringify({t,d});assert.deepEqual(marks(),['issuer','evp']);assert.equal(JSON.stringify({t,d}),before);assert.equal(t.approvals.length,6);assert.equal(t.history.length,6);
+  const manager=t.approvals.find(a=>a.role==='Mgr Finance & Settlement')!,saved=structuredClone(manager);
+  for(const patch of [{userId:'other'},{kasbonId:'prior-version'},{decision:'Kembalikan' as const},{role:'Finance' as Role}]){Object.assign(manager,patch);assert.deepEqual(marks(),['issuer']);Object.assign(manager,saved);}
+  const selected=t.approverUserIds!['Mgr Finance & Settlement'];t.approverUserIds!['Mgr Finance & Settlement']='other';assert.deepEqual(marks(),['issuer']);t.approverUserIds!['Mgr Finance & Settlement']=selected;
+  for(const status of ['Draft','Ditolak','Dikembalikan'] as const){t.status=status;assert.deepEqual(marks(),['issuer']);}t.status='Diajukan';
+  t.financePayment={status:'Dikembalikan'};assert.deepEqual(marks(),['issuer']);delete t.financePayment;
+  const current=t.kasbon!;delete t.kasbon;assert.deepEqual(marks(),[]);t.kasbon=current;
+  t.kasbonHistory=[structuredClone(current)];t.kasbon={...current,id:'next-version',version:2};
+  assert.deepEqual(marks(),['issuer'],'Historical issuance may mark its maker, but current Manager approval cannot mark an archived EVP.');
+  assert.deepEqual(kasbonSignatures(d,t,'next-version').flat().filter(r=>r.automatic).map(r=>r.automatic),['issuer'],'Reissued version needs its own Manager decision.');
+  assert.deepEqual(kasbonSignatures(d,t,'missing-version').flat().filter(r=>r.automatic),[]);
+});
+
+test('legacy EVP automatic mark requires actual supplemental Manager review, not a physical signer reassignment or Finance approval',()=>{
+  const {t}=payment(),d={...structuredClone(vector),templateVersion:2 as const};t.paymentFlow='kasbon-v1';t.status='Disetujui';
+  d.printSigner={userId:'qa-settlement',name:'Mgr Finance QA',job:'Mgr Finance & Settlement',at:'2026-11-18T01:00:00Z',by:'admin'};
+  const marks=()=>kasbonSignatures(d,t,'current-kasbon').flat().filter(r=>r.automatic).map(r=>r.automatic);
+  assert.deepEqual(marks(),['issuer']);
+  t.legacySettlementReview={version:1,kasbonId:'current-kasbon',userId:'qa-settlement',name:'Mgr Finance QA',assignedAt:'2026-11-18T01:00:00Z',assignedBy:'admin',decision:{role:'Mgr Finance & Settlement',userId:'qa-settlement',decision:'Setujui',kasbonId:'current-kasbon',note:'',at:'2026-11-18T02:00:00Z'}};
+  const before=JSON.stringify({t,d});assert.deepEqual(marks(),['issuer','evp']);assert.equal(JSON.stringify({t,d}),before);
+  t.legacySettlementReview.decision!.kasbonId='old';assert.deepEqual(marks(),['issuer']);
+  t.legacySettlementReview.decision!.kasbonId='current-kasbon';d.printSigner.userId='other';assert.deepEqual(marks(),['issuer']);
+});
+
+test('automatic maker and EVP marks stay out of native Word and print while actual application decisions remain unchanged',()=>{
+  const {t}=payment(),d=structuredClone(vector),manager=d.signers['Mgr Finance & Settlement']!;
+  t.approverUserIds!['Mgr Finance & Settlement']=manager.userId;
+  t.approvals=[{role:'Mgr Finance & Settlement',userId:manager.userId,decision:'Setujui',note:'',at:'2026-11-18T01:00:00Z',kasbonId:'current-kasbon'}];
+  const before=JSON.stringify({t,d}),logo=new Uint8Array(readFileSync(new URL('../../resources/js/area3/assets/spk-telkom-akses.png',import.meta.url)));
+  assert.equal(kasbonSignatures(d,t,'current-kasbon').flat().filter(r=>r.automatic).length,2);
+  const xml=docxParts(createKasbonDocx(d,logo,t,'current-kasbon'))['word/document.xml'];assert.doesNotMatch(xml,/APPROVED|Persetujuan otomatis|Persetujuan aplikasi/);assert.equal(JSON.stringify({t,d}),before);
+  const css=readFileSync(new URL('../../resources/js/area3/styles.css',import.meta.url),'utf8');assert.match(css,/@media print\{\.kasbon-approval-stamp\{display:none!important\}/);
 });
 
 test('kasbon native Word has editable table, blank physical signature areas and safe names without marks',()=>{
