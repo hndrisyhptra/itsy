@@ -137,8 +137,8 @@ trait ProjectContractBundle
         }
         $this->date($v['start']);
         $this->date($v['end']);
-        if ($v['start'] > $v['end'] || $v['start'] < $d['start'] || $v['end'] > $d['end']) {
-            $this->fail('Periode SPK harus dalam periode BA KH.');
+        if ($periodError = SpkIssuance::periodError($v, $d)) {
+            $this->fail($periodError);
         }
     }
 }

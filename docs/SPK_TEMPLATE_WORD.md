@@ -1,5 +1,16 @@
 # Preview dan unduh Word SPK Mandor — 7 November 2026
 
+## 18 November 2026 — Diagnosis periode SPK dan referensi BA KH tersimpan
+
+Pengguna melaporkan error periode SPK di **server aaPanel** dengan tanggal SPK09/11/2026, BA KH06/11/2026, periode kedua dokumen05–19/11/2026,15HK. Kombinasi tepat tersebut direproduksi terisolasi dan lolos simpan; tanggal penerbitan bebas tetap berlaku. Agen juga mereproduksi kasus BA KHDraft tersimpan06–18November tetapi form BA KH menampilkan otomatis05–19November dari PP: SPK membandingkan raw saved BA KH dan menghasilkan error yang sama. Ini kemungkinan penyebab, **bukan diagnosis pasti dokumen server**; nomorBAKH/server record belum dicocokkan. Querybaca-saja lokal its terbatas20record menurut rentang tanggal memberi0kecocokan, bukan pemeriksaan database server.
+
+Form SPK kini menampilkan nomor referensi dan periode BA KH tersimpan yang benar-benar dipakai validasi. Jika draftperiod berbeda dari proyeksi otomatisPP, notice menampilkan kedua periode dan link exactBAKH dengan petunjuk BukaBAKH→SimpanDraft→kembaliSPK. Shared `SpkIssuance::periodError`/`spkPeriodError` menyamakan empat entrypoint PHPsave/bundle dan TSsave/bundle: error berisi rentangSPK, nomorBAKH serta rentangBAKH tersimpan. Untuk Terbit/Sah petunjuk hanya memeriksa referensi/periodeSPK; tidak menyarankan saveDraft atau mengubah snapshot. Tidak otomatis menyimpan/memperpanjang BAKH, tidak menghapus batas periode, tidak menulis tanggal/status/approval/nominal/ledger/dokumen historis. Formreferensi memuat exactdealId dari SPK, bukan IDProject/first/sibling fallback.
+
+Performa helper O(1)/0query terukur; form memakai authorized graph existing, satu loadedlookupPP untuk membandingkan proyeksi kalender existing, tanpa SQL/API/endpoint/schema/migration/dependency/poller baru. SPK start/end tetap harus berada dalam savedBAKH; tanggal dokumenSPK dan tanggalBAKH tidak dibandingkan sebagai periode. Branch/unit/Region/approval/issued locks dan outputWord/print tetap. No live write/deploy/restart/.env/Dompis/server change. Perubahan hanya kode lokal; pengguna masih perlu menerapkan kode/build di server. Fitur ini tidak memerlukan migration.
+
+Verifikasi: **344PHP/8540assertions**, **383frontend**, TypeScript/Vite, scopedPint, assets43refs/34preloads×3profil dan diffcheck lulus. Regresi simpan tanggallaporan, batasperiode tetap ditolak dengan exactreference, immutableSah,0helperSQL, staleDraft notice/link dan no-state-mutation. Browser terautentikasi/server/akunnyata belum diverifikasi untuk perubahan ini; UI diuji SSR, bukan klaim klik/browsernative. Tidak merenderWord/PDFulang karena generator/contentdocument tidak berubah. [Bukti](qa/spk-saved-bakh-period-20261118.json).
+
+
 ## 18 November 2026 — Tanggal SPK bebas lampau dan mendatang
 
 Permintaan terbaru membatalkan batas tanggal penerbitan SPK paling lambat tanggal mulai pekerjaan. Admin dapat memilih setiap tanggal kalender valid, termasuk lampau dan mendatang, pada SPK yang masih dapat diedit. Tidak ada batas hari ini, awal atau akhir pekerjaan. Tanggal valid tersimpan dipertahankan; isian kosong/tidak valid tetap memakai default awal pekerjaan milik SPK sendiri, tanpa mengarang hari ini. Tempat tetap Surabaya.

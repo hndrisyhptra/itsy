@@ -1,5 +1,6 @@
 import { unitOptions, stateForUnit, OPERATION_APPROVERS } from './work-unit';
 import { DashboardMatrix } from './dashboard-matrix-table';
+import { DashboardApproval } from './dashboard-approval-table';
 import { useMemo, useState } from 'react';
 import { ArrowUpRight, ClipboardCheck, Download, FileSignature, FolderKanban, Plus, ReceiptText } from 'lucide-react';
 import { type State, money, operational } from './domain';
@@ -9,7 +10,7 @@ import { Link, PageTitle } from './ui';
 export function Dashboard({ s:source }: { s: State }) {
   const units=unitOptions(source),[unit,setUnit]=useState(units[0]??'Konstruksi');
   const s=useMemo(()=>stateForUnit(source,unit),[source,unit]);
-  const [branch, setBranch] = useState('');
+  const [branch, setBranch] = useState(''),[tab,setTab]=useState<'summary'|'approval'>('summary');
   const data = useMemo(()=>dashboardSummary(s,branch),[s,branch]);
   const finance=['Finance','Mgr Finance & Settlement'].includes(s.role);
   const approver=['PM Konstruksi','Manager Konstruksi','Admin Area','Mgr Project Support','Mgr Deployment','Mgr Bussiness Support','Head of PMO',...OPERATION_APPROVERS].includes(s.role);
@@ -46,6 +47,7 @@ export function Dashboard({ s:source }: { s: State }) {
       ['Pembayaran Terealisasi', money(data.paid), 'Pembayaran tercatat'],
       ['Approval Menunggu', data.pendingApprovals, 'Sesuai peran Anda'],
     ].map(([label, value, sub]) => <div key={label}><span>{label}</span><strong>{value}</strong><small>{sub}</small></div>)}</div>
-    <DashboardMatrix s={s} branch={branch}/>
+    <div className="view-tabs dashboard-monitor-tabs" role="tablist" aria-label="Tabel monitoring dashboard"><button id="dashboard-summary-tab" type="button" role="tab" aria-selected={tab==='summary'} aria-controls="dashboard-summary-panel" className={tab==='summary'?'active':''} onClick={()=>setTab('summary')}>Summary</button><button id="dashboard-approval-tab" type="button" role="tab" aria-selected={tab==='approval'} aria-controls="dashboard-approval-panel" className={tab==='approval'?'active':''} onClick={()=>setTab('approval')}>Status Approval</button></div>
+    {tab==='summary'?<section id="dashboard-summary-panel" role="tabpanel" aria-labelledby="dashboard-summary-tab"><DashboardMatrix key={`${unit}:${branch}`} s={s} branch={branch}/></section>:<section id="dashboard-approval-panel" role="tabpanel" aria-labelledby="dashboard-approval-tab"><DashboardApproval key={`${unit}:${branch}`} s={s} branch={branch} unit={unit}/></section>}
   </div>;
 }

@@ -27,4 +27,21 @@ final class SpkIssuance
 
         return $spk;
     }
+
+    public static function periodError(array $spk, array $deal): string
+    {
+        if ($spk['start'] <= $spk['end'] && $spk['start'] >= $deal['start'] && $spk['end'] <= $deal['end']) {
+            return '';
+        }
+        $range = static function (array $period): string {
+            $label = static fn (string $value): string => self::date($value) ? implode('/', array_reverse(explode('-', $value))) : 'belum valid';
+
+            return $label($period['start']).'–'.$label($period['end']);
+        };
+        $hint = $deal['status'] === 'Draft'
+            ? 'Buka BA KH dan simpan draf untuk menyelaraskan periode dengan jadwal PP, lalu periksa kembali SPK.'
+            : 'Periksa referensi BA KH dan sesuaikan periode SPK dengan dokumen tersimpan.';
+
+        return 'Periode SPK harus berada dalam periode BA KH. SPK: '.$range($spk).'. BA KH '.$deal['no'].' tersimpan: '.$range($deal).'. '.$hint;
+    }
 }

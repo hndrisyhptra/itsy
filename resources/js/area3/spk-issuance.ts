@@ -13,3 +13,13 @@ export function spkIssueDate(value: unknown, start: unknown): string {
 export function syncSpkIssuance<T extends Pick<Spk,'place'|'date'|'start'>>(spk:T):T {
   return {...spk,place:SPK_ISSUE_PLACE,date:spkIssueDate(spk.date,spk.start)};
 }
+
+export function spkPeriodRange(period:{start:string;end:string}):string {
+  const label=(value:string)=>spkCalendarDate(value)?value.split('-').reverse().join('/'):'belum valid';
+  return `${label(period.start)}–${label(period.end)}`;
+}
+/** Compare the exact saved BA KH, independently from either document's issue date. */
+export function spkPeriodError(spk:{start:string;end:string},deal:{no:string;start:string;end:string;status:string}):string {
+  if(spk.start<=spk.end&&spk.start>=deal.start&&spk.end<=deal.end)return '';
+  return `Periode SPK harus berada dalam periode BA KH. SPK: ${spkPeriodRange(spk)}. BA KH ${deal.no} tersimpan: ${spkPeriodRange(deal)}. ${deal.status==='Draft'?'Buka BA KH dan simpan draf untuk menyelaraskan periode dengan jadwal PP, lalu periksa kembali SPK.':'Periksa referensi BA KH dan sesuaikan periode SPK dengan dokumen tersimpan.'}`;
+}

@@ -27,6 +27,38 @@ class ContractNumberTest extends TestCase
         DB::disableQueryLog();
     }
 
+    public function test_reported_spk_dates_are_valid_and_mismatch_names_the_exact_saved_bakh_without_queries_or_mutation(): void
+    {
+        [$state, $spk] = $this->fixture(true);
+        $state['projects'][0]['schedule'] = [['name' => 'QA', 'days' => 15, 'start' => '2026-11-05', 'end' => '2026-11-19']];
+        $state['deals'][0] = array_replace($state['deals'][0], ['date' => '2026-11-06', 'start' => '2026-11-05', 'end' => '2026-11-19']);
+        $spk = array_replace($spk, ['date' => '2026-11-09', 'start' => '2026-11-05', 'end' => '2026-11-19']);
+        $after = app(PrototypeDomain::class)->execute($state, 'saveSpk', [$spk, 'save'])['state'];
+        $this->assertSame('2026-11-09', $after['spks'][0]['date']);
+        $this->assertSame('2026-11-19', $after['spks'][0]['end']);
+        $this->assertSame($state['deals'], $after['deals']);
+        $deal = array_replace($state['deals'][0], ['no' => 'BAKH-EXACT-QA', 'status' => 'Draft', 'start' => '2026-11-06', 'end' => '2026-11-18']);
+        $before = $deal;
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        $message = SpkIssuance::periodError($spk, $deal);
+        $this->assertStringContainsString('SPK: 05/11/2026–19/11/2026', $message);
+        $this->assertStringContainsString('BA KH BAKH-EXACT-QA tersimpan: 06/11/2026–18/11/2026', $message);
+        $this->assertStringContainsString('simpan draf', $message);
+        $this->assertSame($before, $deal);
+        $this->assertSame([], DB::getQueryLog());
+        DB::disableQueryLog();
+        $deal['status'] = 'Sah';
+        $this->assertStringNotContainsString('simpan draf', SpkIssuance::periodError($spk, $deal));
+        $state['deals'][0] = $deal;
+        try {
+            app(PrototypeDomain::class)->execute($state, 'saveSpk', [$spk, 'save']);
+            $this->fail('Out-of-period SPK must still fail');
+        } catch (ValidationException $e) {
+            $this->assertStringContainsString('BAKH-EXACT-QA tersimpan: 06/11/2026–18/11/2026', $e->getMessage());
+        }
+    }
+
     private function fixture(bool $spk = false): array
     {
         $state = json_decode(file_get_contents(database_path('demo/'.($spk ? 'D' : 'C').'.json')), true);

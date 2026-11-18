@@ -10,8 +10,8 @@ import { createSpkDocx, spkWordFilename, SPK_DOCX_MIME } from '../../resources/j
 import { SPK_WORD_PARTS } from '../../resources/js/area3/spk-word-template';
 import { DocumentPreview } from '../../resources/js/area3/ui';
 import { docxParts } from './helpers/docx-parts';
-import { spkIssueDate, syncSpkIssuance } from '../../resources/js/area3/spk-issuance';
-import { SpkIssueFields } from '../../resources/js/area3/contracts';
+import { spkIssueDate, syncSpkIssuance, spkPeriodError } from '../../resources/js/area3/spk-issuance';
+import { SpkIssueFields, SpkBakhPeriodReference } from '../../resources/js/area3/contracts';
 import { spkLogoAssetUrl } from '../../resources/js/area3/spk-assets';
 
 const logo=new Uint8Array(readFileSync(new URL('../../resources/js/area3/assets/spk-telkom-akses.png',import.meta.url)));
@@ -138,4 +138,15 @@ test('SPK city and issue date follow shared calendar vectors and readonly city/u
     assert.ok(renderToStaticMarkup(createElement(SpkIssueFields,{spk:selected,disabled:false,onDateChange:()=>{}})).includes(`value="${date}"`));
   }
 
+});
+
+
+test('SPK period validation accepts the reported 15 HK dates and shows exact saved BA KH in stale-draft errors without changing it',()=>{
+  const {s,p,d,spk}=fixture();p.schedule=[{name:'QA',days:15,start:'2026-11-05',end:'2026-11-19'}];
+  Object.assign(spk,{date:'2026-11-09',start:'2026-11-05',end:'2026-11-19'});Object.assign(d,{date:'2026-11-06',start:spk.start,end:spk.end});
+  assert.equal(spkPeriodError(spk,d),'');Object.assign(d,{status:'Draft',no:'BAKH-EXACT-QA',start:'2026-11-06',end:'2026-11-18'});
+  const before=JSON.stringify(s),error=spkPeriodError(spk,d),html=renderToStaticMarkup(createElement(SpkBakhPeriodReference,{s,deal:d}));
+  assert(error.includes('SPK: 05/11/2026–19/11/2026'));assert(error.includes('BA KH BAKH-EXACT-QA tersimpan: 06/11/2026–18/11/2026'));assert(error.includes('simpan draf'));
+  for(const text of ['06/11/2026–18/11/2026','05/11/2026–19/11/2026','belum tersimpan','Simpan Draft',`/spk/ba-kh/${d.id}`])assert(html.includes(text),text);
+  assert.equal(JSON.stringify(s),before);d.status='Sah';assert(!spkPeriodError(spk,d).includes('simpan draf'));assert(!renderToStaticMarkup(createElement(SpkBakhPeriodReference,{s,deal:d})).includes('belum tersimpan'));
 });

@@ -1,0 +1,51 @@
+{
+  "date": "2026-11-18",
+  "feature": "SPK exact saved BA KH period diagnostics",
+  "reported_location": "aaPanel server",
+  "reported_dates": {
+    "issue_spk": "2026-11-09",
+    "issue_bakh": "2026-11-06",
+    "start": "2026-11-05",
+    "end": "2026-11-19",
+    "hk": 15,
+    "isolated_save_passes": true
+  },
+  "reproduced_case": {
+    "saved_draft_bakh": [
+      "2026-11-06",
+      "2026-11-18"
+    ],
+    "shown_automatic_bakh": [
+      "2026-11-05",
+      "2026-11-19"
+    ],
+    "matches_original_error": true,
+    "actual_server_cause_confirmed": false
+  },
+  "local_readonly_db_query": {
+    "matches": 0,
+    "limit": 20,
+    "not_server": true
+  },
+  "php": {
+    "tests": 344,
+    "assertions": 8540,
+    "database": ":memory:"
+  },
+  "frontend": 383,
+  "build": true,
+  "pint": true,
+  "assets": {
+    "refs": 43,
+    "preloads": 34,
+    "profiles": 3
+  },
+  "helper_sql_queries": 0,
+  "live_mutation": false,
+  "migration": false,
+  "server_deployed": false,
+  "limits": [
+    "UI SSR only for the new notice; authenticated browser/server not tested",
+    "No new Word/PDF render, document generators unchanged"
+  ]
+}

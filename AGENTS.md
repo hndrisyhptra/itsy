@@ -1,5 +1,13 @@
 # it's Area 3 — Development rules
 
+## 18 November 2026 — SPK saved BA KH period diagnostics
+
+User confirms issue on aaPanel; reported09Novissue/05–19Novwork/15HK passes isolated save. Reproduced stale saved Draft BA KH vs PP-derived form period; actual server source still unverified. Follow latest docs/BAKH_SCHEDULE.md and docs/SPK_TEMPLATE_WORD.md. Show exact saved BAKH number/range in SPK form; warn/link exact Draft when automatic PP period is not saved. Shared PHP/TS save/bundle error names both ranges and selected BAKH. Keep period containment/calendar/Branch/unit/issued/history locks, no automatic date extension/save/status/money/ledger rewrite; issue dates remain unrestricted. Loaded-data-only notice/helper0newSQL/API/schema/migration/live/server write. Record actual SSR/test/query/server limits; never claim local DB inspection diagnoses server.
+
+## 18 November 2026 — Dashboard approval count matrices
+
+Follow docs/DASHBOARD_APPROVAL_MATRIX.md. Dashboard Summary retains Region matrix; Status Approval has two numeric Branch/Region matrices, click counts for paged20/search/exactUUID Detail/Timeline/Preview, no PP list initially. Single current bucket perPP/payment: Draf, actual waiting role, Revisi, PPDisetujui or MenungguPelunasan/SudahDibayar. Honor Operation5+2, selected actor/current kasbonUUID, historical roles/supplemental review/scan/optionalAPM and canonical full settlement; never infer paid from approval/proof upload. Existing SQL account Branch/Region/unit source plus actor intersection before totals, closed/filter-changed modal cannot reuse unauthorized target. Reuse modal-replacing ProjectBundleReview/DocumentPreview and exact termSPKdealPP links; no first/sibling/ProjectCode fallback/PII fetch or workflow write. Map-based readmodel,20DOM clientpagination (not SQLpaging), lazy Status mount, existing revisionpolling only;0newSQL/API/schema/migration/live mutation. Record actual tests/browser/query/deploy limits.
+
 ## 18 November 2026 — BARP appendix without Construction Project Support
 
 Latest user removes only the Construction Mgr Project Support physical slot from Lampiran BA RP. Follow latest docs/BARP_APPENDIX.md: Head/Deployment/Waspang/Mandor4slot shared HTML/Word/print/package, dynamic responsive signature columns. Preserve Operation Officer1SS5slot, BAPP Head+last2=3slot, main BARP, stored support snapshot, actual application approvals/history and all money/ledger/guards. Loaded-data presentation only,0newSQL/API/schema/migration/live writes; record actual tests/Word/browserPDF/server limits.

@@ -1,0 +1,121 @@
+{
+  "date": "2026-11-18",
+  "feature": "Dashboard Summary and Status Approval numeric matrices",
+  "php": {
+    "tests": 343,
+    "assertions": 8530,
+    "database": ":memory:",
+    "scope_regressions": "existing AuthenticationTest and OperationAccessTest"
+  },
+  "frontend": {
+    "tests": 382,
+    "new_dashboard_tests": 8
+  },
+  "build": true,
+  "assets": {
+    "manifest_references": 43,
+    "preloads": 34,
+    "profiles": 3
+  },
+  "new_sql_queries": 0,
+  "new_api_endpoints": 0,
+  "new_pollers": 0,
+  "pagination": "client-memory, 20 DOM rows, existing scoped source graph",
+  "browser": [
+    {
+      "width": 375,
+      "theme": "light",
+      "default_summary": true,
+      "two_numeric_matrices": true,
+      "count_drilldown_45": true,
+      "pagination_20": true,
+      "search": true,
+      "one_preview_modal": true,
+      "branch_unit_filter": true,
+      "api_requests": 0,
+      "js_errors": 0,
+      "page_overflow": false
+    },
+    {
+      "width": 375,
+      "theme": "dark",
+      "default_summary": true,
+      "two_numeric_matrices": true,
+      "count_drilldown_45": true,
+      "pagination_20": true,
+      "search": true,
+      "one_preview_modal": true,
+      "branch_unit_filter": true,
+      "api_requests": 0,
+      "js_errors": 0,
+      "page_overflow": false
+    },
+    {
+      "width": 768,
+      "theme": "light",
+      "default_summary": true,
+      "two_numeric_matrices": true,
+      "count_drilldown_45": true,
+      "pagination_20": true,
+      "search": true,
+      "one_preview_modal": true,
+      "branch_unit_filter": true,
+      "api_requests": 0,
+      "js_errors": 0,
+      "page_overflow": false
+    },
+    {
+      "width": 768,
+      "theme": "dark",
+      "default_summary": true,
+      "two_numeric_matrices": true,
+      "count_drilldown_45": true,
+      "pagination_20": true,
+      "search": true,
+      "one_preview_modal": true,
+      "branch_unit_filter": true,
+      "api_requests": 0,
+      "js_errors": 0,
+      "page_overflow": false
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "default_summary": true,
+      "two_numeric_matrices": true,
+      "count_drilldown_45": true,
+      "pagination_20": true,
+      "search": true,
+      "one_preview_modal": true,
+      "branch_unit_filter": true,
+      "api_requests": 0,
+      "js_errors": 0,
+      "page_overflow": false
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "default_summary": true,
+      "two_numeric_matrices": true,
+      "count_drilldown_45": true,
+      "pagination_20": true,
+      "search": true,
+      "one_preview_modal": true,
+      "branch_unit_filter": true,
+      "api_requests": 0,
+      "js_errors": 0,
+      "page_overflow": false
+    }
+  ],
+  "visual_inspection": [
+    "1440 light matrix",
+    "375 dark matrix"
+  ],
+  "live_database_mutation": false,
+  "migration": false,
+  "limitations": [
+    "Synthetic browser data and isolated SQLite only, no live account/server/MySQL",
+    "No concurrency/load benchmark",
+    "No new Word/PDF rendering; existing preview/export code reused"
+  ]
+}

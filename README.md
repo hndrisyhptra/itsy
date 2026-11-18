@@ -1,5 +1,7 @@
 # it's Area 3 — Construction Workspace
 
+**18 November 2026 — Dashboard:** tab Summary mempertahankan Matriks Project per Region; tab Status Approval menampilkan matriks angka Paket PP dan Pembayaran per Branch sesuai akses/Unit Kerja. Klik angka untuk daftar, pencarian, Detail/Timeline/Preview. Tidak perlu migration khusus fitur dashboard. [Panduan dan QA](docs/DASHBOARD_APPROVAL_MATRIX.md).
+
 **18 November 2026 — Tanggal SPK:** tanggal penerbitan dapat dipilih lampau maupun mendatang pada draf, tanpa batas hari ini/tanggal mulai pekerjaan. Preview/Word/cetak mengikuti pilihan; Surabaya dan kunci dokumen terbit tetap. Tidak perlu migration khusus fitur ini. [Aturan dan QA](docs/SPK_TEMPLATE_WORD.md).
 
 **18 November 2026 — BA PP sebelum approval pembayaran:** simpan BA RP Final → sahkan BA PP → ajukan kasbon/pembayaran → tujuh approval → Finance transfer/lunas. Perubahan BARP mengharuskan pengesahan ulang. Berlaku Konstruksi/Operation; data lama tidak dikonversi massal dan tidak ada migration baru untuk fitur ini. [Alur dan penerapan](docs/BAPP_BEFORE_PAYMENT.md).

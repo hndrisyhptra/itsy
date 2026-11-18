@@ -12,7 +12,7 @@ import { type PartialPaymentRequest, usesPartialPayment, assertPartialApmReady, 
 export { requestPartialPayment, verifyPartialPayment } from './partial-payment';
 import { blankBarp, saveBarp, type BarpData } from './barp-form';
 import { syncSpkSigner } from './spk-signer';
-import { syncSpkIssuance } from './spk-issuance';
+import { syncSpkIssuance, spkPeriodError } from './spk-issuance';
 import { applyBudgetPlan } from './plan-budget';
 import { bakhPeriod, syncBakhPeriod } from './bakh-schedule';
 import { syncBakhSigner } from './bakh-signer';
@@ -192,7 +192,7 @@ export function applySpk(s:State,input:Spk,action:'save'|'generate'|'attest'='sa
   if (!v.no.trim()) throw new Error('Nomor SPK wajib diisi.');
   if (action !== 'save' && v.signerSource === 'pp-head-pmo' && (!v.signerUserId || !v.signer)) throw new Error('Head of PMO terpilih pada PP belum memiliki identitas penandatangan yang valid.');
   if (action !== 'save' && (!v.place || !v.date || !v.start || !v.end || !v.address || !v.supervisor || !v.phone || !v.signer || !v.position)) throw new Error('Lengkapi seluruh informasi SPK sebelum penerbitan.');
-  if (v.start > v.end || v.start < d.start || v.end > d.end) throw new Error('Periode SPK harus berada dalam periode BA KH.');
+  const periodError=spkPeriodError(v,d);if(periodError)throw new Error(periodError);
   const errs = dealErrors(s, d, true); if (errs.length) throw new Error(errs.join('\n'));
   v.status = action === 'attest' ? 'Sah' : action === 'generate' ? 'Terbit' : 'Draft'; if (old) s.spks[s.spks.indexOf(old)] = v; else s.spks.push(v);
   log(s, action === 'attest' ? 'SPK disahkan · volume committed' : action === 'generate' ? 'SPK diterbitkan' : 'Draft SPK disimpan', v.no, `/spk/${v.id}`); return v.id;
