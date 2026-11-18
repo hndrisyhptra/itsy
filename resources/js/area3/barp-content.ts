@@ -31,7 +31,7 @@ export const BARP_TEXT={
 };
 /** Existing issued documents without metadata stay unchanged; never invent a current date or a current account. */
 export function historicalBarp(deal:Deal,spk:Spk):BarpData {
-  return {version:1,date:'',place:spk.place,start:spk.start,end:spk.end,location:deal.location??'',sto:'',homepass:null,waspang:spk.supervisor,mandor:deal.mandor,headName:spk.signerSource==='pp-head-pmo'?spk.signer:'',headNik:spk.signerSource==='pp-head-pmo'?spk.signerNik??'':'',headUserId:spk.signerSource==='pp-head-pmo'?spk.signerUserId??'':''};
+  return {...(spk.signerJob?{headJob:spk.signerJob}:{}),version:1,date:'',place:spk.place,start:spk.start,end:spk.end,location:deal.location??'',sto:'',homepass:null,waspang:spk.supervisor,mandor:deal.mandor,headName:spk.signerSource==='pp-head-pmo'?spk.signer:'',headNik:spk.signerSource==='pp-head-pmo'?spk.signerNik??'':'',headUserId:spk.signerSource==='pp-head-pmo'?spk.signerUserId??'':''};
 }
 export function barpDocumentData(project:Project,deal:Deal,spk:Spk,term:Term){
   const round=(n:number)=>monetaryRound(n,term);
@@ -51,7 +51,7 @@ export function barpDocumentData(project:Project,deal:Deal,spk:Spk,term:Term){
     reconHeading:`Nilai Rekonsiliasi${singleFinal?'':` Tahap ${term.number}`} untuk Pengajuan Pembayaran`,
     reconText:`TELKOM AKSES dan Mandor sepakat bahwa nilai hasil rekonsiliasi${singleFinal?'':` tahap ${term.number}`} yang diajukan untuk pembayaran adalah sebesar ${amount}. Dengan rincian sebagai berikut:`,
     placeDate:`${BARP_PLACE}, ${date?.full??'…'}`,status:canPrintBarp(term)?'':canExportBarp(term)?'SALINAN REVIEW — MENUNGGU PERSETUJUAN':'DRAF — BELUM DIAJUKAN / PERLU PERBAIKAN',
-    waspang:filled(b.waspang),head:filled(b.headName),headNik:b.headNik?`NIK: ${b.headNik}`:'',material,service,total,
+    waspang:filled(b.waspang),head:filled(b.headName),headJob:b.headJob?.trim()||'HEAD OF PMO AREA JAWA BALI',headNik:b.headNik?`NIK: ${b.headNik}`:'',material,service,total,
     materialText:deal.rows.some(r=>r.m)?number.format(material):'',serviceText:deal.rows.some(r=>r.s)?number.format(service):'',totalText:number.format(total),
     zeroMaterial:deal.rows.some(r=>r.m)?'0':'',zeroService:deal.rows.some(r=>r.s)?'0':'',
   };

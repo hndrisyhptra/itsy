@@ -22,7 +22,9 @@ class AccountController extends Controller
     {
         $this->authorizeAdmin($request);
 
-        return view('auth.accounts', ['users' => User::orderBy('name')->get(), 'access' => app(AccountAccess::class)]);
+        $users = User::orderBy('name')->get();
+
+        return view('auth.accounts', ['users' => $users, 'contexts' => app(AccountAccess::class)->contexts($users)]);
     }
 
     public function edit(Request $request, ?User $user = null)
@@ -39,6 +41,7 @@ class AccountController extends Controller
         $request->merge(['email' => Str::lower((string) $request->input('email')), 'username' => Str::lower((string) $request->input('username'))]);
         $placement = app(AccountPlacement::class);
         $input = $request->validate(['name' => 'required|string|max:255', 'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user?->getKey(), 'id_user')],
+            'jabatan' => ['sometimes', 'nullable', 'string', 'max:250', 'regex:/\A[^\p{C}<>]*\z/u'],
             'password' => AuthController::passwordRules(! $user, 6), 'role' => ['required', Rule::in(array_keys(AccountAccess::ROLES))],
             'branches' => 'required|array|min:1|max:100', 'branches.*' => ['required', 'integer', 'distinct', Rule::exists('branches', 'id_branch')->where('is_active', true)->whereNull('deleted_at')],
             'active' => 'required|boolean'] + $placement->rules($user));
@@ -50,6 +53,9 @@ class AccountController extends Controller
             $account = $user ? User::whereKey($user->getKey())->lockForUpdate()->firstOrFail() : new User;
             $account->name = trim($input['name']);
             $account->email = Str::lower($input['email']);
+            if (array_key_exists('jabatan', $input)) {
+                $account->jabatan = trim($input['jabatan'] ?? '') ?: null;
+            }
             $account->fill(app(AccountPlacement::class)->fields($input));
             $account->active = (bool) $input['active'];
             if (! empty($input['password'])) {

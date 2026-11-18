@@ -41,7 +41,7 @@ test('issued BA KH keeps its stored signer identity and old documents never acqu
 
 test('BA KH signer fields are read-only and preview includes the real name and NIK with blank physical signature space',()=>{
   const {s,p,d}=fixture(),resolved=syncBakhSigner(s,d);
-  const fields=renderToStaticMarkup(createElement(BakhSignerFields,{deal:resolved}));assert.equal((fields.match(/readOnly=""/g)??[]).length,2);assert.match(fields,/value="Approved Head QA"/);assert.match(fields,/value="QA-001"/);
+  const fields=renderToStaticMarkup(createElement(BakhSignerFields,{deal:resolved}));assert.equal((fields.match(/readOnly=""/g)??[]).length,3);assert.match(fields,/value="Approved Head QA"/);assert.match(fields,/value="QA-001"/);assert.match(fields,/Jabatan penandatangan/);
   const preview=renderToStaticMarkup(createElement(DocumentPreview,{state:s,kind:'BA Kesepakatan Harga',project:p,deal:resolved,onClose:()=>{}}));assert.match(preview,/Head of PMO · Telkom Akses/);assert.match(preview,/Approved Head QA/);assert.match(preview,/NIK: QA-001/);assert.match(preview,/Area tanda tangan dokumen asli/);assert.doesNotMatch(preview,/>APPROVED</);
   const missing=renderToStaticMarkup(createElement(BakhSignerFields,{deal:{signer:'Selected Head QA',signerNik:''}}));assert.match(missing,/Lengkapi data akun Head of PMO/);
 });

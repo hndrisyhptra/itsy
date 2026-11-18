@@ -93,9 +93,9 @@ export function saveProjectV2(s: State, input: Project, submit: boolean, submitt
     p.planBudget ??= old?.planBudget; p.riskLevel ??= old?.riskLevel; p.signatureRows ??= old?.signatureRows;
     const actor=s.users.find(u=>u.id===s.actorUserId);
     Object.assign(p,applyBudgetPlan(s,p,submit,true));
-    p.preparedBy=old?.preparedBy??{userId:actor?.id??'',name:actor?.name??'',nik:actor?.nik??'',role:s.role,at:now()};
+    p.preparedBy={...(old?.preparedBy??{userId:actor?.id??'',name:actor?.name??'',nik:actor?.nik??'',role:s.role,at:now()}),job:s.users.find(u=>u.id===(old?.preparedBy?.userId??actor?.id))?.jabatan?.trim()??''};
     p.previousPlanning=old?.previousPlanning??(old&&!old.planBudget?{costs:structuredClone(old.costs),risk:old.risk,communication:old.communication,quality:old.quality}:undefined);
-    p.signatureUsers=Object.fromEntries(Object.entries(chain).map(([role,id])=>{const u=s.users.find(u=>u.id===id)!;return [role,{userId:u.id,name:u.name,nik:u.nik??''}];}));
+    p.signatureUsers=Object.fromEntries(Object.entries(chain).map(([role,id])=>{const u=s.users.find(u=>u.id===id)!;return [role,{userId:u.id,name:u.name,nik:u.nik??'',job:u.jabatan?.trim()??''}];}));
   }
   const errors = projectErrors(s, p,version>=3&&!p.parentId&&!submit); if (errors.length) throw new Error(errors.join('\n'));
   if (submit && (!p.intro.trim() || (!p.planTemplateVersion && (!p.team.length || p.team.some(t => !t.name.trim() || !t.job.trim()))) || (!p.planBudget && !p.risk.trim()) || !p.communication.trim() || !p.quality.trim() || p.schedule.some(v => (!p.planTemplateVersion || v.days > 0) && (!v.start || !v.end)))) throw new Error('Lengkapi seluruh rencana PP sebelum diajukan.');
@@ -107,7 +107,7 @@ export function decideProject(s: State, id: string, decision: Approval['decision
   recordCommand('decideProject', [id, decision, note]); const p = getProject(s, id), role = projectApprovalRole(p);
   if (!role) throw new Error('PP belum diajukan untuk approval.'); assertAssigned(s, p, role);
   if (decision !== 'Setujui' && !note.trim()) throw new Error('Alasan pengembalian/penolakan wajib.');
-  const a: Approval = { role, userId: s.actorUserId, actorName: s.users.find(u => u.id === s.actorUserId)?.name, actorNik:s.users.find(u=>u.id===s.actorUserId)?.nik, decision, note: note.trim(), at: now() };
+  const a: Approval = { role, userId: s.actorUserId, actorName: s.users.find(u => u.id === s.actorUserId)?.name, actorNik:s.users.find(u=>u.id===s.actorUserId)?.nik, actorJob:s.users.find(u=>u.id===s.actorUserId)?.jabatan?.trim()??'', decision, note: note.trim(), at: now() };
   (p.approvalHistory ??= []).push(a); p.approvals ??= [];
   if (decision === 'Setujui') { p.approvals.push(a); if (p.approvals.length === approvalRoles(p,true).length) p.status = 'Sah'; } else { p.status = decision === 'Kembalikan' ? 'Dikembalikan' : 'Ditolak'; p.approvals = []; }
   if(p.status==='Sah')approveProjectBundle(s,p);

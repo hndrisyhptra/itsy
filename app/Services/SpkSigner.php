@@ -4,7 +4,7 @@ namespace App\Services;
 
 final class SpkSigner
 {
-    private const FIELDS = ['signerUserId', 'signerNik', 'signerRole', 'signerSource'];
+    private const FIELDS = ['signerUserId', 'signerNik', 'signerRole', 'signerSource', 'signerJob'];
 
     public static function sync(array $state, array $spk, bool $required = false): array
     {
@@ -19,6 +19,8 @@ final class SpkSigner
             return $spk;
         }
 
-        return array_merge($spk, BakhSigner::projectIdentity($state, $project, $required), ['position' => 'HEAD OF PMO AREA JAWA BALI']);
+        $identity = BakhSigner::projectIdentity($state, $project, $required);
+
+        return array_merge($spk, $identity, ['position' => $identity['signerJob'] ?? 'HEAD OF PMO AREA JAWA BALI']);
     }
 }

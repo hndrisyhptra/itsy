@@ -82,6 +82,24 @@ class BundleSettlementTest extends TestCase
         return [[false], [true]];
     }
 
+    public function test_new_kasbon_captures_account_titles_in_one_existing_batch_and_keeps_issued_snapshot(): void
+    {
+        $t = $this->draftPayment();
+        foreach (['Admin Konstruksi', ...PrototypeDomain::APPROVERS_V3, 'Mgr Finance & Settlement'] as $role) {
+            $this->accounts[$role]->update(['jabatan' => 'Jabatan kasbon QA '.$role]);
+        }
+        $this->submitKasbon($t, $this->kasbon($t) + ['issuerJob' => 'FORGED', 'signers' => ['Head of PMO' => ['job' => 'FORGED']]])->assertOk();
+        $data = $this->getJson('/api/finance/terms/'.$t['id'].'/kasbon?current_only=1')->assertOk()->json('documents.0.data');
+        $this->assertSame('Jabatan kasbon QA Admin Konstruksi', $data['issuerJob']);
+        foreach ([...PrototypeDomain::APPROVERS_V3, 'Mgr Finance & Settlement'] as $role) {
+            $this->assertSame('Jabatan kasbon QA '.$role, $data['signers'][$role]['job']);
+        }
+        $original = DB::table('finance_kasbons')->value('private_data');
+        $this->accounts['Mgr Finance & Settlement']->update(['jabatan' => 'Jabatan diubah kemudian']);
+        $this->assertSame($data, $this->getJson('/api/finance/terms/'.$t['id'].'/kasbon?current_only=1')->assertOk()->json('documents.0.data'));
+        $this->assertSame($original, DB::table('finance_kasbons')->value('private_data'));
+    }
+
     #[DataProvider('paymentTypes')]
     public function test_kasbon_before_seven_real_decisions_transfer_and_apm_with_private_review_and_sql_order(bool $final): void
     {

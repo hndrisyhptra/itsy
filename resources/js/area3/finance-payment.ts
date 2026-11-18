@@ -86,8 +86,8 @@ export function setKasbonPrintSigner(s:State,id:string,kasbonId:string,userId:st
   const p=projectForSpk(s,getSpk(s,t.spkId));
   if(user.branches&&!user.branches.includes(p.branch))throw new Error('Penandatangan harus ditugaskan pada Branch PP.');
   recordCommand('setKasbonPrintSigner',[id,kasbonId,userId]);
-  const before=t.kasbonPrintSigners?.[kasbonId];if(before?.userId===user.id&&before.name===user.name)return;
-  const after={userId:user.id,name:user.name,job:'Mgr Finance & Settlement Area Jawa Bali',at:now(),by:s.actorUserId!};
+  const before=t.kasbonPrintSigners?.[kasbonId];if(before?.userId===user.id&&before.name===user.name&&before.job===(user.jabatan?.trim()||'Mgr Finance & Settlement Area Jawa Bali'))return;
+  const after={userId:user.id,name:user.name,job:user.jabatan?.trim()||'Mgr Finance & Settlement Area Jawa Bali',at:now(),by:s.actorUserId!};
   (t.kasbonPrintSigners??={})[kasbonId]=after;(t.kasbonPrintSignerHistory??=[]).push({kasbonId,before:before??null,after});
   log(s,'Penandatangan fisik kasbon diperbarui',user.name+' · Mgr Finance & Settlement','/termin/'+id);
 }

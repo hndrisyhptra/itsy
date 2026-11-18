@@ -39,8 +39,8 @@ export function SpkIssueFields({spk,disabled,onDateChange}:{spk:Pick<Spk,'date'|
 export function BakhPlaceField() {
   return <Field label="Tempat penandatanganan" hint="Otomatis Surabaya khusus BA Negosiasi Kesepakatan Harga."><input aria-label="Tempat penandatanganan BA KH" readOnly value={BAKH_SIGNING_PLACE}/></Field>;
 }
-export function BakhSignerFields({deal}:{deal:Pick<Deal,'signer'|'signerNik'>}) {
-  return <><Field label="Penandatangan Telkom Akses · Head of PMO" hint="Otomatis mengikuti Head of PMO yang dipilih pada PP."><input aria-label="Nama Head of PMO BA KH" readOnly value={deal.signer} placeholder="Head of PMO belum ditetapkan pada PP"/></Field><Field label="NIK Head of PMO" hint={deal.signerNik?'Identitas penandatangan dari PP.':'NIK belum tersedia. Lengkapi data akun Head of PMO.'}><input aria-label="NIK Head of PMO BA KH" readOnly value={deal.signerNik??''} placeholder="NIK belum tersedia"/></Field></>;
+export function BakhSignerFields({deal}:{deal:Pick<Deal,'signer'|'signerNik'|'signerJob'>}) {
+  return <><Field label="Penandatangan Telkom Akses · Head of PMO" hint="Otomatis mengikuti Head of PMO yang dipilih pada PP."><input aria-label="Nama Head of PMO BA KH" readOnly value={deal.signer} placeholder="Head of PMO belum ditetapkan pada PP"/></Field><Field label="NIK Head of PMO" hint={deal.signerNik?'Identitas penandatangan dari PP.':'NIK belum tersedia. Lengkapi data akun Head of PMO.'}><input aria-label="NIK Head of PMO BA KH" readOnly value={deal.signerNik??''} placeholder="NIK belum tersedia"/></Field><Field label="Jabatan penandatangan"><input readOnly value={deal.signerJob?.trim()||'HEAD OF PMO AREA JAWA BALI'}/></Field></>;
 }
 export function ContractHub({ s }: { s: State }) {
   const [stage, setStage] = useState('ba-kh');

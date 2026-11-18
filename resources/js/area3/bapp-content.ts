@@ -14,7 +14,7 @@ export function bappDocumentData(project:Project,deal:Deal,spk:Spk,term:Term){
   const contract=dealTotal(deal);
   const data={
     title:'BERITA ACARA PENYELESAIAN PEKERJAAN',date,
-    job:barp.job,mandor:barp.mandor,waspang:barp.waspang,head:barp.head,status:barp.status,
+    job:barp.job,mandor:barp.mandor,waspang:barp.waspang,head:barp.head,headJob:barp.headJob,status:barp.status,
     start:start?.full??'…',end:end?.full??'…',progress:contract>0?`${percent.format(barp.total/contract*100)}%`:'…',
     stage:single?'':`Tahap ${term.number}`,payment:single?'pembayaran':`Termin ${term.number}`,
     total:barp.total,totalText:`Rp ${barp.totalText},-`,

@@ -1,0 +1,53 @@
+{
+  "date": "2026-11-18",
+  "feature": "Legacy Sah PP official account title fallback",
+  "user_confirmed_status": "Sah",
+  "cause": "signaturePerson previously consulted account jabatan only for editable drafts; legacy submitted/approved PP with no captured job used template labels.",
+  "change": "Missing or blank saved PP job/actual actorJob may resolve current active same-userId/same-role/PP-Branch account jabatan. Nonblank historical jobs retain priority. No write/backfill of PP or decisions.",
+  "scope": [
+    "PP closing display",
+    "same rendered PP Word/print source"
+  ],
+  "unchanged": [
+    "actual assignees",
+    "name/NIK/date resolver",
+    "approval decisions/history/status",
+    "EVP row",
+    "BA KH/SPK/BARP/BA PP/kasbon snapshots",
+    "financial and volume data"
+  ],
+  "tests": {
+    "php": 327,
+    "php_assertions": 8061,
+    "database": "isolated SQLite :memory:",
+    "frontend": 360,
+    "typecheck_build": "passed",
+    "assets": {
+      "references": 42,
+      "preloads": 33,
+      "profiles": 3
+    },
+    "diff_check": "passed"
+  },
+  "regressions": [
+    "Diajukan/Sah \u00d7 absent/empty/whitespace saved job",
+    "same-ID account fallback only",
+    "saved snapshot/actual decision title precedence",
+    "no read-time state mutation",
+    "wrong role/wrong Branch/inactive/missing account safe default",
+    "PP render contains new account title; EVP unchanged"
+  ],
+  "performance": {
+    "new_api": 0,
+    "new_sql": 0,
+    "new_dependencies": 0,
+    "new_migration": 0,
+    "notes": "Reuses authorized account metadata and existing four-row resolver; no extra per-row network or SQL lookup."
+  },
+  "limits": [
+    "No fresh browser or DOCX/PDF rendering for this single-resolver correction; existing export suites pass.",
+    "No live its/account/workspace/environment/worker/aaPanel/MySQL/deployment mutations.",
+    "Reload page once after new assets/account edits to fetch current user metadata.",
+    "Nonblank captured historical title is intentionally retained."
+  ]
+}

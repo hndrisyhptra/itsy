@@ -176,6 +176,8 @@ trait PrototypeWorkflowV2
             $p = ProjectPlanBudget::apply($p, $owners, $submit, true);
             $actor = $this->existing('users', $this->state['actorUserId'] ?? '') ?? [];
             $p['preparedBy'] = $old['preparedBy'] ?? ['userId' => $actor['id'] ?? '', 'name' => $actor['name'] ?? '', 'nik' => $actor['nik'] ?? '', 'role' => $this->state['role'], 'at' => now()->toISOString()];
+            $preparer = $this->existing('users', $p['preparedBy']['userId']) ?? [];
+            $p['preparedBy']['job'] = trim($preparer['jabatan'] ?? '');
             if (isset($old['previousPlanning'])) {
                 $p['previousPlanning'] = $old['previousPlanning'];
             } elseif ($old && ! isset($old['planBudget'])) {
@@ -184,7 +186,7 @@ trait PrototypeWorkflowV2
             $p['signatureUsers'] = [];
             foreach ($assignments as $role => $userId) {
                 $u = $this->record('users', $userId);
-                $p['signatureUsers'][$role] = ['userId' => $u['id'], 'name' => $u['name'], 'nik' => $u['nik'] ?? ''];
+                $p['signatureUsers'][$role] = ['userId' => $u['id'], 'name' => $u['name'], 'nik' => $u['nik'] ?? '', 'job' => trim($u['jabatan'] ?? '')];
             }
         }
         $p['no'] = $old['no'] ?? $this->nextProjectNumber($p);
@@ -243,6 +245,7 @@ trait PrototypeWorkflowV2
             $this->fail('Alasan pengembalian/penolakan wajib.');
         }
         $a = ['role' => $role, 'userId' => $this->state['actorUserId'], 'actorName' => $this->record('users', $this->state['actorUserId'])['name'], 'actorNik' => $this->record('users', $this->state['actorUserId'])['nik'] ?? '', 'decision' => $decision, 'note' => $note, 'at' => now()->toISOString()];
+        $a['actorJob'] = trim($this->record('users', $this->state['actorUserId'])['jabatan'] ?? '');
         $p['approvalHistory'][] = $a;
         if ($decision === 'Setujui') {
             $p['approvals'][] = $a;

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class AccountAccess
@@ -33,17 +34,37 @@ class AccountAccess
         if (! $user || ($requireActive && ! $user->active)) {
             return null;
         }
-        $assignments = DB::table('user_assignments as a')->join('roles as r', 'r.id_role', '=', 'a.role_id')
+        $assignments = $this->assignments([$user->getKey()])->get($user->getKey(), collect());
+
+        return $this->fromAssignments($user, $assignments);
+    }
+
+    /** Account list: one assignment query for all loaded users, never one per row. */
+    public function contexts(Collection $users): array
+    {
+        $assignments = $this->assignments($users->modelKeys());
+
+        return $users->mapWithKeys(fn ($user) => [$user->getKey() => $this->fromAssignments($user, $assignments->get($user->getKey(), collect()))])->all();
+    }
+
+    private function assignments(array $ids): Collection
+    {
+        return DB::table('user_assignments as a')->join('roles as r', 'r.id_role', '=', 'a.role_id')
             ->join('branches as b', 'b.id_branch', '=', 'a.branch_id')
-            ->where('a.user_id', $user->getKey())->where('a.active', true)->where('b.is_active', true)->whereNull('b.deleted_at')
-            ->whereIn('r.code', array_keys(self::ROLES))->get(['r.code', 'b.id_branch', 'b.name']);
+            ->when(count($ids) === 1, fn ($query) => $query->where('a.user_id', $ids[0]), fn ($query) => $query->whereIn('a.user_id', $ids))
+            ->where('a.active', true)->where('b.is_active', true)->whereNull('b.deleted_at')
+            ->whereIn('r.code', array_keys(self::ROLES))->get(['a.user_id', 'r.code', 'b.id_branch', 'b.name'])->groupBy('user_id');
+    }
+
+    private function fromAssignments(User $user, Collection $assignments): ?array
+    {
         $roles = $assignments->pluck('code')->unique();
         if ($roles->count() !== 1 || $assignments->isEmpty() || $roles->first() !== $user->role) {
             return null;
         }
 
         return ['id' => 'db-user-'.$user->getKey(), 'userId' => $user->getKey(), 'name' => $user->name, 'email' => $user->email,
-            'username' => $user->username, 'role' => self::ROLES[$roles->first()], 'code' => $roles->first(),
+            'username' => $user->username, 'jabatan' => $user->jabatan ?? '', 'role' => self::ROLES[$roles->first()], 'code' => $roles->first(),
             'branchIds' => $assignments->pluck('id_branch')->unique()->values()->all(),
             'branches' => $assignments->pluck('name')->unique()->values()->all()];
     }

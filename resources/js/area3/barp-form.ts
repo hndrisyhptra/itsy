@@ -5,11 +5,11 @@ import { today } from './domain';
 import { projectHeadIdentity } from './bakh-signer';
 import { bakhDocumentDate } from './bakh-content';
 
-export interface BarpData { version:1|2;job?:string;deployment?:BarpSigner;support?:BarpSigner;date:string;place:string;start:string;end:string;location:string;sto:string;homepass:number|null;waspang:string;mandor:string;headName:string;headNik:string;headUserId:string }
+export interface BarpData { version:1|2;headJob?:string;job?:string;deployment?:BarpSigner;support?:BarpSigner;date:string;place:string;start:string;end:string;location:string;sto:string;homepass:number|null;waspang:string;mandor:string;headName:string;headNik:string;headUserId:string }
 export function blankBarp(s:State,t:Term):BarpData {
   const v=s.spks.find(v=>v.id===t.spkId)!,d=s.deals.find(d=>d.id===v.dealId)!,p=s.projects.find(p=>p.id===d.projectId)!;
   const head=(t.workflowVersion??1)>=3?projectHeadIdentity(s,{...p,approverUserIds:t.approverUserIds,approvals:[...t.approvals,...(p.approvals??[])]}):v.signerSource==='pp-head-pmo'?v:undefined;
-  return {version:2,job:p.name,deployment:paymentSigner(s,p,t,'Mgr Deployment',true),support:paymentSigner(s,p,t,'Mgr Project Support',true),date:today(),place:BARP_PLACE,start:v.start,end:v.end,location:d.location??'',sto:'',homepass:null,waspang:v.supervisor,mandor:d.mandor,headName:head?.signer??'',headNik:head?.signerNik??'',headUserId:head?.signerUserId??''};
+  return {...(head?.signerJob?{headJob:head.signerJob}:{}),version:2,job:p.name,deployment:paymentSigner(s,p,t,'Mgr Deployment',true),support:paymentSigner(s,p,t,'Mgr Project Support',true),date:today(),place:BARP_PLACE,start:v.start,end:v.end,location:d.location??'',sto:'',homepass:null,waspang:v.supervisor,mandor:d.mandor,headName:head?.signer??'',headNik:head?.signerNik??'',headUserId:head?.signerUserId??''};
 }
 export function saveBarp(s:State,t:Term,input:Term,submit:boolean):Term {
   if(!t.barp&&!Object.hasOwn(input,'barp'))return t;

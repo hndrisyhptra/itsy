@@ -6,7 +6,7 @@ use Illuminate\Validation\ValidationException;
 
 final class BakhSigner
 {
-    private const FIELDS = ['signerUserId', 'signerNik', 'signerRole', 'signerSource'];
+    private const FIELDS = ['signerUserId', 'signerNik', 'signerRole', 'signerSource', 'signerJob'];
 
     public static function sync(array $state, array $deal, bool $required = false): array
     {
@@ -49,6 +49,8 @@ final class BakhSigner
             throw ValidationException::withMessages(['prototype' => ['Head of PMO terpilih pada PP belum memiliki identitas penandatangan yang valid.']]);
         }
 
-        return ['signer' => $name, 'signerUserId' => $id, 'signerNik' => $nik, 'signerRole' => $role, 'signerSource' => 'pp-head-pmo'];
+        $job = $first($snapshot['job'] ?? null, $decision['actorJob'] ?? null, $user['jabatan'] ?? null);
+
+        return ['signer' => $name, 'signerUserId' => $id, 'signerNik' => $nik, 'signerRole' => $role, 'signerSource' => 'pp-head-pmo', ...($job !== '' ? ['signerJob' => $job] : [])];
     }
 }

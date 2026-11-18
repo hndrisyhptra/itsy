@@ -845,6 +845,7 @@ class PrototypeDomain
         if (($t['workflowVersion'] ?? 1) >= 2) {
             $a['userId'] = $this->state['actorUserId'];
             $a['actorName'] = $this->record('users', $a['userId'])['name'];
+            $a['actorJob'] = trim($this->record('users', $a['userId'])['jabatan'] ?? '');
         }
         if (self::usesSettlementPayment($t)) {
             if (empty($t['kasbon']['id'])) {
@@ -1095,6 +1096,7 @@ class PrototypeDomain
                 $p = ProjectPlanBudget::apply($p, $owners, false, true);
                 $actor = $this->existing('users', $this->state['actorUserId'] ?? '') ?? [];
                 $p['preparedBy'] = ['userId' => $actor['id'] ?? '', 'name' => $actor['name'] ?? '', 'nik' => $actor['nik'] ?? '', 'role' => $this->state['role'], 'at' => now()->toISOString()];
+                $p['preparedBy']['job'] = trim($actor['jabatan'] ?? '');
             }
         }
         $this->put('projects', $p);

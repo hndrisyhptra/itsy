@@ -22,9 +22,9 @@ export function barpAppendixData(state:State,project:Project,deal:Deal,spk:Spk,t
   const deployment=term.barp?.deployment??paymentSigner(state,project,term,'Mgr Deployment');
   const support=term.barp?.support??paymentSigner(state,project,term,'Mgr Project Support');
   const signatures=[
-    {job:'HEAD OF PMO AREA JAWA BALI',name:letter.head,nik:term.barp?.headNik??''},
-    {job:'MGR PROJECT DEPLOYMENT AREA JAWA BALI',name:deployment.name||'…',nik:deployment.nik},
-    {job:'MGR PROJECT SUPPORT AREA JAWA BALI',name:support.name||'…',nik:support.nik},
+    {job:letter.headJob,name:letter.head,nik:term.barp?.headNik??''},
+    {job:deployment.job?.trim()||'MGR PROJECT DEPLOYMENT AREA JAWA BALI',name:deployment.name||'…',nik:deployment.nik},
+    {job:support.job?.trim()||'MGR PROJECT SUPPORT AREA JAWA BALI',name:support.name||'…',nik:support.nik},
     {job:'WASPANG PROJECT',name:letter.waspang,nik:''},
     {job:'KETUA MANDOR',name:letter.mandor,nik:''},
   ];

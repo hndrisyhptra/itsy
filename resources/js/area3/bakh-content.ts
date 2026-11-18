@@ -38,7 +38,7 @@ export const BAKH_TEXT = {
 
 export function bakhSignatures(deal: Deal, appendix = false) {
   return [
-    { title: appendix ? 'TELKOM AKSES' : 'PT TELKOM AKSES', name: deal.signer || (appendix ? 'Belum ditetapkan' : '…'), job: deal.signerRole === 'Head of PMO' ? 'HEAD OF PMO AREA JAWA BALI' : 'Penandatangan sesuai BA KH', nik: deal.signerSource === 'pp-head-pmo' ? `NIK: ${deal.signerNik || 'Belum tersedia'}` : '' },
+    { title: appendix ? 'TELKOM AKSES' : 'PT TELKOM AKSES', name: deal.signer || (appendix ? 'Belum ditetapkan' : '…'), job: deal.signerJob?.trim() || (deal.signerRole === 'Head of PMO' ? 'HEAD OF PMO AREA JAWA BALI' : 'Penandatangan sesuai BA KH'), nik: deal.signerSource === 'pp-head-pmo' ? `NIK: ${deal.signerNik || 'Belum tersedia'}` : '' },
     { title: 'MANDOR PROJECT', name: deal.mandor || (appendix ? 'Belum ditetapkan' : '…'), job: appendix ? 'KETUA MANDOR' : 'KETUA', nik: '' },
   ];
 }

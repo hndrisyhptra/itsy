@@ -34,12 +34,12 @@ class AuthenticatedWorkspace
             ])->all();
         $assignments = DB::table('user_assignments as a')->join('roles as r', 'r.id_role', '=', 'a.role_id')->join('branches as b', 'b.id_branch', '=', 'a.branch_id')
             ->where('a.active', true)->where('b.is_active', true)->whereNull('b.deleted_at')->get(['a.user_id', 'r.code', 'b.name'])->groupBy('user_id');
-        $state['users'] = User::orderBy('name')->get(['id_user', 'name', 'email', 'nik', 'role', 'active'])->map(function ($user) use ($assignments) {
+        $state['users'] = User::orderBy('name')->get(['id_user', 'name', 'email', 'nik', 'jabatan', 'role', 'active'])->map(function ($user) use ($assignments) {
             $rows = $assignments->get($user->getKey(), collect())->whereIn('code', array_keys(AccountAccess::ROLES));
             $codes = $rows->pluck('code')->unique();
 
             return ['id' => 'db-user-'.$user->getKey(), 'name' => $user->name, 'email' => $user->email, 'nik' => $user->nik ?? '',
-                'role' => AccountAccess::ROLES[$codes->first() ?? ''] ?? 'Admin Konstruksi',
+                'jabatan' => $user->jabatan ?? '', 'role' => AccountAccess::ROLES[$codes->first() ?? ''] ?? 'Admin Konstruksi',
                 'active' => $user->active && $codes->count() === 1 && $codes->first() === $user->role && $rows->isNotEmpty(), 'branches' => $rows->pluck('name')->unique()->values()->all()];
         })->all();
         $state['khs'] = $this->catalog($state['khs']);

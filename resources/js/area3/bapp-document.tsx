@@ -19,7 +19,7 @@ export function BappDocument({project,deal,spk,term}:{project:Project;deal:Deal;
     <section className="bapp-signatures" aria-label="Penandatangan BA Penyelesaian Pekerjaan">
       <p className="bapp-place-date">{v.placeDate}</p>
       <div className="bapp-signature-pair">{[{job:'WASPANG PROJECT',name:v.waspang},{job:'KETUA MANDOR',name:v.mandor}].map(s=><div key={s.job}><strong>{s.job}</strong><div className="bapp-signature-space" aria-label="Area TTD basah dokumen asli"/><strong>{s.name}</strong></div>)}</div>
-      <div className="bapp-head"><strong>Mengetahui / Menyetujui :</strong><div className="bapp-signature-space" aria-label="Area TTD basah dokumen asli"/><strong className="bapp-head-name">{v.head}</strong><br/><strong>HEAD OF PMO AREA JAWA BALI</strong></div>
+      <div className="bapp-head"><strong>Mengetahui / Menyetujui :</strong><div className="bapp-signature-space" aria-label="Area TTD basah dokumen asli"/><strong className="bapp-head-name">{v.head}</strong><br/><strong>{v.headJob}</strong></div>
     </section>
   </article>;
 }

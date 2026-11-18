@@ -17,3 +17,8 @@ Kode role disimpan sebagai string, bukan enum tipe SQL. Laravel membatasi piliha
 Penambahan identitas ini belum memberikan hak khusus inbox, persetujuan, Finance/APM, pengelolaan master, atau bypass Branch. Hak aksi tetap ditentukan oleh pemeriksaan otorisasi pada setiap fitur. Pemetaan kewenangan Operation perlu ditetapkan sebelum mengubah aturan tersebut.
 
 Migration hanya memasukkan tujuh baris katalog role jika belum tersedia. Tidak mengubah akun, assignment, penempatan, transaksi, snapshot, atau workspace archive; tidak menambah query pada runtime request. Rollback menolak menghapus role yang sudah dipakai akun/assignment.
+
+
+## 18 November 2026 — Jabatan terpisah dari role
+
+users.jabatan nullableVARCHAR250 dikelola Superadmin pada form/daftar akun. Label resmi ini ditangkap ke snapshot penandatangan PP/BA KH/SPK/BARP/BA PP/kasbon dan dipakai pada preview/Word/print; tidak memberikan hak akses atau menjalankan flow Operation. Edit akun tidak menulis ulang dokumen issued/approved/paid. Akun lama kosong memakai default template. Lihat [USER_JABATAN](USER_JABATAN.md) untuk migration, snapshot/query guards dan bukti QA.

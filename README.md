@@ -1,5 +1,8 @@
 # it's Area 3 — Construction Workspace
 
+**Jabatan akun — 18 November 2026:** Superadmin dapat mengisi Jabatan resmi pada Kelola Akun. Penandatangan PP VIII.PENUTUP dan dokumen terkait/Word/print memakai jabatan tersimpan; role akses tetap. Migration `2026_11_18_000001_add_jabatan_to_users` perlu dijalankan operator, belum diterapkan agen ke its aktif/server. Dokumen lama terkunci tidak berubah otomatis. [Perilaku dan penerapan](docs/USER_JABATAN.md).
+
+
 **17 November 2026 — Profil:** semua akun aktif dapat mengganti kata sandi sendiri melalui Profil & Preferensi, memakai kata sandi saat ini dan konfirmasi baru (minimal6karakter huruf+angka). Tema gelap/terang kini di sebelah notifikasi, langsung tanpa konfirmasi. Tidak perlu migration. [Panduan dan batas](docs/SELF_SERVICE_PASSWORD.md).
 
 **16 November 2026 — Paket Dokumen:** pada BA PP Sah, ikon Aksi menyediakan satu Word atau Cetak/Simpan PDF berisi PP, BA KH/lampiran, SPK/lampiran, BARP/lampiran/kasbon aktif setiap pembayaran, BA PP/lampiran. Ruang TTD hasil unduh/cetak kosong. Timeline/detail mengikuti paket5approval dan kasbon sebelum7approval; List Payment putih tanpa gradient. Tidak perlu migration baru. [Penggunaan, akses dan pengujian](docs/DOCUMENT_PACKAGE.md).

@@ -26,6 +26,7 @@ class User extends Authenticatable
         'password',
         'username',
         'nik',
+        'jabatan',
         'id_regions',
         'id_branch',
         'id_service_areas',

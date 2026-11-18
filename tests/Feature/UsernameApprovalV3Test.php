@@ -97,6 +97,30 @@ class UsernameApprovalV3Test extends TestCase
         return $p;
     }
 
+    public function test_account_jabatan_is_canonical_in_pp_and_real_decision_snapshots_without_get_backfill(): void
+    {
+        $p = $this->budgetProject();
+        foreach (['Admin Konstruksi', ...PrototypeDomain::APPROVERS_V3] as $role) {
+            $this->accounts[$role]->update(['jabatan' => 'Jabatan QA '.$role]);
+        }
+        $p['signatureUsers'] = ['Head of PMO' => ['userId' => $this->chain()['Head of PMO'], 'name' => 'FORGED', 'job' => 'FORGED']];
+        $this->api('saveProject', [$p, false])->assertOk();
+        $saved = $this->projectRecord($p['id']);
+        $this->assertSame('Jabatan QA Admin Konstruksi', $saved['preparedBy']['job']);
+        foreach (PrototypeDomain::APPROVERS_V3 as $role) {
+            $this->assertSame('Jabatan QA '.$role, $saved['signatureUsers'][$role]['job']);
+        }
+        $this->api('saveProject', [$saved, true])->assertOk();
+        $this->asRole('PM Konstruksi');
+        $this->api('decideProject', [$p['id'], 'Setujui', ''])->assertOk();
+        $saved = $this->projectRecord($p['id']);
+        $this->assertSame('Jabatan QA PM Konstruksi', $saved['approvals'][0]['actorJob']);
+        $raw = DB::table('project_plans')->where('source_id', $p['id'])->value('document_data');
+        $this->accounts['PM Konstruksi']->update(['jabatan' => 'Jabatan sudah berubah']);
+        $this->assertSame('Jabatan QA PM Konstruksi', $this->projectRecord($p['id'])['signatureUsers']['PM Konstruksi']['job']);
+        $this->assertSame($raw, DB::table('project_plans')->where('source_id', $p['id'])->value('document_data'));
+    }
+
     public function test_mandor_material_revenue_is_server_owned_persisted_and_does_not_add_row_queries(): void
     {
         $p = $this->budgetProject();

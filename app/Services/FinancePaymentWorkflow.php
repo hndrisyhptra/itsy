@@ -108,10 +108,11 @@ trait FinancePaymentWorkflow
             $this->fail('Penandatangan harus ditugaskan pada Branch PP.');
         }
         $before = $t['kasbonPrintSigners'][$kasbonId] ?? null;
-        if (($before['userId'] ?? '') === $user['id'] && ($before['name'] ?? '') === $user['name']) {
+        $job = trim($user['jabatan'] ?? '') ?: 'Mgr Finance & Settlement Area Jawa Bali';
+        if (($before['userId'] ?? '') === $user['id'] && ($before['name'] ?? '') === $user['name'] && ($before['job'] ?? '') === $job) {
             return null;
         }
-        $after = ['userId' => $user['id'], 'name' => $user['name'], 'job' => 'Mgr Finance & Settlement Area Jawa Bali',
+        $after = ['userId' => $user['id'], 'name' => $user['name'], 'job' => $job,
             'at' => now()->toISOString(), 'by' => $this->state['actorUserId']];
         $t['kasbonPrintSigners'][$kasbonId] = $after;
         $t['kasbonPrintSignerHistory'][] = ['kasbonId' => $kasbonId, 'before' => $before, 'after' => $after];

@@ -63,7 +63,7 @@ trait LegacySettlementReview
         }
         foreach ($targets as $target) {
             $t = $terms[$target['id']];
-            $r = ['version' => 1, 'kasbonId' => $t['kasbon']['id'], 'userId' => $user['id'], 'name' => $user['name'],
+            $r = ['version' => 1, 'kasbonId' => $t['kasbon']['id'], 'userId' => $user['id'], 'name' => $user['name'], 'job' => trim($user['jabatan'] ?? '') ?: 'Mgr Finance & Settlement Area Jawa Bali',
                 'assignedAt' => now()->toISOString(), 'assignedBy' => $this->state['actorUserId']];
             $t['legacySettlementReview'] = $r;
             $t['legacySettlementReviewHistory'][] = $r;

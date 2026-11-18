@@ -1,7 +1,7 @@
 import {type Approval,type State,type Term,getTerm,approvalRoles,now,log} from './domain';
 import {usesFinancePayment,usesSettlementPayment} from './finance-payment';
 import {recordCommand} from './commands';
-export interface LegacySettlementReview {version:1;kasbonId:string;userId:string;name:string;assignedAt:string;assignedBy:string;decision?:Approval&{kasbonId:string}}
+export interface LegacySettlementReview {version:1;kasbonId:string;userId:string;name:string;job?:string;assignedAt:string;assignedBy:string;decision?:Approval&{kasbonId:string}}
 export const legacyReviewApproved=(t:Term)=>!t.legacySettlementReview||(t.legacySettlementReview.kasbonId===t.kasbon?.id&&t.legacySettlementReview.decision?.decision==='Setujui'&&t.legacySettlementReview.decision.role==='Mgr Finance & Settlement'&&t.legacySettlementReview.decision.userId===t.legacySettlementReview.userId&&t.legacySettlementReview.decision.kasbonId===t.kasbon?.id);
 export const legacyReviewPending=(t:Term)=>!!t.legacySettlementReview&&usesFinancePayment(t)&&!usesSettlementPayment(t)&&t.status==='Disetujui'&&t.paid===0&&t.apmStatus!=='Valid'&&t.financePayment?.status==='Kasbon Terbit'&&!legacyReviewApproved(t);
 export const canReviewLegacySettlement=(s:State,t:Term)=>legacyReviewPending(t)&&s.role==='Mgr Finance & Settlement'&&s.actorUserId===t.legacySettlementReview?.userId&&s.users.some(u=>u.id===s.actorUserId&&u.active&&u.role===s.role);
@@ -17,7 +17,7 @@ export function routeLegacyFinance(s:State,targets:{id:string;kasbonId:string}[]
   if(!approvalRoles(t).every(role=>t.approvals.some(a=>a.role===role&&a.decision==='Setujui'&&!!a.userId&&a.userId===t.approverUserIds?.[role])))throw new Error('Lima approval pekerjaan harus lengkap.');
  }
  recordCommand('routeLegacyFinance',[targets,userId]);
- for(const target of targets){const t=terms.get(target.id)!,r:LegacySettlementReview={version:1,kasbonId:target.kasbonId,userId:user.id,name:user.name,assignedAt:now(),assignedBy:s.actorUserId!};t.legacySettlementReview=r;(t.legacySettlementReviewHistory??=[]).push(structuredClone(r));log(s,'Payment dialihkan ke Mgr Finance & Settlement',`Termin ${t.number} · ${user.name}`,'/termin/'+t.id);}
+ for(const target of targets){const t=terms.get(target.id)!,r:LegacySettlementReview={version:1,kasbonId:target.kasbonId,userId:user.id,name:user.name,job:user.jabatan?.trim()||'Mgr Finance & Settlement Area Jawa Bali',assignedAt:now(),assignedBy:s.actorUserId!};t.legacySettlementReview=r;(t.legacySettlementReviewHistory??=[]).push(structuredClone(r));log(s,'Payment dialihkan ke Mgr Finance & Settlement',`Termin ${t.number} · ${user.name}`,'/termin/'+t.id);}
 }
 export function decideLegacySettlementReview(s:State,id:string,kasbonId:string,decision:'Setujui'|'Kembalikan',note:string){
  const t=getTerm(s,id);if(!canReviewLegacySettlement(s,t))throw new Error('Review tidak menunggu akun ini.');

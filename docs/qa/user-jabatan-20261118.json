@@ -1,0 +1,141 @@
+{
+  "date": "2026-11-18",
+  "feature": "users.jabatan and captured document signer titles",
+  "scope": {
+    "operation_workflow_executed": false,
+    "live_its_changed": false,
+    "env_changed": false,
+    "dompis_touched": false,
+    "migration_applied_live": false,
+    "deployed": false,
+    "worker_restarted": false
+  },
+  "migration": {
+    "file": "2026_11_18_000001_add_jabatan_to_users.php",
+    "column": "users.jabatan",
+    "type": "nullable varchar(250)",
+    "backfill": false,
+    "rollback_refuses_filled_titles": true,
+    "guard": "its MySQL/MariaDB or testing SQLite :memory:"
+  },
+  "verification": {
+    "php_tests": 327,
+    "php_assertions": 8061,
+    "frontend_tests": 359,
+    "build": "passed TypeScript/Vite",
+    "assets": {
+      "manifest_references": 42,
+      "preload_dependencies": 33,
+      "profiles": 3
+    },
+    "pint": "passed scoped changed PHP",
+    "diff_check": "passed",
+    "test_database": "fail-closed SQLite :memory:"
+  },
+  "regressions": [
+    "Superadmin-only account field/form/list, role/Branch/password unchanged",
+    "max250/plain single-line validation and old-client omission",
+    "add/drop column and populated-title rollback guard",
+    "server canonical PP and actual decision title snapshots; forged fields ignored",
+    "new private kasbon canonical selected titles, same encrypted snapshot after account edit",
+    "BA KH/SPK matching identity, immutable issued and legacy absence",
+    "BARP/BA PP shared model and native Word titles",
+    "PP draft title vs submitted frozen job and fixed EVP",
+    "native Word and print signatures blank"
+  ],
+  "performance": {
+    "account_list_fixture_extra_users": 30,
+    "assignment_selects_including_auth": 2,
+    "list_assignment_batch_reads": 1,
+    "pure_signer_resolver_additional_sql": 0,
+    "workflow_additional_queries_for_title": 0,
+    "notes": "Existing users and kasbon approver batch queries add one selected column; no per-signer SQL. Account list still loads all accounts and command aggregate loading remains. Not a load test."
+  },
+  "render": {
+    "native_word": [
+      {
+        "file": "document-1.docx",
+        "pages": 1,
+        "sha256": "1c50169d0487c0ecba63fe1d917c5fc0dad5d0c99e290e7a01cb27344521126d"
+      },
+      {
+        "file": "document-10.docx",
+        "pages": 3,
+        "sha256": "633923ab91435c6724f63bd39e00c7fbd3c545e1d3903945789944a3ebdcff88"
+      },
+      {
+        "file": "document-2.docx",
+        "pages": 1,
+        "sha256": "71c8d783f1be4e1a46fa442c6e77c4fc2c396c2cf4c633e4768e02d0bfd336e5"
+      },
+      {
+        "file": "document-3.docx",
+        "pages": 1,
+        "sha256": "bf15e8542837253873930bd23d4a69792c153cac206789e7dac49b3596e25104"
+      },
+      {
+        "file": "document-4.docx",
+        "pages": 1,
+        "sha256": "3ca85227e2ae1f2a9924758cb7ae23e67ad17fc782986ade778967ddbe08a596"
+      },
+      {
+        "file": "document-5.docx",
+        "pages": 2,
+        "sha256": "2576f4b856a1f592760394f0c63b9d4acc05973ef7dd82966efe57666c75ee84"
+      },
+      {
+        "file": "document-6.docx",
+        "pages": 1,
+        "sha256": "147279d5bd2914f6b4630d021b572deaf3a8c7bd7a278687ad03cb53a3cab7e5"
+      },
+      {
+        "file": "document-7.docx",
+        "pages": 1,
+        "sha256": "b6140294e6c8b6e5d3a8601cc05f285584efe7dc95542f381c218a9b99ab9714"
+      },
+      {
+        "file": "document-8.docx",
+        "pages": 1,
+        "sha256": "76ea6779b1c0500510c6aceb87ee4ccb9e8d3b3a479b4d96e769c3fffb5660cd"
+      },
+      {
+        "file": "document-9.docx",
+        "pages": 1,
+        "sha256": "c228b37f7fca93528a96fc90915899fa475b67e45ef2cdba83805b33d16724cf"
+      }
+    ],
+    "total_rendered_pages": 13,
+    "pp_browser_pdf_pages": 4,
+    "pp_browser_pdf_nonblank": true,
+    "word_and_print_signature_stamps_absent": true
+  },
+  "browser": {
+    "source": "synthetic SSR PP in real modal structure + existing CSS/export module, no backend",
+    "viewport_width": 1440,
+    "javascript_errors": 0,
+    "api_requests": 0,
+    "native_word_bytes": 127570,
+    "closing_rows_including_header": 6,
+    "closing_screenshot_reviewed": true,
+    "pdf_pages_reviewed": 4,
+    "engine": "Chrome installed, separate headless profile with sandbox approval"
+  },
+  "notes": [
+    "Initial fixture used sidebar grid slot; corrected harness to modal, no production CSS change.",
+    "QA PDF title search normalizes line wrapping whitespace.",
+    "Typecheck caught wrong test kind main; corrected to supported bakh.",
+    "Migration count fixture updated69to70; original auth equality query retained for existing batch-shape assertion.",
+    "BA KH readonly field expectation updated2to3 for new Jabatan display."
+  ],
+  "limits": [
+    "No live account edits, server aaPanel/MySQL DDL, concurrent load, Microsoft Word desktop or physical print.",
+    "Historical locked/issued/paid documents do not refresh from current account titles.",
+    "Manual Mandor/Waspang and fixed EVP titles retain authorized templates."
+  ],
+  "backup": {
+    "path": "storage/app/private/backups/user-jabatan-20261118/database-demo.sqlite",
+    "bytes": 233472,
+    "permissions": "0600",
+    "source": "SQLite demo only, not active its"
+  }
+}

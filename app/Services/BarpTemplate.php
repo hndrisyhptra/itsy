@@ -28,7 +28,9 @@ final class BarpTemplate
             return '';
         };
 
-        return ['userId' => $id, 'name' => $first($decision['actorName'] ?? null, $snapshot['name'] ?? null, $user['name'] ?? null), 'nik' => $first($decision['actorNik'] ?? null, $snapshot['nik'] ?? null, $user['nik'] ?? null)];
+        $job = $first($snapshot['job'] ?? null, $decision['actorJob'] ?? null, $user['jabatan'] ?? null);
+
+        return ['userId' => $id, 'name' => $first($decision['actorName'] ?? null, $snapshot['name'] ?? null, $user['name'] ?? null), 'nik' => $first($decision['actorNik'] ?? null, $snapshot['nik'] ?? null, $user['nik'] ?? null), ...($job !== '' ? ['job' => $job] : [])];
     }
 
     public static function defaults(array $state, array $term): array
@@ -47,7 +49,7 @@ final class BarpTemplate
         }
 
         return ['version' => 2, 'job' => $project['name'], 'deployment' => self::paymentSigner($state, $project, $term, 'Mgr Deployment'), 'support' => self::paymentSigner($state, $project, $term, 'Mgr Project Support'), 'date' => now()->toDateString(), 'place' => self::PLACE, 'start' => $spk['start'], 'end' => $spk['end'], 'location' => $deal['location'] ?? '', 'sto' => '', 'homepass' => null,
-            'waspang' => $spk['supervisor'], 'mandor' => $deal['mandor'], 'headName' => $head['signer'], 'headNik' => $head['signerNik'] ?? '', 'headUserId' => $head['signerUserId'] ?? ''];
+            'waspang' => $spk['supervisor'], 'mandor' => $deal['mandor'], 'headName' => $head['signer'], 'headNik' => $head['signerNik'] ?? '', 'headUserId' => $head['signerUserId'] ?? '', ...(! empty($head['signerJob']) ? ['headJob' => $head['signerJob']] : [])];
     }
 
     public static function save(array $state, array $term, array $input, bool $submit): array

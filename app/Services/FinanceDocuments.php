@@ -173,7 +173,7 @@ class FinanceDocuments
 
         if (($term['kasbon']['id'] ?? '') === $row->id_kasbon && isset($term['legacySettlementReview'])) {
             $r = $term['legacySettlementReview'];
-            $data['printSigner'] = ['userId' => $r['userId'], 'name' => $r['name'], 'job' => 'Mgr Finance & Settlement Area Jawa Bali', 'at' => $r['assignedAt'], 'by' => $r['assignedBy']];
+            $data['printSigner'] = ['userId' => $r['userId'], 'name' => $r['name'], 'job' => $r['job'] ?? 'Mgr Finance & Settlement Area Jawa Bali', 'at' => $r['assignedAt'], 'by' => $r['assignedBy']];
             if (PrototypeDomain::legacyReviewApproved($term)) {
                 $data['printSignerApproval'] = $r['decision'];
             }
@@ -228,22 +228,22 @@ class FinanceDocuments
                 $ids['Mgr Finance & Settlement'] = $data['settlementUserId'] ?? '';
                 $users = DB::table('users as u')->join('user_assignments as a', 'a.user_id', '=', 'u.id_user')->join('roles as r', 'r.id_role', '=', 'a.role_id')->join('branches as b', 'b.id_branch', '=', 'a.branch_id')
                     ->whereIn('u.id_user', array_map(fn ($id) => (int) str_replace('db-user-', '', $id), array_values($ids)))
-                    ->where('u.active', true)->where('a.active', true)->where('b.name', $p['branch'])->where('b.is_active', true)->whereNull('b.deleted_at')->whereColumn('u.role', 'r.code')->get(['u.id_user', 'u.name', 'r.code'])->keyBy('id_user');
+                    ->where('u.active', true)->where('a.active', true)->where('b.name', $p['branch'])->where('b.is_active', true)->whereNull('b.deleted_at')->whereColumn('u.role', 'r.code')->get(['u.id_user', 'u.name', 'u.jabatan', 'r.code'])->keyBy('id_user');
                 foreach ($ids as $role => $selected) {
                     $u = $users->get((int) str_replace('db-user-', '', $selected));
                     abort_unless($u && (AccountAccess::ROLES[$u->code] ?? '') === $role, 422, 'Pilih approver aktif dengan peran '.$role.' pada Branch PP.');
-                    $signers[$role] = ['userId' => $selected, 'name' => $u->name];
+                    $signers[$role] = ['userId' => $selected, 'name' => $u->name, 'job' => trim($u->jabatan ?? '')];
                 }
             } else {
                 foreach (PrototypeDomain::approvalRoles($t) as $role) {
                     $a = collect($t['approvals'])->first(fn ($a) => $a['role'] === $role && ($a['userId'] ?? '') === ($t['approverUserIds'][$role] ?? ''));
                     abort_unless($a && $a['decision'] === 'Setujui', 422, 'Kelima approval harus lengkap sebelum penerbitan kasbon.');
-                    $signers[$role] = ['name' => $a['actorName'], 'userId' => $a['userId']];
+                    $signers[$role] = ['name' => $a['actorName'], 'userId' => $a['userId'], 'job' => $a['actorJob'] ?? $p['signatureUsers'][$role]['job'] ?? ''];
                 }
             }
             $version = (int) DB::table('finance_kasbons')->where('term_id', $r->id_payment_term)->max('version') + 1;
             $kid = (string) Str::uuid();
-            $snapshot = $data + ['templateVersion' => $settlement ? 3 : 2, 'issuerRole' => $account['role'], 'payee' => $payee, 'mandor' => $d['mandor'], 'unit' => $p['unit'].' · '.$p['branch'], 'project' => $p['name'], 'projectCode' => $p['projectCode'], 'ppNo' => $p['no'], 'spkNo' => $spk['no'], 'termNumber' => $t['number'], 'termType' => $t['type'], 'amount' => $total, 'settlement' => $settlementQuote, 'signers' => $signers, 'issuer' => $account['name']];
+            $snapshot = $data + ['templateVersion' => $settlement ? 3 : 2, 'issuerRole' => $account['role'], 'issuerJob' => $account['jabatan'] ?? '', 'payee' => $payee, 'mandor' => $d['mandor'], 'unit' => $p['unit'].' · '.$p['branch'], 'project' => $p['name'], 'projectCode' => $p['projectCode'], 'ppNo' => $p['no'], 'spkNo' => $spk['no'], 'termNumber' => $t['number'], 'termType' => $t['type'], 'amount' => $total, 'settlement' => $settlementQuote, 'signers' => $signers, 'issuer' => $account['name']];
             DB::table('finance_kasbons')->insert(['id_kasbon' => $kid, 'term_id' => $r->id_payment_term, 'version' => $version, 'amount' => $total, 'private_data' => $this->pack($snapshot), 'issued_by' => auth()->id(), 'issued_at' => now(), 'request_uuid' => $input['request_id'], 'input_sha256' => $hash]);
 
             return app(PrototypeWorkspaceService::class)->command($row, ['command' => $settlement ? '_submitSettlementKasbon' : '_issueKasbon', 'args' => [$id, ['id' => $kid, 'version' => $version, 'amount' => $total, 'settlement' => $settlementQuote, 'issuedBy' => 'db-user-'.auth()->id(), 'issuedRole' => $account['role'], ...($settlement ? ['settlementUserId' => $data['settlementUserId']] : []), 'issuedAt' => now()->toISOString()]], 'revision' => $row->revision, 'request_id' => $input['request_id']]);

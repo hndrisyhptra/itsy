@@ -21,8 +21,9 @@ export function createBappDocx(project:Project,deal:Deal,spk:Spk,term:Term){
     '{{BAPP_MANDOR}}':text(data.mandor),
     '{{BAPP_WASPANG}}':text(data.waspang),
     '{{BAPP_HEAD}}':text(data.head),
+    '{{BAPP_HEAD_JOB}}':text(data.headJob),
   };
   // One substitution pass: user text containing a template token cannot rewrite a later slot.
-  const document=BAPP_WORD_PARTS['word/document.xml'].replace(/<!--BAPP_[A-Z]+-->|\{\{BAPP_[A-Z]+\}\}/g,token=>slots[token]??'');
+  const document=BAPP_WORD_PARTS['word/document.xml'].replace(/<!--BAPP_[A-Z]+-->|\{\{BAPP_[A-Z_]+\}\}/g,token=>slots[token]??'');
   return ooxmlZip({...BAPP_WORD_PARTS,'word/document.xml':document});
 }
