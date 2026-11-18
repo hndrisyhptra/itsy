@@ -1,5 +1,9 @@
 # it's Area 3 — Development rules
 
+## 18 November 2026 — Unrestricted valid SPK issue dates
+
+Latest user supersedes the15November issue-date upper bound only. Follow latest docs/SPK_TEMPLATE_WORD.md: editable SPK accepts any valid selected past/future issue date without today/work-start/end cap; missing/invalid default remains own valid work start. Remove form max and PHP/TS bundle date-vs-start guard, retain calendar/period/approval/unit/Branch/private/issued locks. Shared HTML/print/Word reads valid saved date unchanged, place Surabaya, no snapshot/history/backfill/migration/live write. Constant scalar0newSQL; preserve actual tests/query/browser/export/server limits and append audits.
+
 ## 18 November 2026 — BA PP before payment approvals
 
 Follow docs/BAPP_BEFORE_PAYMENT.md, superseding full Final approvals before BAPP for new/explicitly adopted completion flow. User confirms saved BARP -> Admin attests BAPP -> kasbon/payment before any approval. New settlement Final saves create one linked Draft BAPP; complete canonical BARP/positive actuals/PP+BAKH+SPK Sah required, not financial decisions. Server owns completionFlow/completionPolicy/source/actor/time; source changes archive old attestation and reset current JSON+SQL fields, identical saves retain it. Block new Final kasbon/transfer/settlement without current Sah BAPP, preserve seven actual decisions/UUID/private/scan/net/APM/ledger. Legacy pending v3 prepares explicitly without rerouting; paid/old chains/archive stay. Early BAPP Word/print use same source and blank TTD; full package keeps full approval gate. Release/continuation still require full Final approvals; dashboard never closes early unpaid PP just because BAPP Sah. Reuse JSON/columns, no migration; pure0SQL/attestHTTP36/finalproofworker44vs43/+1indexed lookup. Document actual tests/query/browser/Word/server limits.

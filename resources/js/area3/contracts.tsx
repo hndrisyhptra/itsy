@@ -3,7 +3,7 @@ import { moneyLine } from './currency';
 import { saveSpkFinance } from './finance-payment';
 import { MandorPayeePanel } from './finance-private-ui';
 import { syncSpkSigner } from './spk-signer';
-import { syncSpkIssuance, spkCalendarDate, SPK_ISSUE_PLACE } from './spk-issuance';
+import { syncSpkIssuance, SPK_ISSUE_PLACE } from './spk-issuance';
 import { SpkAppendixTable } from './spk-appendix';
 import { useState } from 'react';
 import { mandorSphThreshold, sphThresholdApplies } from './sph';
@@ -34,7 +34,7 @@ export function BakhPeriodFields({deal,disabled,issued=false}:{deal:Pick<Deal,'s
 }
 export function SpkIssueFields({spk,disabled,onDateChange}:{spk:Pick<Spk,'date'|'place'|'start'>;disabled:boolean;onDateChange:(date:string)=>void}) {
   const current=syncSpkIssuance(spk);
-  return <><Field label="Tempat penerbitan" hint="Otomatis Surabaya untuk surat SPK."><input aria-label="Tempat penerbitan SPK" readOnly value={SPK_ISSUE_PLACE}/></Field><Field label="Tanggal SPK *" hint="Paling lambat sama dengan tanggal mulai pekerjaan."><input aria-label="Tanggal SPK" type="date" disabled={disabled} max={spkCalendarDate(spk.start)||undefined} value={current.date} onChange={e=>onDateChange(e.target.value)}/></Field></>;
+  return <><Field label="Tempat penerbitan" hint="Otomatis Surabaya untuk surat SPK."><input aria-label="Tempat penerbitan SPK" readOnly value={SPK_ISSUE_PLACE}/></Field><Field label="Tanggal SPK *" hint="Pilih tanggal penerbitan, termasuk tanggal lampau atau mendatang."><input aria-label="Tanggal SPK" type="date" disabled={disabled} value={current.date} onChange={e=>onDateChange(e.target.value)}/></Field></>;
 }
 export function BakhPlaceField() {
   return <Field label="Tempat penandatanganan" hint="Otomatis Surabaya khusus BA Negosiasi Kesepakatan Harga."><input aria-label="Tempat penandatanganan BA KH" readOnly value={BAKH_SIGNING_PLACE}/></Field>;

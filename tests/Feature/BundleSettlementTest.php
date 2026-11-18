@@ -440,9 +440,11 @@ class BundleSettlementTest extends TestCase
         $v = app(PrototypeWorkspaceService::class)->scenario('D')['spks'][0];
         $v['id'] = 'spk-bundle-qa';
         $v['dealId'] = $d['id'];
-        $v['date'] = $v['start'] = $v['end'] = $d['start'];
+        $v['start'] = $v['end'] = $d['start'];
+        $v['date'] = '2100-12-31';
         $this->api('saveSpk', [$v, 'save'])->assertOk();
         $v = collect($this->state()['spks'])->firstWhere('id', $v['id']);
+        $this->assertSame('2100-12-31', $v['date']);
         $this->completeMandorPayee($v['id']);
 
         return [$p, $d, $v];
@@ -544,6 +546,7 @@ class BundleSettlementTest extends TestCase
             $s = $this->state();
             $spk = collect($s['spks'])->firstWhere('id', $v['id']);
             $this->assertSame($i === 4 ? 'Sah' : 'Draft', $spk['status']);
+            $this->assertSame('2100-12-31', $spk['date']);
         }
         $this->assertDatabaseHas('work_orders', ['source_id' => $v['id'], 'status' => 'Sah']);
         $this->assertSame('Sah', json_decode(DB::table('contracts')->where('source_id', $d['id'])->value('document_data'), true)['status']);

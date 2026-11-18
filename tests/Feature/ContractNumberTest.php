@@ -11,7 +11,7 @@ use Tests\TestCase;
 
 class ContractNumberTest extends TestCase
 {
-    public function test_spk_issuance_calendar_vectors_keep_earlier_dates_and_cap_at_own_work_start_without_queries(): void
+    public function test_spk_issuance_calendar_vectors_preserve_past_and_future_dates_without_queries(): void
     {
         $vectors = json_decode(file_get_contents(base_path('tests/Fixtures/spk-issuance.json')), true);
         DB::flushQueryLog();
@@ -86,7 +86,7 @@ class ContractNumberTest extends TestCase
                     $this->assertSame($state['projects'], $after['projects']);
                     if ($spk) {
                         $this->assertSame('Surabaya', $after[$collection][0]['place']);
-                        $this->assertSame($doc['start'], $after[$collection][0]['date']);
+                        $this->assertSame($doc['date'], $after[$collection][0]['date']);
                         $this->assertSame($state['deals'], $after['deals']);
                     }
                 }

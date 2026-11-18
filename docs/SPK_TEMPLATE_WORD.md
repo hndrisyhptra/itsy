@@ -1,5 +1,16 @@
 # Preview dan unduh Word SPK Mandor — 7 November 2026
 
+## 18 November 2026 — Tanggal SPK bebas lampau dan mendatang
+
+Permintaan terbaru membatalkan batas tanggal penerbitan SPK paling lambat tanggal mulai pekerjaan. Admin dapat memilih setiap tanggal kalender valid, termasuk lampau dan mendatang, pada SPK yang masih dapat diedit. Tidak ada batas hari ini, awal atau akhir pekerjaan. Tanggal valid tersimpan dipertahankan; isian kosong/tidak valid tetap memakai default awal pekerjaan milik SPK sendiri, tanpa mengarang hari ini. Tempat tetap Surabaya.
+
+`SpkIssuance` PHP dan `spk-issuance.ts` memakai tanggal valid pilihan terlebih dahulu. Form menghapus max; validasi paket PHP/TS menghapus pembandingan tanggal penerbitan terhadap awal pekerjaan, sambil mempertahankan validasi kalender dan periode SPK di dalam BA KH. Preview, cetak/PDF dan Word memakai model yang sama, termasuk membaca tanggal valid historis apa adanya. Terbit/Sah tetap terkunci, snapshot/manifest/approval/nominal/periode/identitas tidak ditulis ulang; tidak ada migration, schema/API/dependency atau SQL/lookup tambahan. Helper O(1), 12 vektor bersama PHP/TS terbukti0query. Berlaku Konstruksi/Operation melalui jalur SPK yang sama.
+
+Verifikasi: **343 tes PHP/8530 assertions, 374 frontend**, TypeScript/Vite, assets42manifest/33preloads×3profil, scoped Pint dan diffcheck lulus. HTTP SQLite terisolasi menyimpan tanggal2100-12-31 lalu melewati pengajuan/lima approval paket tanpa tanggal berubah; regresi save/generate/attest dan issued locks tetap lulus. Model/Word XML/form menguji tanggal2000-02-29 dan2100-12-31. Browser fixture sintetis actual SpkIssueFields/SpkDocument pada375/1440×light/dark (4kasus) menguji lampau/hariini/mendatang, tanpa min/max, valid date control, preview sesuai,0JSerror; screenshot desktop terang/mobile gelap diperiksa. Ini bukan akun nyata/server/MySQL, kalender native OS manual, render Word desktop atau cetak fisik; tidak ada render DOCX/PDF baru untuk perubahan tanggal ini.
+
+Backup demo SQLite baca-saja233472byte/0600: `/private/tmp/area3-before-spk-free-date-20261118.sqlite`. its aktif/.env/Dompis/server/worker tidak disentuh. Bukti [qa/spk-free-date-20261118.json](qa/spk-free-date-20261118.json). Deploy kode/build seperti biasa, tidak memerlukan migration khusus fitur tanggal ini. Aturan tanggal15November di catatan historis di bawah digantikan pembaruan ini.
+
+
 ## Pembaruan 15 November 2026 — Surabaya dan tanggal penerbitan
 
 Atas permintaan pengguna, baris tempat/tanggal pada surat SPK selalu memakai **Surabaya**. Form tempat menjadi baca saja; preview, cetak/PDF dan Word memakai model yang sama. Nama kegiatan pada perihal/tabel, Branch, alamat Mandor dan periode pekerjaan tidak diganti menjadi nama kota.

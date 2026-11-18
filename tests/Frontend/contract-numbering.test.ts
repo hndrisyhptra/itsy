@@ -44,7 +44,7 @@ test('SPK derives code 02 from the PP rather than the BA KH number for every sav
     const {s,spk}=spkFixture();spk.place='CLIENT CITY';spk.date='2100-12-31';if(savedDraft)s.spks.push(structuredClone(spk));
     const before=JSON.stringify(spk);assert.equal(blankSpk(s,spk.dealId).no,vectors[0].spk);
     saveSpk(s,spk,action);assert.equal(s.spks[0].no,vectors[0].spk);assert.equal(JSON.stringify(spk),before);
-    assert.equal(s.deals[0].no,'BAKH/HISTORIS');assert.equal(s.spks[0].place,'Surabaya');assert.equal(s.spks[0].date,spk.start);
+    assert.equal(s.deals[0].no,'BAKH/HISTORIS');assert.equal(s.spks[0].place,'Surabaya');assert.equal(s.spks[0].date,spk.date);
   }
 });
 

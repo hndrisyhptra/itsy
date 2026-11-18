@@ -1,0 +1,75 @@
+{
+  "date": "2026-11-18",
+  "feature": "SPK unrestricted valid issue date",
+  "authority": "Latest direct user request supersedes previous work-start cap",
+  "php": {
+    "tests": 343,
+    "assertions": 8530,
+    "database": "isolated SQLite :memory:",
+    "future_date": "2100-12-31",
+    "bundle_approvals_preserve_date": true
+  },
+  "frontend": {
+    "suite": 374,
+    "targeted_spk_after_extra_date_assertions": 8,
+    "native_word_xml_dates": [
+      "2000-02-29",
+      "2100-12-31"
+    ]
+  },
+  "build": true,
+  "assets": {
+    "manifest_references": 42,
+    "preloads": 33,
+    "profiles": 3
+  },
+  "pint": true,
+  "helper_sql_queries": 0,
+  "extra_sql_queries": 0,
+  "browser": [
+    {
+      "width": 375,
+      "theme": "light",
+      "past_today_future": true,
+      "preview_matches": true,
+      "errors": []
+    },
+    {
+      "width": 375,
+      "theme": "dark",
+      "past_today_future": true,
+      "preview_matches": true,
+      "errors": []
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "past_today_future": true,
+      "preview_matches": true,
+      "errors": []
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "past_today_future": true,
+      "preview_matches": true,
+      "errors": []
+    }
+  ],
+  "visual_inspection": [
+    "1440 light initial date screenshot",
+    "375 dark corrected-logo screenshot"
+  ],
+  "backup": {
+    "path": "/private/tmp/area3-before-spk-free-date-20261118.sqlite",
+    "bytes": 233472,
+    "mode": "0600"
+  },
+  "live_changes": false,
+  "migration": false,
+  "limitations": [
+    "Synthetic browser fixtures, no authenticated live account or server/MySQL",
+    "No new DOCX/PDF render, desktop Word or physical printing",
+    "OS-native calendar popup not manually tested"
+  ]
+}

@@ -23,7 +23,7 @@ final class SpkIssuance
         $date = self::date($spk['date'] ?? null);
         $start = self::date($spk['start'] ?? null);
         $spk['place'] = self::PLACE;
-        $spk['date'] = $start && (! $date || $date > $start) ? $start : $date;
+        $spk['date'] = $date ?: $start;
 
         return $spk;
     }

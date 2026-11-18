@@ -116,7 +116,7 @@ test('long inputs use source-derived compact spacing without truncation; 1000 ag
 });
 
 
-test('SPK city and issue date follow shared calendar vectors and readonly city/date max without mutating historical records',()=>{
+test('SPK city and issue date follow shared calendar vectors and readonly city/unrestricted date without mutating historical records',()=>{
   const vectors=JSON.parse(readFileSync(new URL('../Fixtures/spk-issuance.json',import.meta.url),'utf8'));
   for(const row of vectors){
     const input={place:'CLIENT CITY',date:row.date,start:row.start};
@@ -125,9 +125,17 @@ test('SPK city and issue date follow shared calendar vectors and readonly city/d
   }
   const {p,d,spk}=fixture();Object.assign(spk,{status:'Sah',place:'LOP LAMA QA',date:'2026-11-11',start:'2026-10-28',end:'2026-11-03'});
   const before=JSON.stringify(spk),data=spkDocumentData(p,d,spk);
-  assert.equal(data.placeDate,'Surabaya, 28 Oktober 2026');assert.equal(JSON.stringify(spk),before);
-  const doc=docxParts(createSpkDocx(p,d,spk,logo))['word/document.xml'];assert.match(doc,/Surabaya, 28 Oktober 2026/);assert.doesNotMatch(doc,/LOP LAMA QA/);
+  assert.equal(data.placeDate,'Surabaya, 11 November 2026');assert.equal(JSON.stringify(spk),before);
+  const doc=docxParts(createSpkDocx(p,d,spk,logo))['word/document.xml'];assert.match(doc,/Surabaya, 11 November 2026/);assert.doesNotMatch(doc,/LOP LAMA QA/);
   const html=renderToStaticMarkup(createElement(SpkIssueFields,{spk,disabled:false,onDateChange:()=>{}}));
   assert.match(html,/aria-label="Tempat penerbitan SPK" readOnly="" value="Surabaya"/);
-  assert.match(html,/aria-label="Tanggal SPK" type="date" max="2026-10-28" value="2026-10-28"/);
+  assert.match(html,/aria-label="Tanggal SPK" type="date" value="2026-11-11"/);
+  assert.doesNotMatch(html,/\s(?:max|min)=/);
+  for(const [date,label] of [['2000-02-29','29 Februari 2000'],['2100-12-31','31 Desember 2100']]){
+    const selected={...spk,date};
+    assert.equal(spkDocumentData(p,d,selected).placeDate,`Surabaya, ${label}`);
+    assert.ok(docxParts(createSpkDocx(p,d,selected,logo))['word/document.xml'].includes(`Surabaya, ${label}`));
+    assert.ok(renderToStaticMarkup(createElement(SpkIssueFields,{spk:selected,disabled:false,onDateChange:()=>{}})).includes(`value="${date}"`));
+  }
+
 });

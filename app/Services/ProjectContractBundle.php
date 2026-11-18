@@ -134,9 +134,6 @@ trait ProjectContractBundle
         if ($formal) {
             $this->required($v, ['place', 'date', 'start', 'end', 'address', 'supervisor', 'phone', 'signer', 'position']);
             $this->date($v['date']);
-            if ($v['date'] > $v['start']) {
-                $this->fail('Tanggal SPK tidak boleh melewati tanggal mulai pekerjaan.');
-            }
         }
         $this->date($v['start']);
         $this->date($v['end']);
