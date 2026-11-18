@@ -22,7 +22,7 @@ final class FinancePaymentCatalog
             ->leftJoin('finance_kasbons as k', fn ($j) => $j->on('k.term_id', '=', 't.id_payment_term')->on('k.id_kasbon', '=', 't.document_data->kasbon->id'))
             ->leftJoin('apm_settlements as a', 'a.term_id', '=', 't.id_payment_term')
             ->where('t.workspace_id', $workspace->id)->where('w.workspace_id', $workspace->id)->where('c.workspace_id', $workspace->id)->where('pp.workspace_id', $workspace->id)
-            ->whereIn('pp.branch_id', $account['branchIds'])
+            ->whereIn('pp.branch_id', $account['branchIds'])->whereIn('pp.work_unit_id', DB::table('work_units')->select('id_work_unit')->whereIn('code', array_map(fn ($u) => $u === 'Operation' ? 'OPERATION' : 'KONSTRUKSI', $account['workUnits'] ?? WorkUnitAccess::units($account['code']))))
             ->where(fn (Builder $q) => $q->whereNotNull('k.id_kasbon')->orWhereNotNull('t.document_data->paymentRequest->id')->orWhereNotNull('a.id_apm_settlement'));
         if ($filters['branch'] ?? '') {
             $q->where('b.name', $filters['branch']);

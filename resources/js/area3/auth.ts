@@ -40,3 +40,16 @@ document.querySelector<HTMLElement>('[data-error-summary]')?.focus();
 window.addEventListener('pageshow', () => {
   document.querySelectorAll<HTMLButtonElement>('[data-submit-label]').forEach(button => { button.disabled = false; });
 });
+
+const accountRole=document.querySelector<HTMLSelectElement>('#role');
+const accessScope=document.querySelector<HTMLSelectElement>('#access_scope');
+function adjustRoleScope(changed=false){
+  if(!accountRole||!accessScope)return;
+  const required=['MGR_SS','GM_OPS'].includes(accountRole.value),regional=required||accountRole.value==='OFFICER_SS1';
+  for(const option of accessScope.options)option.disabled=required?option.value!=='REGION':!regional&&option.value==='REGION';
+  if(required)accessScope.value='REGION';else if(!regional)accessScope.value='BRANCH';
+  if(changed){const unit=document.querySelector<HTMLSelectElement>('#work_unit_id');if(unit)unit.value='';}
+  const regionalMode=accessScope.value==='REGION';
+  document.querySelectorAll<HTMLInputElement>('.branch-options input').forEach(input=>{input.disabled=regionalMode;});
+}
+accountRole?.addEventListener('change',()=>adjustRoleScope(true));accessScope?.addEventListener('change',()=>adjustRoleScope());adjustRoleScope();

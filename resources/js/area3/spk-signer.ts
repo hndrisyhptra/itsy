@@ -1,3 +1,4 @@
+import { headRole } from './work-unit';
 import type { Spk, State } from './domain';
 import { projectHeadIdentity } from './bakh-signer';
 
@@ -8,5 +9,5 @@ export function syncSpkSigner(state: Pick<State,'spks'|'deals'|'projects'|'users
   const deal = state.deals.find(d => d.id === spk.dealId), project = state.projects.find(p => p.id === deal?.projectId);
   if (!project || (project.workflowVersion ?? 1) < 3) return clean;
   const identity=projectHeadIdentity(state, project);
-  return { ...clean, ...identity, position: identity.signerJob || 'HEAD OF PMO AREA JAWA BALI' };
+  return { ...clean, ...identity, position: identity.signerJob || (headRole(project)==='Head of PMO'?'HEAD OF PMO AREA JAWA BALI':'GENERAL MANAGER OPERATION') };
 }

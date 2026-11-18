@@ -15,7 +15,7 @@ final class ProjectPlanBudget
 
     public const CATEGORIES = ['mandor' => 'Jasa Mandor', 'material' => 'Material Non Stock', 'bop' => 'BOP', 'permit' => 'Perizinan (Preliminary) Reimburse'];
 
-    public const PRINT_ROLES = ['Admin Konstruksi', 'PM Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Bussiness Support', 'Mgr Project Support', 'Head of PMO'];
+    public const PRINT_ROLES = ['Admin Konstruksi', 'PM Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Bussiness Support', 'Mgr Project Support', 'Head of PMO', ...WorkUnitAccess::OPS_APPROVERS];
 
     public static function apply(array $p, array $owners, bool $submit, bool $adoptMaterialRevenue = false): array
     {
@@ -171,7 +171,7 @@ final class ProjectPlanBudget
         $p['communication'] = implode("\n", array_map(fn ($row) => implode(' | ', $row), $template['communicationRows']));
         $p['quality'] = implode("\n", $template['quality']);
         $p['closing'] = $template['closing'];
-        $signatureRows = $p['signatureRows'] ?? self::defaultSignatures();
+        $signatureRows = WorkUnitAccess::operation($p) ? self::defaultSignatures($p) : ($p['signatureRows'] ?? self::defaultSignatures());
         foreach (self::rows($signatureRows, 20) as $r) {
             if (! in_array($r['label'] ?? '', ['Dibuat Oleh', 'Diperiksa Oleh', 'Disetujui Oleh'], true) || ! in_array($r['role'] ?? '', self::PRINT_ROLES, true)) {
                 self::fail('Baris penandatangan tidak valid.');
@@ -191,8 +191,11 @@ final class ProjectPlanBudget
         return $p;
     }
 
-    public static function defaultSignatures(): array
+    public static function defaultSignatures(array $p = []): array
     {
+        if (WorkUnitAccess::operation($p)) {
+            return array_map(fn ($role, $i) => ['id' => 'signature-'.$i, 'label' => $i === 0 ? 'Dibuat Oleh' : ($i === 3 ? 'Disetujui Oleh' : 'Diperiksa Oleh'), 'role' => $role, 'job' => $role], [WorkUnitAccess::OPS_APPROVERS[0], ...array_slice(WorkUnitAccess::OPS_APPROVERS, 2)], range(0, 3));
+        }
         $rows = json_decode(file_get_contents(resource_path('data/project-plan-template.json')), true, flags: JSON_THROW_ON_ERROR)['signatures'];
 
         return array_map(fn ($row, $i) => ['id' => 'signature-'.$i] + $row, $rows, array_keys($rows));

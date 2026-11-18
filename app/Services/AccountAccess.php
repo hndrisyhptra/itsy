@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -27,6 +28,8 @@ class AccountAccess
         'OFFICER_OPS3' => 'Officer 3 Operation',
         'MGR_BRANCH_OPS' => 'Manager Branch Operation',
         'GM_OPS' => 'General Manager Operation',
+        'OFFICER_SS1' => 'Officer 1 SS',
+        'MGR_SS' => 'Manager SS',
     ];
 
     public function context(?User $user, bool $requireActive = true): ?array
@@ -47,13 +50,28 @@ class AccountAccess
         return $users->mapWithKeys(fn ($user) => [$user->getKey() => $this->fromAssignments($user, $assignments->get($user->getKey(), collect()))])->all();
     }
 
+    public function assignmentQuery(?array $ids = null): Builder
+    {
+        $columns = ['u.id_user as user_id', 'r.code', 'b.id_branch', 'b.name', 'w.code as unit_code'];
+        $branches = DB::table('user_assignments as a')->join('users as u', 'u.id_user', '=', 'a.user_id')
+            ->join('roles as r', 'r.id_role', '=', 'a.role_id')->join('branches as b', 'b.id_branch', '=', 'a.branch_id')
+            ->leftJoin('work_units as w', 'w.id_work_unit', '=', 'u.work_unit_id')
+            ->where('u.access_scope', 'BRANCH')->where('a.active', true)->where('b.is_active', true)->whereNull('b.deleted_at')
+            ->whereIn('r.code', array_keys(self::ROLES))->when($ids !== null, fn ($q) => count($ids) === 1 ? $q->where('u.id_user', $ids[0]) : $q->whereIn('u.id_user', $ids))->select($columns);
+        $regions = DB::table('users as u')->join('roles as r', 'r.code', '=', 'u.role')
+            ->join('regions as region', 'region.id_region', '=', 'u.id_regions')->join('branches as b', 'b.region_id', '=', 'u.id_regions')
+            ->leftJoin('work_units as w', 'w.id_work_unit', '=', 'u.work_unit_id')
+            ->where('u.access_scope', 'REGION')->whereIn('r.code', ['OFFICER_SS1', 'MGR_SS', 'GM_OPS'])
+            ->where('region.is_active', true)->whereNull('region.deleted_at')->where('b.is_active', true)->whereNull('b.deleted_at')
+            ->whereExists(fn ($q) => $q->selectRaw('1')->from('user_assignments as a')->whereColumn('a.user_id', 'u.id_user')->whereColumn('a.role_id', 'r.id_role')->where('a.active', true))
+            ->when($ids !== null, fn ($q) => count($ids) === 1 ? $q->where('u.id_user', $ids[0]) : $q->whereIn('u.id_user', $ids))->select($columns);
+
+        return $branches->union($regions);
+    }
+
     private function assignments(array $ids): Collection
     {
-        return DB::table('user_assignments as a')->join('roles as r', 'r.id_role', '=', 'a.role_id')
-            ->join('branches as b', 'b.id_branch', '=', 'a.branch_id')
-            ->when(count($ids) === 1, fn ($query) => $query->where('a.user_id', $ids[0]), fn ($query) => $query->whereIn('a.user_id', $ids))
-            ->where('a.active', true)->where('b.is_active', true)->whereNull('b.deleted_at')
-            ->whereIn('r.code', array_keys(self::ROLES))->get(['a.user_id', 'r.code', 'b.id_branch', 'b.name'])->groupBy('user_id');
+        return $this->assignmentQuery($ids)->get()->groupBy('user_id');
     }
 
     private function fromAssignments(User $user, Collection $assignments): ?array
@@ -63,7 +81,12 @@ class AccountAccess
             return null;
         }
 
-        return ['id' => 'db-user-'.$user->getKey(), 'userId' => $user->getKey(), 'name' => $user->name, 'email' => $user->email,
+        $units = WorkUnitAccess::units($roles->first(), $assignments->first()->unit_code);
+        if (! $units) {
+            return null;
+        }
+
+        return ['workUnits' => $units, 'accessScope' => $user->access_scope ?? 'BRANCH', 'regionId' => $user->id_regions, 'id' => 'db-user-'.$user->getKey(), 'userId' => $user->getKey(), 'name' => $user->name, 'email' => $user->email,
             'username' => $user->username, 'jabatan' => $user->jabatan ?? '', 'role' => self::ROLES[$roles->first()], 'code' => $roles->first(),
             'branchIds' => $assignments->pluck('id_branch')->unique()->values()->all(),
             'branches' => $assignments->pluck('name')->unique()->values()->all()];
@@ -74,7 +97,7 @@ class AccountAccess
         // Call only inside the provisioning lock and transaction. Never seed passwords.
         foreach (self::ROLES as $key => $name) {
             if (! DB::table('roles')->where('code', $key)->exists()) {
-                DB::table('roles')->insert(['id_role' => ((int) DB::table('roles')->max('id_role')) + 1, 'code' => $key, 'name' => $name]);
+                DB::table('roles')->insert(['id_role' => max((int) DB::table('roles')->max('id_role'), (int) DB::table('master_data_changes')->where('entity', 'role')->max('record_id')) + 1, 'code' => $key, 'name' => $name]);
             }
         }
         $roleId = DB::table('roles')->where('code', $code)->value('id_role');

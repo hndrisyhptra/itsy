@@ -1,3 +1,4 @@
+import { headRole, isOperation } from './work-unit';
 import type { Deal, Project, State } from './domain';
 
 /** Selected PP identities only; never infer an arbitrary Head of PMO account. */
@@ -11,11 +12,11 @@ export function syncBakhSigner(s:Pick<State,'projects'|'deals'|'users'>,deal:Dea
 }
 
 export function projectHeadIdentity(s:Pick<State,'users'>,project:Project) {
-  const role='Head of PMO' as const,id=project?.approverUserIds?.[role]??'';
+  const role=headRole(project),id=project?.approverUserIds?.[role]??'';
   const decision=id?project?.approvals?.find(a=>a.role===role&&a.userId===id&&a.decision==='Setujui'):undefined;
   const snapshot=id&&project?.signatureUsers?.[role]?.userId===id?project.signatureUsers[role]:undefined;
   const user=id?s.users.find(u=>u.id===id&&u.role===role):undefined;
   const first=(...values:(string|undefined)[])=>values.find(value=>value?.trim())?.trim()??'';
   const job=first(snapshot?.job,decision?.actorJob,user?.jabatan);
-  return {...(job?{signerJob:job}:{}),signer:first(decision?.actorName,snapshot?.name,user?.name),signerUserId:id,signerNik:first(decision?.actorNik,snapshot?.nik,user?.nik),signerRole:role,signerSource:'pp-head-pmo' as const};
+  return {...(job?{signerJob:job}:{}),signer:first(decision?.actorName,snapshot?.name,user?.name),signerUserId:id,signerNik:first(decision?.actorNik,snapshot?.nik,user?.nik),signerRole:role,signerSource:isOperation(project)?'pp-gm-operation' as const:'pp-head-pmo' as const};
 }

@@ -20,7 +20,7 @@ class PrototypeScanController extends Controller
         $workspace = $service->workspace($request);
         $state = $service->payload($workspace)['state'];
         abort_unless(collect($state['terms'])->contains('id', $term), 404);
-        abort_unless(in_array($state['role'], ['Admin Konstruksi', 'Superadmin'], true), 403);
+        abort_unless(in_array($state['role'], ['Admin Konstruksi', 'Admin Operation', 'Superadmin'], true), 403);
         $upload = $request->file('file');
         $mime = (new \finfo(FILEINFO_MIME_TYPE))->file($upload->getRealPath());
         $extension = ['application/pdf' => 'pdf', 'image/jpeg' => 'jpg', 'image/png' => 'png'][$mime] ?? null;

@@ -1,3 +1,4 @@
+import { isOperation, OPERATION_APPROVERS } from './work-unit';
 import { WHOLE_RUPIAH, HALF_RUPIAH, wholeRupiah } from './currency';
 import type { State, Project, Role } from './domain';
 import { ppTemplate } from './plan-template';
@@ -15,8 +16,8 @@ export const EDITABLE_NONSTOCK_POLICY='selected-owner-material-nonstock-v3' as c
 export interface PlanBudget { excludedMaterialRowIds?:string[]; marginPolicy?:typeof MATERIAL_REVENUE_POLICY|typeof OWNER_MATERIAL_POLICY|typeof EDITABLE_NONSTOCK_POLICY; moneyPolicy?:typeof WHOLE_RUPIAH|typeof HALF_RUPIAH; version:1|2; mandor:MandorPlanRow[]; materials:MaterialPlanRow[]; bop:BopPlanRow[]; permit:number; bopLimit?:number|null; bopReference?:string; usage:UsagePlanRow[] }
 export interface OwnerPlanRow { rowId:string; code:string; name:string; unit:string; m:number|null; s:number|null; qm:number; qs:number }
 export const categories: Record<BudgetCategory,string> = {mandor:'Jasa Mandor',material:'Material Non Stock',bop:'BOP',permit:'Perizinan (Preliminary) Reimburse'};
-export const printRoles:Role[]=['Admin Konstruksi','PM Konstruksi','Admin Area','Mgr Deployment','Mgr Bussiness Support','Mgr Project Support','Head of PMO'];
-export const defaultSignatureRows = ():SignaturePlanRow[] => ppTemplate.signatures.map((row,i)=>({id:`signature-${i}`,label:row.label as SignaturePlanRow['label'],role:row.role as Role,job:row.job}));
+export const printRoles:Role[]=['Admin Konstruksi','PM Konstruksi','Admin Area','Mgr Deployment','Mgr Bussiness Support','Mgr Project Support','Head of PMO',...OPERATION_APPROVERS];
+export const defaultSignatureRows = (p?:{approvalScheme?:string}):SignaturePlanRow[] => p&&isOperation(p)?[OPERATION_APPROVERS[0],...OPERATION_APPROVERS.slice(2)].map((role,i)=>({id:`signature-${i}`,label:i===0?'Dibuat Oleh':i===3?'Disetujui Oleh':'Diperiksa Oleh',role,job:role})):ppTemplate.signatures.map((row,i)=>({id:`signature-${i}`,label:row.label as SignaturePlanRow['label'],role:row.role as Role,job:row.job}));
 export function ownerPlanRows(s:State,p:Project):OwnerPlanRow[] {
   const root=p.parentId?s.projects.find(x=>x.id===p.rootId):p;
   const catalog=new Map(s.khs.map(k=>[k.id,k]));
@@ -108,7 +109,7 @@ export function validatePlanBudget(s:State,p:Project,submit:boolean) {
 export function applyBudgetPlan(s:State,p:Project,submit=false,strict=false):Project {
   if(strict&&p.moneyPolicy===WHOLE_RUPIAH&&p.planBudget){const raw={...p,moneyPolicy:undefined};validatePlanBudget(s,{...raw,planBudget:draftPlanBudget(s,raw)},submit);}
   if(strict&&p.planBudget){const ids=new Set(ownerPlanRows(s,p).map(r=>r.rowId)),rows=p.planBudget.mandor;if(rows.length!==ids.size||new Set(rows.map(r=>r.rowId)).size!==ids.size||rows.some(r=>!ids.has(r.rowId)))throw new Error('Designator BOQ Mandor harus sesuai BOQ Plan.');}
-  const b=draftPlanBudget(s,strict?{...p,status:'Draft'}:p), result={...p,planBudget:b,riskLevel:p.riskLevel??'',risk:p.riskLevel??'',communication:ppTemplate.communicationRows.map(row=>row.join(' | ')).join('\n'),quality:ppTemplate.quality.join('\n'),closing:ppTemplate.closing,signatureRows:p.signatureRows??defaultSignatureRows()};
+  const b=draftPlanBudget(s,strict?{...p,status:'Draft'}:p), result={...p,planBudget:b,riskLevel:p.riskLevel??'',risk:p.riskLevel??'',communication:ppTemplate.communicationRows.map(row=>row.join(' | ')).join('\n'),quality:ppTemplate.quality.join('\n'),closing:ppTemplate.closing,signatureRows:p.signatureRows??defaultSignatureRows(p)};
   const totals=strict?validatePlanBudget(s,result,submit):budgetSummary(s,result,b);
   return {...result,costs:{mandor:(b.marginPolicy===OWNER_MATERIAL_POLICY||b.marginPolicy===EDITABLE_NONSTOCK_POLICY)?totals.mandorS:totals.mandor,material:totals.material,bop:totals.bop,permit:totals.permit},planBudgetTotals:totals};
 }

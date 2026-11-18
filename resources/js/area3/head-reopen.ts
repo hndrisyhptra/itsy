@@ -20,7 +20,7 @@ export function assertHeadReopenCommand(s: State, command: string, args: unknown
     case 'saveSpk': case 'saveSpkFinance': project = deal(input?.dealId); break;
     case '_recordPayeeFile': case '_setPayeeVersion': case 'createTerm': case 'createSettlementTerm': project = spk(args[0]); break;
     case 'saveTerm': case 'submitFinanceTerm': project = term(input?.id); break;
-    case 'decide': case 'adoptFinancePayment': case '_issueKasbon': case '_submitSettlementKasbon': case '_attachTransferProof': case 'decideFinancePayment': case 'requestPartialPayment': case 'verifyPartialPayment': case 'payPartialPayment': case 'settleFinancePayment': case 'updatePaymentApm': case 'setKasbonPrintSigner': case 'decideLegacySettlementReview': case 'recordApm': case 'recordPayment': case 'verifyTermScan': case '_attachTermScan': case '_attachTermWorkEvidence': case 'removeTermWorkEvidence': project = term(args[0]); break;
+    case 'prepareBapp': case 'decide': case 'adoptFinancePayment': case '_issueKasbon': case '_submitSettlementKasbon': case '_attachTransferProof': case 'decideFinancePayment': case 'requestPartialPayment': case 'verifyPartialPayment': case 'payPartialPayment': case 'settleFinancePayment': case 'updatePaymentApm': case 'setKasbonPrintSigner': case 'decideLegacySettlementReview': case 'recordApm': case 'recordPayment': case 'verifyTermScan': case '_attachTermScan': case '_attachTermWorkEvidence': case 'removeTermWorkEvidence': project = term(args[0]); break;
     case 'attestBapp': case 'releaseVolume': case 'createContinuation': project = term(s.bapps.find(b => b.id === args[0])?.termId); break;
   }
   if (project && pending.has(project)) throw new Error(HEAD_REOPEN_MESSAGE);

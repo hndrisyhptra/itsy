@@ -56,7 +56,7 @@ class RelationalWorkflowStore
         };
     }
 
-    public function read(PrototypeWorkspace $workspace, ?array $branchIds = null): array
+    public function read(PrototypeWorkspace $workspace, ?array $branchIds = null, ?array $workUnits = null, ?array $account = null): array
     {
         Area3MigrationTarget::assertAllowed();
         abort_unless($workspace->relational_migrated_at, 503, 'Penyimpanan transaksi belum diaktifkan. Jalankan area3:activate-storage setelah migration.');
@@ -76,6 +76,9 @@ class RelationalWorkflowStore
                     'terms' => $query->whereIn('work_order_id', $allowed['spks']),
                     'bapps' => $query->whereIn('final_term_id', $allowed['terms']),
                 };
+            }
+            if ($collection === 'projects' && $workUnits !== null) {
+                WorkUnitAccess::scope($query, $account ?? ['workUnits' => $workUnits], 'project_plans');
             }
             $rows = $query->get([$pk, 'document_data']);
             $allowed[$collection] = $rows->pluck($pk)->all();
@@ -157,7 +160,7 @@ class RelationalWorkflowStore
             $existing = DB::table('project_plans')->where('id_pp', $id)->first();
             $number = $state['settings']['issuedPpNumbers'][$p['no']] ?? null;
             $this->record($workspace, 'projects', $p, $i, [
-                'project_id' => $projectId, 'branch_id' => $branch->id_branch, 'pp_no' => $p['no'],
+                'project_id' => $projectId, 'branch_id' => $branch->id_branch, 'work_unit_id' => $unit, 'pp_no' => $p['no'],
                 'usage_date' => $p['date'], 'budget' => $p['budget'],
                 'pm_user_id' => $this->user($p['pmUserId'] ?? null),
                 'manager_user_id' => $this->user($p['managerUserId'] ?? null),
@@ -272,7 +275,7 @@ class RelationalWorkflowStore
             if (! isset($changed['bapps'][$b['id']])) {
                 continue;
             }
-            $this->record($workspace, 'bapps', $b, $i, ['final_term_id' => $key('terms', $b['termId']), 'document_no' => $b['no'], 'status' => $b['status'] === 'Sah' ? 'ATTESTED' : 'DRAFT', 'evidence_reference' => ($b['evidence'] ?? '') ?: null]);
+            $this->record($workspace, 'bapps', $b, $i, ['final_term_id' => $key('terms', $b['termId']), 'document_no' => $b['no'], 'status' => $b['status'] === 'Sah' ? 'ATTESTED' : 'DRAFT', 'evidence_reference' => ($b['evidence'] ?? '') ?: null, ...(isset($b['completionPolicy']) ? ['attested_at' => $this->dateTime($b['attestedAt'] ?? null), 'attested_by' => $this->user($b['attestedBy'] ?? null)] : [])]);
         }
         $this->refreshBalances($workspace, $state, $changed);
         $events = [];
@@ -540,7 +543,7 @@ class RelationalWorkflowStore
                 $selected = $decision['userId'] ?? (($document['workflowVersion'] ?? 1) >= 3 ? ($document['approverUserIds'][$role] ?? null) : ($document[$step === 0 ? 'pmUserId' : 'managerUserId'] ?? null));
                 $user = $this->user($selected);
                 $id = $this->id($workspace->id, 'approval-step', $run.'|'.$step);
-                DB::table('approval_steps')->updateOrInsert(['id_approval_step' => $id], ['run_id' => $run, 'step_no' => $step + 1, 'expected_role' => array_search($role, AccountAccess::ROLES, true), 'assigned_user_id' => $user, 'assigned_name_snapshot' => $decision['actorName'] ?? ($names[$user] ?? ''), 'workflow_version' => $document['workflowVersion'], 'approval_order_version' => ! $project && PrototypeDomain::usesSettlementPayment($document) ? 3 : (($document['approvalScheme'] ?? '') === 'project-support-first' ? 2 : 1)]);
+                DB::table('approval_steps')->updateOrInsert(['id_approval_step' => $id], ['run_id' => $run, 'step_no' => $step + 1, 'expected_role' => array_search($role, AccountAccess::ROLES, true), 'assigned_user_id' => $user, 'assigned_name_snapshot' => $decision['actorName'] ?? ($names[$user] ?? ''), 'workflow_version' => $document['workflowVersion'], 'approval_order_version' => WorkUnitAccess::operation($document) ? 4 : (! $project && PrototypeDomain::usesSettlementPayment($document) ? 3 : (($document['approvalScheme'] ?? '') === 'project-support-first' ? 2 : 1))]);
                 if ($decision) {
                     $data = ['step_id' => $id, 'actor_user_id' => $this->user($decision['userId'] ?? null), 'actor_name_snapshot' => $decision['actorName'] ?? '', 'decision' => match ($decision['decision']) {
                         'Setujui' => 'APPROVE', 'Kembalikan' => 'RETURN', 'Tolak' => 'REJECT'

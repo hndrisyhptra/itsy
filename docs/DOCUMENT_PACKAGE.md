@@ -41,3 +41,7 @@ Belum diuji pada akun server aaPanel, Microsoft Word desktop, cetak fisik atau M
 ## 17 November 2026 — Ikon Unduh Semua Dokumen
 
 Tombol pembuka paket bersama memakai Lucide `Download` ukuran16 pada Aksi BA PP/detail/timeline. Ikon `Files` pada label isi modal tetap. Tooltip, akses/status Sah, isi paket, konfirmasi unduh dan cetak tetap. TypeScript/Vite serta pemeriksaan aset lulus; tanpa SQL/API/migration baru atau pengujian browser/server ulang.
+
+## 18 November 2026 — BA PP sejak BA RP disimpan
+
+Pengguna menegaskan BA PP dapat disahkan sebelum seluruh approval, sejak BA RP Final disimpan. Final pada alur baru/diadopsi eksplisit memakai source BARP server-owned dan menahan pengajuan pembayaran sampai BA PP Sah; perubahan BARP memerlukan pengesahan ulang. Dokumen utama/lampiran BA PP Sah dapat Word/print lebih awal, ruang TTD kosong; tujuh approval/ledger/release dan full-package export gate tetap. Tidak ada migration atau perubahan massal data lama. Lihat [BAPP_BEFORE_PAYMENT](BAPP_BEFORE_PAYMENT.md) untuk cakupan, data historis, query, QA dan deploy.

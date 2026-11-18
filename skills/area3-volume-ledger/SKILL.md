@@ -3,6 +3,11 @@ name: area3-volume-ledger
 description: Implement and reconcile its Area 3 BOQ component volume reservations, commitments, accepted actuals, authorized release and continuation allocation without double use.
 ---
 
+## 18 November 2026 — Saved BARP before payment approvals
+
+Follow docs/BAPP_BEFORE_PAYMENT.md and latest user authority: new/explicitly adopted Final completion allows Admin BAPP attestation from saved complete BARP before any approval; source-bound BAPP must precede kasbon/payment. Changes invalidate current attestation into history, no financial/ledger acceptance from BAPP. Keep seven approvals, scope/private/UUID/revision/Head and release/full-package complete-approval gates; legacy/paid untouched. No migration, pure0SQL; verify 0approval attestation, change/re-attest, legacyexplicit, unit403, proof/lunas, blank Word/nonblankprint and document actual query/render/server limits.
+
+
 # area3-volume-ledger
 
 ## PP bundle and seven kasbon approvals — 15 November 2026

@@ -41,6 +41,7 @@ final class BarpTemplate
         $head = ['signer' => '', 'signerNik' => '', 'signerUserId' => ''];
         if (($term['workflowVersion'] ?? 1) >= 3) {
             $source = $project;
+            $source['approvalScheme'] = $term['approvalScheme'] ?? $project['approvalScheme'] ?? '';
             $source['approverUserIds'] = $term['approverUserIds'] ?? [];
             $source['approvals'] = array_merge($term['approvals'] ?? [], $project['approvals'] ?? []);
             $head = BakhSigner::projectIdentity($state, $source);
@@ -48,7 +49,7 @@ final class BarpTemplate
             $head = $spk;
         }
 
-        return ['version' => 2, 'job' => $project['name'], 'deployment' => self::paymentSigner($state, $project, $term, 'Mgr Deployment'), 'support' => self::paymentSigner($state, $project, $term, 'Mgr Project Support'), 'date' => now()->toDateString(), 'place' => self::PLACE, 'start' => $spk['start'], 'end' => $spk['end'], 'location' => $deal['location'] ?? '', 'sto' => '', 'homepass' => null,
+        return ['version' => 2, 'job' => $project['name'], 'deployment' => self::paymentSigner($state, $project, $term, WorkUnitAccess::operation($term) ? 'Manager SS' : 'Mgr Deployment'), 'support' => self::paymentSigner($state, $project, $term, WorkUnitAccess::operation($term) ? 'Officer 1 SS' : 'Mgr Project Support'), 'date' => now()->toDateString(), 'place' => self::PLACE, 'start' => $spk['start'], 'end' => $spk['end'], 'location' => $deal['location'] ?? '', 'sto' => '', 'homepass' => null,
             'waspang' => $spk['supervisor'], 'mandor' => $deal['mandor'], 'headName' => $head['signer'], 'headNik' => $head['signerNik'] ?? '', 'headUserId' => $head['signerUserId'] ?? '', ...(! empty($head['signerJob']) ? ['headJob' => $head['signerJob']] : [])];
     }
 
@@ -68,8 +69,8 @@ final class BarpTemplate
         $barp['job'] = $project['name'];
         $barp['place'] = self::PLACE;
         if (($barp['version'] ?? 1) < 2) {
-            $barp['deployment'] = self::paymentSigner($state, $project, $term, 'Mgr Deployment');
-            $barp['support'] = self::paymentSigner($state, $project, $term, 'Mgr Project Support');
+            $barp['deployment'] = self::paymentSigner($state, $project, $term, WorkUnitAccess::operation($term) ? 'Manager SS' : 'Mgr Deployment');
+            $barp['support'] = self::paymentSigner($state, $project, $term, WorkUnitAccess::operation($term) ? 'Officer 1 SS' : 'Mgr Project Support');
         }
         foreach (['date' => 10, 'start' => 10, 'end' => 10, 'sto' => 150] as $field => $limit) {
             if (array_key_exists($field, $data)) {

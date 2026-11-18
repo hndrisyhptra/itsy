@@ -1,0 +1,183 @@
+{
+  "date": "2026-11-18",
+  "feature": "Final BARP saved -> BAPP attested -> kasbon/payment approval",
+  "user_clarification": "Sejak BA RP disimpan, sebelum approval",
+  "php": {
+    "tests": 343,
+    "assertions": 8515,
+    "passed": true,
+    "database": "SQLite :memory:"
+  },
+  "frontend": {
+    "tests": 374,
+    "passed": true,
+    "new_bapp_regressions": 4
+  },
+  "build": {
+    "typescript_vite": "passed",
+    "manifest_references": 42,
+    "preload_dependencies": 33,
+    "asset_profiles": 3,
+    "scoped_pint": "passed",
+    "diff_check": "passed"
+  },
+  "browser": {
+    "fixture": "actual React/store components with intercepted synthetic transaction; no live server/database",
+    "cases": [
+      {
+        "width": 375,
+        "theme": "light",
+        "posts": 1,
+        "zero_approvals": true,
+        "release_locked": true,
+        "word_and_print_enabled": true,
+        "errors": []
+      },
+      {
+        "width": 375,
+        "theme": "dark",
+        "posts": 1,
+        "zero_approvals": true,
+        "release_locked": true,
+        "word_and_print_enabled": true,
+        "errors": []
+      },
+      {
+        "width": 768,
+        "theme": "light",
+        "posts": 1,
+        "zero_approvals": true,
+        "release_locked": true,
+        "word_and_print_enabled": true,
+        "errors": []
+      },
+      {
+        "width": 768,
+        "theme": "dark",
+        "posts": 1,
+        "zero_approvals": true,
+        "release_locked": true,
+        "word_and_print_enabled": true,
+        "errors": []
+      },
+      {
+        "width": 1440,
+        "theme": "light",
+        "posts": 1,
+        "zero_approvals": true,
+        "release_locked": true,
+        "word_and_print_enabled": true,
+        "errors": []
+      },
+      {
+        "width": 1440,
+        "theme": "dark",
+        "posts": 1,
+        "zero_approvals": true,
+        "release_locked": true,
+        "word_and_print_enabled": true,
+        "errors": []
+      }
+    ],
+    "screenshots_inspected": [
+      "desktop/light BAPP detail",
+      "mobile/light BAPP detail",
+      "tablet/dark BAPP detail",
+      "main document preview"
+    ],
+    "no_page_overflow": true,
+    "confirmation_no_posts": 0,
+    "confirmation_yes_posts": 1,
+    "still_zero_approvals": true,
+    "release_locked": true,
+    "word_download_and_print_before_approval": true
+  },
+  "exports": {
+    "native_word_generated": 2,
+    "actual_browser_word_download": 1,
+    "rendered_native_word_pages": 2,
+    "browser_pdf_documents": 2,
+    "browser_pdf_pages": 2,
+    "zip_crc_xml": true,
+    "all_four_page_images_inspected": true,
+    "blank_physical_signature_spaces": true,
+    "no_fake_approval_or_payment": true,
+    "results": [
+      {
+        "file": "main-browser.pdf",
+        "pages": 1,
+        "no_stamp_or_draft": true,
+        "nonblank": true
+      },
+      {
+        "file": "appendix-browser.pdf",
+        "pages": 1,
+        "no_stamp_or_draft": true,
+        "nonblank": true
+      },
+      {
+        "file": "render-main/main.pdf",
+        "pages": 1,
+        "no_stamp_or_draft": true,
+        "nonblank": true
+      },
+      {
+        "file": "render-appendix/appendix.pdf",
+        "pages": 1,
+        "no_stamp_or_draft": true,
+        "nonblank": true
+      }
+    ],
+    "hashes": {
+      "appendix.docx": "f8118bbe801930f77c7a3821a20e3b33facda3506c89b5654422cc0d757ac270",
+      "main.docx": "1ecaa110c6c96b5a877a9ebe9520a04b88d82312e44032f050fc413f4f04219e",
+      "browser-main.docx": "1ecaa110c6c96b5a877a9ebe9520a04b88d82312e44032f050fc413f4f04219e"
+    }
+  },
+  "query_fixtures": {
+    "preapproval_bapp_attest_http": 36,
+    "budget": 80,
+    "pure_prepare_domain": 0,
+    "final_transfer_worker": 44,
+    "partial_transfer_worker": 43,
+    "additional_final_only_indexed_bapp_lookup": 1,
+    "settlement_or_apm_edit_http": 40,
+    "finance_list_service": 4,
+    "per_item_query_additions": 0,
+    "note": "Measured fixture counts; not concurrency/latency/load benchmark. Basis/source memory and comparisons scale with <=500 actual items."
+  },
+  "workflow_guards": [
+    "positive saved Final actuals and complete canonical BARP",
+    "PP/BAKH/SPK Sah",
+    "Admin role plus Branch/Region/unit scope and Head reopen lock",
+    "new Final payment blocked until matching attested source",
+    "BARP changes move old attestation to history and reset current SQL/JSON status",
+    "no duplicate BAPP after approval7",
+    "release/continuation require complete genuine Final approvals",
+    "legacy pending adoption explicit and no approval reset",
+    "historical/paid documents retain policy and identity",
+    "native Word/print use physical BAPP gate without fabricating financial decisions"
+  ],
+  "deployment": {
+    "new_schema_or_migration": false,
+    "new_route": false,
+    "existing_command_endpoint_extended": [
+      "prepareBapp"
+    ],
+    "live_mutation": false,
+    "demo_backup_bytes": 233472,
+    "env_modified": false,
+    "worker_restarted": false,
+    "server_deployed": false,
+    "dompis_touched": false
+  },
+  "limits": [
+    "aaPanel/MySQL not exercised",
+    "live SQL accounts not used",
+    "Microsoft Word desktop not exercised",
+    "physical print/wet signatures not exercised",
+    "real bank transfer not performed",
+    "no large concurrency/load benchmark",
+    "full document-package export retains complete Final approval gate"
+  ]
+}

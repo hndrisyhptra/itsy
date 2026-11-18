@@ -32,15 +32,14 @@ class AuthenticatedWorkspace
                 'id' => 'db-branch-'.$b->id_branch, 'code' => $b->kode_branch, 'name' => $b->name, 'active' => (bool) $b->is_active,
                 'regionId' => $b->visible_region_id === null ? null : 'db-region-'.$b->visible_region_id, 'regionName' => $b->region_name ?? '',
             ])->all();
-        $assignments = DB::table('user_assignments as a')->join('roles as r', 'r.id_role', '=', 'a.role_id')->join('branches as b', 'b.id_branch', '=', 'a.branch_id')
-            ->where('a.active', true)->where('b.is_active', true)->whereNull('b.deleted_at')->get(['a.user_id', 'r.code', 'b.name'])->groupBy('user_id');
-        $state['users'] = User::orderBy('name')->get(['id_user', 'name', 'email', 'nik', 'jabatan', 'role', 'active'])->map(function ($user) use ($assignments) {
-            $rows = $assignments->get($user->getKey(), collect())->whereIn('code', array_keys(AccountAccess::ROLES));
-            $codes = $rows->pluck('code')->unique();
+        $users = User::orderBy('name')->get(['id_user', 'name', 'email', 'nik', 'jabatan', 'role', 'active', 'work_unit_id', 'access_scope', 'id_regions']);
+        $contexts = app(AccountAccess::class)->contexts($users);
+        $state['users'] = $users->map(function ($user) use ($contexts) {
+            $c = $contexts[$user->getKey()] ?? null;
 
             return ['id' => 'db-user-'.$user->getKey(), 'name' => $user->name, 'email' => $user->email, 'nik' => $user->nik ?? '',
-                'jabatan' => $user->jabatan ?? '', 'role' => AccountAccess::ROLES[$codes->first() ?? ''] ?? 'Admin Konstruksi',
-                'active' => $user->active && $codes->count() === 1 && $codes->first() === $user->role && $rows->isNotEmpty(), 'branches' => $rows->pluck('name')->unique()->values()->all()];
+                'jabatan' => $user->jabatan ?? '', 'role' => $c['role'] ?? (AccountAccess::ROLES[$user->role] ?? 'Admin Konstruksi'),
+                'active' => $user->active && $c !== null, 'branches' => $c['branches'] ?? [], 'workUnits' => $c['workUnits'] ?? [], 'accessScope' => $c['accessScope'] ?? 'BRANCH'];
         })->all();
         $state['khs'] = $this->catalog($state['khs']);
 
@@ -92,7 +91,7 @@ class AuthenticatedWorkspace
         }
         $state['branches'] = array_values(array_filter($state['branches'], fn ($b) => in_array($b['name'], $account['branches'], true)));
         $state['users'] = array_values(array_filter($state['users'], fn ($u) => $u['id'] === $account['id'] || array_intersect($u['branches'], $account['branches'])));
-        $state['projects'] = array_values(array_filter($state['projects'], fn ($p) => in_array($p['branch'], $account['branches'], true)));
+        $state['projects'] = array_values(array_filter($state['projects'], fn ($p) => in_array($p['branch'], $account['branches'], true) && WorkUnitAccess::permits($account, $p)));
         $ids = array_fill_keys(array_column($state['projects'], 'id'), true);
         $state['deals'] = array_values(array_filter($state['deals'], fn ($d) => isset($ids[$d['projectId']])));
         $ids = array_fill_keys(array_column($state['deals'], 'id'), true);
@@ -121,9 +120,10 @@ class AuthenticatedWorkspace
 
     public function authorize(array $state, string $command, array $args): void
     {
+        $account = $this->account();
         abort_if(in_array($command, ['role', 'selectActor', 'reset', 'saveUser', 'saveProfile', 'updateKhs', 'importDemo'], true), 403, 'Tindakan simulasi tidak tersedia untuk akun login.');
         if ($command === 'setNumberFormat') {
-            abort_unless($this->account()['code'] === 'SUPERADMIN', 403);
+            abort_unless($account['code'] === 'SUPERADMIN', 403);
 
             return;
         }
@@ -140,7 +140,7 @@ class AuthenticatedWorkspace
         $bapp = fn ($id) => $term($lookup('bapps', $id)['termId']);
         $input = $args[0] ?? null;
         if ($command === 'routeLegacyFinance') {
-            $branches = $this->account()['branches'];
+            $branches = $account['branches'];
             abort_unless(is_array($input) && count($input) >= 1 && count($input) <= 50, 422);
             $terms = array_column($state['terms'], null, 'id');
             $spks = array_column($state['spks'], null, 'id');
@@ -151,7 +151,7 @@ class AuthenticatedWorkspace
                 $t = $terms[$target['id'] ?? ''] ?? null;
                 abort_unless($t, 404);
                 $p = $projects[$deals[$spks[$t['spkId']]['dealId']]['projectId']];
-                abort_unless(in_array($p['branch'], $branches, true), 403);
+                abort_unless(in_array($p['branch'], $branches, true) && WorkUnitAccess::permits($account, $p), 403);
             }
 
             return;
@@ -166,16 +166,16 @@ class AuthenticatedWorkspace
             'saveSpkFinance', 'saveSpk' => $deal($input['dealId'] ?? ''),
             'createTerm', 'createSettlementTerm' => $spk($input),
             'submitFinanceTerm', 'saveTerm' => $spk($input['spkId'] ?? ''),
-            'adoptFinancePayment', '_issueKasbon', '_submitSettlementKasbon', '_attachTransferProof', 'decideFinancePayment', 'requestPartialPayment', 'verifyPartialPayment', 'payPartialPayment', 'decide', 'recordApm', 'settleFinancePayment', 'updatePaymentApm', 'setKasbonPrintSigner', 'decideLegacySettlementReview', 'recordPayment', 'verifyTermScan', '_attachTermScan', '_attachTermWorkEvidence', 'removeTermWorkEvidence' => $term($input),
+            'prepareBapp', 'adoptFinancePayment', '_issueKasbon', '_submitSettlementKasbon', '_attachTransferProof', 'decideFinancePayment', 'requestPartialPayment', 'verifyPartialPayment', 'payPartialPayment', 'decide', 'recordApm', 'settleFinancePayment', 'updatePaymentApm', 'setKasbonPrintSigner', 'decideLegacySettlementReview', 'recordPayment', 'verifyTermScan', '_attachTermScan', '_attachTermWorkEvidence', 'removeTermWorkEvidence' => $term($input),
             'attestBapp', 'releaseVolume', 'createContinuation' => $bapp($input),
             default => null,
         };
-        abort_unless($p && in_array($p['branch'] ?? '', $this->account()['branches'], true), 403, 'Dokumen berada di luar Branch penugasan Anda.');
+        abort_unless($p && in_array($p['branch'] ?? '', $account['branches'], true) && WorkUnitAccess::permits($account, $p), 403, 'Dokumen berada di luar Branch penugasan Anda.');
         // Existing identities cannot be moved between documents/branches by changing a form payload.
         $collection = ['saveProject' => 'projects', 'saveProjectBundle' => 'projects', 'saveDeal' => 'deals', 'saveSpk' => 'spks', 'saveSpkFinance' => 'spks', 'saveTerm' => 'terms', 'submitFinanceTerm' => 'terms'][$command] ?? null;
         if ($collection && ($old = collect($state[$collection])->firstWhere('id', $input['id'] ?? ''))) {
             $key = ['projects' => 'branch', 'deals' => 'projectId', 'spks' => 'dealId', 'terms' => 'spkId'][$collection];
-            abort_unless(($input[$key] ?? null) === $old[$key], 422, 'Relasi atau Branch dokumen yang sudah tersimpan tidak dapat diganti.');
+            abort_unless(($input[$key] ?? null) === $old[$key] && ($collection !== 'projects' || ($input['unit'] ?? '') === ($old['unit'] === 'Operation' ? 'Operation' : 'Konstruksi')), 422, 'Relasi atau Branch dokumen yang sudah tersimpan tidak dapat diganti.');
         }
         if (in_array($command, ['saveProject', 'saveProjectBundle', 'assignProjectApprovers', 'assignPaymentApprovers'], true)) {
             $old = in_array($command, ['saveProject', 'saveProjectBundle'], true) ? collect($state['projects'])->firstWhere('id', $input['id'] ?? '') : null;

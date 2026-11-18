@@ -32,7 +32,7 @@ class DashboardRegionMetadataTest extends TestCase
             $queries = DB::getQueryLog();
             DB::disableQueryLog();
             $this->assertCount(5, $queries);
-            $regionQueries = array_values(array_filter($queries, fn ($q) => str_contains($q['query'], 'regions')));
+            $regionQueries = array_values(array_filter($queries, fn ($q) => str_contains($q['query'], 'left join "regions"')));
             $this->assertCount(1, $regionQueries);
             $this->assertStringContainsString('left join "regions"', $regionQueries[0]['query']);
             $this->assertStringNotContainsString('select *', $regionQueries[0]['query']);

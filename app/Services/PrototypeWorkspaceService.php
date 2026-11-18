@@ -68,7 +68,9 @@ class PrototypeWorkspaceService
 
     public function payload(PrototypeWorkspace $workspace, ?array $state = null): array
     {
-        return ['state' => app(AuthenticatedWorkspace::class)->visible($state ?? app(RelationalWorkflowStore::class)->read($workspace, app(AuthenticatedWorkspace::class)->account()['branchIds']), $state === null), 'revision' => $workspace->revision, 'csrf' => csrf_token()];
+        $account = app(AuthenticatedWorkspace::class)->account();
+
+        return ['state' => app(AuthenticatedWorkspace::class)->visible($state ?? app(RelationalWorkflowStore::class)->read($workspace, $account['branchIds'], $account['workUnits'], $account), $state === null), 'revision' => $workspace->revision, 'csrf' => csrf_token()];
     }
 
     public function command(PrototypeWorkspace $workspace, array $input, bool $includePayload = true): array

@@ -44,6 +44,7 @@ class AccountPlacement
     public function options(): array
     {
         return [
+            'workUnits' => DB::table('work_units')->whereIn('code', ['KONSTRUKSI', 'OPERATION'])->orderBy('id_work_unit')->get(['id_work_unit', 'code', 'name']),
             'regions' => DB::table('regions')->where('is_active', true)->whereNull('deleted_at')->orderBy('name')->get(),
             'branches' => DB::table('branches')->where('is_active', true)->whereNull('deleted_at')->orderBy('name')->get(),
             'serviceAreas' => DB::table('service_areas')->where('is_active', true)->whereNull('deleted_at')->orderBy('name')->get(),

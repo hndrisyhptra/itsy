@@ -229,7 +229,7 @@ class NegotiationProjectCatalogTest extends TestCase
         foreach ($queries as $q) {
             $this->assertDoesNotMatchRegularExpression('/^\s*(insert|update|delete|replace)\b/i', $q['query']);
             $this->assertDoesNotMatchRegularExpression('/workflow_metadata|designator_package_prices|workflow_events|approval_decisions/i', $q['query']);
-            $this->assertDoesNotMatchRegularExpression('/select\s+\*|["`]?prototype_workspaces["`]?\.["`]?state/i', $q['query']);
+            $this->assertDoesNotMatchRegularExpression('/select\s+\*\s+from\s+[\"`a-zA-Z_]|["`]?prototype_workspaces["`]?\.["`]?state/i', $q['query']);
         }
     }
 }

@@ -1,3 +1,4 @@
+import { isOperation, OPERATION_APPROVERS, eligibleApprover, unitOptions } from './work-unit';
 import { approveProjectBundle } from './project-bundle';
 import { WHOLE_RUPIAH } from './currency';
 import { usesFinancePayment } from './finance-payment';
@@ -12,15 +13,15 @@ export const APPROVERS_V3: Role[] = ['PM Konstruksi', 'Admin Area', 'Mgr Project
 export const APPROVERS_V3_PREVIOUS: Role[] = ['PM Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Project Support', 'Head of PMO'];
 export const APPROVERS_V3_LEGACY:Role[]=['PM Konstruksi','Admin Area','Mgr Deployment','Mgr Bussiness Support','Head of PMO'];
 export function usesBusinessSupport(document:AssignedDocument){return document.approvalScheme==='business-support'||(!document.approvalScheme&&Object.hasOwn(document.approverUserIds??{},'Mgr Bussiness Support')&&!Object.hasOwn(document.approverUserIds??{},'Mgr Project Support'));}
-export function projectApprovalScheme(document?:Project):'project-support-first'|'project-support'|'business-support' {return document&&(!canReviseSubmission(document)||(document.approvalHistory?.length??0)>0||(document.approvals?.length??0)>0)?(usesBusinessSupport(document)?'business-support':document.approvalScheme??'project-support'):'project-support-first';}
-type AssignedDocument = {paymentFlow?:string;approvalScheme?:'project-support-first'|'project-support'|'business-support';workflowVersion?:number; pmUserId?:string; managerUserId?:string; approverUserIds?:Partial<Record<Role,string>>};
+export function projectApprovalScheme(document?:Project):'project-support-first'|'project-support'|'business-support'|'operation-v1' {return document&&(!canReviseSubmission(document)||(document.approvalHistory?.length??0)>0||(document.approvals?.length??0)>0)?(usesBusinessSupport(document)?'business-support':document.approvalScheme??'project-support'):document?.unit==='Operation'?'operation-v1':'project-support-first';}
+type AssignedDocument = {paymentFlow?:string;approvalScheme?:'project-support-first'|'project-support'|'business-support'|'operation-v1';workflowVersion?:number; pmUserId?:string; managerUserId?:string; approverUserIds?:Partial<Record<Role,string>>};
 export function canReviseSubmission(document: {status:string;workflowVersion?:number}) { return ['Draft','Dikembalikan'].includes(document.status) || ((document.workflowVersion ?? 1) >= 3 && document.status === 'Ditolak'); }
-export function approvalRoles(document: AssignedDocument, project = false): Role[] { return !project&&document.workflowVersion===3&&document.paymentFlow==='kasbon-settlement-v2'?[...APPROVERS_V3,'Mgr Finance & Settlement','Finance']:(document.workflowVersion ?? 1) >= 3 ? (usesBusinessSupport(document)?APPROVERS_V3_LEGACY:APPROVERS_V3) : project || (document.workflowVersion ?? 1) >= 2 ? ['PM Konstruksi','Manager Konstruksi'] : ['PM Konstruksi','Manager Konstruksi','Finance']; }
+export function approvalRoles(document: AssignedDocument, project = false): Role[] { if(isOperation(document))return [...OPERATION_APPROVERS,...(!project&&document.paymentFlow==='kasbon-settlement-v2'?['Mgr Finance & Settlement','Finance'] as Role[]:[])];return !project&&document.workflowVersion===3&&document.paymentFlow==='kasbon-settlement-v2'?[...APPROVERS_V3,'Mgr Finance & Settlement','Finance']:(document.workflowVersion ?? 1) >= 3 ? (usesBusinessSupport(document)?APPROVERS_V3_LEGACY:APPROVERS_V3) : project || (document.workflowVersion ?? 1) >= 2 ? ['PM Konstruksi','Manager Konstruksi'] : ['PM Konstruksi','Manager Konstruksi','Finance']; }
 export function nextApprovalRole(document:AssignedDocument & {approvals?:Approval[]},project=false):Role|undefined {const approved=new Set((document.approvals??[]).filter(a=>a.decision==='Setujui').map(a=>a.role));return approvalRoles(document,project).find(role=>!approved.has(role));}
 export function selectedApprover(document: AssignedDocument, role:Role) { return (document.workflowVersion ?? 1) >= 3 ? document.approverUserIds?.[role] : role === 'PM Konstruksi' ? document.pmUserId : document.managerUserId; }
 export function validateAssignments(s:State, document:AssignedDocument & {branch:string}, required=true) {
   const result:Partial<Record<Role,string>> = {};
-  for (const role of approvalRoles(document,true)) { const id=selectedApprover(document,role); if (!required && !id) continue; const user = approver(s, id, role); if (user.branches && !user.branches.includes(document.branch)) throw new Error('Seluruh approver harus ditugaskan pada Branch PP.'); result[role] = user.id; }
+  for (const role of approvalRoles(document,true)) { const id=selectedApprover(document,role); if (!required && !id) continue; const user = approver(s, id, role); if (user.branches && !user.branches.includes(document.branch)) throw new Error('Seluruh approver harus ditugaskan pada Branch PP.'); if(user.workUnits&&!user.workUnits.includes(isOperation(document)?'Operation':'Konstruksi'))throw new Error('Unit kerja approver tidak sesuai PP.'); if(isOperation(document)&&['Manager SS','General Manager Operation'].includes(role)&&user.accessScope!=='REGION')throw new Error(role+' wajib memiliki cakupan Region.'); result[role] = user.id; }
   return result;
 }
 
@@ -72,7 +73,8 @@ export function saveProjectV2(s: State, input: Project, submit: boolean, submitt
   p.moneyPolicy=version>=3?WHOLE_RUPIAH:undefined;
   if (version >= 3) Object.assign(p, applyPlanTemplate(p, true, submit));
   else { delete p.planTemplateVersion; delete p.teamText; delete p.durationDays; delete p.planBudget; delete p.planBudgetTotals; delete p.signatureRows; delete p.signatureUsers; delete p.closing; delete p.riskLevel; }
-  p.approvalScheme=projectApprovalScheme(old);
+  p.approvalScheme=projectApprovalScheme(old??p);
+  if(!unitOptions(s).includes(p.unit)||(old&&(old.unit==='Operation'?'Operation':'Konstruksi')!==p.unit))throw new Error('Unit kerja PP tidak sesuai akun atau dokumen tersimpan.');
   p.approvalOrderChange=old?.approvalOrderChange;
   p.headApprovalReopen=old?.headApprovalReopen;
   p.contractBundle=old?.contractBundle;
@@ -99,7 +101,7 @@ export function saveProjectV2(s: State, input: Project, submit: boolean, submitt
   }
   const errors = projectErrors(s, p,version>=3&&!p.parentId&&!submit); if (errors.length) throw new Error(errors.join('\n'));
   if (submit && (!p.intro.trim() || (!p.planTemplateVersion && (!p.team.length || p.team.some(t => !t.name.trim() || !t.job.trim()))) || (!p.planBudget && !p.risk.trim()) || !p.communication.trim() || !p.quality.trim() || p.schedule.some(v => (!p.planTemplateVersion || v.days > 0) && (!v.start || !v.end)))) throw new Error('Lengkapi seluruh rencana PP sebelum diajukan.');
-  p.workflowVersion = version; p.pmUserId = chain['PM Konstruksi']; if (version >= 3) p.approverUserIds = chain; else p.managerUserId = chain['Manager Konstruksi']; p.status = submit ? 'Diajukan' : 'Draft'; p.approvals = []; p.approvalHistory = old?.approvalHistory ?? [];
+  p.workflowVersion = version; p.pmUserId = chain[isOperation(p)?'Officer 1 Operation':'PM Konstruksi']; if (version >= 3) p.approverUserIds = chain; else p.managerUserId = chain['Manager Konstruksi']; p.status = submit ? 'Diajukan' : 'Draft'; p.approvals = []; p.approvalHistory = old?.approvalHistory ?? [];
   if (!old) { s.settings ??= { ppNumberFormat: DEFAULT_PP_NUMBER_FORMAT, nextPpSequence: 1, ppNumberFormatVersion: 2 }; rememberProjectNumber(s,p,number); s.settings.nextPpSequence = number.nextSequence; s.projects.unshift(p); } else s.projects[s.projects.indexOf(old)] = p;
   log(s, submit ? 'PP diajukan ke PM terpilih' : 'Draft PP dan BOQ disimpan', p.no, '/project-plan/' + p.id); return p.id;
 }
@@ -131,8 +133,9 @@ export function verifyTermScan(s: State, id: string, decision: 'Valid' | 'Perlu 
 
 export function assignPaymentApprovers(s:State, id:string, assignments:Partial<Record<Role,string>>) {
   recordCommand('assignPaymentApprovers',[id,assignments]); requireAdmin(s); const p = getProject(s,id);
-  if (((p.workflowVersion ?? 1) >= 3&&!usesBusinessSupport(p)) || p.status !== 'Sah') throw new Error('Penugasan pembayaran berikutnya hanya untuk PP historis yang sudah Sah.');
-  p.paymentApproverUserIds = validateAssignments(s,{...p,workflowVersion:3,approvalScheme:'project-support-first',approverUserIds:assignments});
+  if (((p.workflowVersion ?? 1) >= 3&&!usesBusinessSupport(p)&&!(p.unit==='Operation'&&!isOperation(p))) || p.status !== 'Sah') throw new Error('Penugasan pembayaran berikutnya hanya untuk PP historis yang sudah Sah.');
+  const scheme=p.unit==='Operation'?'operation-v1':'project-support-first';if(scheme==='operation-v1')p.paymentApprovalScheme=scheme;
+  p.paymentApproverUserIds = validateAssignments(s,{...p,workflowVersion:3,approvalScheme:scheme,approverUserIds:assignments});
   log(s,'Lima approver pembayaran berikutnya ditetapkan',p.no,'/project-plan/'+id);
 }
 

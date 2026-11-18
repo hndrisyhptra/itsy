@@ -32,3 +32,7 @@ Empat tes frontend tambahan memeriksa input usang, guard Final/role/nomor, form/
 Backup sebelum perubahan: storage/app/private/backups/its-before-remove-evidence-reference-20261107-085027.sql, 2.032.468 byte; SHA-256 428ea7446e7a3d5f3b41d09bb5558c6057c662796b14e92c6eec6b0b4feb94f0. Tidak ada perubahan .env, master, akun, schema atau data transaksi live. Kode dan build siap digunakan pada runtime MySQL its yang aktif.
 
 Arsitektur: [ARCHITECTURE.md](ARCHITECTURE.md). Audit: [CHANGELOG.md](CHANGELOG.md), [LARAVEL_QA.md](LARAVEL_QA.md), WORKPLAN.md dan qa/document-attestation-20261107.json.
+
+## 18 November 2026 — BA PP sejak BA RP disimpan
+
+Pengguna menegaskan BA PP dapat disahkan sebelum seluruh approval, sejak BA RP Final disimpan. Final pada alur baru/diadopsi eksplisit memakai source BARP server-owned dan menahan pengajuan pembayaran sampai BA PP Sah; perubahan BARP memerlukan pengesahan ulang. Dokumen utama/lampiran BA PP Sah dapat Word/print lebih awal, ruang TTD kosong; tujuh approval/ledger/release dan full-package export gate tetap. Tidak ada migration atau perubahan massal data lama. Lihat [BAPP_BEFORE_PAYMENT](BAPP_BEFORE_PAYMENT.md) untuk cakupan, data historis, query, QA dan deploy.

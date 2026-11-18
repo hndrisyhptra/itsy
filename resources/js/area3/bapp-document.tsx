@@ -1,12 +1,12 @@
-import type { Project,Deal,Spk,Term } from './domain';
+import type { Project,Deal,Spk,Term,Bapp } from './domain';
 import { bappDocumentData } from './bapp-content';
 import type { WordRun } from './word-ooxml';
 import { Fragment } from 'react';
 
 function Runs({items}:{items:WordRun[]}){return <>{items.map((r,i)=>{let text=<>{r.text}</>;if(r.italic)text=<em>{text}</em>;return r.bold?<strong key={i}>{text}</strong>:<Fragment key={i}>{text}</Fragment>;})}</>;}
 
-export function BappDocument({project,deal,spk,term}:{project:Project;deal:Deal;spk:Spk;term:Term}){
-  const v=bappDocumentData(project,deal,spk,term);
+export function BappDocument({project,deal,spk,term,bapp}:{project:Project;deal:Deal;spk:Spk;term:Term;bapp?:Bapp}){
+  const v=bappDocumentData(project,deal,spk,term,bapp);
   return <article className={`document bapp-document${v.job.length>100?' bapp-compact':''}`}>
     <h2>{v.title}</h2>{v.status&&<p className="bapp-review">{v.status}</p>}
     <p><Runs items={v.opening}/></p>

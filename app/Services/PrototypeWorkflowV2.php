@@ -109,7 +109,11 @@ trait PrototypeWorkflowV2
             $p = ProjectPlanTemplate::apply($p, $submit);
         }
         $scheme = $old && (! empty($old['approvalHistory']) || ! empty($old['approvals']))
-            ? (self::usesBusinessSupport($old) ? 'business-support' : ($old['approvalScheme'] ?? 'project-support')) : 'project-support-first';
+            ? (self::usesBusinessSupport($old) ? 'business-support' : ($old['approvalScheme'] ?? 'project-support')) : ($p['unit'] === 'Operation' ? 'operation-v1' : 'project-support-first');
+        $p['approvalScheme'] = $scheme;
+        if (($old && ($old['unit'] === 'Operation' ? 'Operation' : 'Konstruksi') !== $p['unit']) || ($this->state['role'] === 'Admin Operation' && $p['unit'] !== 'Operation') || ($this->state['role'] === 'Admin Konstruksi' && $p['unit'] !== 'Konstruksi')) {
+            $this->fail('Unit kerja PP tidak sesuai akun atau unit dokumen tersimpan.');
+        }
         $assignments = $this->validateAssignments($input, $version, $p['branch'], $submit, $scheme);
         $import = $input['_boqImport'] ?? null;
         if (! empty($old['boqUpload']) && ! $import) {
@@ -209,7 +213,7 @@ trait PrototypeWorkflowV2
         if ($import) {
             $p['boqUpload'] = $import['source'];
         }
-        $p['pmUserId'] = $assignments['PM Konstruksi'] ?? '';
+        $p['pmUserId'] = $assignments[$scheme === 'operation-v1' ? 'Officer 1 Operation' : 'PM Konstruksi'] ?? '';
         if ($version >= 3) {
             $p['approverUserIds'] = $assignments;
         } else {

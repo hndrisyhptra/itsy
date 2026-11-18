@@ -1,3 +1,4 @@
+import { settlementRecorded } from './payment-settlement';
 import { financeTaskPending } from './partial-payment';
 import { canReviewLegacySettlement } from './legacy-settlement-review';
 import { paymentDue } from './kasbon-settlement';
@@ -18,7 +19,7 @@ export function dashboardSummary(s: State, branch = '') {
   const spkProjects = new Map(spks.map(v => [v.id, deals.get(v.dealId)!.projectId]));
   const terms = s.terms.filter(t => spkProjects.has(t.spkId));
   const termProjects = new Map(terms.map(t => [t.id, spkProjects.get(t.spkId)!]));
-  const completed = new Set(s.bapps.filter(b => b.status === 'Sah').map(b => termProjects.get(b.termId)));
+  const completed = new Set(s.bapps.filter(b => b.status === 'Sah' && (b.completionPolicy!=='barp-before-approval-v1'||terms.some(t=>t.id===b.termId&&settlementRecorded(t)))).map(b => termProjects.get(b.termId)));
   const sum = (values: number[]) => round(values.reduce((a, b) => a + b, 0));
   const pendingTerms = terms.filter(t => canApproveTerm(s,t)||canReviewLegacySettlement(s,t)||(s.role==='Finance'&&financeTaskPending(t)));
   const orderDeals=new Map(spks.map(v=>[v.id,deals.get(v.dealId)!]));

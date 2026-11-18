@@ -1,3 +1,4 @@
+import { assertBappBeforePayment } from './bapp-workflow';
 import {legacyReviewApproved,legacyReviewPending} from './legacy-settlement-review';
 import { settlementRecorded } from './payment-settlement';
 import { type State, type Term, type Spk, type Approval, getTerm, getSpk, projectForSpk, operational, approvalRoles, requireFinance, requireAdmin, applyTermDecision, applyTermSave, applySpk, termTotal, now, log } from './domain';
@@ -41,6 +42,7 @@ export function decideFinancePayment(s:State,id:string,decision:'Setujui'|'Kemba
   (t.financePaymentHistory??=[]).push(a);t.financePayment={status:decision==='Setujui'?'Diverifikasi':'Dikembalikan',decision:a};log(s,'Payment '+t.financePayment.status,`Termin ${t.number} · ${note}`,'/termin/'+id);
 }
 export function assertFinanceApmReady(s:State,t:Term){
+  assertBappBeforePayment(s,t);
   if(!legacyReviewApproved(t))throw new Error('Menunggu persetujuan Mgr Finance & Settlement untuk kasbon aktif.');
   financePaymentEligible(t);
   if(t.scan&&t.scan.status!=='Valid')throw new Error('Scan sudah tersedia; verifikasi berkas sebelum APM.');

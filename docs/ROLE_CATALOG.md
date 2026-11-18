@@ -31,3 +31,7 @@ Tidak memerlukan migration tambahan. Deploy kode lalu build aset dan cek assets;
 Bukti akhir dan batas pengujian tercatat pada [QA terstruktur](qa/role-catalog-20261118.json). Tes backend memakai SQLite memory fail-closed. Browser memakai React/settings/form asli dengan endpoint sintetis yang diintersep, tanpa login atau database aktif; pengujian ini dibedakan dari endpoint HTTP Laravel yang diuji dengan SQL memory. Tidak ada template Word/cetak yang berubah dan tidak dijalankan ulang render berkas. Server aaPanel/MySQL, akun nyata, concurrency multi-proses dan load test belum diverifikasi.
 
 Verifikasi akhir: **335 tes PHP/8187 assertions**, **366 tes frontend**, TypeScript/Vite, assets42manifest/33preload×3profil, scoped Pint dan diffcheck lulus. Regresi katalog8tes/126assertions termasuk query mutasi konstan; enam skenario browser sintetis lulus. Tanpa penerapan migration/live SQL/server.
+
+## 18 November 2026 — Operation
+
+Alur Operation kini dihubungkan secara eksplisit untuk role bawaan Officer 1 SS/Manager SS dan role Operation lainnya. Paket memakai lima approver Operation, kasbon tujuh dengan Settlement/Finance, GM menggantikan Head dalam template dan identitas/jabatan aktual. Scope unit per PP dan Branch/Region akun berlaku; data serta rantai historis tetap. Katalog role tambahan lain belum memberi otoritas otomatis. Detail migration, kompatibilitas dan hasil QA ada di [OPERATION_WORKFLOW](OPERATION_WORKFLOW.md).

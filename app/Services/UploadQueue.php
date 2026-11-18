@@ -21,7 +21,7 @@ class UploadQueue
         $account = app(AuthenticatedWorkspace::class)->account();
         $record = DB::table('payment_terms as t')->join('contracts as c', 'c.id_contract', '=', 't.contract_id')
             ->join('project_plans as p', 'p.id_pp', '=', 'c.pp_id')->where('t.workspace_id', $workspace->id)->where('t.source_id', $id)
-            ->whereIn('p.branch_id', $account['branchIds'])->first(['t.document_data']);
+            ->whereIn('p.branch_id', $account['branchIds'])->whereIn('p.work_unit_id', WorkUnitAccess::ids($account))->first(['t.document_data']);
         abort_unless($record, 404);
         $term = json_decode($record->document_data, true, 512, JSON_THROW_ON_ERROR);
 
@@ -31,7 +31,7 @@ class UploadQueue
     public function enqueue(PrototypeWorkspace $workspace, UploadedFile $file, string $kind, string $document, string $requestId, ?int $revision): array
     {
         $account = app(AuthenticatedWorkspace::class)->account();
-        abort_unless(in_array($account['role'], $kind === 'transfer-proof' ? ['Finance'] : ['Admin Konstruksi', 'Superadmin'], true), 403);
+        abort_unless(in_array($account['role'], $kind === 'transfer-proof' ? ['Finance'] : ['Admin Konstruksi', 'Admin Operation', 'Superadmin'], true), 403);
         if (in_array($kind, FinanceDocuments::KINDS, true)) {
             abort_unless(DB::table('migrations')->where('migration', '2026_11_11_000001_create_finance_kasbon_workflow')->exists(), 503, 'Upload dokumen kasbon belum siap. Administrator perlu menjalankan migration kasbon dan memuat ulang worker aplikasi.');
         }
@@ -110,7 +110,7 @@ class UploadQueue
             $user = User::find($task->user_id);
             abort_unless(app(AccountAccess::class)->context($user), 403, 'Akses akun pengunggah sudah tidak aktif.');
             Auth::setUser($user);
-            abort_unless(in_array(app(AuthenticatedWorkspace::class)->account()['role'], $task->kind === 'transfer-proof' ? ['Finance'] : ['Admin Konstruksi', 'Superadmin'], true), 403, 'Peran pengunggah tidak lagi diizinkan.');
+            abort_unless(in_array(app(AuthenticatedWorkspace::class)->account()['role'], $task->kind === 'transfer-proof' ? ['Finance'] : ['Admin Konstruksi', 'Admin Operation', 'Superadmin'], true), 403, 'Peran pengunggah tidak lagi diizinkan.');
             DB::table('upload_tasks')->where('id_upload_task', $id)->increment('attempts', 1, ['status' => 'processing', 'started_at' => now(), 'updated_at' => now()]);
             $disk = Storage::disk('local');
             abort_unless($disk->exists($task->storage_key) && hash_file('sha256', $disk->path($task->storage_key)) === $task->sha256, 422, 'File upload tidak ditemukan atau tidak utuh. Unggah ulang file.');

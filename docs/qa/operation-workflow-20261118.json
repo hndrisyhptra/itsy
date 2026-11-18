@@ -1,0 +1,290 @@
+{
+  "date": "2026-11-18",
+  "feature": "Operation PP package and seven-stage payment with unit/Region isolation",
+  "php": {
+    "tests": 341,
+    "assertions": 8448,
+    "passed": true,
+    "database": "SQLite :memory:",
+    "post_pint_bundle_regression": {
+      "tests": 17,
+      "assertions": 722,
+      "passed": true
+    }
+  },
+  "frontend": {
+    "tests": 370,
+    "passed": true
+  },
+  "build": {
+    "typescript_vite": "passed",
+    "manifest_references": 42,
+    "actual_preload_dependencies": 33,
+    "profiles": 3,
+    "scoped_pint": "passed",
+    "git_diff_check": "passed"
+  },
+  "browser": {
+    "fixture": "Synthetic offline HTML built from actual React components; all requests intercepted, no application database",
+    "cases": [
+      {
+        "name": "editor",
+        "width": 375,
+        "theme": "light",
+        "errors": [],
+        "requests": 2
+      },
+      {
+        "name": "editor",
+        "width": 375,
+        "theme": "dark",
+        "errors": [],
+        "requests": 2
+      },
+      {
+        "name": "editor",
+        "width": 768,
+        "theme": "light",
+        "errors": [],
+        "requests": 2
+      },
+      {
+        "name": "editor",
+        "width": 768,
+        "theme": "dark",
+        "errors": [],
+        "requests": 2
+      },
+      {
+        "name": "editor",
+        "width": 1440,
+        "theme": "light",
+        "errors": [],
+        "requests": 2
+      },
+      {
+        "name": "editor",
+        "width": 1440,
+        "theme": "dark",
+        "errors": [],
+        "requests": 2
+      },
+      {
+        "name": "pp",
+        "width": 375,
+        "theme": "light",
+        "errors": [],
+        "requests": 2
+      },
+      {
+        "name": "pp",
+        "width": 375,
+        "theme": "dark",
+        "errors": [],
+        "requests": 2
+      },
+      {
+        "name": "pp",
+        "width": 768,
+        "theme": "light",
+        "errors": [],
+        "requests": 2
+      },
+      {
+        "name": "pp",
+        "width": 768,
+        "theme": "dark",
+        "errors": [],
+        "requests": 2
+      },
+      {
+        "name": "pp",
+        "width": 1440,
+        "theme": "light",
+        "errors": [],
+        "requests": 2
+      },
+      {
+        "name": "pp",
+        "width": 1440,
+        "theme": "dark",
+        "errors": [],
+        "requests": 2
+      },
+      {
+        "name": "kasbon",
+        "width": 375,
+        "theme": "light",
+        "errors": [],
+        "requests": 2
+      },
+      {
+        "name": "kasbon",
+        "width": 375,
+        "theme": "dark",
+        "errors": [],
+        "requests": 2
+      },
+      {
+        "name": "kasbon",
+        "width": 768,
+        "theme": "light",
+        "errors": [],
+        "requests": 2
+      },
+      {
+        "name": "kasbon",
+        "width": 768,
+        "theme": "dark",
+        "errors": [],
+        "requests": 2
+      },
+      {
+        "name": "kasbon",
+        "width": 1440,
+        "theme": "light",
+        "errors": [],
+        "requests": 2
+      },
+      {
+        "name": "kasbon",
+        "width": 1440,
+        "theme": "dark",
+        "errors": [],
+        "requests": 2
+      }
+    ],
+    "viewports": [
+      375,
+      768,
+      1440
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "header_branch_selected": true,
+    "unit_restricted_and_operation_approvers": true,
+    "no_javascript_errors": true,
+    "no_mutation_requests": true,
+    "screenshots_inspected": [
+      "Header desktop/mobile/dark",
+      "PP preview",
+      "kasbon preview"
+    ]
+  },
+  "documents": {
+    "native_docx": 6,
+    "native_render_pages": 9,
+    "browser_pdf": 2,
+    "browser_pages": 5,
+    "render_results": [
+      {
+        "file": "kasbon-browser.pdf",
+        "pages": 1,
+        "nonblank": true,
+        "no_approval_stamp": true
+      },
+      {
+        "file": "pp-browser.pdf",
+        "pages": 4,
+        "nonblank": true,
+        "no_approval_stamp": true
+      },
+      {
+        "file": "render-kasbon/kasbon.pdf",
+        "pages": 1,
+        "nonblank": true,
+        "no_approval_stamp": true
+      },
+      {
+        "file": "render-spk/spk.pdf",
+        "pages": 1,
+        "nonblank": true,
+        "no_approval_stamp": true
+      },
+      {
+        "file": "render-bapp/bapp.pdf",
+        "pages": 1,
+        "nonblank": true,
+        "no_approval_stamp": true
+      },
+      {
+        "file": "render-pp/pp-closing.pdf",
+        "pages": 3,
+        "nonblank": true,
+        "no_approval_stamp": true
+      },
+      {
+        "file": "render-barp/barp.pdf",
+        "pages": 2,
+        "nonblank": true,
+        "no_approval_stamp": true
+      },
+      {
+        "file": "render-bakh/bakh.pdf",
+        "pages": 1,
+        "nonblank": true,
+        "no_approval_stamp": true
+      }
+    ],
+    "zip_crc_xml_checked": true,
+    "external_relationships": false,
+    "word_print_approval_marks": false,
+    "gm_and_actual_official_jobs": true,
+    "all_render_pages_inspected": true,
+    "fixture_files_sha256": {
+      "bakh.docx": "57cc913a711cc27f3bdc148c1366aa9e024756a432b9aa1f6bf50dac37f32ac6",
+      "bapp.docx": "47dc6eed726ac5014a8696d7c2fa5e733d2a10e20e2c01a305d5e28fe120123b",
+      "barp.docx": "75838154fe5405c5d4d4183ca61441d1640d3963e85c91a536bc4f2576417a94",
+      "kasbon.docx": "18e888b834c8e68cad8ace3fd88da16c32230c4fddf3703d0dc49a439f51aab2",
+      "pp-closing.docx": "a5499015cef996eeb24774fb7e3cb3ea15ffca52b3656178c0a6412c048faebf",
+      "spk.docx": "5397f8a675edcdb0b2571618ba30253b34d9c74427a08c3e6d1b0c801a8e511d"
+    }
+  },
+  "query_fixture": {
+    "context_assignment_union": 1,
+    "metadata_bind": 5,
+    "barp_http_metadata_save": 60,
+    "finance_payment_catalog_service_100_pending": 4,
+    "kasbon_issue_http": 45,
+    "sessionless_transfer_worker": 43,
+    "sessionless_ktp_bank_worker": 39,
+    "optional_apm_settlement_or_edit_http": 40,
+    "current_only_kasbon_service": 3,
+    "current_only_kasbon_http": 6,
+    "revision_service": 1,
+    "revision_http": 2,
+    "incremental_write_20_pp": 8,
+    "full_write_20_pp": 1330,
+    "pure_unit_document_helpers": 0,
+    "note": "Fixture counts, not latency/load benchmark; no per-BOQ-item/per-approver SQL; migration pages500 and updates each NULL PP flag."
+  },
+  "compatibility": [
+    "Construction orders1-3 retained; Operation order4",
+    "Per-PP SQL unit flag not shared Project row",
+    "Legacy actual original Construction assignee exception only for unmarked Operation PP and authorized Branch",
+    "No historical approval rerouting or money/snapshot/archive rewrite",
+    "Future Operation payments on legacy PP require explicit five Operation assignments",
+    "Manager SS and GM Region; Officer SS Branch or Region; active assignments required"
+  ],
+  "deployment": {
+    "migration": "2026_11_18_000002_enable_operation_workflow",
+    "live_migration_applied": false,
+    "live_its_mutated": false,
+    "env_modified": false,
+    "worker_restarted": false,
+    "dompis_touched": false,
+    "demo_backup_readonly_bytes": 233472,
+    "database_test_isolation": "fail-closed SQLite :memory:",
+    "no_new_runtime_dependencies": true
+  },
+  "not_verified": [
+    "aaPanel live accounts",
+    "MySQL/MariaDB DDL on actual server",
+    "large concurrency/load",
+    "Microsoft Word desktop",
+    "physical wet signature/printing",
+    "real bank transfer"
+  ]
+}

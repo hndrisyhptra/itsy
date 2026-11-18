@@ -96,7 +96,7 @@ trait FinancePaymentWorkflow
     /** Physical signer correction only; never an application approval or financial reissue. */
     private function setKasbonPrintSigner(string $id, string $kasbonId, string $userId): null
     {
-        abort_unless(in_array($this->state['role'], ['Admin Konstruksi', 'Superadmin', 'Finance'], true), 403);
+        abort_unless(in_array($this->state['role'], ['Admin Konstruksi', 'Admin Operation', 'Superadmin', 'Finance'], true), 403);
         $t = $this->record('terms', $id);
         if (! self::usesFinancePayment($t) || self::usesSettlementPayment($t) || $t['status'] !== 'Disetujui'
             || isset($t['legacySettlementReview']) || $kasbonId === '' || ($t['kasbon']['id'] ?? '') !== $kasbonId) {
@@ -258,6 +258,7 @@ trait FinancePaymentWorkflow
     {
         $this->finance();
         $t = $this->record('terms', $id);
+        $this->assertBappBeforePayment($t);
         $this->financePaymentEligible($t);
         if (! Str::isUuid($file['id'] ?? '')) {
             $this->fail('Bukti transfer tidak valid.');
@@ -315,6 +316,7 @@ trait FinancePaymentWorkflow
 
     private function assertFinanceApmReady(array $t): void
     {
+        $this->assertBappBeforePayment($t);
         if (! self::legacyReviewApproved($t)) {
             $this->fail('Menunggu persetujuan Mgr Finance & Settlement untuk kasbon aktif.');
         }

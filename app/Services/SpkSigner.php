@@ -21,6 +21,6 @@ final class SpkSigner
 
         $identity = BakhSigner::projectIdentity($state, $project, $required);
 
-        return array_merge($spk, $identity, ['position' => $identity['signerJob'] ?? 'HEAD OF PMO AREA JAWA BALI']);
+        return array_merge($spk, $identity, ['position' => $identity['signerJob'] ?? (WorkUnitAccess::operation($project) ? 'GENERAL MANAGER OPERATION' : 'HEAD OF PMO AREA JAWA BALI')]);
     }
 }

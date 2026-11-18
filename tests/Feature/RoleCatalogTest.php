@@ -18,7 +18,7 @@ class RoleCatalogTest extends TestCase
 
     private function payload(array $data = []): array
     {
-        return array_replace(['action' => 'save', 'code' => 'OFFICER_SS1', 'name' => 'Officer 1 SS', 'request_id' => (string) Str::uuid()], $data);
+        return array_replace(['action' => 'save', 'code' => 'CATALOG_REVIEWER', 'name' => 'Officer 1 SS', 'request_id' => (string) Str::uuid()], $data);
     }
 
     public function test_catalog_crud_persists_with_actual_actor_audit_and_uuid_replay_without_workflow_changes(): void
@@ -52,7 +52,7 @@ class RoleCatalogTest extends TestCase
         foreach (['prototype_workspaces', 'project_plans', 'approval_decisions', 'payment_terms'] as $table) {
             $this->assertDatabaseCount($table, 0);
         }
-        $this->get('/akun/baru')->assertOk()->assertDontSee('value="OFFICER_SS1"', false);
+        $this->get('/akun/baru')->assertOk()->assertDontSee('value="CATALOG_REVIEWER"', false);
     }
 
     public function test_builtin_role_label_can_change_but_code_authority_and_superadmin_access_are_preserved(): void
@@ -75,7 +75,7 @@ class RoleCatalogTest extends TestCase
         $this->postJson('/api/account/roles', $this->payload(['action' => 'delete', 'id' => $row['id_role'], 'version' => $row['version']]))->assertUnprocessable();
         $this->assertDatabaseHas('roles', ['id_role' => $row['id_role']]);
         DB::table('user_assignments')->where('role_id', $row['id_role'])->delete();
-        User::factory()->create(['role' => 'OFFICER_SS1']);
+        User::factory()->create(['role' => 'CATALOG_REVIEWER']);
         $this->postJson('/api/account/roles', $this->payload(['action' => 'delete', 'id' => $row['id_role'], 'version' => $row['version']]))->assertUnprocessable();
         $this->assertDatabaseCount('master_data_changes', 1);
     }
@@ -160,7 +160,7 @@ class RoleCatalogTest extends TestCase
             }
         });
         $this->postJson('/api/account/roles', $this->payload())->assertServerError();
-        $this->assertDatabaseMissing('roles', ['code' => 'OFFICER_SS1']);
+        $this->assertDatabaseMissing('roles', ['code' => 'CATALOG_REVIEWER']);
         $this->assertDatabaseCount('master_data_changes', 0);
     }
 

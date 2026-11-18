@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\PrototypeWorkspace;
+use App\Models\User;
 use App\Support\WholeRupiah;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
@@ -25,13 +26,14 @@ class FinanceDocuments
     public function authorize(PrototypeWorkspace $w, string $id, bool $term = false, bool $write = false, bool $details = false, ?array $account = null, bool $approvalView = false): object
     {
         $account ??= app(AuthenticatedWorkspace::class)->account();
-        $readRoles = ['Admin Konstruksi', 'Superadmin', 'Finance', 'Mgr Finance & Settlement'];
+        $readRoles = ['Admin Konstruksi', 'Admin Operation', 'Superadmin', 'Finance', 'Mgr Finance & Settlement'];
         if ($approvalView && $term) {
-            $readRoles = [...$readRoles, ...PrototypeDomain::APPROVERS_V3];
+            $readRoles = [...$readRoles, ...PrototypeDomain::APPROVERS_V3, ...WorkUnitAccess::OPS_APPROVERS];
         }
-        abort_unless(in_array($account['role'], $write ? ($term ? ['Finance'] : ['Admin Konstruksi', 'Superadmin']) : $readRoles, true), 403, 'Peran akun tidak diizinkan mengakses dokumen pribadi Mandor atau pembayaran ini.');
+        abort_unless(in_array($account['role'], $write ? ($term ? ['Finance'] : ['Admin Konstruksi', 'Admin Operation', 'Superadmin']) : $readRoles, true), 403, 'Peran akun tidak diizinkan mengakses dokumen pribadi Mandor atau pembayaran ini.');
         $q = DB::table('work_orders as s')->join('contracts as c', 'c.id_contract', '=', 's.contract_id')->join('project_plans as p', 'p.id_pp', '=', 'c.pp_id')
             ->where('s.workspace_id', $w->id)->where('c.workspace_id', $w->id)->where('p.workspace_id', $w->id)->whereIn('p.branch_id', $account['branchIds']);
+        WorkUnitAccess::scope($q, $account, 'p');
         if ($term) {
             $q->join('payment_terms as t', 't.work_order_id', '=', 's.id_spk')->where('t.workspace_id', $w->id)->where('t.source_id', $id);
         } else {
@@ -40,7 +42,7 @@ class FinanceDocuments
         $r = $q->first(['s.id_spk', 'p.status as pp_status', 'p.document_data->contractBundle as bundle_data', ...($details ? ['s.document_data as spk_data', 'c.document_data as deal_data', 'p.document_data as pp_data'] : []), ...($term ? ['t.id_payment_term', 't.document_data as term_data'] : [])]);
         abort_unless($r, 404, ($term ? 'Pengajuan pembayaran' : 'SPK').' tidak ditemukan atau berada di luar Branch penugasan akun.');
 
-        if ($approvalView && ! in_array($account['role'], ['Admin Konstruksi', 'Superadmin', 'Finance'], true)) {
+        if ($approvalView && ! in_array($account['role'], ['Admin Konstruksi', 'Admin Operation', 'Superadmin', 'Finance'], true)) {
             $t = json_decode($r->term_data, true, 512, JSON_THROW_ON_ERROR);
             abort_unless(((PrototypeDomain::usesSettlementPayment($t) && ($t['approverUserIds'][$account['role']] ?? '') === $account['id']) || ($account['role'] === 'Mgr Finance & Settlement' && ($t['legacySettlementReview']['userId'] ?? '') === $account['id'])) && ! in_array($t['status'], ['Draft', 'Ditolak', 'Dikembalikan'], true), 403, 'Kasbon hanya dapat direview oleh approver pengajuan yang ditugaskan.');
         }
@@ -151,7 +153,7 @@ class FinanceDocuments
     public function kasbon(PrototypeWorkspace $w, string $id, bool $includeFiles = true, bool $currentOnly = false): array
     {
         $r = $this->authorize($w, $id, true, false, false, null, true);
-        $includeFiles = ! $currentOnly && $includeFiles && in_array(app(AuthenticatedWorkspace::class)->account()['role'], ['Admin Konstruksi', 'Superadmin', 'Finance', 'Mgr Finance & Settlement'], true);
+        $includeFiles = ! $currentOnly && $includeFiles && in_array(app(AuthenticatedWorkspace::class)->account()['role'], ['Admin Konstruksi', 'Admin Operation', 'Superadmin', 'Finance', 'Mgr Finance & Settlement'], true);
         $t = json_decode($r->term_data, true, 512, JSON_THROW_ON_ERROR);
         $rows = DB::table('finance_kasbons')->where('term_id', $r->id_payment_term)
             ->when($currentOnly, fn ($query) => $query->where('id_kasbon', $t['kasbon']['id'] ?? ''))
@@ -195,7 +197,7 @@ class FinanceDocuments
 
         return $this->locked($w, function ($row) use ($id, $input, $data, $hash) {
             $account = app(AuthenticatedWorkspace::class)->account();
-            abort_unless(in_array($account['role'], ['Admin Konstruksi', 'Superadmin'], true), 403, 'Pengajuan kasbon hanya dibuat Admin Konstruksi atau Superadmin.');
+            abort_unless(in_array($account['role'], ['Admin Konstruksi', 'Admin Operation', 'Superadmin'], true), 403, 'Pengajuan kasbon hanya dibuat Admin Konstruksi atau Superadmin.');
             $r = $this->authorize($row, $id, true, false, true, $account);
             if ($this->replay('finance_kasbons', $input['request_id'], $hash)) {
                 return app(PrototypeWorkspaceService::class)->payload($row) + ['replayed' => true];
@@ -224,14 +226,14 @@ class FinanceDocuments
             $settlement = PrototypeDomain::usesSettlementPayment($t);
             $signers = [];
             if ($settlement) {
-                $ids = array_intersect_key($t['approverUserIds'], array_flip(PrototypeDomain::APPROVERS_V3));
+                $ids = array_intersect_key($t['approverUserIds'], array_flip(PrototypeDomain::approvalRoles($t, true)));
                 $ids['Mgr Finance & Settlement'] = $data['settlementUserId'] ?? '';
-                $users = DB::table('users as u')->join('user_assignments as a', 'a.user_id', '=', 'u.id_user')->join('roles as r', 'r.id_role', '=', 'a.role_id')->join('branches as b', 'b.id_branch', '=', 'a.branch_id')
-                    ->whereIn('u.id_user', array_map(fn ($id) => (int) str_replace('db-user-', '', $id), array_values($ids)))
-                    ->where('u.active', true)->where('a.active', true)->where('b.name', $p['branch'])->where('b.is_active', true)->whereNull('b.deleted_at')->whereColumn('u.role', 'r.code')->get(['u.id_user', 'u.name', 'u.jabatan', 'r.code'])->keyBy('id_user');
+                $users = User::whereIn('id_user', array_map(fn ($id) => (int) str_replace('db-user-', '', $id), array_values($ids)))->get();
+                $contexts = app(AccountAccess::class)->contexts($users);
+                $users = $users->keyBy('id_user');
                 foreach ($ids as $role => $selected) {
                     $u = $users->get((int) str_replace('db-user-', '', $selected));
-                    abort_unless($u && (AccountAccess::ROLES[$u->code] ?? '') === $role, 422, 'Pilih approver aktif dengan peran '.$role.' pada Branch PP.');
+                    abort_unless($u && $u->active && ($contexts[$u->id_user]['role'] ?? '') === $role && in_array($p['branch'], $contexts[$u->id_user]['branches'], true) && WorkUnitAccess::permits($contexts[$u->id_user], $p), 422, 'Pilih approver aktif dengan peran '.$role.' pada Branch PP.');
                     $signers[$role] = ['userId' => $selected, 'name' => $u->name, 'job' => trim($u->jabatan ?? '')];
                 }
             } else {
@@ -243,7 +245,7 @@ class FinanceDocuments
             }
             $version = (int) DB::table('finance_kasbons')->where('term_id', $r->id_payment_term)->max('version') + 1;
             $kid = (string) Str::uuid();
-            $snapshot = $data + ['templateVersion' => $settlement ? 3 : 2, 'issuerRole' => $account['role'], 'issuerJob' => $account['jabatan'] ?? '', 'payee' => $payee, 'mandor' => $d['mandor'], 'unit' => $p['unit'].' · '.$p['branch'], 'project' => $p['name'], 'projectCode' => $p['projectCode'], 'ppNo' => $p['no'], 'spkNo' => $spk['no'], 'termNumber' => $t['number'], 'termType' => $t['type'], 'amount' => $total, 'settlement' => $settlementQuote, 'signers' => $signers, 'issuer' => $account['name']];
+            $snapshot = $data + ['approvalScheme' => $t['approvalScheme'] ?? 'project-support-first', 'templateVersion' => $settlement ? 3 : 2, 'issuerRole' => $account['role'], 'issuerJob' => $account['jabatan'] ?? '', 'payee' => $payee, 'mandor' => $d['mandor'], 'unit' => $p['unit'].' · '.$p['branch'], 'project' => $p['name'], 'projectCode' => $p['projectCode'], 'ppNo' => $p['no'], 'spkNo' => $spk['no'], 'termNumber' => $t['number'], 'termType' => $t['type'], 'amount' => $total, 'settlement' => $settlementQuote, 'signers' => $signers, 'issuer' => $account['name']];
             DB::table('finance_kasbons')->insert(['id_kasbon' => $kid, 'term_id' => $r->id_payment_term, 'version' => $version, 'amount' => $total, 'private_data' => $this->pack($snapshot), 'issued_by' => auth()->id(), 'issued_at' => now(), 'request_uuid' => $input['request_id'], 'input_sha256' => $hash]);
 
             return app(PrototypeWorkspaceService::class)->command($row, ['command' => $settlement ? '_submitSettlementKasbon' : '_issueKasbon', 'args' => [$id, ['id' => $kid, 'version' => $version, 'amount' => $total, 'settlement' => $settlementQuote, 'issuedBy' => 'db-user-'.auth()->id(), 'issuedRole' => $account['role'], ...($settlement ? ['settlementUserId' => $data['settlementUserId']] : []), 'issuedAt' => now()->toISOString()]], 'revision' => $row->revision, 'request_id' => $input['request_id']]);
@@ -256,6 +258,10 @@ class FinanceDocuments
         $r = $this->authorize($w, $id, $kind === 'transfer-proof', true);
         if ($kind === 'transfer-proof') {
             $t = json_decode($r->term_data, true, 512, JSON_THROW_ON_ERROR);
+            if ($t['type'] === 'Final' && ($t['completionFlow'] ?? '') === 'bapp-before-payment-v1') {
+                $data = DB::table('ba_completions')->where('workspace_id', $w->id)->where('final_term_id', $r->id_payment_term)->value('document_data');
+                abort_unless($data && PrototypeDomain::bappCurrent(json_decode($data, true, 512, JSON_THROW_ON_ERROR), $t), 422, 'Sahkan BA PP sesuai BA RP sebelum unggah bukti transfer pembayaran Final.');
+            }
             abort_unless(PrototypeDomain::legacyReviewApproved($t) && PrototypeDomain::usesFinancePayment($t) && $t['status'] === 'Disetujui' && $t['apmStatus'] !== 'Valid' && isset($t['kasbon']) && ($t['financePayment']['status'] ?? '') === 'Diverifikasi', 422, 'Bukti transfer hanya untuk kasbon yang sudah disetujui Finance dan belum lunas.');
         }
 

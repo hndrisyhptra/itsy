@@ -24,6 +24,9 @@ trait PrototypeApprovalChain
 
     public static function approvalRoles(array $document, bool $project = false): array
     {
+        if (WorkUnitAccess::operation($document)) {
+            return [...WorkUnitAccess::OPS_APPROVERS, ...(! $project && self::usesSettlementPayment($document) ? ['Mgr Finance & Settlement', 'Finance'] : [])];
+        }
         if (! $project && self::usesSettlementPayment($document)) {
             return [...self::APPROVERS_V3, 'Mgr Finance & Settlement', 'Finance'];
         }
@@ -38,6 +41,10 @@ trait PrototypeApprovalChain
     /** Original SQL run positions are immutable; routing uses approvalRoles instead. */
     public static function storedApprovalRoles(array $document, bool $project = false): array
     {
+        if (WorkUnitAccess::operation($document)) {
+            return self::approvalRoles($document, $project);
+        }
+
         return ($document['workflowVersion'] ?? 1) >= 3 && ! self::usesBusinessSupport($document)
             && ($document['approvalScheme'] ?? '') !== 'project-support-first'
                 ? self::APPROVERS_V3_PREVIOUS : self::approvalRoles($document, $project);
@@ -77,6 +84,12 @@ trait PrototypeApprovalChain
             if (isset($user['branches']) && ! in_array($branch, $user['branches'], true)) {
                 $this->fail('Seluruh approver harus ditugaskan pada Branch PP.');
             }
+            if (isset($user['workUnits']) && ! in_array($scheme === 'operation-v1' ? 'Operation' : 'Konstruksi', $user['workUnits'], true)) {
+                $this->fail('Unit kerja approver tidak sesuai PP.');
+            }
+            if ($scheme === 'operation-v1' && in_array($role, ['Manager SS', 'General Manager Operation'], true) && ($user['accessScope'] ?? '') !== 'REGION') {
+                $this->fail($role.' wajib memiliki cakupan Region.');
+            }
             $result[$role] = $id;
         }
 
@@ -87,10 +100,14 @@ trait PrototypeApprovalChain
     {
         $this->admin();
         $p = $this->record('projects', $id);
-        if ((($p['workflowVersion'] ?? 1) >= 3 && ! self::usesBusinessSupport($p)) || $p['status'] !== 'Sah') {
+        if ((($p['workflowVersion'] ?? 1) >= 3 && ! self::usesBusinessSupport($p) && ! (($p['unit'] ?? '') === 'Operation' && ! WorkUnitAccess::operation($p))) || $p['status'] !== 'Sah') {
             $this->fail('Penugasan pembayaran berikutnya hanya untuk PP historis yang sudah Sah.');
         }
-        $p['paymentApproverUserIds'] = $this->validateAssignments(['approverUserIds' => $assignments], 3, $p['branch']);
+        $scheme = $p['unit'] === 'Operation' ? 'operation-v1' : 'project-support-first';
+        if ($scheme === 'operation-v1') {
+            $p['paymentApprovalScheme'] = $scheme;
+        }
+        $p['paymentApproverUserIds'] = $this->validateAssignments(['approverUserIds' => $assignments], 3, $p['branch'], true, $scheme);
         $this->put('projects', $p);
         $this->log('Lima approver pembayaran berikutnya ditetapkan', $p['no'], '/project-plan/'.$id);
 

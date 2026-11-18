@@ -448,7 +448,7 @@ class FinanceKasbonTest extends TestCase
         $queries = DB::getQueryLog();
         DB::disableQueryLog();
         $this->assertLessThanOrEqual(120, count($queries));
-        $this->assertCount(1, collect($queries)->filter(fn ($q) => str_contains($q['query'], 'user_assignments') && str_contains($q['query'], 'join') && ! str_contains($q['query'], '"a"."user_id" = ?')), 'One batch assignment read at command bind, independent of term count.');
+        $this->assertCount(1, collect($queries)->filter(fn ($q) => str_contains($q['query'], 'user_assignments') && str_contains($q['query'], 'join') && ! str_contains($q['query'], '"u"."id_user" = ?')), 'One batch assignment read at command bind, independent of term count.');
         foreach ($queries as $q) {
             $this->assertStringNotContainsString('private_data', $q['query']);
         }

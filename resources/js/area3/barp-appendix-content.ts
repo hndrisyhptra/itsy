@@ -1,3 +1,4 @@
+import { isOperation } from './work-unit';
 import { isSingleFinalBarp } from './barp-labels';
 import { rupiahNumber, monetaryRound, moneyLine } from './currency';
 import type { State,Project,Deal,Spk,Term } from './domain';
@@ -19,12 +20,12 @@ export function barpAppendixData(state:State,project:Project,deal:Deal,spk:Spk,t
   const note=singleFinal?'Harga dan nilai dalam Rupiah (Rp). Total Vol dan nilai mengikuti aktual pembayaran Final satu kali.':'Harga dan nilai dalam Rupiah (Rp). Total Vol, Material, Jasa dan Jumlah adalah kumulatif termin sebelumnya yang disetujui ditambah termin ini, bukan tagihan ulang. Tagihan termin ini ditampilkan terpisah di rekap. Pembulatan mengikuti masing-masing termin.';
   const ledger=termVolumeData(state,project,deal,spk,term),letter=barpDocumentData(project,deal,spk,term);
   // Captured snapshot first. Historical fallback is an actual matching decision/PP snapshot, never today's account.
-  const deployment=term.barp?.deployment??paymentSigner(state,project,term,'Mgr Deployment');
-  const support=term.barp?.support??paymentSigner(state,project,term,'Mgr Project Support');
+  const deployment=term.barp?.deployment??paymentSigner(state,project,term,isOperation(term)?'Manager SS':'Mgr Deployment');
+  const support=term.barp?.support??paymentSigner(state,project,term,isOperation(term)?'Officer 1 SS':'Mgr Project Support');
   const signatures=[
     {job:letter.headJob,name:letter.head,nik:term.barp?.headNik??''},
-    {job:deployment.job?.trim()||'MGR PROJECT DEPLOYMENT AREA JAWA BALI',name:deployment.name||'…',nik:deployment.nik},
-    {job:support.job?.trim()||'MGR PROJECT SUPPORT AREA JAWA BALI',name:support.name||'…',nik:support.nik},
+    {job:deployment.job?.trim()||(isOperation(term)?'MANAGER SS':'MGR PROJECT DEPLOYMENT AREA JAWA BALI'),name:deployment.name||'…',nik:deployment.nik},
+    {job:support.job?.trim()||(isOperation(term)?'OFFICER 1 SS':'MGR PROJECT SUPPORT AREA JAWA BALI'),name:support.name||'…',nik:support.nik},
     {job:'WASPANG PROJECT',name:letter.waspang,nik:''},
     {job:'KETUA MANDOR',name:letter.mandor,nik:''},
   ];

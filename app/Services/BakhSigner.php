@@ -26,7 +26,7 @@ final class BakhSigner
     /** Resolve only the selected PP Head, using already loaded account/decision snapshots. */
     public static function projectIdentity(array $state, array $project, bool $required = false): array
     {
-        $role = 'Head of PMO';
+        $role = WorkUnitAccess::head($project);
         $id = $project['approverUserIds'][$role] ?? '';
         $decision = $id ? collect($project['approvals'] ?? [])->first(fn ($a) => $a['role'] === $role && ($a['userId'] ?? '') === $id && $a['decision'] === 'Setujui') : null;
         $snapshot = $project['signatureUsers'][$role] ?? [];
@@ -51,6 +51,6 @@ final class BakhSigner
 
         $job = $first($snapshot['job'] ?? null, $decision['actorJob'] ?? null, $user['jabatan'] ?? null);
 
-        return ['signer' => $name, 'signerUserId' => $id, 'signerNik' => $nik, 'signerRole' => $role, 'signerSource' => 'pp-head-pmo', ...($job !== '' ? ['signerJob' => $job] : [])];
+        return ['signer' => $name, 'signerUserId' => $id, 'signerNik' => $nik, 'signerRole' => $role, 'signerSource' => WorkUnitAccess::operation($project) ? 'pp-gm-operation' : 'pp-head-pmo', ...($job !== '' ? ['signerJob' => $job] : [])];
     }
 }

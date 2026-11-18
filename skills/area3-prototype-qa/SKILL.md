@@ -3,6 +3,11 @@ name: area3-prototype-qa
 description: Test the its Area 3 interactive prototype through the linked business scenarios, permissions, persistence, financial/volume invariants, documents and responsive layouts.
 ---
 
+## 18 November 2026 — Saved BARP before payment approvals
+
+Follow docs/BAPP_BEFORE_PAYMENT.md and latest user authority: new/explicitly adopted Final completion allows Admin BAPP attestation from saved complete BARP before any approval; source-bound BAPP must precede kasbon/payment. Changes invalidate current attestation into history, no financial/ledger acceptance from BAPP. Keep seven approvals, scope/private/UUID/revision/Head and release/full-package complete-approval gates; legacy/paid untouched. No migration, pure0SQL; verify 0approval attestation, change/re-attest, legacyexplicit, unit403, proof/lunas, blank Word/nonblankprint and document actual query/render/server limits.
+
+
 ## 16 November 2026 — Explicit legacy Finance inbox rerouting
 
 User authorizes selecting pending legacy kasbon-v1 payments for Mgr Finance review before Finance. Follow docs/LEGACY_FINANCE_ROUTING.md. Finance/Superadmin explicitly routes1–50 current UUID-bound, five-work-approved kasbons to one active Manager covering all selected Branches, atomically under revision/receipt/audit. No paid/APM/proof/prior Finance Setujui/current decision, pending proof task, new seven-stage flow or Head correction bypass. Store actual legacySettlementReview/history in existing payment_terms.document_data; preserve original five SQL decisions/runs/assignees and encrypted kasbon/money/ledger/archive. Manager decision is a supplemental current-kasbon gate, not a retroactive fake seven-stage run. Require it for Finance approval/transfer/APM/settlement; Manager return needs note, Admin reissue binds new UUID and requires fresh Manager review without resetting historical work approvals. Inbox/count/timeline/list/private selected-Manager read and genuine preview-only stamp follow the marker. No migration/live bulk mutation; deployment alone never routes documents.

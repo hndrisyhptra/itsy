@@ -12,14 +12,16 @@ class NegotiationProjectCatalog
 
     private function scope(array $account): Builder
     {
-        abort_unless(in_array($account['code'], ['ADMIN_KONSTRUKSI', 'SUPERADMIN'], true), 403);
+        abort_unless(in_array($account['code'], ['ADMIN_KONSTRUKSI', 'ADMIN_OPS', 'SUPERADMIN'], true), 403);
         $workspace = DB::table('prototype_workspaces')->where('owner_key', hash('sha256', 'area3-authenticated-workflow-v1'))
             ->first(['id', 'relational_migrated_at']);
         abort_unless($workspace?->relational_migrated_at, 503, 'Penyimpanan transaksi belum diaktifkan.');
 
-        return DB::table('project_plans as pp')->join('projects as p', 'p.id_project', '=', 'pp.project_id')
+        $query = DB::table('project_plans as pp')->join('projects as p', 'p.id_project', '=', 'pp.project_id')
             ->join('branches as b', 'b.id_branch', '=', 'pp.branch_id')
             ->where('pp.workspace_id', $workspace->id)->whereIn('pp.branch_id', $account['branchIds']);
+
+        return WorkUnitAccess::scope($query, $account);
     }
 
     public function projects(array $account, string $search, int $page): array
@@ -32,6 +34,7 @@ class NegotiationProjectCatalog
                 $matching->selectRaw('1')->from('project_plans as match_pp')
                     ->whereColumn('match_pp.project_id', 'pp.project_id')->whereColumn('match_pp.workspace_id', 'pp.workspace_id');
                 // Match a visible sibling's activity, then count all visible PPs in the group.
+                WorkUnitAccess::scope($matching, $account, 'match_pp');
                 $matching->whereIn('match_pp.branch_id', $account['branchIds'])
                     ->whereRaw($q->getGrammar()->wrap('match_pp.document_data->name')." LIKE ? ESCAPE '!'", [$like]);
             });

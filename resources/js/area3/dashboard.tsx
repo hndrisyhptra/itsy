@@ -1,3 +1,4 @@
+import { unitOptions, stateForUnit, OPERATION_APPROVERS } from './work-unit';
 import { DashboardMatrix } from './dashboard-matrix-table';
 import { useMemo, useState } from 'react';
 import { ArrowUpRight, ClipboardCheck, Download, FileSignature, FolderKanban, Plus, ReceiptText } from 'lucide-react';
@@ -5,11 +6,13 @@ import { type State, money, operational } from './domain';
 import { dashboardBranches, dashboardSummary } from './dashboard-summary';
 import { Link, PageTitle } from './ui';
 
-export function Dashboard({ s }: { s: State }) {
+export function Dashboard({ s:source }: { s: State }) {
+  const units=unitOptions(source),[unit,setUnit]=useState(units[0]??'Konstruksi');
+  const s=useMemo(()=>stateForUnit(source,unit),[source,unit]);
   const [branch, setBranch] = useState('');
   const data = useMemo(()=>dashboardSummary(s,branch),[s,branch]);
   const finance=['Finance','Mgr Finance & Settlement'].includes(s.role);
-  const approver=['PM Konstruksi','Manager Konstruksi','Admin Area','Mgr Project Support','Mgr Deployment','Mgr Bussiness Support','Head of PMO'].includes(s.role);
+  const approver=['PM Konstruksi','Manager Konstruksi','Admin Area','Mgr Project Support','Mgr Deployment','Mgr Bussiness Support','Head of PMO',...OPERATION_APPROVERS].includes(s.role);
   const section=finance?'Ringkasan pembayaran':approver?'Ringkasan persetujuan':'Ringkasan operasional';
   return <div className="dashboard-overview">
     <PageTitle title="Dashboard" description={`${s.role} · Ringkasan proyek dan pembayaran sesuai akses Branch akun.`}>
@@ -20,6 +23,7 @@ export function Dashboard({ s }: { s: State }) {
     </PageTitle>
     <div className="section-toolbar">
       <div className="view-tabs"><span className="active">{section}</span><span className="period-label">Branch sesuai akses akun</span></div>
+      <select aria-label="Filter Unit Kerja dashboard" value={unit} onChange={e=>{setUnit(e.target.value);setBranch('');}}>{units.map(u=><option key={u}>{u}</option>)}</select>
       <select aria-label="Filter Branch dashboard" value={branch} onChange={e => setBranch(e.target.value)}>
         <option value="">Semua Branch</option>
         {dashboardBranches(s).map(name => <option key={name} value={name}>{name}</option>)}

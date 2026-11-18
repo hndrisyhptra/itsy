@@ -9,6 +9,7 @@ use Illuminate\Validation\ValidationException;
 /** Server authority for the demo workflow. The React calculations are UX previews. */
 class PrototypeDomain
 {
+    use BappWorkflow;
     use FinancePaymentWorkflow;
     use PartialPaymentWorkflow;
     use ProjectContractBundle;
@@ -18,7 +19,7 @@ class PrototypeDomain
 
     private const BAKH_SIGNING_PLACE = 'Surabaya';
 
-    public const ROLES = ['Admin Konstruksi', 'PM Konstruksi', 'Manager Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Bussiness Support', 'Mgr Project Support', 'Head of PMO', 'Mgr Finance & Settlement', 'Finance', 'Superadmin', 'Admin Operation', 'Admin Operation Area', 'Officer 1 Operation', 'Officer 2 Operation', 'Officer 3 Operation', 'Manager Branch Operation', 'General Manager Operation'];
+    public const ROLES = ['Admin Konstruksi', 'PM Konstruksi', 'Manager Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Bussiness Support', 'Mgr Project Support', 'Head of PMO', 'Mgr Finance & Settlement', 'Finance', 'Superadmin', 'Admin Operation', 'Admin Operation Area', 'Officer 1 Operation', 'Officer 2 Operation', 'Officer 3 Operation', 'Manager Branch Operation', 'General Manager Operation', 'Officer 1 SS', 'Manager SS'];
 
     private array $state;
 
@@ -68,6 +69,7 @@ class PrototypeDomain
             'updatePaymentApm' => $this->updatePaymentApm($args[0] ?? '', $args[1] ?? ''),
             'recordApm' => $this->recordApm($args[0] ?? '', $args[1] ?? '', (bool) ($args[2] ?? true)),
             'recordPayment' => $this->recordPayment($args[0] ?? '', $args[1] ?? 0, $args[2] ?? ''),
+            'prepareBapp' => $this->prepareBapp($args[0] ?? '', $resultId),
             'attestBapp' => $this->attestBapp($args[0] ?? '', $args[1] ?? ''),
             'releaseVolume' => $this->releaseVolume($args[0] ?? '', $this->object($args[1] ?? null)),
             'createContinuation' => $this->createContinuation($args[0] ?? '', $args[1] ?? '', $this->object($args[2] ?? null), $args[3] ?? '', $resultId),
@@ -99,7 +101,7 @@ class PrototypeDomain
 
     private function admin(): void
     {
-        abort_unless(in_array($this->state['role'], ['Admin Konstruksi', 'Superadmin'], true), 403, 'Tindakan hanya tersedia bagi Admin Konstruksi/Superadmin.');
+        abort_unless(in_array($this->state['role'], ['Admin Konstruksi', 'Admin Operation', 'Superadmin'], true), 403, 'Tindakan hanya tersedia bagi Admin Konstruksi/Superadmin.');
     }
 
     private function finance(): void
@@ -751,14 +753,19 @@ class PrototypeDomain
             $t = $this->record('terms', $id);
             $version = ($this->state['schema'] ?? 1) >= 3 ? 3 : 2;
             $source = $version >= 3 && (($p['workflowVersion'] ?? 1) < 3 || self::usesBusinessSupport($p)) ? ['approverUserIds' => $p['paymentApproverUserIds'] ?? []] : $p;
-            $chain = $this->validateAssignments($source, $version, $p['branch']);
+            $scheme = $p['unit'] === 'Operation' ? 'operation-v1' : 'project-support-first';
+            if ($scheme === 'operation-v1' && ! WorkUnitAccess::operation($p)) {
+                $source = ['approverUserIds' => $p['paymentApproverUserIds'] ?? []];
+            }
+            $chain = $this->validateAssignments($source, $version, $p['branch'], true, $scheme);
             $t['workflowVersion'] = $version;
-            $t['pmUserId'] = $chain['PM Konstruksi'];
+            $t['pmUserId'] = $chain[$scheme === 'operation-v1' ? 'Officer 1 Operation' : 'PM Konstruksi'];
+            $t['unit'] = $p['unit'];
             if ($version >= 3) {
                 $t['moneyPolicy'] = WholeRupiah::POLICY;
                 $t['paymentFlow'] = 'kasbon-v1';
                 $t['financePayment'] = ['status' => 'Menunggu Approval'];
-                $t['approvalScheme'] = 'project-support-first';
+                $t['approvalScheme'] = $scheme;
                 $t['approverUserIds'] = $chain;
                 $t['financeHistory'] = [];
             } else {
@@ -822,6 +829,18 @@ class PrototypeDomain
                 $t['barpHistory'][] = ['at' => $t['submitted'], 'document' => $t['barp']];
             }
         }
+        if ((self::usesSettlementPayment($t) || ($t['completionFlow'] ?? '') === 'bapp-before-payment-v1') && $t['type'] === 'Final') {
+            $b = $this->ensureBapp($t, true);
+            if (($b['completionPolicy'] ?? '') === 'barp-before-approval-v1') {
+                $t['completionFlow'] = 'bapp-before-payment-v1';
+                if ($submit) {
+                    $this->assertBappBeforePayment($t);
+                }
+            }
+        }
+        if ($t['type'] !== 'Final' && collect($this->state['bapps'])->contains(fn ($b) => $b['termId'] === $t['id'] && ($b['completionPolicy'] ?? '') === 'barp-before-approval-v1')) {
+            $this->ensureBapp($t);
+        }
         $this->put('terms', $t);
         $this->log($submit ? 'Termin diajukan ke PM Konstruksi' : 'Draft termin disimpan', 'Termin '.$t['number'], '/termin/'.$t['id']);
 
@@ -863,7 +882,7 @@ class PrototypeDomain
             if (count($t['approvals']) === $this->approvalCount($t)) {
                 $t['status'] = 'Disetujui';
                 if ($t['type'] === 'Final') {
-                    $this->put('bapps', ['id' => 'bapp-'.Str::uuid(), 'termId' => $t['id'], 'no' => 'BAPP/'.$this->record('spks', $t['spkId'])['no'], 'status' => 'Draft', 'evidence' => '', 'released' => [], 'releaseHistory' => []]);
+                    $this->ensureBapp($t);
                 }
             }
         } else {
@@ -969,8 +988,21 @@ class PrototypeDomain
         $this->admin();
         $b = $this->record('bapps', $id);
         $t = $this->record('terms', $b['termId']);
-        if ($b['status'] === 'Sah' || $t['type'] !== 'Final' || $t['status'] !== 'Disetujui' || count($t['approvals']) !== $this->approvalCount($t)) {
-            $this->fail('BA PP terkunci atau Final belum approved.');
+        $early = ($b['completionPolicy'] ?? '') === 'barp-before-approval-v1';
+        if ($b['status'] === 'Sah' || $t['type'] !== 'Final' || ($early ? ! in_array($t['status'], ['Draft', 'Diajukan', 'Disetujui'], true) : ($t['status'] !== 'Disetujui' || count($t['approvals']) !== $this->approvalCount($t)))) {
+            $this->fail('BA PP terkunci atau BA RP Final belum siap.');
+        }
+        if ($early) {
+            $spk = $this->record('spks', $t['spkId']);
+            $deal = $this->record('deals', $spk['dealId']);
+            $pp = $this->record('projects', $deal['projectId']);
+            if ($spk['status'] !== 'Sah' || $deal['status'] !== 'Sah' || $pp['status'] !== 'Sah' || empty($t['barp']) || $this->termTotal($t) <= 0) {
+                $this->fail('PP, BA KH, SPK Sah dan BA RP Final tersimpan wajib sebelum pengesahan BA PP.');
+            }
+            BarpTemplate::save($this->state, $t, $t, true);
+            $b['source'] = self::bappBasis($t);
+            $b['attestedBy'] = $this->state['actorUserId'] ?? '';
+            $b['attestedAt'] = now()->toISOString();
         }
         $this->required(['no' => $no], ['no']);
         $b['no'] = trim($no);
@@ -1080,7 +1112,7 @@ class PrototypeDomain
             $p = array_merge($p, ['workflowVersion' => 2, 'unit' => $parent['unit'] === 'Operation' ? 'Operation' : 'Konstruksi', 'pmUserId' => $parent['pmUserId'] ?? '', 'managerUserId' => $parent['managerUserId'] ?? '', 'approvals' => [], 'approvalHistory' => []]);
             if (($this->state['schema'] ?? 1) >= 3) {
                 $p['workflowVersion'] = 3;
-                $p['approvalScheme'] = 'project-support-first';
+                $p['approvalScheme'] = $parent['unit'] === 'Operation' ? 'operation-v1' : 'project-support-first';
                 $p['approverUserIds'] = $parent['approverUserIds'] ?? $parent['paymentApproverUserIds'] ?? [];
                 $p['contractBundle'] = ['version' => 1, 'submissions' => []];
                 $p['continuationNotes'] = $notes;

@@ -1,3 +1,4 @@
+import { isOperation } from './work-unit';
 import { BARP_PLACE, isSingleFinalBarp } from './barp-labels';
 import { rupiahNumber, monetaryRound, moneyLine } from './currency';
 import type { Project, Deal, Spk, Term } from './domain';
@@ -51,7 +52,7 @@ export function barpDocumentData(project:Project,deal:Deal,spk:Spk,term:Term){
     reconHeading:`Nilai Rekonsiliasi${singleFinal?'':` Tahap ${term.number}`} untuk Pengajuan Pembayaran`,
     reconText:`TELKOM AKSES dan Mandor sepakat bahwa nilai hasil rekonsiliasi${singleFinal?'':` tahap ${term.number}`} yang diajukan untuk pembayaran adalah sebesar ${amount}. Dengan rincian sebagai berikut:`,
     placeDate:`${BARP_PLACE}, ${date?.full??'…'}`,status:canPrintBarp(term)?'':canExportBarp(term)?'SALINAN REVIEW — MENUNGGU PERSETUJUAN':'DRAF — BELUM DIAJUKAN / PERLU PERBAIKAN',
-    waspang:filled(b.waspang),head:filled(b.headName),headJob:b.headJob?.trim()||'HEAD OF PMO AREA JAWA BALI',headNik:b.headNik?`NIK: ${b.headNik}`:'',material,service,total,
+    waspang:filled(b.waspang),head:filled(b.headName),headJob:b.headJob?.trim()||(isOperation(term)?'GENERAL MANAGER OPERATION':'HEAD OF PMO AREA JAWA BALI'),headNik:b.headNik?`NIK: ${b.headNik}`:'',material,service,total,
     materialText:deal.rows.some(r=>r.m)?number.format(material):'',serviceText:deal.rows.some(r=>r.s)?number.format(service):'',totalText:number.format(total),
     zeroMaterial:deal.rows.some(r=>r.m)?'0':'',zeroService:deal.rows.some(r=>r.s)?'0':'',
   };

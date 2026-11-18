@@ -35,8 +35,12 @@ trait SettlementApprovalWorkflow
         if (! Str::isUuid($summary['id'] ?? '') || ! $this->kasbonSummaryMatches($t, $summary)) {
             $this->fail('Kasbon harus sama dengan nilai tagihan termin.');
         }
+        $this->assertBappBeforePayment($t);
         $project = $this->record('projects', $this->record('deals', $this->record('spks', $t['spkId'])['dealId'])['projectId']);
         $user = $this->approver($summary['settlementUserId'] ?? '', 'Mgr Finance & Settlement');
+        if (isset($user['workUnits']) && ! in_array($project['unit'] === 'Operation' ? 'Operation' : 'Konstruksi', $user['workUnits'], true)) {
+            $this->fail('Unit kerja Mgr Finance & Settlement tidak sesuai PP.');
+        }
         if (isset($user['branches']) && ! in_array($project['branch'], $user['branches'], true)) {
             $this->fail('Mgr Finance & Settlement harus ditugaskan pada Branch PP.');
         }

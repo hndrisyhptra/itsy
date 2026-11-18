@@ -70,3 +70,11 @@ Volume pekerjaan menjadi accepted setelah lima approval pekerjaan. BA PP/pelepas
 - PP lanjutan baru menggunakan versi 3 dan mewarisi lima pilihan penanggung jawab, lalu tetap diajukan melalui lima tahapnya sendiri.
 - Runtime MySQL aktif membaca tabel bisnis dengan snapshot per dokumen melalui RelationalWorkflowStore; prototype_workspaces.state hanya arsip. approval_runs/approval_steps menyimpan siklus dan penugasan versi 2/3, sementara approval_decisions mempertahankan keputusan terdahulu. Siklus ditolak tetap REJECTED; pengajuan ulang membuat siklus PENDING baru. Finance setelah scan masih dicatat melalui term_scans dan riwayat snapshot termin, bukan otomatis sebuah approval_steps keenam. Lihat [MYSQL_RUNTIME](MYSQL_RUNTIME.md).
 - Upload Excel format OSP FO kiriman kini dibaca dan disimpan privat; lihat [BOQ_IMPORT](BOQ_IMPORT.md). Tombol contoh tetap simulasi terpisah. Tanda tangan elektronik, verifikasi bank dan pemulihan insiden demo lama tidak ditambahkan.
+
+## 18 November 2026 — Operation
+
+Alur Operation kini dihubungkan secara eksplisit untuk role bawaan Officer 1 SS/Manager SS dan role Operation lainnya. Paket memakai lima approver Operation, kasbon tujuh dengan Settlement/Finance, GM menggantikan Head dalam template dan identitas/jabatan aktual. Scope unit per PP dan Branch/Region akun berlaku; data serta rantai historis tetap. Katalog role tambahan lain belum memberi otoritas otomatis. Detail migration, kompatibilitas dan hasil QA ada di [OPERATION_WORKFLOW](OPERATION_WORKFLOW.md).
+
+## 18 November 2026 — BA PP sejak BA RP disimpan
+
+Pengguna menegaskan BA PP dapat disahkan sebelum seluruh approval, sejak BA RP Final disimpan. Final pada alur baru/diadopsi eksplisit memakai source BARP server-owned dan menahan pengajuan pembayaran sampai BA PP Sah; perubahan BARP memerlukan pengesahan ulang. Dokumen utama/lampiran BA PP Sah dapat Word/print lebih awal, ruang TTD kosong; tujuh approval/ledger/release dan full-package export gate tetap. Tidak ada migration atau perubahan massal data lama. Lihat [BAPP_BEFORE_PAYMENT](BAPP_BEFORE_PAYMENT.md) untuk cakupan, data historis, query, QA dan deploy.

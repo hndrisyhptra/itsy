@@ -63,7 +63,7 @@ class Area3MigrationTest extends TestCase
             $this->assertSame([$key], $primary['columns'], $table);
             $foreignKeys += count(Schema::getForeignKeys($table));
         }
-        $this->assertSame(107, $foreignKeys);
+        $this->assertSame(109, $foreignKeys);
         $this->assertFalse(Schema::hasTable('area3_users'));
         $this->assertFalse(Schema::hasColumn('users', 'id'));
         $this->assertTrue(Schema::hasColumn('boq_lines', 'source_import_id'));
@@ -101,7 +101,7 @@ class Area3MigrationTest extends TestCase
         $this->assertSame(1, DB::table('branches')->where('name', 'DENPASAR')->count());
         $this->migrate();
         $this->assertSame(1030, DB::table('designator_package_prices')->count());
-        $this->assertSame(70, DB::table('migrations')->count());
+        $this->assertSame(71, DB::table('migrations')->count());
     }
 
     public function test_users_alignment_preserves_existing_ids_and_passwords_and_the_model_uses_id_user(): void

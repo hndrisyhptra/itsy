@@ -1,5 +1,9 @@
 # it's Area 3 — Construction Workspace
 
+**18 November 2026 — BA PP sebelum approval pembayaran:** simpan BA RP Final → sahkan BA PP → ajukan kasbon/pembayaran → tujuh approval → Finance transfer/lunas. Perubahan BARP mengharuskan pengesahan ulang. Berlaku Konstruksi/Operation; data lama tidak dikonversi massal dan tidak ada migration baru untuk fitur ini. [Alur dan penerapan](docs/BAPP_BEFORE_PAYMENT.md).
+
+**18 November 2026 — Unit Operation:** paket PP/BA KH/SPK memakai lima approver Operation; pembayaran kasbon dilanjutkan Mgr Finance & Settlement dan Finance. Kelola Akun menambah Unit Kerja dan scope Branch/Region (Mgr SS/GM wajib Region), dashboard mempunyai filter unit. Migration `2026_11_18_000002_enable_operation_workflow` harus dijalankan operator saat deploy; data/approval/paid lama tidak dikonversi massal. [Alur, pengaturan akun dan penerapan aman](docs/OPERATION_WORKFLOW.md).
+
 **18 November 2026 — Pengaturan → Peran Pengguna:** tab baru setelah Penyimpanan, khusus Superadmin untuk tambah/edit/hapus katalog peran dengan konfirmasi. Peran bawaan dan referensi akun dilindungi; peran tambahan belum diberikan hak akses/approval sesuai pilihan pengguna. Tidak ada migration baru. [Panduan dan verifikasi](docs/ROLE_CATALOG.md).
 
 **Jabatan akun — 18 November 2026:** Superadmin dapat mengisi Jabatan resmi pada Kelola Akun. Penandatangan PP VIII.PENUTUP dan dokumen terkait/Word/print memakai jabatan tersimpan; role akses tetap. Migration `2026_11_18_000001_add_jabatan_to_users` perlu dijalankan operator, belum diterapkan agen ke its aktif/server. Dokumen lama terkunci tidak berubah otomatis. [Perilaku dan penerapan](docs/USER_JABATAN.md).

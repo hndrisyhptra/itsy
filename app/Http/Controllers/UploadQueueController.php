@@ -67,7 +67,7 @@ class UploadQueueController extends Controller
 
     public function resume(Request $request, string $task, PrototypeWorkspaceService $workspaces, UploadQueue $uploads)
     {
-        abort_unless(in_array($request->attributes->get('area3.account')['role'], ['Admin Konstruksi', 'Superadmin', 'Finance'], true), 403);
+        abort_unless(in_array($request->attributes->get('area3.account')['role'], ['Admin Konstruksi', 'Admin Operation', 'Superadmin', 'Finance'], true), 403);
         $workspace = $workspaces->workspace($request);
         $row = DB::table('upload_tasks')->where('id_upload_task', $task)->where('workspace_id', $workspace->id)->where('user_id', auth()->id())->first();
         abort_unless($row, 404);

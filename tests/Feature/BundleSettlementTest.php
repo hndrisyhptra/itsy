@@ -11,6 +11,7 @@ use App\Services\NegotiationProjectCatalog;
 use App\Services\PrototypeDomain;
 use App\Services\PrototypeWorkspaceService;
 use App\Services\UploadQueue;
+use App\Services\WorkUnitAccess;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
@@ -77,6 +78,80 @@ class BundleSettlementTest extends TestCase
         return $this->term();
     }
 
+    public function test_final_bapp_is_attested_before_any_payment_approval_and_changes_require_reattestation(): void
+    {
+        $t = $this->draftPayment();
+        $t['type'] = 'Final';
+        $balances = DB::table('volume_balances')->orderBy('boq_component_id')->get()->toJson();
+        $this->api('saveTerm', [$t, false])->assertOk();
+        $t = $this->term();
+        $b = collect($this->state()['bapps'])->firstWhere('termId', $t['id']);
+        $this->assertSame('Draft', $b['status']);
+        $this->assertSame('Draft', $t['status']);
+        $this->assertCount(0, $t['approvals']);
+        $revision = PrototypeWorkspace::first()->revision;
+        $this->submitKasbon($t)->assertUnprocessable();
+        $this->assertSame($revision, PrototypeWorkspace::first()->revision);
+        $this->assertDatabaseCount('finance_kasbons', 0);
+        $this->asRole('Admin Operation');
+        $this->api('prepareBapp', [$t['id']])->assertForbidden();
+        $this->asRole('Finance');
+        $this->api('attestBapp', [$b['id'], $b['no']])->assertForbidden();
+        $this->asRole('Admin Konstruksi');
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $this->api('attestBapp', [$b['id'], $b['no']])->assertOk();
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+        $this->assertLessThanOrEqual(80, count($queries));
+        fwrite(STDERR, "\nPreapproval BAPP attestation: ".count($queries)." queries.\n");
+        $this->assertDatabaseHas('ba_completions', ['status' => 'ATTESTED', 'attested_by' => $this->accounts['Admin Konstruksi']->getKey()]);
+        $b = collect($this->state()['bapps'])->firstWhere('id', $b['id']);
+        $this->assertTrue(PrototypeDomain::bappCurrent($b, $this->term()));
+        $this->assertSame('db-user-'.$this->accounts['Admin Konstruksi']->getKey(), $b['attestedBy']);
+        $this->assertSame($balances, DB::table('volume_balances')->orderBy('boq_component_id')->get()->toJson());
+        $this->assertDatabaseCount('approval_decisions', 0);
+        $this->api('releaseVolume', [$b['id'], [$t['actuals'] ? array_key_first($t['actuals']) : '' => ['m' => 1, 's' => 1]]])->assertUnprocessable();
+        $this->api('createContinuation', [$b['id'], '', [], 'QA'])->assertUnprocessable();
+        $t['actuals'][array_key_first($t['actuals'])]['s'] = 2;
+        $this->api('saveTerm', [$t, false])->assertOk();
+        $b = collect($this->state()['bapps'])->firstWhere('id', $b['id']);
+        $this->assertSame('Draft', $b['status']);
+        $this->assertCount(1, $b['attestationHistory']);
+        $this->assertArrayNotHasKey('source', $b);
+        $this->assertDatabaseHas('ba_completions', ['status' => 'DRAFT', 'attested_by' => null, 'attested_at' => null]);
+        $this->submitKasbon($this->term())->assertUnprocessable();
+        $this->api('attestBapp', [$b['id'], $b['no']])->assertOk();
+        $source = collect($this->state()['bapps'])->firstWhere('id', $b['id'])['source'];
+        $this->submitKasbon($this->term())->assertOk();
+        $this->assertCount(0, $this->term()['approvals']);
+        $this->assertSame($source, collect($this->state()['bapps'])->firstWhere('id', $b['id'])['source']);
+        $this->assertDatabaseCount('ba_completions', 1);
+    }
+
+    public function test_pending_legacy_final_can_explicitly_prepare_bapp_without_fabricating_approvals(): void
+    {
+        $t = $this->draftPayment();
+        $s = $this->state();
+        $s['terms'][0]['type'] = 'Final';
+        $s['terms'][0]['status'] = 'Diajukan';
+        unset($s['terms'][0]['completionFlow']);
+        $s['bapps'] = [];
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $result = app(PrototypeDomain::class)->execute($s, 'prepareBapp', [$t['id']], 'bapp-legacy-qa');
+        $after = $result['state'];
+        $this->assertSame([], DB::getQueryLog());
+        DB::disableQueryLog();
+        $this->assertSame('bapp-legacy-qa', $after['bapps'][0]['id']);
+        $this->assertSame($s['terms'][0]['approvals'], $after['terms'][0]['approvals']);
+        $this->assertSame('Diajukan', $after['terms'][0]['status']);
+        $this->assertSame($s['terms'][0]['paid'], $after['terms'][0]['paid']);
+        $after = app(PrototypeDomain::class)->execute($after, 'attestBapp', ['bapp-legacy-qa', 'BAPP-LEGACY-QA'])['state'];
+        $this->assertSame('Sah', $after['bapps'][0]['status']);
+        $this->assertCount(0, $after['terms'][0]['approvals']);
+    }
+
     public static function paymentTypes(): array
     {
         return [[false], [true]];
@@ -108,6 +183,8 @@ class BundleSettlementTest extends TestCase
             $t['type'] = 'Final';
             $this->api('saveTerm', [$t, false])->assertOk();
             $t = $this->term();
+            $b = collect($this->state()['bapps'])->firstWhere('termId', $t['id']);
+            $this->api('attestBapp', [$b['id'], $b['no']])->assertOk();
         }
         $archive = PrototypeWorkspace::first()->getRawOriginal('state');
         $this->api('submitFinanceTerm', [$t])->assertUnprocessable();
@@ -133,7 +210,7 @@ class BundleSettlementTest extends TestCase
             $this->api('decide', [$t['id'], 'Setujui', 'QA'])->assertOk();
             $queries = DB::getQueryLog();
             DB::disableQueryLog();
-            $names = array_filter($queries, fn ($q) => str_contains($q['query'], 'from "users"') && str_contains($q['query'], '"name"'));
+            $names = array_filter($queries, fn ($q) => str_contains($q['query'], 'from "users"') && str_contains($q['query'], '"name"') && ! str_contains($q['query'], 'user_assignments'));
             $this->assertLessThanOrEqual(2, count($names), 'Batched actor names, no per-step lookup.');
             $this->assertLessThanOrEqual(80, count($queries));
             fwrite(STDERR, "\nSettlement stage ".($i + 1).': '.count($queries)." queries.\n");
@@ -168,7 +245,7 @@ class BundleSettlementTest extends TestCase
         $this->asRole('Admin Konstruksi');
         $this->api('createTerm', [$t['spkId']])->{ $final ? 'assertUnprocessable' : 'assertOk' }();
         if ($final) {
-            $this->assertSame('Draft', collect($this->state()['bapps'])->firstWhere('termId', $t['id'])['status']);
+            $this->assertSame('Sah', collect($this->state()['bapps'])->firstWhere('termId', $t['id'])['status']);
         }
     }
 
@@ -180,6 +257,8 @@ class BundleSettlementTest extends TestCase
             $t['type'] = 'Final';
             $this->api('saveTerm', [$t, false])->assertOk();
             $t = $this->term();
+            $b = collect($this->state()['bapps'])->firstWhere('termId', $t['id']);
+            $this->api('attestBapp', [$b['id'], $b['no']])->assertOk();
         }
         $this->submitKasbon($t)->assertOk();
         $this->asRole('Finance');
@@ -310,20 +389,26 @@ class BundleSettlementTest extends TestCase
         $this->api('decide', [$t['id'], 'Setujui', ''])->assertForbidden();
     }
 
-    private function package(): array
+    private function package(bool $operation = false): array
     {
         $this->withoutVite();
         Storage::fake('local');
         $this->seedWorkflow('B');
-        $this->asRole('Admin Konstruksi');
+        if ($operation) {
+            $region = DB::table('branches')->where('name', 'PEKALONGAN')->value('region_id');
+            foreach (['Manager SS', 'General Manager Operation'] as $role) {
+                DB::table('users')->where('id_user', $this->accounts[$role]->id_user)->update(['access_scope' => 'REGION', 'id_regions' => $region]);
+            }
+        }
+        $this->asRole($operation ? 'Admin Operation' : 'Admin Konstruksi');
         $s = $this->state();
         $p = app(PrototypeWorkspaceService::class)->scenario('B')['projects'][0];
         $p['id'] = $p['rootId'] = 'pp-bundle-qa';
         $p['branch'] = 'PEKALONGAN';
-        $p['unit'] = 'Konstruksi';
+        $p['unit'] = $operation ? 'Operation' : 'Konstruksi';
         $p['riskLevel'] = 'SEDANG';
         $p['costs']['permit'] = 0;
-        foreach (PrototypeDomain::APPROVERS_V3 as $role) {
+        foreach ($operation ? WorkUnitAccess::OPS_APPROVERS : PrototypeDomain::APPROVERS_V3 as $role) {
             $p['approverUserIds'][$role] = 'db-user-'.$this->accounts[$role]->getKey();
         }
         $k = collect($s['khs'])->first(fn ($k) => $k['active'] && ($k['s'] ?? 0) >= 100);
@@ -361,6 +446,87 @@ class BundleSettlementTest extends TestCase
         $this->completeMandorPayee($v['id']);
 
         return [$p, $d, $v];
+    }
+
+    public function test_operation_package_and_payment_follow_five_then_seven_real_approvals_with_unit_isolation(): void
+    {
+        [$p, $d, $v] = $this->package(true);
+        $this->assertSame('operation-v1', $p['approvalScheme']);
+        $this->assertSame('General Manager Operation', $d['signerRole']);
+        $this->assertSame('pp-gm-operation', $v['signerSource']);
+        $unit = DB::table('work_units')->where('code', 'OPERATION')->value('id_work_unit');
+        $this->assertDatabaseHas('project_plans', ['source_id' => $p['id'], 'work_unit_id' => $unit]);
+        $archive = PrototypeWorkspace::first()->getRawOriginal('state');
+        $this->asRole('Admin Konstruksi');
+        $this->assertNotContains($p['id'], array_column($this->state()['projects'], 'id'));
+        $this->api('submitProjectBundle', [$p['id']])->assertForbidden();
+        $this->asRole('Admin Operation');
+        $this->assertSame(['Operation'], array_values(array_unique(array_column($this->state()['projects'], 'unit'))));
+        $this->api('submitProjectBundle', [$p['id']])->assertOk();
+        foreach (WorkUnitAccess::OPS_APPROVERS as $i => $role) {
+            $this->asRole($role);
+            $this->api('decideProject', [$p['id'], 'Setujui', 'Operation QA'])->assertOk();
+            $this->assertDatabaseHas('work_orders', ['source_id' => $v['id'], 'status' => $i === 4 ? 'Sah' : 'Draft']);
+        }
+        $this->assertSame(5, DB::table('approval_steps')->where('approval_order_version', 4)->count());
+        $this->asRole('Admin Operation');
+        $this->api('createTerm', [$v['id']])->assertOk();
+        $t = $this->term();
+        $t['type'] = 'Final';
+        $t['actuals'] = ['bundle-row' => ['m' => 0, 's' => 1]];
+        $this->api('saveTerm', [$t, false])->assertOk();
+        $t = $this->term();
+        $b = collect($this->state()['bapps'])->firstWhere('termId', $t['id']);
+        $this->api('attestBapp', [$b['id'], $b['no']])->assertOk();
+        $this->submitKasbon($t)->assertOk();
+        $document = $this->getJson('/api/finance/terms/'.$t['id'].'/kasbon?current_only=1')->assertOk()->json('documents.0.data');
+        $this->assertSame('operation-v1', $document['approvalScheme']);
+        $this->assertArrayHasKey('General Manager Operation', $document['signers']);
+        $this->assertArrayNotHasKey('Head of PMO', $document['signers']);
+        $roles = [...WorkUnitAccess::OPS_APPROVERS, 'Mgr Finance & Settlement', 'Finance'];
+        foreach ($roles as $i => $role) {
+            $this->asRole($role);
+            $this->getJson('/api/finance/terms/'.$t['id'].'/kasbon?current_only=1')->assertOk();
+            $this->api('decide', [$t['id'], 'Setujui', 'Operation QA'])->assertOk();
+            $t = $this->term();
+            $this->assertSame($i === 6 ? 'Disetujui' : 'Diajukan', $t['status']);
+            $this->assertSame(array_slice($roles, 0, $i + 1), array_column($t['approvals'], 'role'));
+        }
+        $this->assertSame(12, DB::table('approval_steps')->where('approval_order_version', 4)->count());
+        $task = $this->post('/api/finance/uploads/transfer-proof/'.$t['id'], ['file' => UploadedFile::fake()->image('operation-transfer.png'), 'revision' => (string) PrototypeWorkspace::first()->revision, 'request_id' => (string) Str::uuid()], ['Accept' => 'application/json'])->assertAccepted()->json('task.id');
+        Auth::forgetGuards();
+        Auth::forgetUser();
+        app(UploadQueue::class)->process($task);
+        $this->assertDatabaseHas('upload_tasks', ['id_upload_task' => $task, 'status' => 'completed']);
+        $this->asRole('Finance');
+        $this->api('settleFinancePayment', [$t['id'], ''])->assertOk();
+        $this->assertSame($this->netAmount($t), (float) $this->term()['paid']);
+        $this->asRole('Admin Operation');
+        $bapp = collect($this->state()['bapps'])->firstWhere('termId', $t['id']);
+        $this->assertSame('Sah', $bapp['status']);
+
+        $this->assertSame($archive, PrototypeWorkspace::first()->getRawOriginal('state'));
+        $this->asRole('Admin Konstruksi');
+        $this->getJson('/api/finance/terms/'.$t['id'].'/kasbon?current_only=1')->assertNotFound();
+    }
+
+    public function test_operation_mandor_identity_queue_uses_fresh_actor_and_private_unit_scope(): void
+    {
+        [$p, $d, $v] = $this->package(true);
+        $admin = auth()->user();
+        foreach (['mandor-ktp', 'mandor-bank'] as $kind) {
+            $task = $this->post('/api/finance/uploads/'.$kind.'/'.$v['id'], ['file' => UploadedFile::fake()->image('identity.png'), 'revision' => (string) PrototypeWorkspace::first()->revision, 'request_id' => (string) Str::uuid()], ['Accept' => 'application/json'])->assertAccepted()->json('task.id');
+            Auth::forgetGuards();
+            Auth::forgetUser();
+            app(UploadQueue::class)->process($task);
+            $this->assertNull(Auth::user());
+            $this->assertDatabaseHas('upload_tasks', ['id_upload_task' => $task, 'status' => 'completed']);
+            $this->assertDatabaseHas('finance_private_files', ['id_finance_file' => $task, 'uploaded_by' => $admin->id_user]);
+            $this->asRole('Admin Konstruksi');
+            $this->get('/api/finance/files/'.$task)->assertNotFound();
+            $this->asRole('Admin Operation');
+            $this->get('/api/finance/files/'.$task)->assertOk();
+        }
     }
 
     public function test_pp_bakh_spk_one_frozen_package_only_commits_after_five_real_approvals(): void
