@@ -21,7 +21,7 @@
         <div class="login-form-wrap">
             <span class="form-kicker">AREA 3 WORKSPACE</span>
             <h2>{{ $setup ? 'Siapkan akses pertama' : 'Semangat Pagi...!!' }}</h2>
-            <p class="form-intro">{{ $setup ? 'Buat akun Superadmin untuk mulai mengelola pengguna dan menjalankan alur proyek.' : 'Masuk dengan akun Anda untuk melanjutkan pekerjaan.' }}</p>
+            <p class="form-intro">{{ $setup ? 'Buat akun Superadmin untuk mulai mengelola pengguna dan menjalankan alur proyek.' : 'Masuk dengan akun Anda untuk melanjutkan Swakelola.' }}</p>
             @include('auth.errors')
             <form method="post" action="{{ $setup ? route('setup') : route('login') }}" class="access-form" data-access-form @if($setup) data-confirm="Buat akun Superadmin pertama dengan data ini?" @endif>
                 @csrf
@@ -35,7 +35,15 @@
                 @else
                     <div class="login-options"><label class="checkbox-label"><input type="checkbox" name="remember" value="1" @checked(old('remember'))> Ingat saya</label><span id="password-help" class="field-help">Gunakan akun yang ditugaskan.</span></div>
                 @endif
-                <button class="access-button primary" type="submit" data-submit-label="{{ $setup ? 'Membuat akun…' : 'Memeriksa akun…' }}"><span>{{ $setup ? 'Buat akun & mulai' : 'Masuk ke Workspace' }}</span><span aria-hidden="true">→</span></button>
+                <button 
+    class="access-button primary" 
+    type="submit" 
+    data-submit-label="{{ $setup ? 'Membuat akun…' : 'Memeriksa akun…' }}"
+    style="position: relative; display: flex; justify-content: center; align-items: center;"
+>
+    <span style="text-align: center;">{{ $setup ? 'Buat akun & mulai' : 'LOGIN' }}</span>
+    <span aria-hidden="true" style="position: absolute; right: 16px;">→</span>
+</button>
             </form>
             <div class="login-help"><span class="help-icon">?</span><div><strong>Butuh bantuan akses?</strong><p>Hubungi administrator untuk akun, penugasan Branch, atau pengaturan ulang kata sandi.</p></div></div>
             @if($setup)<p class="setup-note">Penyiapan ini hanya tersedia dari komputer lokal saat belum ada pengguna. Anda dapat menambahkan akun lain setelah masuk.</p>@endif
