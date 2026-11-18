@@ -1,5 +1,13 @@
 # Pekerjaan otomatis dan Lampiran Rekonsiliasi — 9 November 2026
 
+## 18 November 2026 — Lampiran BA RP tanpa TTD Project Support
+
+Permintaan terbaru menghapus slot TTD Mgr Project Support Area Jawa Bali hanya pada Lampiran BA RP Konstruksi. Empat slot tersisa berurutan Head of PMO, Mgr Project Deployment, Waspang Project, Ketua Mandor. Shared `barpAppendixData` menghilangkan slot berdasarkan peran sumber, sehingga jabatan kustom juga tidak menyebabkan slot muncul kembali. HTML/print memakai jumlah kolom dinamis, Word memakai lebar empat kolom otomatis; ekspor paket gabungan mengambil renderer yang sama. Snapshot support tersimpan, lima/tujuh approval aplikasi, surat BARP utama, nilai/volume/ledger/identitas penandatangan lainnya tetap. Operation mempertahankan slot Officer1SS (bukan Project Support). Adapter Lampiran BA PP tetap memilih Head dan dua slot terakhir (Waspang/Mandor), sehingga tetap3TTD meskipun jumlah slot BARP berubah.
+
+Perubahan presentasi dari data authorized yang sudah dimuat, tanpa SQL/API/schema/migration/dependency/runtime lookup tambahan dan tanpa mutasi database/snapshot/history/server/.env/Dompis/worker. Tidak perlu migration. **374tes frontend**, TypeScript/Vite, assets42manifest/33preloads×3profil dan diffcheck lulus. Regresi HTML/Word menguji hilangnya nama/jabatan Support,4ruangTTD, jabatan kustom, identitas historis, kesamaan tabel/nilai, BA PP3slot dan Operation5slot. PHP tidak dijalankan ulang karena tidak ada perubahan backend. Browser sintetis375/1440 memeriksa4slot, desktop4kolom/mobile2kolom/print4kolom; satu nativeDOCX satu halaman landscape dan satu browserPDF satu halaman nonblank diperiksa visual. ZIP/CRC/XML valid, gridTTD4kolom, areaTTDkosong. Fixture bukan akun nyata/server/MySQL, bukan Microsoft Word desktop/cetakfisik/beban produksi. [Bukti](qa/barp-four-signers-20261118.json).
+
+Aturan lima penandatangan Konstruksi di catatan historis berikut digantikan pembaruan ini.
+
 ## Shared renderer untuk Lampiran BA PP — 16 November 2026
 
 HTML dan nativeWord lampiran BARP kini memakai renderer yang juga digunakan BA PP. Model/table/header/footer dan lima signer BARP tetap; adapter BAPP mengganti judul dan memilih Head/Waspang/Mandor saja. Native table dan HTML table untuk input sama diuji identik per tahap1–3, source Word BARP5signers dirender ulang1halaman. Tidak ada peralihan rekening/nilai/approval/private access/data. Lihat [Word/lampiran BA PP](BAPP_WORD_APPENDIX.md) dan [bukti regresi](qa/bapp-word-appendix-20261116.json).

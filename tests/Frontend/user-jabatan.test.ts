@@ -89,7 +89,7 @@ test('BA KH/SPK take server-equivalent selected snapshots, strip forged jobs and
 test('all native document generators share captured account titles including BARP/BA PP main and appendices',()=>{
   const {s,p,d,v,t}=fixture();
   const deal={...d,signerJob:'Jabatan resmi QA 4'},spk={...v,position:'Jabatan resmi QA 4',signerJob:'Jabatan resmi QA 4'};
-  const appendix=barpAppendixData(s,p,deal,spk,t);assert.deepEqual(appendix.signatures.slice(0,3).map(x=>x.job),['Jabatan resmi QA 4','Jabatan resmi QA 3','Jabatan resmi QA 2']);
+  const appendix=barpAppendixData(s,p,deal,spk,t);assert.deepEqual(appendix.signatures.map(x=>x.job),['Jabatan resmi QA 4','Jabatan resmi QA 3','WASPANG PROJECT','KETUA MANDOR']);
   assert.equal(bappDocumentData(p,deal,spk,t).headJob,'Jabatan resmi QA 4');
   const logo=readFileSync(new URL('../../resources/js/area3/assets/spk-telkom-akses.png',import.meta.url));
   const before=JSON.stringify(s);

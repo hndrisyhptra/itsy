@@ -1,5 +1,9 @@
 # it's Area 3 — Development rules
 
+## 18 November 2026 — BARP appendix without Construction Project Support
+
+Latest user removes only the Construction Mgr Project Support physical slot from Lampiran BA RP. Follow latest docs/BARP_APPENDIX.md: Head/Deployment/Waspang/Mandor4slot shared HTML/Word/print/package, dynamic responsive signature columns. Preserve Operation Officer1SS5slot, BAPP Head+last2=3slot, main BARP, stored support snapshot, actual application approvals/history and all money/ledger/guards. Loaded-data presentation only,0newSQL/API/schema/migration/live writes; record actual tests/Word/browserPDF/server limits.
+
 ## 18 November 2026 — Unrestricted valid SPK issue dates
 
 Latest user supersedes the15November issue-date upper bound only. Follow latest docs/SPK_TEMPLATE_WORD.md: editable SPK accepts any valid selected past/future issue date without today/work-start/end cap; missing/invalid default remains own valid work start. Remove form max and PHP/TS bundle date-vs-start guard, retain calendar/period/approval/unit/Branch/private/issued locks. Shared HTML/print/Word reads valid saved date unchanged, place Surabaya, no snapshot/history/backfill/migration/live write. Constant scalar0newSQL; preserve actual tests/query/browser/export/server limits and append audits.

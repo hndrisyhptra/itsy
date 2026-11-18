@@ -60,23 +60,24 @@ test('editor and appendix share exact per-component actual/accepted/remainder/pr
  assert.equal(data.rows[0].cells[6],'2');assert.equal(data.rows[0].cells[7],'1');assert.equal(data.rows[0].cells[8],'3');assert.equal(data.rows[1].cells[8],'4');assert.equal(data.rows[0].component,'Material');assert.equal(data.rows[1].component,'Jasa');assert.equal(data.cumulative.total,.04);assert.equal(data.current.total,.01);
 });
 
-test('five signers follow requested order, captured names survive renames, historical fallbacks match actual selected decisions only',()=>{
+test('four construction signers follow requested order, captured names survive renames, historical fallbacks match actual selected decisions only',()=>{
  const {s,p,d,v,t}=fixture();const captured=t.barp!.deployment!;
  s.users.find(u=>u.id===captured.userId)!.name='Different current name';let data=barpAppendixData(s,p,d,v,t);
- assert.deepEqual(data.signatures.map(s=>s.job),['HEAD OF PMO AREA JAWA BALI','MGR PROJECT DEPLOYMENT AREA JAWA BALI','MGR PROJECT SUPPORT AREA JAWA BALI','WASPANG PROJECT','KETUA MANDOR']);
- assert.equal(data.signatures[1].name,captured.name);assert.equal(data.signatures[2].nik,'0002');
+ assert.deepEqual(data.signatures.map(s=>s.job),['HEAD OF PMO AREA JAWA BALI','MGR PROJECT DEPLOYMENT AREA JAWA BALI','WASPANG PROJECT','KETUA MANDOR']);
+ assert.equal(data.signatures[1].name,captured.name);assert.equal(data.signatures.length,4);assert.ok(!data.signatures.some(s=>s.nik==='0002'));assert.equal(t.barp!.support!.nik,'0002');
  t.barp!.version=1;delete t.barp!.deployment;delete t.barp!.support;p.approvals=[];p.signatureUsers={};data=barpAppendixData(s,p,d,v,t);assert.equal(data.signatures[1].name,'…');
  t.approvals=[{role:'Mgr Deployment',userId:'wrong',actorName:'WRONG',decision:'Setujui',at:'2026-11-09',note:''}];assert.equal(barpAppendixData(s,p,d,v,t).signatures[1].name,'…');
  t.approvals.push({role:'Mgr Deployment',userId:'qa-3',actorName:'Actual recorded name',actorNik:'0003',decision:'Setujui',at:'2026-11-09',note:''});assert.equal(barpAppendixData(s,p,d,v,t).signatures[1].name,'Actual recorded name');
+ t.approvalScheme='operation-v1';t.barp!.support={userId:'qa-2',name:'Officer SS snapshot',nik:'0002',job:'OFFICER 1 SS'};const operation=barpAppendixData(s,p,d,v,t);assert.equal(operation.signatures.length,5);assert.equal(operation.signatures[2].name,'Officer SS snapshot');
 });
 
-test('dedicated landscape appendix preview has the shared ledger grid, five empty signature spaces and gated Word/print, without generic duplicated tables',()=>{
+test('dedicated landscape appendix preview has the shared ledger grid, four empty signature spaces and gated Word/print, without generic duplicated tables',()=>{
  const {s,p,d,v,t}=fixture();t.status='Diajukan';
  const before=JSON.stringify(s),data=barpAppendixData(s,p,d,v,t);
  const html=renderToStaticMarkup(createElement(DocumentPreview,{state:s,project:p,deal:d,spk:v,term:t,kind:'Lampiran Rekonsiliasi Pekerjaan',onClose:()=>{}}));
  for(const text of ['LAMPIRAN BERITA ACARA REKONSILIASI PEKERJAAN','PEKERJAAN:',p.name,'HARGA SATUAN','TOTAL VOL','Termin #1','JUMLAH MATERIAL','Unduh Word (.docx)','SALINAN REVIEW'])assert.ok(html.includes(text),text);
- assert.equal((html.match(/Area TTD basah dokumen asli/g)??[]).length,5);assert.doesNotMatch(html,/Ringkasan Rekonsiliasi Termin|N\/A|<img|doc-brand/);
- for(const signer of data.signatures)assert.ok(html.includes(signer.name));assert.equal(JSON.stringify(s),before);
+ assert.equal((html.match(/Area TTD basah dokumen asli/g)??[]).length,4);assert.doesNotMatch(html,/Ringkasan Rekonsiliasi Termin|N\/A|<img|doc-brand/);
+ assert.doesNotMatch(html,/Penandatangan Mgr Project Support|MGR PROJECT SUPPORT AREA JAWA BALI/);for(const signer of data.signatures)assert.ok(html.includes(signer.name));assert.equal(JSON.stringify(s),before);
  assert.match(html,/<button[^>]*disabled[^>]*>[^]*?Cetak \/ Simpan PDF browser/);
 });
 
@@ -84,7 +85,7 @@ test('native appendix Word repeats merged headers, matches actuals and recap, es
  const {s,p,d,v,t}=fixture();approve(t);p.name='Proyek <QA> & 中文 😀 {{HEAD}}';
  const parts=docxParts(createBarpAppendixDocx(s,p,d,v,t)),xml=parts['word/document.xml'];
  assert.equal(Object.keys(parts).length,5);assert.match(xml,/w:orient="landscape"/);assert.equal((xml.match(/<w:tblHeader\/>/g)??[]).length,2);assert.match(xml,/w:gridSpan w:val="2"/);assert.match(xml,/w:gridSpan w:val="10"/);
- assert.match(xml,/Proyek &lt;QA&gt; &amp; 中文 😀 \{\{HEAD\}\}/);assert.match(xml,/Penandatangan Mgr Project Support/);assert.match(xml,/NIK: 0003/);
+ assert.match(xml,/Proyek &lt;QA&gt; &amp; 中文 😀 \{\{HEAD\}\}/);assert.doesNotMatch(xml,/Penandatangan Mgr Project Support|MGR PROJECT SUPPORT AREA JAWA BALI/);assert.match(xml,/NIK: 0003/);
  assert.doesNotMatch(Object.values(parts).join(''),/HENDRA CAHYA|AMRAN|ADE AZHARI|TUNNIKMAH|TargetMode="External"|altChunk/);assert.doesNotMatch(Object.keys(parts).join('|'),/media|vba|customXml|docProps/);
  for(const status of ['Draft','Ditolak','Dikembalikan'] as const)assert.throws(()=>createBarpAppendixDocx(s,p,d,v,{...t,status}),/setelah pengajuan/);
  t.status='Diajukan';t.approvals=[];assert.match(docxParts(createBarpAppendixDocx(s,p,d,v,t))['word/document.xml'],/SALINAN REVIEW/);assert.doesNotMatch(barpAppendixWordFilename({...v,no:'../SPK:<QA>?'},t),/[\\/:*?"<>|]/);

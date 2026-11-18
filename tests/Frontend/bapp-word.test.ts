@@ -37,13 +37,13 @@ test('BA PP Word escapes dynamic slots and literal placeholder input without cro
  const xml=docxParts(createBappDocx(p,d,v,t))['word/document.xml'];assert.match(xml,/Proyek &lt;QA&gt; &amp; 中文 😀 \{\{BAPP_HEAD\}\}/);assert.match(xml,/Mandor &lt;A&gt;\nBaris Kedua &amp; \{\{BAPP_HEAD\}\}/);assert.doesNotMatch(xml,/Baris Kedua &amp; Head Actual/);
  assert.doesNotMatch(bappWordFilename({...v,no:'../SPK:<QA>?'},t,true),/[\\/:*?"<>|]/);t.number=1;t.type='Final';assert.doesNotMatch(bappWordFilename(v,t),/Tahap/);assert.ok(bappWordFilename(v,t,true).startsWith('Lampiran-BA-PP_'));
 });
-test('BA PP appendix table matches BARP in model/HTML/Word for each stage, while only Head/Waspang/Mandor sign and BARP retains five',()=>{
+test('BA PP appendix table matches BARP in model/HTML/Word for each stage, while only Head/Waspang/Mandor sign and BARP retains four construction signers',()=>{
  const {s,b,p,d,v,t}=fixture();
  const html=(kind:string,bapp=true)=>renderToStaticMarkup(createElement(DocumentPreview,{state:s,kind,project:p,deal:d,spk:v,term:t,bapp:bapp?b:undefined,onClose:()=>{}}));
  for(const number of [1,2,3]){
   t.number=number;t.type='Final';const before=JSON.stringify(s),base=barpAppendixData(s,p,d,v,t),data=bappAppendixData(s,p,d,v,t);
   for(const key of ['rows','summaryRows','recap','widths','projectHeaders','current','prior','cumulative'] as const)assert.deepEqual(data[key],base[key],key);
-  assert.deepEqual(data.signatures.map(x=>x.job),['HEAD OF PMO AREA JAWA BALI','WASPANG PROJECT','KETUA MANDOR']);assert.equal(base.signatures.length,5);
+  assert.deepEqual(data.signatures.map(x=>x.job),['HEAD OF PMO AREA JAWA BALI','WASPANG PROJECT','KETUA MANDOR']);assert.equal(base.signatures.length,4);
   const appendix=html('Lampiran BA Penyelesaian Pekerjaan');assert.equal((appendix.match(/Area TTD basah dokumen asli/g)??[]).length,3);assert.doesNotMatch(appendix,/DEPLOYMENT HIDDEN QA|SUPPORT HIDDEN QA|INTERNAL-BAPP|Ringkasan Rekonsiliasi/);
   assert.equal(appendix.match(/<table>[^]*?<\/table>/)?.[0],html('Lampiran Rekonsiliasi Pekerjaan',false).match(/<table>[^]*?<\/table>/)?.[0]);
   const xml=docxParts(createBappAppendixDocx(s,p,d,v,t))['word/document.xml'],barp=docxParts(createBarpAppendixDocx(s,p,d,v,t))['word/document.xml'];

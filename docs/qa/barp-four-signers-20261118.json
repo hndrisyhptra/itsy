@@ -1,0 +1,49 @@
+{
+  "date": "2026-11-18",
+  "feature": "Remove Construction Project Support physical signature from BARP appendix",
+  "counts": {
+    "construction_barp": 4,
+    "operation_barp": 5,
+    "bapp": 3
+  },
+  "tests": {
+    "frontend": 374,
+    "build": true,
+    "asset_manifest_references": 42,
+    "preloads": 33,
+    "profiles": 3,
+    "php": "not rerun, no backend changes"
+  },
+  "new_sql_queries": 0,
+  "live_mutation": false,
+  "migration": false,
+  "browser": [
+    {
+      "width": 375,
+      "signers": 4,
+      "columns": 2,
+      "print_columns": null
+    },
+    {
+      "width": 1440,
+      "signers": 4,
+      "columns": 4,
+      "print_columns": 4
+    }
+  ],
+  "word": {
+    "crc_xml_valid": true,
+    "signature_grid_columns": 4,
+    "rendered_pages": 1,
+    "all_pages_visually_checked": true
+  },
+  "browser_pdf": {
+    "pages": 1,
+    "nonblank": true,
+    "visually_checked": true
+  },
+  "limitations": [
+    "Synthetic data only, no authenticated live account/server/MySQL",
+    "No Microsoft Word desktop/physical printing/load test"
+  ]
+}

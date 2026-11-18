@@ -21,11 +21,11 @@ export function barpAppendixData(state:State,project:Project,deal:Deal,spk:Spk,t
   const ledger=termVolumeData(state,project,deal,spk,term),letter=barpDocumentData(project,deal,spk,term);
   // Captured snapshot first. Historical fallback is an actual matching decision/PP snapshot, never today's account.
   const deployment=term.barp?.deployment??paymentSigner(state,project,term,isOperation(term)?'Manager SS':'Mgr Deployment');
-  const support=term.barp?.support??paymentSigner(state,project,term,isOperation(term)?'Officer 1 SS':'Mgr Project Support');
+  const support=isOperation(term)?term.barp?.support??paymentSigner(state,project,term,'Officer 1 SS'):undefined;
   const signatures=[
     {job:letter.headJob,name:letter.head,nik:term.barp?.headNik??''},
     {job:deployment.job?.trim()||(isOperation(term)?'MANAGER SS':'MGR PROJECT DEPLOYMENT AREA JAWA BALI'),name:deployment.name||'…',nik:deployment.nik},
-    {job:support.job?.trim()||(isOperation(term)?'OFFICER 1 SS':'MGR PROJECT SUPPORT AREA JAWA BALI'),name:support.name||'…',nik:support.nik},
+    ...(support?[{job:support.job?.trim()||'OFFICER 1 SS',name:support.name||'…',nik:support.nik}]:[]),
     {job:'WASPANG PROJECT',name:letter.waspang,nik:''},
     {job:'KETUA MANDOR',name:letter.mandor,nik:''},
   ];

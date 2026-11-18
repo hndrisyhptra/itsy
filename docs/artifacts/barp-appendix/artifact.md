@@ -1,5 +1,9 @@
 # Lampiran BARP template contract — 9 November 2026
 
+## Latest signature authority — 18 November 2026
+
+Latest user removes Construction Mgr Project Support from the appendix only: four physical slots Head/Deployment/Waspang/Mandor in HTML/Word/print/package. Operation Officer1SS remains, main BARP/application approvals/saved snapshots unchanged. BAPP adapter still3slots. This supersedes the five Construction slots below. See ../../BARP_APPENDIX.md and ../../qa/barp-four-signers-20261118.json.
+
 ## Latest table authority — 16 November 2026
 
 User now requests the Lampiran SPK table arrangement while explicitly retaining all five BARP signers. This supersedes the original13-column adaptation below: No/Designator/Uraian/Satuan; grouped Material/Jasa unit prices; LOP-named actual volume columns through the selected stage; Total Vol; Material/Jasa/Jumlah cumulative values. Single Final1 has11columns and plain LOP; staged payment uses LOP · Termin #1/#2/#3 and11/12/13columns. Equal commitment plus actual M/J vectors may merge; differing vectors stay separate. Footer current-stage bill remains distinct from informational cumulative values. Existing snapshots, amount policies and five signers unchanged. See ../../BARP_APPENDIX.md and ../../qa/barp-spk-grid-20261116.json for verified behavior and actual limits. Original reference contract remains below for audit.

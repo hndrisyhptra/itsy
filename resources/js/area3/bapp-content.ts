@@ -29,5 +29,5 @@ export function bappDocumentData(project:Project,deal:Deal,spk:Spk,term:Term,bap
 
 export function bappAppendixData(state:State,project:Project,deal:Deal,spk:Spk,term:Term,bapp?:Bapp){
   const data=barpAppendixData(state,project,deal,spk,term);
-  return {...data,status:bappPhysicalReady(bapp,term)?'':data.status,title:'LAMPIRAN BERITA ACARA PENYELESAIAN PEKERJAAN',signatures:[data.signatures[0],data.signatures[3],data.signatures[4]]};
+  return {...data,status:bappPhysicalReady(bapp,term)?'':data.status,title:'LAMPIRAN BERITA ACARA PENYELESAIAN PEKERJAAN',signatures:[data.signatures[0],...data.signatures.slice(-2)]};
 }
