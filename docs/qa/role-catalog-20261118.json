@@ -1,0 +1,187 @@
+{
+  "date": "2026-11-18",
+  "feature": "Superadmin-only SQL role catalog CRUD after Storage tab",
+  "user_clarification": "Catalog first; new rights/approval mappings deferred to later workflow development",
+  "frontend": {
+    "tests": 366,
+    "passed": true
+  },
+  "php_targeted": {
+    "tests": 8,
+    "assertions": 126,
+    "passed": true,
+    "database": "SQLite :memory:"
+  },
+  "build": {
+    "typescript_vite": "passed",
+    "assets_manifest_references": 42,
+    "assets_preload_dependencies": 33,
+    "asset_profiles": 3
+  },
+  "query_evidence": {
+    "catalog_service": 3,
+    "catalog_http_including_auth": 4,
+    "create_http": 9,
+    "edit_http": 8,
+    "delete_http": 9,
+    "uuid_replay_http": 4,
+    "additional_accounts_in_write_fixture": 30,
+    "additional_roles_in_list_fixture": 60,
+    "additional_accounts_in_list_fixture": 30,
+    "page_rows": 20,
+    "lookahead_rows": 1,
+    "per_row_relation_queries": 0,
+    "workflow_or_private_reads": 0
+  },
+  "protections": [
+    "auth/active account/Superadmin/CSRF/throttle",
+    "fresh actor context under account provisioning lock",
+    "fixed code and protected builtin roles",
+    "all users and historical assignments prevent deletion",
+    "version hash conflict checks",
+    "actor/payload-bound UUID replay",
+    "transactional before/after audit and rollback on audit failure",
+    "deleted highest role IDs not reused by catalog CRUD",
+    "custom catalog roles stay unassignable; no automatic permissions",
+    "no retries after uncertain transport result"
+  ],
+  "storage": {
+    "roles": "existing id_role/code/name",
+    "audit": "existing master_data_changes, entity role",
+    "migration_added": false,
+    "live_database_writes": false,
+    "env_changed": false,
+    "archive_or_workflow_changed": false,
+    "operation_workflow_executed": false
+  },
+  "browser": {
+    "method": "Real React SettingsPage and forms in bundled synthetic fixture; all role endpoints intercepted in memory, no live login or SQL",
+    "cases": [
+      {
+        "width": 375,
+        "theme": "light",
+        "errors": [],
+        "initialLazy": true,
+        "rows_per_page": 20,
+        "create_edit_delete": true,
+        "confirm_cancel": true,
+        "protected_deletion": true,
+        "stale_input_preserved": true,
+        "network_write_blocked": true,
+        "no_retry": true,
+        "overflow": false,
+        "post_attempts": 5
+      },
+      {
+        "width": 375,
+        "theme": "dark",
+        "errors": [],
+        "initialLazy": true,
+        "rows_per_page": 20,
+        "create_edit_delete": true,
+        "confirm_cancel": true,
+        "protected_deletion": true,
+        "stale_input_preserved": true,
+        "network_write_blocked": true,
+        "no_retry": true,
+        "overflow": false,
+        "post_attempts": 5
+      },
+      {
+        "width": 768,
+        "theme": "light",
+        "errors": [],
+        "initialLazy": true,
+        "rows_per_page": 20,
+        "create_edit_delete": true,
+        "confirm_cancel": true,
+        "protected_deletion": true,
+        "stale_input_preserved": true,
+        "network_write_blocked": true,
+        "no_retry": true,
+        "overflow": false,
+        "post_attempts": 5
+      },
+      {
+        "width": 768,
+        "theme": "dark",
+        "errors": [],
+        "initialLazy": true,
+        "rows_per_page": 20,
+        "create_edit_delete": true,
+        "confirm_cancel": true,
+        "protected_deletion": true,
+        "stale_input_preserved": true,
+        "network_write_blocked": true,
+        "no_retry": true,
+        "overflow": false,
+        "post_attempts": 5
+      },
+      {
+        "width": 1440,
+        "theme": "light",
+        "errors": [],
+        "initialLazy": true,
+        "rows_per_page": 20,
+        "create_edit_delete": true,
+        "confirm_cancel": true,
+        "protected_deletion": true,
+        "stale_input_preserved": true,
+        "network_write_blocked": true,
+        "no_retry": true,
+        "overflow": false,
+        "post_attempts": 5
+      },
+      {
+        "width": 1440,
+        "theme": "dark",
+        "errors": [],
+        "initialLazy": true,
+        "rows_per_page": 20,
+        "create_edit_delete": true,
+        "confirm_cancel": true,
+        "protected_deletion": true,
+        "stale_input_preserved": true,
+        "network_write_blocked": true,
+        "no_retry": true,
+        "overflow": false,
+        "post_attempts": 5
+      }
+    ],
+    "javascript_errors": 0,
+    "page_overflow_cases": 0,
+    "screenshots_inspected": [
+      "roles-1440-light.png",
+      "add-375-light.png",
+      "roles-768-dark.png"
+    ],
+    "artifact_directory": "/private/tmp/area3-role-catalog-20261118",
+    "sandbox": "Initial Chrome launch blocked; explicit escalated retry succeeded with isolated profile"
+  },
+  "backup": {
+    "scope": "read-only backup of existing SQLite demo only; active MySQL untouched",
+    "path": "/private/tmp/area3-before-role-catalog-20261118-092153.sqlite",
+    "bytes": 233472,
+    "permissions": "0600"
+  },
+  "logs": {
+    "php": "/private/tmp/area3-role-catalog-php-final.log",
+    "frontend": "/private/tmp/area3-role-catalog-frontend.log",
+    "build": "/private/tmp/area3-role-catalog-build.log",
+    "assets": "/private/tmp/area3-role-catalog-assets.log"
+  },
+  "limits": [
+    "No aaPanel/MySQL/live account integration",
+    "No multiprocess concurrency or load benchmark",
+    "No Word/PDF/layout changes or new document export render",
+    "New role permissions/Operation approval flow intentionally deferred by user"
+  ],
+  "format_and_diff_check": "passed",
+  "php": {
+    "tests": 335,
+    "assertions": 8187,
+    "passed": true,
+    "database": "SQLite :memory:",
+    "duration_seconds": 62.72
+  }
+}

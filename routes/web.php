@@ -12,6 +12,7 @@ use App\Http\Controllers\PrototypeBoqController;
 use App\Http\Controllers\PrototypeController;
 use App\Http\Controllers\PrototypeExportController;
 use App\Http\Controllers\PrototypeScanController;
+use App\Http\Controllers\RoleCatalogController;
 use App\Http\Controllers\TermWorkEvidenceController;
 use App\Http\Controllers\UploadQueueController;
 use App\Http\Middleware\ActiveAccount;
@@ -27,6 +28,8 @@ Route::middleware(PrivatePrototype::class)->group(function () {
     Route::middleware(['auth', 'auth.session', ActiveAccount::class])->group(function () {
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
         Route::put('/api/account/password', [ProfilePasswordController::class, 'update'])->middleware('throttle:5,1')->name('account.password.update');
+        Route::get('/api/account/roles', [RoleCatalogController::class, 'index'])->middleware('throttle:120,1');
+        Route::post('/api/account/roles', [RoleCatalogController::class, 'store'])->middleware('throttle:60,1');
         Route::get('/akun', [AccountController::class, 'index'])->name('accounts.index');
         Route::get('/akun/baru', [AccountController::class, 'edit'])->name('accounts.create');
         Route::post('/akun', [AccountController::class, 'save'])->name('accounts.store');
