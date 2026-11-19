@@ -1,5 +1,7 @@
 # it's Area 3 — Construction Workspace
 
+**19 November 2026 — Diagnosis reminder Telegram:** tersedia `php artisan area3:telegram-status`, perintah baca-saja untuk memeriksa konfigurasi CLI, tugas approval aktif, penerima dan antrean tanpa mengirim pesan/mengubah data. Tidak perlu migration/build khusus. Status scheduler pernah berjalan belum membuktikan koleksi berhasil; penyebab server perlu diperiksa dari hasil diagnosis. [Panduan](docs/TELEGRAM_APPROVAL.md#diagnosis-baca-saja--19-november-2026).
+
 **19 November 2026 — Dokumen sebelum pembayaran:** sidebar BA RP & BA PP sebelum Pembayaran. SPK Sah → Sahkan BA RP → Buat BA PP → Sahkan BA PP & Lanjut Kasbon → Isi Kasbon & Ajukan Pembayaran. Berlaku tiap pengajuan, termasuk Parsial. Approval/paid lama tidak dikonversi massal; pelepasan tetap Final. Tanpa migration baru. [Panduan](docs/WORK_DOCUMENTS_FLOW.md).
 
 **19 November 2026 — Penanggalan baru (koreksi Header):** tidak ada isian tambahan Tanggal Terbit PP. Saat Penggunaan menjadi acuan tanggal PP; awal pekerjaan diisi terpisah pada Jadwal Proyek dan akhir otomatis berdasarkan HK. Urutan PP ≤ BA KH ≤ SPK ≤ awal pekerjaan, equality boleh dan jarak1hari hanya saran. Preview/Word/cetak mengikuti Header tanpa kolom tambahan; tanggal VIII.PENUTUP tetap kosong. Snapshot Sah/approval lama tidak ditulis ulang dan tidak ada migration khusus. [Panduan dan QA](docs/DOCUMENT_ISSUANCE_DATES.md).

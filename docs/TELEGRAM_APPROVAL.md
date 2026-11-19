@@ -2,6 +2,36 @@
 
 Fitur ini mengirim pesan pribadi sebagai pengingat, bukan menerima keputusan approval lewat Telegram. Pengguna tetap login dan memeriksa berkas di Inbox aplikasi. Pengaturan default **nonaktif**. Tidak ada token bot bawaan atau pesan nyata yang dikirim saat migration/build.
 
+## Diagnosis baca-saja — 19 November 2026
+
+Pengguna mengonfirmasi uji pesan masuk, reminder sudah aktif, tetapi tidak ada log reminder untuk semua peran. Ini belum membuktikan kerusakan bot maupun resolver: jalur uji melewati pengumpulan target, jam kirim dan task reminder. `scheduler_at` diperbarui sebelum resolver/koleksi selesai; aktivitas scheduler yang baru bukan bukti tugas berhasil dikumpulkan. Penyebab server masih belum terverifikasi.
+
+Setelah kode yang memuat perintah baru sudah di-push dan di-pull ke server, jalankan dari folder artisan dengan user dan PHP situs yang telah dikonfirmasi pengguna:
+
+```bash
+cd /www/wwwroot/itsy
+runuser -u www -- /www/server/php/84/bin/php artisan area3:telegram-status
+```
+
+Perintah ini hanya membaca. Tidak menjalankan collector/worker, membuat task/log, memperbarui heartbeat, mengirim pesan, membuka ciphertext chat/kasbon atau mengubah approval/data bisnis. Output berisi boolean/jumlah/waktu dan kode diagnostik; token, nama akun, chat ID, isi dokumen, payload job dan exception SQL/binding tidak dicetak. `token_configured_in_cli` hanya menunjukkan keberadaan token pada proses CLI baru, bukan token valid atau konfigurasi daemon lama sama. Tidak perlu migration/build/restart untuk menjalankan perintah CLI baru ini.
+
+| Output/temuan | Cara membaca dan langkah pemeriksaan |
+|---|---|
+| `CLI_TOKEN_NOT_CONFIGURED` | Konfigurasi CLI ini tidak memiliki token; periksa konfigurasi privat/cache memakai PHP dan user situs. Jangan mengirim isi token. |
+| `OUTSIDE_SEND_WINDOW` | Waktu WIB sekarang di luar jam kirim; uji pesan dapat tetap masuk di luar jam reminder. |
+| `SCHEDULER_ACTIVITY_NOT_RECENT` | Tidak ada aktivitas atau lebih dari600detik. Periksa cron/path PHP dan log scheduler; ambang ini mengakomodasi cron5menit, bukan bukti proses RUNNING. |
+| `sql_candidates` | Jumlah mentah PP/payment SUBMITTED, run PENDING dan PIC Finance. Bukan jumlah giliran aktif atau bukti penerima berhak. |
+| `APPROVAL_TARGET_RESOLVER_FAILED` | Resolver gagal; hanya kelas exception dan SQLSTATE aman ditampilkan. Perlu penelusuran server lebih lanjut, tanpa menyalin log berisi kredensial/PII. |
+| `NO_CURRENT_APPROVAL_TARGETS` | Resolver selesai tetapi tidak menemukan giliran yang sah. Bandingkan kandidat mentah dan Inbox serta assignment/Branch/unit/versi; tidak berarti otomatis semua dokumen selesai. |
+| `NO_CONNECTED_CURRENT_RECIPIENTS` | Ada giliran aktif tetapi tidak ada penerima tersebut yang terkonfirmasi dan tidak diblokir. Akun uji mungkin berbeda dari penerima saat ini. |
+| `CURRENT_TARGETS_NOT_COLLECTED` | Ada penerima aktif terhubung, tetapi tidak ada task terbuka. Periksa jalur koleksi/jam/token/scheduler; ini petunjuk, bukan vonis penyebab. |
+| `tasks` | Total/terbuka/jatuh tempo dan waktu berikutnya UTC. Task belum tentu masih cocok target saat ini; worker akan memeriksa ulang. |
+| `NOTIFICATION_JOBS_PENDING` | Ada job queue area3-notifications, termasuk yang sedang diproses/tertunda. Periksa worker khusus; jumlah saja tidak membuktikan macet. |
+| `NOTIFICATION_JOBS_FAILED` | Ada failed job queue tersebut dalam24jam; hitungan tidak membuka exception/payload dan bukan bukti pasti kegagalan reminder tertentu. |
+| `reminder_logs_last_24h` | Hitungan status event reminder saja; bukan event uji pesan dan bukan bukti pesan dibaca. |
+
+Hasil merupakan beberapa SELECT berurutan tanpa lock/snapshot transaksi; aktivitas berjalan dapat mengubah hitungan di antaranya. Tidak ada perubahan pada resolver/pengiriman/jadwal/interval satu jam. Diagnosis dilakukan hanya ketika operator menjalankan command, bukan pada setiap request/scheduler. Agregat memakai query terpisah dan resolver existing chunk300/batch account; tidak membaca workspace archive/BOQ/file privat. Fixture terisolasi:11query dengan resolver mock dan16query dengan satu PP memakai resolver asli, bukan benchmark MySQL produksi. [Bukti QA](qa/telegram-diagnostics-20261119.json).
+
 ## UI
 
 - **Pengaturan → Telegram**, khusus Superadmin, setelah Peran Pengguna: pengaktifan, jam WIB/24 jam, interval tetap 60 menit, template dengan contoh, pemeriksaan koneksi, daftar pengguna, PIC notifikasi Finance per Branch/Unit, serta riwayat berhalaman 20 baris.

@@ -2,6 +2,7 @@
 
 use App\Services\TelegramAccounts;
 use App\Services\TelegramApi;
+use App\Services\TelegramDiagnostics;
 use App\Services\TelegramReminders;
 use App\Support\Area3MigrationTarget;
 use Illuminate\Foundation\Inspiring;
@@ -41,6 +42,10 @@ Artisan::command('area3:work-notifications {--once} {--stop-when-empty}', functi
     return $this->call('queue:work', ['connection' => 'notifications', '--queue' => 'area3-notifications', '--sleep' => 3, '--tries' => 1,
         '--timeout' => 90, '--memory' => 256, '--once' => $this->option('once'), '--stop-when-empty' => $this->option('stop-when-empty')]);
 })->purpose('Proses notifikasi Telegram terpisah dari upload');
+
+Artisan::command('area3:telegram-status', function () {
+    $this->line(json_encode(app(TelegramDiagnostics::class)->report(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
+})->purpose('Diagnosis baca-saja reminder Telegram tanpa mengirim pesan atau membuka data privat');
 
 Artisan::command('area3:telegram-reminders', function () {
     Area3MigrationTarget::assertAllowed();
