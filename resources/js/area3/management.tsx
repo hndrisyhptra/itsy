@@ -1,7 +1,8 @@
 import { paymentLabel } from './payment-labels';
 import { paymentDue } from './kasbon-settlement';
 import { financeTaskPending, partialFinanceHistory } from './partial-payment';
-import { useState } from 'react';
+import { useState, lazy } from 'react';
+const TelegramSettings=lazy(()=>import('./telegram').then(m=>({default:m.TelegramSettings})));
 import { Plus, Pencil, Trash2, Download, History, Save, RotateCcw, Check, ArrowUpRight } from 'lucide-react';
 import { type State, type Khs, type User, type Component, ROLES, uid, operational, getProject, getDeal, getSpk, projectForSpk, money, num, dateLabel, boqTotal, dealTotal, termTotal, ledger, updateKhs, saveUser, saveProfile, approvalRole } from './domain';
 import { NumberingSettings } from './workflow-ui';
@@ -58,8 +59,9 @@ function DemoSettings({ s }: { s: State }) {
 
 function AccountSettings({s}:{s:State}) {
   const [tab,setTab] = useState('Akun');
-  return <><PageTitle title="Pengaturan" description="Akun, penugasan Branch, dan konfigurasi workspace."/><div className="view-tabs">{ACCOUNT_SETTINGS_TABS.filter(v=>s.role==='Superadmin'||!['Penomoran PP','Peran Pengguna'].includes(v)).map(v => <button className={tab === v ? 'active' : ''} key={v} onClick={() => setTab(v)}>{v}</button>)}</div>
+  return <><PageTitle title="Pengaturan" description="Akun, penugasan Branch, dan konfigurasi workspace."/><div className="view-tabs">{ACCOUNT_SETTINGS_TABS.filter(v=>s.role==='Superadmin'||!['Penomoran PP','Peran Pengguna','Telegram'].includes(v)).map(v => <button className={tab === v ? 'active' : ''} key={v} onClick={() => setTab(v)}>{v}</button>)}</div>
   {tab==='Peran Pengguna'&&s.role==='Superadmin'&&<RoleCatalog/>}
+  {tab==='Telegram'&&s.role==='Superadmin'&&<TelegramSettings/>}
   {tab === 'Akun' && <Card title="Akun Anda"><dl className="detail-list"><dt>Nama</dt><dd>{s.profile.name}</dd><dt>Username</dt><dd>{boot?.account?.username}</dd><dt>Email</dt><dd>{s.profile.email}</dd><dt>Peran</dt><dd>{s.role}</dd><dt>Branch</dt><dd>{boot?.account?.branches.join(', ')}</dd></dl><Notice>Alur baru menggunakan lima akun terpilih: PM, Admin Area, Mgr Project Support, Mgr Deployment, dan Head of PMO. Finance memverifikasi scan dan mencatat APM. Ganti kata sandi melalui menu Profil & Preferensi. Hubungi Superadmin untuk perubahan data akun.</Notice>{s.role === 'Superadmin' && <a className="btn primary" href={boot?.accountUrls?.manage}>Kelola akun pengguna</a>}</Card>}
   {tab === 'Penomoran PP' && s.role === 'Superadmin' && <NumberingSettings s={s}/>}
   {tab === 'Aktivitas' && <Card title="Aktivitas Branch Anda" className="no-padding"><Table headers={['Kejadian','Detail','Peran','Waktu']}>{s.events.map(e => <tr key={e.id}><td>{e.title}</td><td>{e.detail}</td><td>{e.actor}</td><td>{dateLabel(e.at)}</td></tr>)}</Table>{!s.events.length && <Empty description="Belum ada aktivitas pada Branch penugasan Anda."/>}</Card>}

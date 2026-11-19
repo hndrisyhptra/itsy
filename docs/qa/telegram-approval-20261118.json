@@ -1,0 +1,158 @@
+{
+  "date": "2026-11-18",
+  "feature": "Telegram approval UI/linking/reminders",
+  "php": {
+    "tests": 357,
+    "assertions": 8666,
+    "storage": "SQLite :memory: only",
+    "telegram_tests": 13,
+    "telegram_assertions": 126,
+    "real_database_queue_job_with_fake_telegram": true
+  },
+  "frontend": {
+    "tests": 387,
+    "build": "TypeScript and Vite pass",
+    "assets_manifest_refs": 45,
+    "preload_dependencies": 36,
+    "asset_profiles": 3
+  },
+  "query": {
+    "catalog_fixture_queries": 5,
+    "catalog_budget": 9
+  },
+  "browser": {
+    "fixture": "actual React TelegramSettings/TelegramProfile, mocked same-origin APIs",
+    "cases": 6,
+    "viewports": [
+      375,
+      768,
+      1440
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "js_errors": 0,
+    "page_overflow": false,
+    "confirmed_actions": true,
+    "hidden_candidate_requests": 0,
+    "outside_network": "all blocked including existing CSS font requests",
+    "screenshots_viewed": [
+      "settings-375-light.png",
+      "settings-1440-light.png",
+      "profile-375-dark.png"
+    ],
+    "artifacts": "/private/tmp/area3-telegram-20261118",
+    "results": [
+      {
+        "width": 375,
+        "theme": "light",
+        "confirmation": true,
+        "settings": true,
+        "pics": true,
+        "users": true,
+        "logs": true,
+        "link_confirm_test_disconnect": true,
+        "external_requests": 0,
+        "js_errors": 0,
+        "page_overflow": false
+      },
+      {
+        "width": 375,
+        "theme": "dark",
+        "confirmation": true,
+        "settings": true,
+        "pics": true,
+        "users": true,
+        "logs": true,
+        "link_confirm_test_disconnect": true,
+        "external_requests": 0,
+        "js_errors": 0,
+        "page_overflow": false
+      },
+      {
+        "width": 768,
+        "theme": "light",
+        "confirmation": true,
+        "settings": true,
+        "pics": true,
+        "users": true,
+        "logs": true,
+        "link_confirm_test_disconnect": true,
+        "external_requests": 0,
+        "js_errors": 0,
+        "page_overflow": false
+      },
+      {
+        "width": 768,
+        "theme": "dark",
+        "confirmation": true,
+        "settings": true,
+        "pics": true,
+        "users": true,
+        "logs": true,
+        "link_confirm_test_disconnect": true,
+        "external_requests": 0,
+        "js_errors": 0,
+        "page_overflow": false
+      },
+      {
+        "width": 1440,
+        "theme": "light",
+        "confirmation": true,
+        "settings": true,
+        "pics": true,
+        "users": true,
+        "logs": true,
+        "link_confirm_test_disconnect": true,
+        "external_requests": 0,
+        "js_errors": 0,
+        "page_overflow": false
+      },
+      {
+        "width": 1440,
+        "theme": "dark",
+        "confirmation": true,
+        "settings": true,
+        "pics": true,
+        "users": true,
+        "logs": true,
+        "link_confirm_test_disconnect": true,
+        "external_requests": 0,
+        "js_errors": 0,
+        "page_overflow": false
+      }
+    ],
+    "dirty_input_retained_after_422": true,
+    "path_bound_responses_prevent_stale_tab_rows": true
+  },
+  "migration": {
+    "file": "2026_11_18_000003_create_telegram_notifications.php",
+    "additive_tables": 6,
+    "live_applied": false,
+    "business_data_mutated": false
+  },
+  "limits": [
+    "No real Telegram messages, bot token, webhook registration or HTTPS callback tested",
+    "No aaPanel deployment/MySQL DDL/production concurrency/load/Supervisor/cron verification",
+    "Message acceptance is not read confirmation; no exactly-once delivery guarantee",
+    "Very old documents without SQL run/actual assignee are not invented/rerouted",
+    "Task/log retention is not automatically purged"
+  ],
+  "preserved": [
+    "PP/BA KH/SPK/payment status and approval decisions",
+    "money/volume/ledger/history/archive/private finance files",
+    "live its/.env/APP_KEY and Dompis",
+    "upload queue and other app workers"
+  ],
+  "checks": {
+    "pint": "passed",
+    "diff_check": "passed"
+  },
+  "verification_notes": [
+    "Initial full suite exposed migration-count expectation71; updated to72 for the one additive migration, final357/8666 passed.",
+    "Final browser timestamp rendering exposed stale prior-tab response data; hook now binds responses to the requested path, final six cases passed.",
+    "Headless Chrome initially required sandbox approval; all outside requests were blocked in fixture runs.",
+    "Pint explicitly ran on new untracked PHP files as well as dirty tracked files;13 Telegram tests passed again after formatting."
+  ]
+}

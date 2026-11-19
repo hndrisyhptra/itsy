@@ -31,6 +31,8 @@ return [
 
     'connections' => [
 
+        'notifications' => ['driver' => 'database', 'connection' => null, 'table' => 'jobs', 'queue' => 'area3-notifications', 'retry_after' => 180, 'after_commit' => true],
+
         // Isolated local upload queue; never silently run uploads synchronously.
         'uploads' => [
             'driver' => 'database', 'connection' => null, 'table' => 'jobs',

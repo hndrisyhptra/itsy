@@ -226,3 +226,8 @@ Tes PHP memakai SQLite `:memory:` dengan bootstrap fail-closed, termasuk bila ca
 - Pengujian ini tidak mencakup beban produksi, MFA/SSO atau pengiriman reset email.
 
 Referensi 46 tabel bernama ID khusus: [MYSQL_CONCEPT](docs/MYSQL_CONCEPT.md), [MYSQL_MASTER_MAPPING](docs/MYSQL_MASTER_MAPPING.md). SQL adalah referensi; gunakan migration Laravel. Cadangan sebelum username/approval v3: `storage/app/private/backups/its-before-username-approval-v3-20261104-112005.sql`. Data lama diverifikasi tetap identik (kolom lama users termasuk password, workspace/audit dan delapan master) pada `docs/qa/username-approval-v3-preservation-20261104.json`. Cadangan sebelum integrasi akun sebelumnya disimpan privat pada `storage/app/private/backups/its-before-auth-20261104-083449.sql`. Insiden pemulihan data demo sebelumnya tetap tercatat dalam QA dan tidak diklaim selesai oleh perubahan ini.
+
+
+## Telegram Approval — 18 November 2026
+
+Pengaturan → Telegram (Superadmin) dan Profil & Preferensi → Telegram Approval tersedia untuk pengingat pribadi per satu jam. Migration tambahan enam tabel terpisah dari data transaksi; default nonaktif. Token/webhook/scheduler/worker notifikasi memerlukan setup server, belum diaktifkan otomatis. Lihat [panduan bot dan aaPanel langkah demi langkah](docs/TELEGRAM_APPROVAL.md) serta [bukti pengujian dan batas](docs/qa/telegram-approval-20261118.json).

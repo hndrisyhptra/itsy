@@ -4,7 +4,7 @@ import { changeRole, loadRoles, RoleCatalogError, type CatalogRole, type RolePag
 import { Badge, Button, Card, Empty, Field, Modal, Notice, Table, confirmAction, toast } from './ui';
 
 type Editor={id?:number;code:string;name:string;version?:string;system:boolean;workflow_name:string|null;request_id:string};
-export const ACCOUNT_SETTINGS_TABS=['Akun','Penomoran PP','Aktivitas','Penyimpanan','Peran Pengguna'];
+export const ACCOUNT_SETTINGS_TABS=['Akun','Penomoran PP','Aktivitas','Penyimpanan','Peran Pengguna','Telegram'];
 
 export function RoleCatalogTable({rows,disabled=false,onEdit,onDelete}:{rows:CatalogRole[];disabled?:boolean;onEdit:(row:CatalogRole)=>void;onDelete:(row:CatalogRole)=>void}){
   return <Table headers={['Kode Peran','Nama Peran','Jenis','Digunakan Akun','Aksi']}>{rows.map(row=>{
