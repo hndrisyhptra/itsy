@@ -231,3 +231,6 @@ Referensi 46 tabel bernama ID khusus: [MYSQL_CONCEPT](docs/MYSQL_CONCEPT.md), [M
 ## Telegram Approval — 18 November 2026
 
 Pengaturan → Telegram (Superadmin) dan Profil & Preferensi → Telegram Approval tersedia untuk pengingat pribadi per satu jam. Migration tambahan enam tabel terpisah dari data transaksi; default nonaktif. Token/webhook/scheduler/worker notifikasi memerlukan setup server, belum diaktifkan otomatis. Lihat [panduan bot dan aaPanel langkah demi langkah](docs/TELEGRAM_APPROVAL.md) serta [bukti pengujian dan batas](docs/qa/telegram-approval-20261118.json).
+
+
+**19 November 2026 — Tempat penandatanganan dokumen:** BA KH, SPK, BA RP dan BA PP memakai Branch PP terkait pada form/preview/Word/cetak/paket, dengan tanggal tersimpan. Tabel VIII.PENUTUP PP tetap termasuk kolom tanggal kosong sesuai konfirmasi pengguna. Tidak memerlukan migration atau backfill dokumen lama. [Perilaku, verifikasi dan deployment](docs/DOCUMENT_SIGNING_PLACE.md).

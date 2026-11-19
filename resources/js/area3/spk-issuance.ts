@@ -1,6 +1,6 @@
-import type { Spk } from './domain';
+import { projectSigningPlace } from './document-place';
+import type { Project, Spk } from './domain';
 
-export const SPK_ISSUE_PLACE = 'Surabaya';
 export function spkCalendarDate(value: unknown): string {
   if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(value)||value<'0001-01-01')return '';
   const date=new Date(`${value}T12:00:00Z`);
@@ -10,8 +10,8 @@ export function spkCalendarDate(value: unknown): string {
 export function spkIssueDate(value: unknown, start: unknown): string {
   return spkCalendarDate(value)||spkCalendarDate(start);
 }
-export function syncSpkIssuance<T extends Pick<Spk,'place'|'date'|'start'>>(spk:T):T {
-  return {...spk,place:SPK_ISSUE_PLACE,date:spkIssueDate(spk.date,spk.start)};
+export function syncSpkIssuance<T extends Pick<Spk,'place'|'date'|'start'>>(spk:T,project:Pick<Project,'branch'>):T {
+  return {...spk,place:projectSigningPlace(project),date:spkIssueDate(spk.date,spk.start)};
 }
 
 export function spkPeriodRange(period:{start:string;end:string}):string {

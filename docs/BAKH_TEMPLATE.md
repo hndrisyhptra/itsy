@@ -47,3 +47,8 @@ Implementasi: resources/js/area3/bakh-document.tsx, bakh-content.ts, ui.tsx dan 
 Lima regresi preview memeriksa tanggal/terbilang dan tanggal tidak valid, seluruh pemetaan isian/state tidak berubah, tanpa data contoh/tanda tangan rekaan, identitas historis/kosong, integrasi tombol portrait versus lampiran landscape, serta escaping teks form. Regresi signer/nomor tetap berlaku; tes sel kosong disesuaikan karena BA KH kini naratif tanpa tabel. Selain HTML/cetak browser, tombol Unduh Word (.docx) kini menghasilkan file native editable dari model yang sama. Unduh tidak menerbitkan/mengesahkan transaksi. Reference DOCX dan hasil ekspor QA sudah diperiksa visual; preview/klik unduh pada browser terautentikasi, Microsoft Word desktop dan cetak fisik belum diperiksa manual.
 
 Hasil setelah penambahan Word: 194 tes PHP/3.260 assertions, 156 tes frontend dan build TypeScript/Vite lulus. Semua pengujian transaksi memakai SQLite memory, tanpa data uji/mutasi di its. Riwayat angka sebelum perubahan tetap tersedia di CHANGELOG.md/LARAVEL_QA.md.
+
+
+## 19 November 2026 — Tempat mengikuti Branch
+
+Otoritas terbaru pengguna mengganti kota penandatanganan BA KH/SPK/BARP/BAPP dengan Branch PP terkait untuk form, preview, Word, cetak dan paket, termasuk output dokumen lama tanpa GET backfill. Tanggal/identitas/history/nilai tetap; tabel VIII.PENUTUP PP beserta kolom tanggal kosong tidak diubah sesuai konfirmasi pengguna. Tidak menambah kota/tanggal pada lampiran yang tidak memilikinya atau mengubah kasbon. Ini menggantikan kota tetap Surabaya/old place presentation hanya pada lingkup tersebut. Lihat [DOCUMENT_SIGNING_PLACE](DOCUMENT_SIGNING_PLACE.md) dan QA19November.

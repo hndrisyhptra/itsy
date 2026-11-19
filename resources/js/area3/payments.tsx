@@ -4,7 +4,7 @@ import { PaymentFlowOverview,currentFlowApproval } from './workflow-overview';
 import {LegacyFinanceRouting} from './legacy-finance-routing-ui';
 import {canReviewLegacySettlement,legacyReviewDecisions} from './legacy-settlement-review';
 import { paymentDue } from './kasbon-settlement';
-import { BARP_PLACE } from './barp-labels';
+import { projectSigningPlace } from './document-place';
 import { usesSettlementPayment } from './finance-payment';
 import { FinanceReviewButton } from './finance-review';
 import { BoqMandorPreviewButton } from './boq-mandor-preview';
@@ -44,7 +44,7 @@ function TermForm({ s, original }: { s: State; original: Term }) {
   const barp = baseBarp ? { ...baseBarp } : undefined;
   if(barp && editable){if(barp.version<2){const defaults=blankBarp(s,original);barp.deployment=defaults.deployment;barp.support=defaults.support;}barp.version=2;barp.job=p.name;}
   if (barp && editable && draft.barp) for (const field of ['date','start','end','sto','homepass'] as const) Object.assign(barp, { [field]: Object.hasOwn(draft.barp,field) ? draft.barp[field] : baseBarp![field] });
-  if(barp)barp.place=BARP_PLACE;
+  if(barp)barp.place=projectSigningPlace(p);
   const t = editable ? { ...original, type: draft.type, actuals: draft.actuals, barp } : original;
   const updateBarp = <K extends keyof BarpData>(field:K,value:BarpData[K]) => setDraft(old => ({...old,barp:{...barp!,[field]:value}}));
   const single=isSinglePayment(t);
@@ -54,7 +54,7 @@ function TermForm({ s, original }: { s: State; original: Term }) {
     <Card title="Informasi BA Rekonsiliasi Pekerjaan" subtitle="Periode mengikuti SPK dan dapat dipersempit sesuai pekerjaan tahap ini. Nilai dihitung otomatis dari volume aktual.">
       <div className="form-grid">
         <Field label="Pekerjaan" hint="Otomatis dari nama proyek pada Project Plan."><input readOnly value={barp?.job??p.name}/></Field>
-        {(['date','place','start','end','sto'] as const).map(field=><Field key={field} label={({date:'Tanggal Rekonsiliasi *',place:'Tempat Penandatanganan *',start:'Periode Mulai *',end:'Periode Selesai *',sto:'STO (opsional)'})[field]}><input readOnly={field==='place'} disabled={!editable} type={['date','start','end'].includes(field)?'date':'text'} maxLength={150} value={field==='place'?BARP_PLACE:barp?.[field]??''} onChange={e=>updateBarp(field,e.target.value)}/></Field>)}
+        {(['date','place','start','end','sto'] as const).map(field=><Field key={field} label={({date:'Tanggal Rekonsiliasi *',place:'Tempat Penandatanganan *',start:'Periode Mulai *',end:'Periode Selesai *',sto:'STO (opsional)'})[field]}><input readOnly={field==='place'} disabled={!editable} type={['date','start','end'].includes(field)?'date':'text'} maxLength={150} value={field==='place'?projectSigningPlace(p):barp?.[field]??''} onChange={e=>updateBarp(field,e.target.value)}/></Field>)}
         <Field label="Homepass (opsional)"><input type="number" min={0} max={1000000000} step={1} disabled={!editable} value={barp?.homepass??''} onChange={e=>updateBarp('homepass',e.target.value===''?null:Number(e.target.value))}/></Field>
         <Field label="Waspang Project · sesuai SPK"><input readOnly value={barp?.waspang??v.supervisor}/></Field>
         <Field label="Ketua Mandor"><input readOnly value={barp?.mandor??d.mandor}/></Field>

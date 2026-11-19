@@ -18,7 +18,7 @@ class ContractNumberTest extends TestCase
         DB::enableQueryLog();
         foreach ($vectors as $vector) {
             $input = ['date' => $vector['date'], 'start' => $vector['start'], 'place' => 'CLIENT CITY'];
-            $result = SpkIssuance::sync($input);
+            $result = SpkIssuance::sync($input, ['branch' => 'Surabaya']);
             $this->assertSame('Surabaya', $result['place']);
             $this->assertSame($vector['expected'], $result['date']);
             $this->assertSame('CLIENT CITY', $input['place']);

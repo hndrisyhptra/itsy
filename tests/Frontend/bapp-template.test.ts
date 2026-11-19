@@ -32,9 +32,9 @@ test('staged BA PP retains current stage in work and closing paragraphs, with th
   assert.ok(html.includes(data.totalText));assert.doesNotMatch(html,/Mgr Finance|PPh 2,5|BAPP-PRIVATE/);
  }
 });
-test('BA PP uses historical inspection identity/place and leaves missing dates/zero-value percentage unresolved, without current account or today fallback',()=>{
+test('BA PP uses historical inspection identity and the related PP Branch and leaves missing dates/zero-value percentage unresolved, without current account or today fallback',()=>{
  const {p,d,v,t}=fixture();const data=bappDocumentData(p,d,v,t);t.barp!.date='2026-02-30';t.barp!.place='Kota tersimpan';d.mandor='Nama baru kontrak';v.signer='Nama baru SPK';
- const changed=bappDocumentData(p,{...d,rows:[]},v,t);assert.equal(changed.date,null);assert.equal(changed.placeDate,'Kota tersimpan, …');assert.equal(changed.progress,'…');assert.equal(changed.mandor,data.mandor);assert.equal(changed.head,data.head);
+ const changed=bappDocumentData(p,{...d,rows:[]},v,t);assert.equal(changed.date,null);assert.equal(changed.placeDate,`${p.branch}, …`);assert.equal(changed.progress,'…');assert.equal(changed.mandor,data.mandor);assert.equal(changed.head,data.head);
  delete t.barp;const legacy=bappDocumentData(p,d,v,t);assert.equal(legacy.date,null);assert.ok(legacy.placeDate.endsWith(', …'));assert.equal(legacy.start,bakhDocumentDate(v.start)!.full);
 });
 test('BA PP print still requires genuine assigned approvals and is confirmation protected',()=>{

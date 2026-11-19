@@ -1,7 +1,8 @@
 import { rupiahNumber, monetaryRound, moneyLine } from './currency';
 import type { Project, Deal, Spk } from './domain';
 import { bakhDocumentDate } from './bakh-content';
-import { SPK_ISSUE_PLACE, spkIssueDate } from './spk-issuance';
+import { projectSigningPlace } from './document-place';
+import { spkIssueDate } from './spk-issuance';
 
 const filled=(value?:string)=>value?.trim()||'…';
 const number=rupiahNumber;
@@ -22,7 +23,7 @@ export function spkDocumentData(project:Project,deal:Deal,spk:Spk){
   const service=round(total-material),date=bakhDocumentDate(spkIssueDate(spk.date,spk.start)),start=bakhDocumentDate(spk.start),end=bakhDocumentDate(spk.end);
   const job=filled(project.name),branch=filled(project.branch),mandor=filled(deal.mandor);
   return {
-    compact:job.length>120||(spk.address?.length??0)>80,number:filled(spk.no),placeDate:`${SPK_ISSUE_PLACE}, ${date?.full??'…'}`,mandor,address:filled(spk.address),job,branch,
+    compact:job.length>120||(spk.address?.length??0)>80,number:filled(spk.no),placeDate:`${projectSigningPlace(project)||'…'}, ${date?.full??'…'}`,mandor,address:filled(spk.address),job,branch,
     subject:`Perihal : Perintah Mulai Kerja Pekerjaan ${job} Area ${branch}.`,
     opening:`Dengan ini PT. Telkom Akses Memerintahkan kepada mandor ${mandor} untuk melaksanakan pekerjaan ${job}, terhitung mulai Tanggal ${start?.full??'…'} s/d ${end?.full??'…'}. List lokasi yang dikerjakan sebagai berikut :`,
     supervisor:filled(spk.supervisor),phone:filled(spk.phone),signer:filled(spk.signer),nik:spk.signerNik?.trim()||'Belum tersedia',position:filled(spk.position).toLocaleUpperCase('id-ID'),

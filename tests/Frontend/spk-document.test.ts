@@ -32,7 +32,7 @@ test('SPK model maps the saved form and Mandor agreement, preserves historical s
   const {s,p,d,spk}=fixture(),before=JSON.stringify(s);
   d.signer='Head lain';d.start='2020-01-01';d.end='2020-01-02';
   const source=JSON.stringify(s),data=spkDocumentData(p,d,spk);
-  assert.equal(data.number,spk.no);assert.equal(data.placeDate,'Surabaya, 7 November 2026');
+  assert.equal(data.number,spk.no);assert.equal(data.placeDate,'MATARAM, 7 November 2026');
   assert.equal(data.mandor,d.mandor);assert.equal(data.address,spk.address);assert.equal(data.signer,spk.signer);
   assert.equal(data.position,spk.position.toUpperCase());
   assert.ok(data.opening.includes('30 November 2026 s/d 13 Desember 2026'));
@@ -95,7 +95,7 @@ test('missing or invalid fields stay unfilled; escaped XML and literal slot-like
   const {p,d,spk}=fixture();
   Object.assign(spk,{date:'2026-02-30',start:'',end:'bad',signer:'',position:'',phone:'',address:'<script>é & 中文 😀</script>\n{{SPK_NO}}\u0000'});
   const data=spkDocumentData(p,d,spk);assert.equal(data.signer,'…');assert.equal(data.position,'…');assert.equal(data.phone,'…');
-  assert.equal(data.placeDate,'Surabaya, …');assert.ok(data.opening.includes('Tanggal … s/d …'));
+  assert.equal(data.placeDate,'MATARAM, …');assert.ok(data.opening.includes('Tanggal … s/d …'));
   const xml=docxParts(createSpkDocx(p,d,spk,logo))['word/document.xml'];
   assert.match(xml,/&lt;script&gt;é &amp; 中文 😀&lt;\/script&gt;/);assert.match(xml,/\{\{SPK_NO\}\}/);
   assert.match(xml,/<w:br\/>/);assert.doesNotMatch(xml,/<script>|\u0000|Head lain/);
@@ -120,22 +120,22 @@ test('SPK city and issue date follow shared calendar vectors and readonly city/u
   const vectors=JSON.parse(readFileSync(new URL('../Fixtures/spk-issuance.json',import.meta.url),'utf8'));
   for(const row of vectors){
     const input={place:'CLIENT CITY',date:row.date,start:row.start};
-    const before=JSON.stringify(input),next=syncSpkIssuance(input);
+    const before=JSON.stringify(input),next=syncSpkIssuance(input,{branch:'Surabaya'});
     assert.equal(next.place,'Surabaya');assert.equal(next.date,row.expected);assert.equal(spkIssueDate(row.date,row.start),row.expected);assert.equal(JSON.stringify(input),before);
   }
   const {p,d,spk}=fixture();Object.assign(spk,{status:'Sah',place:'LOP LAMA QA',date:'2026-11-11',start:'2026-10-28',end:'2026-11-03'});
   const before=JSON.stringify(spk),data=spkDocumentData(p,d,spk);
-  assert.equal(data.placeDate,'Surabaya, 11 November 2026');assert.equal(JSON.stringify(spk),before);
-  const doc=docxParts(createSpkDocx(p,d,spk,logo))['word/document.xml'];assert.match(doc,/Surabaya, 11 November 2026/);assert.doesNotMatch(doc,/LOP LAMA QA/);
-  const html=renderToStaticMarkup(createElement(SpkIssueFields,{spk,disabled:false,onDateChange:()=>{}}));
-  assert.match(html,/aria-label="Tempat penerbitan SPK" readOnly="" value="Surabaya"/);
+  assert.equal(data.placeDate,'MATARAM, 11 November 2026');assert.equal(JSON.stringify(spk),before);
+  const doc=docxParts(createSpkDocx(p,d,spk,logo))['word/document.xml'];assert.match(doc,/MATARAM, 11 November 2026/);assert.doesNotMatch(doc,/LOP LAMA QA/);
+  const html=renderToStaticMarkup(createElement(SpkIssueFields,{project:p,spk,disabled:false,onDateChange:()=>{}}));
+  assert.match(html,/aria-label="Tempat penerbitan SPK" readOnly="" value="MATARAM"/);
   assert.match(html,/aria-label="Tanggal SPK" type="date" value="2026-11-11"/);
   assert.doesNotMatch(html,/\s(?:max|min)=/);
   for(const [date,label] of [['2000-02-29','29 Februari 2000'],['2100-12-31','31 Desember 2100']]){
     const selected={...spk,date};
-    assert.equal(spkDocumentData(p,d,selected).placeDate,`Surabaya, ${label}`);
-    assert.ok(docxParts(createSpkDocx(p,d,selected,logo))['word/document.xml'].includes(`Surabaya, ${label}`));
-    assert.ok(renderToStaticMarkup(createElement(SpkIssueFields,{spk:selected,disabled:false,onDateChange:()=>{}})).includes(`value="${date}"`));
+    assert.equal(spkDocumentData(p,d,selected).placeDate,`MATARAM, ${label}`);
+    assert.ok(docxParts(createSpkDocx(p,d,selected,logo))['word/document.xml'].includes(`MATARAM, ${label}`));
+    assert.ok(renderToStaticMarkup(createElement(SpkIssueFields,{project:p,spk:selected,disabled:false,onDateChange:()=>{}})).includes(`value="${date}"`));
   }
 
 });

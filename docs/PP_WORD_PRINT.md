@@ -63,3 +63,8 @@ Instruksi terbaru pengguna menggantikan penampilan tanggal pada kolom TANGGAL VI
 ## 18 November 2026 — Cap tanpa tanggal dan cap otomatis pengaju/EVP kasbon
 
 Tanggal cap PP/kasbon tidak ditampilkan. Pengaju kasbon otomatis ditandai setelah penerbitan UUID tercatat; EVP kasbon hanya setelah persetujuan nyata Manager untuk UUID aktif dengan assignee sesuai. Dua cap administratif terpisah dari keputusan, Word/cetak tetap kosong; tanggal/audit/tahapan dan uang tidak diubah. Ini menggantikan batas lama lima cap preview kasbon saja: kini lima keputusan nyata + dua otomatis, tanpa menambah approval aplikasi. PP EVP tetap memakai aturan PP sebelumnya. Rincian gate/version/legacy, kinerja dan verifikasi aktual ada pada [KASBON_PREVIEW_STAMPS](KASBON_PREVIEW_STAMPS.md).
+
+
+## 19 November 2026 — Tempat mengikuti Branch
+
+Otoritas terbaru pengguna mengganti kota penandatanganan BA KH/SPK/BARP/BAPP dengan Branch PP terkait untuk form, preview, Word, cetak dan paket, termasuk output dokumen lama tanpa GET backfill. Tanggal/identitas/history/nilai tetap; tabel VIII.PENUTUP PP beserta kolom tanggal kosong tidak diubah sesuai konfirmasi pengguna. Tidak menambah kota/tanggal pada lampiran yang tidak memilikinya atau mengubah kasbon. Ini menggantikan kota tetap Surabaya/old place presentation hanya pada lingkup tersebut. Lihat [DOCUMENT_SIGNING_PLACE](DOCUMENT_SIGNING_PLACE.md) dan QA19November.

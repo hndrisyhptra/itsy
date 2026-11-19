@@ -1,6 +1,6 @@
 import { rupiahNumber } from './currency';
 import type { State, Project, Deal } from './domain';
-import { BAKH_SIGNING_PLACE } from './bakh-place';
+import { projectSigningPlace } from './document-place';
 
 const weekday = new Intl.DateTimeFormat('id-ID', { weekday: 'long', timeZone: 'UTC' });
 const month = new Intl.DateTimeFormat('id-ID', { month: 'long', timeZone: 'UTC' });
@@ -57,7 +57,7 @@ export function bakhDocumentData(project: Project, deal: Deal) {
   ];
   return {
     number: filled(deal.no), metadata: [['PEKERJAAN', filled(project.name)], ['LOKASI', filled(deal.location)], ['WITEL', filled(deal.witel)]],
-    opening, team, place: `${BAKH_SIGNING_PLACE}, ${date?.full ?? '…'}`, signatures: bakhSignatures(deal),
+    opening, team, place: `${projectSigningPlace(project)||'…'}, ${date?.full ?? '…'}`, signatures: bakhSignatures(deal),
   };
 }
 

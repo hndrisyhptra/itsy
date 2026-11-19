@@ -40,3 +40,8 @@ Tidak membuka akun server atau mengubah its aktif/env/arsip/Dompis, tidak menjal
 ## 18 November 2026 — BA PP sejak BA RP disimpan
 
 Pengguna menegaskan BA PP dapat disahkan sebelum seluruh approval, sejak BA RP Final disimpan. Final pada alur baru/diadopsi eksplisit memakai source BARP server-owned dan menahan pengajuan pembayaran sampai BA PP Sah; perubahan BARP memerlukan pengesahan ulang. Dokumen utama/lampiran BA PP Sah dapat Word/print lebih awal, ruang TTD kosong; tujuh approval/ledger/release dan full-package export gate tetap. Tidak ada migration atau perubahan massal data lama. Lihat [BAPP_BEFORE_PAYMENT](BAPP_BEFORE_PAYMENT.md) untuk cakupan, data historis, query, QA dan deploy.
+
+
+## 19 November 2026 — Tempat mengikuti Branch
+
+Otoritas terbaru pengguna mengganti kota penandatanganan BA KH/SPK/BARP/BAPP dengan Branch PP terkait untuk form, preview, Word, cetak dan paket, termasuk output dokumen lama tanpa GET backfill. Tanggal/identitas/history/nilai tetap; tabel VIII.PENUTUP PP beserta kolom tanggal kosong tidak diubah sesuai konfirmasi pengguna. Tidak menambah kota/tanggal pada lampiran yang tidak memilikinya atau mengubah kasbon. Ini menggantikan kota tetap Surabaya/old place presentation hanya pada lingkup tersebut. Lihat [DOCUMENT_SIGNING_PLACE](DOCUMENT_SIGNING_PLACE.md) dan QA19November.

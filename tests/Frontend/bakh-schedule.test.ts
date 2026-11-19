@@ -47,7 +47,7 @@ test('selected continuation schedule is used while issued and approved snapshots
 
 test('document date controls are read-only and show automatically derived dates without period alerts',()=>{
   const {s,d}=fixture(),deal=syncBakhPeriod(s,d);
-  const place=renderToStaticMarkup(createElement(BakhPlaceField));
+  const place=renderToStaticMarkup(createElement(BakhPlaceField,{project:s.projects[0]}));
   assert.match(place,/readOnly="" value="Surabaya"/);assert.doesNotMatch(place,/onChange|type="text"/);
   const html=renderToStaticMarkup(createElement(BakhPeriodFields,{deal,disabled:false}));
   assert.equal((html.match(/readOnly=""/g)??[]).length,2);

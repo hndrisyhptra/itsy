@@ -6,8 +6,6 @@ use Illuminate\Validation\ValidationException;
 
 final class BarpTemplate
 {
-    public const PLACE = 'Surabaya';
-
     /** Already-loaded selected identities only, with no database lookup. */
     private static function paymentSigner(array $state, array $project, array $term, string $role): array
     {
@@ -49,7 +47,7 @@ final class BarpTemplate
             $head = $spk;
         }
 
-        return ['version' => 2, 'job' => $project['name'], 'deployment' => self::paymentSigner($state, $project, $term, WorkUnitAccess::operation($term) ? 'Manager SS' : 'Mgr Deployment'), 'support' => self::paymentSigner($state, $project, $term, WorkUnitAccess::operation($term) ? 'Officer 1 SS' : 'Mgr Project Support'), 'date' => now()->toDateString(), 'place' => self::PLACE, 'start' => $spk['start'], 'end' => $spk['end'], 'location' => $deal['location'] ?? '', 'sto' => '', 'homepass' => null,
+        return ['version' => 2, 'job' => $project['name'], 'deployment' => self::paymentSigner($state, $project, $term, WorkUnitAccess::operation($term) ? 'Manager SS' : 'Mgr Deployment'), 'support' => self::paymentSigner($state, $project, $term, WorkUnitAccess::operation($term) ? 'Officer 1 SS' : 'Mgr Project Support'), 'date' => now()->toDateString(), 'place' => DocumentSigningPlace::fromProject($project), 'start' => $spk['start'], 'end' => $spk['end'], 'location' => $deal['location'] ?? '', 'sto' => '', 'homepass' => null,
             'waspang' => $spk['supervisor'], 'mandor' => $deal['mandor'], 'headName' => $head['signer'], 'headNik' => $head['signerNik'] ?? '', 'headUserId' => $head['signerUserId'] ?? '', ...(! empty($head['signerJob']) ? ['headJob' => $head['signerJob']] : [])];
     }
 
@@ -67,7 +65,7 @@ final class BarpTemplate
         $deal = collect($state['deals'])->firstWhere('id', $spk['dealId']);
         $project = collect($state['projects'])->firstWhere('id', $deal['projectId']);
         $barp['job'] = $project['name'];
-        $barp['place'] = self::PLACE;
+        $barp['place'] = DocumentSigningPlace::fromProject($project);
         if (($barp['version'] ?? 1) < 2) {
             $barp['deployment'] = self::paymentSigner($state, $project, $term, WorkUnitAccess::operation($term) ? 'Manager SS' : 'Mgr Deployment');
             $barp['support'] = self::paymentSigner($state, $project, $term, WorkUnitAccess::operation($term) ? 'Officer 1 SS' : 'Mgr Project Support');

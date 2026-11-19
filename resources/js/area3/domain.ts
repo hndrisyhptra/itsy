@@ -16,7 +16,7 @@ import { syncSpkIssuance, spkPeriodError } from './spk-issuance';
 import { applyBudgetPlan } from './plan-budget';
 import { bakhPeriod, syncBakhPeriod } from './bakh-schedule';
 import { syncBakhSigner } from './bakh-signer';
-import { BAKH_SIGNING_PLACE } from './bakh-place';
+import { projectSigningPlace } from './document-place';
 import { contractNumber, syncDealNumber, syncSpkNumber } from './contract-numbering';
 import { mandorSphThreshold, sphThresholdApplies } from './sph';
 import type { PlanBudget, SignaturePlanRow, budgetSummary } from './plan-budget';
@@ -140,7 +140,7 @@ export function finalizeBoq(s: State, projectId: string) {
   recordCommand('finalizeBoq', [projectId]); requireAdmin(s); const p = getProject(s, projectId); if (p.boqStatus !== 'Review' || !p.boq.length) throw new Error('Muat BOQ terlebih dahulu.'); if (p.boq.some(r => { const k = s.khs.find(k => k.id === r.khsId); return !k?.active || !r.reviewed || r.version !== k.version || !Number.isFinite(r.qty) || r.qty <= 0; })) throw new Error('Finalisasi diblokir: selesaikan seluruh review dan revalidasi Master KHS.'); p.boqStatus = 'Final'; log(s, 'BOQ difinalisasi', `${p.no} · ${money(boqTotal(p))}`, `/boq/${p.id}`); }
 export function blankDeal(s: State, projectId: string): Deal {
   const p = getProject(s, projectId); const root = getProject(s, p.rootId); const period=bakhPeriod(p);
-  return syncBakhSigner(s,{ moneyPolicy:s.schema>=3?WHOLE_RUPIAH:undefined, id: uid('bakh'), projectId, no: contractNumber(p.no,'01'), mandor: '', status: 'Draft', rows: root.boq.map(r => { const mandorM=p.planBudget?mandorSphThreshold(p,r.id,'m')??0:null,mandorS=p.planBudget?mandorSphThreshold(p,r.id,'s')??0:null;return { rowId: r.id, m: false, s: false, qm: 0, qs: 0, pm: mandorM??(s.schema>=3?wholeRupiah:round)((r.m??0)*.85), ps: mandorS??(s.schema>=3?wholeRupiah:round)((r.s??0)*.85), sphM: mandorM??(s.schema>=3?wholeRupiah:round)((r.m??0)*.8), sphS: mandorS??(s.schema>=3?wholeRupiah:round)((r.s??0)*.8), offerM: (s.schema>=3?wholeRupiah:round)((r.m??0)*.9), offerS: (s.schema>=3?wholeRupiah:round)((r.s??0)*.9), capM:r.m,capS:r.s };}), signingPlace: BAKH_SIGNING_PLACE, place: '', location: '', witel: '', date: today(), start: period?.start ?? '', end: period?.end ?? '', signer: '', fo: '', jointer: '', evidence: '' });
+  return syncBakhSigner(s,{ moneyPolicy:s.schema>=3?WHOLE_RUPIAH:undefined, id: uid('bakh'), projectId, no: contractNumber(p.no,'01'), mandor: '', status: 'Draft', rows: root.boq.map(r => { const mandorM=p.planBudget?mandorSphThreshold(p,r.id,'m')??0:null,mandorS=p.planBudget?mandorSphThreshold(p,r.id,'s')??0:null;return { rowId: r.id, m: false, s: false, qm: 0, qs: 0, pm: mandorM??(s.schema>=3?wholeRupiah:round)((r.m??0)*.85), ps: mandorS??(s.schema>=3?wholeRupiah:round)((r.s??0)*.85), sphM: mandorM??(s.schema>=3?wholeRupiah:round)((r.m??0)*.8), sphS: mandorS??(s.schema>=3?wholeRupiah:round)((r.s??0)*.8), offerM: (s.schema>=3?wholeRupiah:round)((r.m??0)*.9), offerS: (s.schema>=3?wholeRupiah:round)((r.s??0)*.9), capM:r.m,capS:r.s };}), signingPlace: projectSigningPlace(p), place: '', location: '', witel: '', date: today(), start: period?.start ?? '', end: period?.end ?? '', signer: '', fo: '', jointer: '', evidence: '' });
 }
 export function dealErrors(s: State, d: Deal, formal = false) {
   const e: string[] = [], p = getProject(s, d.projectId);
@@ -176,18 +176,18 @@ export function saveDeal(s: State, input: Deal, action: 'save' | 'generate' | 'a
   d.moneyPolicy=old?.status==='Terbit'?old.moneyPolicy:s.schema>=3?WHOLE_RUPIAH:undefined;
   if(d.moneyPolicy===WHOLE_RUPIAH){const rawErrors=dealErrors(s,d,false);if(rawErrors.length)throw new Error(rawErrors.join('\n'));}
   if(d.moneyPolicy===WHOLE_RUPIAH)d.rows=d.rows.map(r=>{const next={...r};for(const key of ['pm','ps','sphM','sphS','offerM','offerS'] as const){if(!Number.isFinite(r[key])||r[key]<0)throw new Error('Harga rupiah harus nonnegatif.');next[key]=wholeRupiah(r[key]);}return next;});
-  if (old?.status === 'Terbit') { if (action !== 'attest') throw new Error('BA KH terbit terkunci; hanya pengesahan dokumen tersedia.'); Object.assign(d, structuredClone(old)); } else { d.signingPlace=BAKH_SIGNING_PLACE;d.place=old?.place??input.place??''; }
+  if (old?.status === 'Terbit') { if (action !== 'attest') throw new Error('BA KH terbit terkunci; hanya pengesahan dokumen tersedia.'); Object.assign(d, structuredClone(old)); } else { d.signingPlace=projectSigningPlace(getProject(s,d.projectId));d.place=old?.place??input.place??''; }
   const e = dealErrors(s, d, action !== 'save'); if (e.length) throw new Error(e.join('\n'));
   d.status = action === 'attest' ? 'Sah' : action === 'generate' ? 'Terbit' : 'Draft';
   if (old) s.deals[s.deals.indexOf(old)] = d; else s.deals.push(d); log(s, action === 'attest' ? 'BA KH disahkan' : action === 'generate' ? 'BA KH diterbitkan' : 'Negosiasi disimpan', d.no, `/ba-kh/${d.id}`); return d.id;
 }
-export function blankSpk(s: State, dealId: string): Spk { const d = getDeal(s, dealId); return syncSpkSigner(s,syncSpkIssuance({ id: uid('spk'), dealId, no: contractNumber(getProject(s,d.projectId).no,'02'), status: 'Draft', date: today(), start: d.start, end: d.end, place: d.place, address: '', supervisor: '', phone: '', signer: d.signer, position: '', evidence: '' })); }
+export function blankSpk(s: State, dealId: string): Spk { const d = getDeal(s, dealId),p=getProject(s,d.projectId); return syncSpkSigner(s,syncSpkIssuance({ id: uid('spk'), dealId, no: contractNumber(p.no,'02'), status: 'Draft', date: today(), start: d.start, end: d.end, place: d.place, address: '', supervisor: '', phone: '', signer: d.signer, position: '', evidence: '' },p)); }
 export function saveSpk(s: State, input: Spk, action: 'save' | 'generate' | 'attest' = 'save') {
   recordCommand('saveSpk', [input, action]);return applySpk(s,input,action);
 }
 export function applySpk(s:State,input:Spk,action:'save'|'generate'|'attest'='save'){
   requireAdmin(s); const v = syncSpkSigner(s,syncSpkNumber(s,structuredClone(input))); const old = s.spks.find(x => x.id === v.id); v.evidence = old?.evidence ?? '';
-  if (old?.status === 'Sah') throw new Error('SPK sah tidak dapat diubah.'); if (old?.status === 'Terbit') { if (action !== 'attest') throw new Error('SPK terbit terkunci; hanya pengesahan dokumen tersedia.'); Object.assign(v, structuredClone(old)); } else {Object.assign(v,syncSpkIssuance(v));} const d = getDeal(s, v.dealId);const bundleProject=getProject(s,d.projectId);assertBundleEditable(bundleProject,action);if (d.status !== 'Sah'&&!usesContractBundle(bundleProject)) throw new Error('SPK hanya dari BA KH sah.');
+  if (old?.status === 'Sah') throw new Error('SPK sah tidak dapat diubah.'); if (old?.status === 'Terbit') { if (action !== 'attest') throw new Error('SPK terbit terkunci; hanya pengesahan dokumen tersedia.'); Object.assign(v, structuredClone(old)); } const d = getDeal(s, v.dealId);const bundleProject=getProject(s,d.projectId);if(old?.status!=='Terbit')Object.assign(v,syncSpkIssuance(v,bundleProject));assertBundleEditable(bundleProject,action);if (d.status !== 'Sah'&&!usesContractBundle(bundleProject)) throw new Error('SPK hanya dari BA KH sah.');
   if (s.spks.some(x => x.id !== v.id && (x.dealId === v.dealId || x.no === v.no.trim()))) throw new Error('BA KH sudah memiliki SPK atau nomor SPK duplikat.');
   if (!v.no.trim()) throw new Error('Nomor SPK wajib diisi.');
   if (action !== 'save' && v.signerSource === 'pp-head-pmo' && (!v.signerUserId || !v.signer)) throw new Error('Head of PMO terpilih pada PP belum memiliki identitas penandatangan yang valid.');

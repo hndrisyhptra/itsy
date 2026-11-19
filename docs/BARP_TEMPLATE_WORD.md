@@ -66,3 +66,8 @@ Tiga DOCX sintetis dari generator aplikasi dirender: tahap 1 disetujui, tahap 2 
 Belum diuji manual melalui browser, klik unduh dengan akun, responsif/dark, Microsoft Word desktop, cetak fisik atau load test. Penolakan akses browser sebelumnya dihormati. Live its hanya dibaca untuk backup; tidak diisi fixture atau diubah skemanya. Data/TTD basah tetap memerlukan input/unggahan pengguna yang sebenarnya.
 
 Backup sebelum perubahan: `storage/app/private/backups/its-before-barp-template-20261108-011917.sql`, 2044552 byte, SHA256 `07a5a29514c4393f5606464e518a642ef5c34c6bd90dd5b99b431fbf4962a114`.
+
+
+## 19 November 2026 — Tempat mengikuti Branch
+
+Otoritas terbaru pengguna mengganti kota penandatanganan BA KH/SPK/BARP/BAPP dengan Branch PP terkait untuk form, preview, Word, cetak dan paket, termasuk output dokumen lama tanpa GET backfill. Tanggal/identitas/history/nilai tetap; tabel VIII.PENUTUP PP beserta kolom tanggal kosong tidak diubah sesuai konfirmasi pengguna. Tidak menambah kota/tanggal pada lampiran yang tidak memilikinya atau mengubah kasbon. Ini menggantikan kota tetap Surabaya/old place presentation hanya pada lingkup tersebut. Lihat [DOCUMENT_SIGNING_PLACE](DOCUMENT_SIGNING_PLACE.md) dan QA19November.

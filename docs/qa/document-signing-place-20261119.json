@@ -1,0 +1,238 @@
+{
+  "date": "2026-11-19",
+  "feature": "Branch signing place for project documents",
+  "authority": "User explicitly keeps PP VIII closing columns unchanged",
+  "php": {
+    "tests": 360,
+    "assertions": 8755,
+    "db": "SQLite :memory: only",
+    "new_tests": 3,
+    "new_assertions": 89
+  },
+  "frontend": {
+    "tests": 392,
+    "new_tests": 5,
+    "all_branches": 16,
+    "units": 2,
+    "html_word_package_parity": true,
+    "pp_closing_unchanged": true
+  },
+  "build": {
+    "typescript_vite": "passed",
+    "manifest_references": 45,
+    "preload_dependencies": 36,
+    "profiles": 3,
+    "pint": "passed",
+    "diff_check": "passed"
+  },
+  "query": {
+    "saveTerm_http_queries": 44,
+    "budget": 90,
+    "place_helper_queries": 0
+  },
+  "browser": [
+    {
+      "branch": "MATARAM",
+      "kind": "bakh",
+      "viewports": [
+        375,
+        768,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "js_errors": 0,
+      "page_overflow": false
+    },
+    {
+      "branch": "MATARAM",
+      "kind": "spk",
+      "viewports": [
+        375,
+        768,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "js_errors": 0,
+      "page_overflow": false
+    },
+    {
+      "branch": "MATARAM",
+      "kind": "barp",
+      "viewports": [
+        375,
+        768,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "js_errors": 0,
+      "page_overflow": false
+    },
+    {
+      "branch": "MATARAM",
+      "kind": "bapp",
+      "viewports": [
+        375,
+        768,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "js_errors": 0,
+      "page_overflow": false
+    },
+    {
+      "branch": "MATARAM",
+      "kind": "pp",
+      "viewports": [
+        375,
+        768,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "js_errors": 0,
+      "page_overflow": false
+    },
+    {
+      "branch": "MATARAM",
+      "kind": "forms",
+      "viewports": [
+        375,
+        768,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "js_errors": 0,
+      "page_overflow": false
+    },
+    {
+      "branch": "FLORES",
+      "kind": "bakh",
+      "viewports": [
+        375,
+        768,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "js_errors": 0,
+      "page_overflow": false
+    },
+    {
+      "branch": "FLORES",
+      "kind": "spk",
+      "viewports": [
+        375,
+        768,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "js_errors": 0,
+      "page_overflow": false
+    },
+    {
+      "branch": "FLORES",
+      "kind": "barp",
+      "viewports": [
+        375,
+        768,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "js_errors": 0,
+      "page_overflow": false
+    },
+    {
+      "branch": "FLORES",
+      "kind": "bapp",
+      "viewports": [
+        375,
+        768,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "js_errors": 0,
+      "page_overflow": false
+    },
+    {
+      "branch": "FLORES",
+      "kind": "pp",
+      "viewports": [
+        375,
+        768,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "js_errors": 0,
+      "page_overflow": false
+    },
+    {
+      "branch": "FLORES",
+      "kind": "forms",
+      "viewports": [
+        375,
+        768,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "js_errors": 0,
+      "page_overflow": false
+    }
+  ],
+  "render": {
+    "native_docx": 8,
+    "native_pages": 10,
+    "browser_pdf": 8,
+    "browser_pages": 11,
+    "all_native_pages_visually_inspected": true,
+    "browser_all_pages_contact_sheets_inspected": true,
+    "zip_crc_xml_all_parts": "passed",
+    "nonblank_city_date": "passed",
+    "artifacts": "/private/tmp/area3-branch-place-20261119"
+  },
+  "limits": [
+    "Fixtures only, no production account/browser/server access",
+    "No active its/MySQL write, .env change, migration, daemon or Dompis change",
+    "No desktop Microsoft Word/physical print or load/concurrency benchmark",
+    "Some existing review/Operation documents use multiple printed pages; no layout redesign in this change"
+  ],
+  "notes": [
+    "Initial expected hard-coded Surabaya tests updated to per-PP Branch",
+    "Initial zero-actual draft fixture correctly rejected; fixture now supplies positive actuals without weakening validation",
+    "Chrome launch required sandbox approval; all external requests blocked",
+    "PyMuPDF unavailable; existing bundled pdf2image/Poppler used for PDF review"
+  ]
+}

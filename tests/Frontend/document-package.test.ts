@@ -12,6 +12,7 @@ import {docxParts} from './helpers/docx-parts';
 import {ooxmlZip} from '../../resources/js/area3/ooxml-zip';
 import {paymentFlowSteps,PaymentFlowOverview,ProjectFlowOverview} from '../../resources/js/area3/workflow-overview';
 import {approvalRoles,type Term} from '../../resources/js/area3/domain';
+import {historicalBarp} from '../../resources/js/area3/barp-content';
 import type {KasbonData} from '../../resources/js/area3/kasbon-content';
 
 const logo=readFileSync(new URL('../../resources/js/area3/assets/spk-telkom-akses.png',import.meta.url));
@@ -65,10 +66,14 @@ test('all three approved payments include their own saved kasbon; no additional 
  const {s,c}=setup(),third={...structuredClone(c.final),id:'third-final',number:3};
  c.final.type='Parsial';s.terms.push(third);c.bapp.termId=third.id;
  const context=documentPackage(s,c.bapp.id),kasbons=new Map<string,KasbonData>();
+ context.project.branch='MATARAM';
+ for(const t of context.terms)t.barp={...historicalBarp(context.deal,context.spk),date:'2026-11-16',place:'OLD CITY'};
  for(const t of context.terms)kasbons.set(t.id,{templateVersion:3,costCenter:'CC-QA',wbs:'WBS-QA',activity:'ACTIVITY-QA',place:'Surabaya',date:'2026-11-16',evp:'EVP-QA',businessSupport:'',rows:[{accountCode:'1',accountName:'Jasa',text:'PAYMENT-'+t.number,amount:'123456'}],payee:{nik:'',accountNumber:'ACCOUNT-'+t.number,accountName:'PAYEE-'+t.number,bank:'BANK-QA'},mandor:'MANDOR-QA',unit:'Konstruksi',project:context.project.name,projectCode:context.project.projectCode,ppNo:context.project.no,spkNo:context.spk.no,termNumber:t.number,termType:t.type,amount:123456,signers:{},issuer:'ADMIN-QA'});
  const before=JSON.stringify([...kasbons]),parts=docxParts(createDocumentPackageDocx(s,context,[{kind:'paragraph',runs:[{text:'PROJECT PLAN'}]}],logo,kasbons)),xml=parts['word/document.xml'];
  assert.equal((xml.match(/<w:sectPr\b/g)??[]).length,16);
  assert.equal((xml.match(/Pengajuan Kasbon Project/g)??[]).length,3);
+ assert.equal((xml.match(/MATARAM, \d+ November 2026/g)??[]).length,6);
+ assert.match(xml,/Surabaya, 16 November 2026/); // Kasbon was not included in the requested city change.
  for(const n of [1,2,3]){assert.match(xml,new RegExp('ACCOUNT-'+n));assert.match(xml,new RegExp('PAYMENT-'+n));}
  assert.doesNotMatch(xml,/APPROVED|PPh|2,5%/);assert.equal(JSON.stringify([...kasbons]),before);
  for(const section of xml.matchAll(/<w:sectPr\b[\s\S]*?<\/w:sectPr>/g)){

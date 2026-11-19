@@ -17,8 +17,6 @@ class PrototypeDomain
     use PrototypeWorkflowV2;
     use SettlementApprovalWorkflow;
 
-    private const BAKH_SIGNING_PLACE = 'Surabaya';
-
     public const ROLES = ['Admin Konstruksi', 'PM Konstruksi', 'Manager Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Bussiness Support', 'Mgr Project Support', 'Head of PMO', 'Mgr Finance & Settlement', 'Finance', 'Superadmin', 'Admin Operation', 'Admin Operation Area', 'Officer 1 Operation', 'Officer 2 Operation', 'Officer 3 Operation', 'Manager Branch Operation', 'General Manager Operation', 'Officer 1 SS', 'Manager SS'];
 
     private array $state;
@@ -624,10 +622,10 @@ class PrototypeDomain
             }
             $d = $old;
         } else {
-            $d['signingPlace'] = self::BAKH_SIGNING_PLACE;
+            $project = $this->record('projects', $d['projectId'] ?? '');
+            $d['signingPlace'] = DocumentSigningPlace::fromProject($project);
             // Keep the legacy place only for existing SPK defaults; it is no longer a BA KH input.
             $d['place'] = $old['place'] ?? $this->text($d['place'] ?? '', 1000);
-            $project = $this->record('projects', $d['projectId'] ?? '');
             if (($this->state['schema'] ?? 1) >= 3) {
                 $d['no'] = ContractNumber::fromProject($project['no'], '01');
             }
@@ -684,11 +682,12 @@ class PrototypeDomain
                 $this->fail('SPK terbit terkunci; hanya pengesahan dokumen tersedia.');
             }
             $v = $old;
-        } else {
-            $v = SpkIssuance::sync($v);
         }
         $d = $this->record('deals', $v['dealId'] ?? '');
         $project = $this->record('projects', $d['projectId']);
+        if (($old['status'] ?? '') !== 'Terbit') {
+            $v = SpkIssuance::sync($v, $project);
+        }
         $this->assertBundleDocumentEditable($project, $action);
         if ($d['status'] !== 'Sah' && ! self::usesContractBundle($project)) {
             $this->fail('SPK hanya dapat dibuat dari BA KH sah.');

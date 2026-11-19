@@ -6,8 +6,6 @@ use DateTimeImmutable;
 
 final class SpkIssuance
 {
-    public const PLACE = 'Surabaya';
-
     private static function date(mixed $value): string
     {
         if (! is_string($value) || ! preg_match('/^\d{4}-\d{2}-\d{2}$/D', $value) || $value < '0001-01-01') {
@@ -18,11 +16,11 @@ final class SpkIssuance
         return $date && $date->format('Y-m-d') === $value ? $value : '';
     }
 
-    public static function sync(array $spk): array
+    public static function sync(array $spk, array $project): array
     {
         $date = self::date($spk['date'] ?? null);
         $start = self::date($spk['start'] ?? null);
-        $spk['place'] = self::PLACE;
+        $spk['place'] = DocumentSigningPlace::fromProject($project);
         $spk['date'] = $date ?: $start;
 
         return $spk;

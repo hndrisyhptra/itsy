@@ -80,3 +80,8 @@ Generator aplikasi yang sama dijalankan pada dua fixture privat: normal dan isia
 Chunk Word SPK sekitar **91,32 kB / gzip 13,22 kB**, dimuat saat diminta; ZIP bersama sekitar1,16 kB/gzip0,60 kB. Ukuran bundle/fixture tidak membuktikan throughput. Browser terautentikasi, klik unduh, layout responsif 375/768/1440, Microsoft Word desktop dan cetak fisik belum diuji manual. Perbedaan font/versi Word/printer dapat mengubah page break; CSS cetak meminta A4 portrait khusus surat SPK dan dapat ditimpa dialog printer.
 
 Audit: [CHANGELOG.md](CHANGELOG.md), [LARAVEL_QA.md](LARAVEL_QA.md), WORKPLAN.md, [arsitektur](ARCHITECTURE.md) dan qa/spk-template-word-20261107.json.
+
+
+## 19 November 2026 — Tempat mengikuti Branch
+
+Otoritas terbaru pengguna mengganti kota penandatanganan BA KH/SPK/BARP/BAPP dengan Branch PP terkait untuk form, preview, Word, cetak dan paket, termasuk output dokumen lama tanpa GET backfill. Tanggal/identitas/history/nilai tetap; tabel VIII.PENUTUP PP beserta kolom tanggal kosong tidak diubah sesuai konfirmasi pengguna. Tidak menambah kota/tanggal pada lampiran yang tidak memilikinya atau mengubah kasbon. Ini menggantikan kota tetap Surabaya/old place presentation hanya pada lingkup tersebut. Lihat [DOCUMENT_SIGNING_PLACE](DOCUMENT_SIGNING_PLACE.md) dan QA19November.
