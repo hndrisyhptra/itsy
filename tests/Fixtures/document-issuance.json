@@ -1,0 +1,16 @@
+[
+  {"name":"suggested spacing","pp":"2026-11-02","bakh":"2026-11-03","spk":"2026-11-04","start":"2026-11-04","valid":true},
+  {"name":"same day allowed","pp":"2026-11-04","bakh":"2026-11-04","spk":"2026-11-04","start":"2026-11-04","valid":true},
+  {"name":"wide spacing allowed","pp":"2026-10-01","bakh":"2026-10-10","spk":"2026-10-20","start":"2026-11-04","valid":true},
+  {"name":"PP late","pp":"2026-11-05","bakh":"2026-11-05","spk":"2026-11-05","start":"2026-11-04","valid":false},
+  {"name":"BA before PP","pp":"2026-11-03","bakh":"2026-11-02","spk":"2026-11-04","start":"2026-11-04","valid":false},
+  {"name":"BA late","pp":"2026-11-02","bakh":"2026-11-05","spk":"2026-11-05","start":"2026-11-04","valid":false},
+  {"name":"SPK before BA","pp":"2026-11-02","bakh":"2026-11-03","spk":"2026-11-02","start":"2026-11-04","valid":false},
+  {"name":"SPK late","pp":"2026-11-02","bakh":"2026-11-03","spk":"2026-11-05","start":"2026-11-04","valid":false},
+  {"name":"bad PP calendar","pp":"2026-02-30","bakh":"2026-11-03","spk":"2026-11-04","start":"2026-11-04","valid":false},
+  {"name":"bad BA calendar","pp":"2026-01-01","bakh":"2026-02-30","spk":"2026-11-04","start":"2026-11-04","valid":false},
+  {"name":"bad SPK calendar","pp":"2026-01-01","bakh":"2026-02-01","spk":"2026-02-30","start":"2026-11-04","valid":false},
+  {"name":"missing PP","pp":"","bakh":"2026-11-03","spk":"2026-11-04","start":"2026-11-04","valid":false},
+  {"name":"missing start","pp":"2026-11-02","bakh":"2026-11-03","spk":"2026-11-04","start":"","valid":false},
+  {"name":"leap year","pp":"2028-02-27","bakh":"2028-02-28","spk":"2028-02-29","start":"2028-02-29","valid":true}
+]

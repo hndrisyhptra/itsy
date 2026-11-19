@@ -38,7 +38,7 @@ class UploadQueue
         $hash = hash_file('sha256', $file->getRealPath());
 
         return DB::transaction(function () use ($workspace, $file, $kind, $document, $requestId, $revision, $hash) {
-            $row = PrototypeWorkspace::whereKey($workspace->id)->lockForUpdate()->firstOrFail();
+            $row = PrototypeWorkspace::runtimeQuery()->whereKey($workspace->id)->lockForUpdate()->firstOrFail();
             $existing = DB::table('upload_tasks')->where('request_uuid', $requestId)->first();
             if ($existing) {
                 if (in_array($kind, FinanceDocuments::KINDS, true)) {
@@ -114,7 +114,7 @@ class UploadQueue
             DB::table('upload_tasks')->where('id_upload_task', $id)->increment('attempts', 1, ['status' => 'processing', 'started_at' => now(), 'updated_at' => now()]);
             $disk = Storage::disk('local');
             abort_unless($disk->exists($task->storage_key) && hash_file('sha256', $disk->path($task->storage_key)) === $task->sha256, 422, 'File upload tidak ditemukan atau tidak utuh. Unggah ulang file.');
-            $workspace = PrototypeWorkspace::findOrFail($task->workspace_id);
+            $workspace = PrototypeWorkspace::runtimeQuery()->findOrFail($task->workspace_id);
             if ($task->kind === 'boq') {
                 $metadata = json_decode(DB::table('workflow_metadata')->where('id_workspace', $workspace->id)->value('metadata'), true, 512, JSON_THROW_ON_ERROR);
                 $catalog = app(AuthenticatedWorkspace::class)->catalog($metadata['khs']);
@@ -133,7 +133,7 @@ class UploadQueue
                         app(FinanceDocuments::class)->attach($workspace, $task, $mime, $ext, $target);
                     } else {
                         DB::transaction(function () use ($workspace, $task, $id, $mime, $ext) {
-                            $row = PrototypeWorkspace::whereKey($workspace->id)->lockForUpdate()->firstOrFail();
+                            $row = PrototypeWorkspace::runtimeQuery()->whereKey($workspace->id)->lockForUpdate()->firstOrFail();
                             $this->term($row, $task->document_id); // Recheck current Branch assignment, not enqueue-time permissions.
                             app(PrototypeWorkspaceService::class)->command($row, ['command' => '_attachTermWorkEvidence', 'args' => [$task->document_id,
                                 ['id' => $id, 'name' => $task->original_name, 'mime' => $mime, 'extension' => $ext, 'size' => (int) $task->size, 'sha256' => $task->sha256]],

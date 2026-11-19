@@ -27,7 +27,7 @@ function scan(t:Term,id='qa-private-scan') { t.scan={id,name:'synthetic-unit-tes
 
 for (const [stage,rejector] of APPROVERS_V3.entries()) {
   test(`v3 PP rejection by ${rejector} requires a fresh admin submission and five new approvals`,()=>{
-    const s=state('B'),input=structuredClone(s.projects[0]);input.id=input.rootId='pp-rejected-'+stage;input.unit='Konstruksi';input.approverUserIds=chain(s);
+    const s=state('B'),input=structuredClone(s.projects[0]);input.id=input.rootId='pp-rejected-'+stage;input.unit='Konstruksi';input.issueDate='2026-11-01';input.workStartDate='2026-11-02';input.approverUserIds=chain(s);
     saveProject(s,input,true);let p=getProject(s,input.id);const no=p.no;
     for(const role of APPROVERS_V3.slice(0,stage)){actor(s,role);decideProject(s,p.id,'Setujui','Siklus awal');}
     actor(s,rejector);assert.throws(()=>decideProject(s,p.id,'Tolak','  '),/Alasan/);decideProject(s,p.id,'Tolak','Perbaiki PP');
@@ -77,7 +77,7 @@ test('new PP form presents all five approvers in order and retains the two-field
 });
 
 test('draft permits missing approvers but submission requires all five and supplied draft roles stay validated', () => {
-  const s=state('B'),p=structuredClone(s.projects[0]); p.id=p.rootId='qa-draft-optional';p.unit='Konstruksi';delete p.pmUserId;delete p.managerUserId;delete p.approverUserIds;
+  const s=state('B'),p=structuredClone(s.projects[0]); p.issueDate='2026-11-01';p.workStartDate=p.date;p.id=p.rootId='qa-draft-optional';p.unit='Konstruksi';delete p.pmUserId;delete p.managerUserId;delete p.approverUserIds;
   saveProject(s,p,false); const saved=getProject(s,p.id),no=saved.no;
   assert.equal(saved.status,'Draft');assert.deepEqual(saved.approverUserIds,{});assert.throws(()=>saveProject(s,saved,true),/PM Konstruksi/);
   saved.approverUserIds={'PM Konstruksi':chain(s)['PM Konstruksi']};saveProject(s,saved,false);
@@ -86,7 +86,7 @@ test('draft permits missing approvers but submission requires all five and suppl
 });
 
 test('v3 imported comparison prices survive while saved prices and total automatically follow current KHS without manual review', () => {
-  const s=state('B'),p=structuredClone(s.projects[0]);p.id=p.rootId='qa-import-review';p.unit='Konstruksi';p.approverUserIds=chain(s);
+  const s=state('B'),p=structuredClone(s.projects[0]);p.issueDate='2026-11-01';p.workStartDate=p.date;p.id=p.rootId='qa-import-review';p.unit='Konstruksi';p.approverUserIds=chain(s);
   p.boqUpload={id:'qa-source',name:'qa.xlsx',sha256:'a'.repeat(64),size:100,sheet:'BoQ',package:'Paket 10',sourceRows:1,sourceTotal:1,uploadedBy:'qa',uploadedAt:new Date().toISOString()};
   const r=p.boq[0],k=s.khs.find(k=>k.id===r.khsId)!;r.excelM=(k.m??0)+1;r.reviewed=false;r.note='';
   saveProject(s,p,false);let saved=getProject(s,p.id);assert.equal(saved.boq[0].excelM,r.excelM);assert.equal(saved.boq[0].reviewed,true);assert.equal(saved.boqPricingPolicy,'khs-auto-v1');
@@ -95,7 +95,7 @@ test('v3 imported comparison prices survive while saved prices and total automat
 });
 
 test('v3 PP requires all five assigned roles and a return restarts all approvals with retained history', () => {
-  const s=state('B'), p=structuredClone(s.projects[0]); p.id=p.rootId='qa-pp-v3'; p.unit='Konstruksi'; p.workflowVersion=2; p.approverUserIds=chain(s);
+  const s=state('B'), p=structuredClone(s.projects[0]); p.issueDate='2026-11-01';p.workStartDate=p.date;p.id=p.rootId='qa-pp-v3'; p.unit='Konstruksi'; p.workflowVersion=2; p.approverUserIds=chain(s);
   const missing=structuredClone(p); delete missing.approverUserIds!['Head of PMO']; assert.throws(()=>saveProject(s,missing,true),/Head of PMO/);
   saveProject(s,p,true); let saved=getProject(s,p.id); const no=saved.no; assert.equal(saved.workflowVersion,3);
   actor(s,'Head of PMO'); assert.equal(canApproveProject(s,saved),false); assert.throws(()=>decideProject(s,p.id,'Setujui',''),/dipilih/);

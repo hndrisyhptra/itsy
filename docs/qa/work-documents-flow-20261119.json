@@ -1,0 +1,154 @@
+{
+  "date": "2026-11-19",
+  "feature": "Work documents before every payment including Partial",
+  "user_authority": {
+    "flow": "SPK Sah -> BA RP and appendix -> attest BA PP and appendix -> kasbon/payment",
+    "partial": "User explicitly confirms every submission including Partial"
+  },
+  "php": {
+    "tests": 367,
+    "assertions": 8935,
+    "database": "SQLite :memory: only",
+    "new_tests": 1,
+    "route_smoke": [
+      "/ba-rp",
+      "/ba-rp/{exact term UUID}"
+    ],
+    "new_partial_checks": [
+      "kasbon blocked before attestation with unchanged revision",
+      "SQL completion created for Partial",
+      "zero approval decisions and unchanged volume balances after attestation",
+      "Finance cannot attest",
+      "source edits invalidate and preserve attestation history",
+      "no release/continuation from Partial",
+      "kasbon accepted after reattestation"
+    ]
+  },
+  "frontend": {
+    "tests": 404,
+    "new_tests": 7,
+    "thousand_record_catalog_dom_rows": 20,
+    "checks": [
+      "exact term joins, no sibling BAPP fallback",
+      "cumulatives stop at selected term",
+      "work inputs absent from modern payment form",
+      "one main stage action, four previews",
+      "Partial settlement does not close PP",
+      "actual Partial BAPP and appendix in Final combined HTML/native Word",
+      "legacy/read/source/role and all existing financial tests retained"
+    ]
+  },
+  "query": {
+    "work_list_new_api_sql": 0,
+    "work_list_private_fetch": 0,
+    "pagination": "20 rows in client DOM, not SQL paging",
+    "pure_models": "loaded indexed graph, per-term amount once, per-SPK at most three terms",
+    "observed_final_attestation_http": 36,
+    "seven_approval_http": [
+      55,
+      57,
+      58,
+      59,
+      60,
+      61,
+      65
+    ],
+    "new_partial_and_final_sessionless_transfer_worker": 44,
+    "legacy_partial_transfer_worker_prior": 43,
+    "optional_apm_settlement_http": 40,
+    "current_kasbon_package_http": 6,
+    "kasbon_read_service": 3,
+    "per_item_or_approver_queries_added": 0,
+    "note": "New Partial proof enqueue/worker performs one additional indexed completion-source lookup. These are small fixtures, not a load benchmark."
+  },
+  "build": {
+    "typescript_vite": "passed",
+    "pint": "passed",
+    "diff_check": "passed",
+    "manifest_references": 46,
+    "preload_dependencies": 37,
+    "profiles": 3
+  },
+  "browser": [
+    {
+      "unit": "Konstruksi",
+      "commands": [
+        "createSettlementTerm",
+        "saveTerm",
+        "attestBapp"
+      ],
+      "cancel_writes": 0,
+      "approvals": 0,
+      "paid": 0,
+      "preview_buttons": 4,
+      "viewports": [
+        375,
+        768,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "js_errors": 0
+    },
+    {
+      "unit": "Operation",
+      "commands": [
+        "createSettlementTerm",
+        "saveTerm",
+        "attestBapp"
+      ],
+      "cancel_writes": 0,
+      "approvals": 0,
+      "paid": 0,
+      "preview_buttons": 4,
+      "viewports": [
+        375,
+        768,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "js_errors": 0
+    }
+  ],
+  "browser_scope": "Actual App/components with synthetic state and mocked command/private transport; no production requests. Complete route clicks from SPK through BAPP attestation to opening kasbon, not browser kasbon submission/transfer.",
+  "render": {
+    "native_docx": 4,
+    "native_pages": 4,
+    "browser_pdf": 4,
+    "browser_pages": 4,
+    "all_pages_visually_inspected": true,
+    "zip_crc_xml": "passed",
+    "main_orientation": "portrait",
+    "appendix_orientation": "landscape",
+    "blank_wet_signatures": true,
+    "new_partial_full_package": "13-section HTML/native OOXML regression passed; combined document not visually rerendered in this update",
+    "artifacts": "/private/tmp/area3-work-documents-20261119"
+  },
+  "compatibility": {
+    "migration": false,
+    "backfill": false,
+    "legacy_pending_reroute": false,
+    "adoption": "Explicit prepareBapp on unpaid v3 only; decisions/current kasbon remain",
+    "schema": "Existing ba_completions.final_term_id unique FK supports Partial without type constraint",
+    "partial_release_continuation_closure": false,
+    "paid_archive_money_history_rewrite": false
+  },
+  "limits": [
+    "No live its/MySQL, user login, aaPanel, .env, worker, Dompis, commit or push changes",
+    "Browser transport and payee are synthetic; backend approval/private/upload/settlement verified by isolated HTTP tests",
+    "No Microsoft Word desktop, physical printing or load/concurrency benchmark",
+    "Full combined package new Partial sections verified as HTML/native XML, not a fresh whole-package visual render"
+  ],
+  "notes": [
+    "Initial historical tests retained a new marker from freshly-created records; memory-only historical fixture now explicitly removes the per-payment completion marker to represent pre-update data. Production never removes it.",
+    "Initial browser payee check read before async data arrived; harness now waits for the value.",
+    "Initial responsive harness incorrectly stripped a font import containing semicolons and invalidated its CSS. Raw application CSS verified; no production CSS workaround.",
+    "Operation fixture required REGION scope on Manager SS and General Manager; fixture corrected without relaxing application guards.",
+    "Chrome required approved separate execution, all external requests blocked."
+  ]
+}

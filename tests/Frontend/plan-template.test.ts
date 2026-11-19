@@ -23,14 +23,14 @@ test('template derives leap-year dates from Header and HK, ignoring client prose
   p.date='9999-12-31';p.schedule.forEach((row,i)=>row.days=i===0?1:0);assert.equal(applyPlanTemplate(p,true).schedule[0].end,'9999-12-31');
 });
 
-test('template tabs expose exactly five HK fields, fixed prose and derived dates', () => {
+test('template tabs expose five HK fields, independent start input, fixed prose and derived end', () => {
   const p=applyPlanTemplate(seed('B').projects[0]);
   const intro=renderToStaticMarkup(createElement(PlanIntroduction));
   assert.doesNotMatch(intro,/<input|<textarea|<select|<button/); assert.match(intro,/Latar Belakang/);assert.match(intro,/Lingkup Pekerjaan/);
-  const html=renderToStaticMarkup(createElement(PlanSchedule,{p,editable:true,onChange:()=>{}}));
-  assert.equal((html.match(/<input/g)??[]).length,5); assert.equal((html.match(/type="number"/g)??[]).length,5);
-  assert.doesNotMatch(html,/<textarea|type="date"|<select/); assert.match(html,/step="1"/); assert.match(html,/Saat Penggunaan/);
-  const locked=renderToStaticMarkup(createElement(PlanSchedule,{p,editable:false,onChange:()=>{}})); assert.equal((locked.match(/disabled=""/g)??[]).length,5);
+  const html=renderToStaticMarkup(createElement(PlanSchedule,{p,editable:true,onStartChange:()=>{},onChange:()=>{}}));
+  assert.equal((html.match(/<input/g)??[]).length,7); assert.equal((html.match(/type="number"/g)??[]).length,5);
+  assert.doesNotMatch(html,/<textarea|<select/);assert.match(html,/aria-label="Tanggal Mulai Pekerjaan" type="date"/); assert.match(html,/step="1"/); assert.match(html,/tanggal mulai pekerjaan/);
+  const locked=renderToStaticMarkup(createElement(PlanSchedule,{p,editable:false,onChange:()=>{}})); assert.equal((locked.match(/disabled=""/g)??[]).length,6);
 });
 
 test('template print maps Header values, HK without a curve while historical preview keeps its contents', () => {

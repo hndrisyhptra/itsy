@@ -96,3 +96,12 @@ test('List Payment contains no gradient and export remains lazy without new back
  const css=readFileSync(new URL('../../resources/js/area3/finance-payment-list.css',import.meta.url),'utf8');assert.doesNotMatch(css,/gradient\(/);assert.match(css,/background:var\(--surface,#fff\)/);
  const source=readFileSync(new URL('../../resources/js/area3/document-package-ui.tsx',import.meta.url),'utf8');assert.match(source,/await import|import\('\.\/document-package-docx'\)/);assert.match(source,/documents_only=1/);assert.match(source,/cache:'no-store'/);assert.doesNotMatch(source,/localStorage|savePrivateDocument|mutate\(/);
 });
+
+test('complete package includes an actual Partial BAPP and appendix for its exact term without inventing missing legacy BAPPs',()=>{
+ const {s,c}=setup(),partial=c.terms[0];partial.completionFlow='bapp-each-payment-v2';
+ const source={spkId:partial.spkId,type:partial.type,actuals:partial.actuals,barp:partial.barp??null,moneyPolicy:partial.moneyPolicy??null};
+ s.bapps.push({id:'partial-bapp',termId:partial.id,no:'BAPP-PARTIAL-QA',status:'Sah',completionPolicy:'barp-each-payment-v2',source,attestedBy:'admin-qa',attestedAt:'2026-11-19T00:00:00Z',evidence:'',released:{},releaseHistory:[]});
+ const context=documentPackage(s,c.bapp.id),html=renderToStaticMarkup(createElement(DocumentPackageContents,{s,c:context}));assert.equal((html.match(/class="document-package-part"/g)??[]).length,13);
+ const xml=docxParts(createDocumentPackageDocx(s,context,[{kind:'paragraph',runs:[{text:'PROJECT PLAN'}]}],logo))['word/document.xml'];assert.equal((xml.match(/<w:sectPr\b/g)??[]).length,13);
+ s.bapps[1].status='Draft';assert.throws(()=>documentPackage(s,c.bapp.id),/BA PP tiap pengajuan/);
+});

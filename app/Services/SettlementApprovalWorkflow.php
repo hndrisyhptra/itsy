@@ -19,6 +19,8 @@ trait SettlementApprovalWorkflow
         $term = $this->record('terms', $id);
         if (($term['workflowVersion'] ?? 1) === 3) {
             $term['paymentFlow'] = 'kasbon-settlement-v2';
+            $term['completionFlow'] = 'bapp-each-payment-v2';
+            $term['barpFlow'] = 'attest-before-bapp-v1';
             $this->put('terms', $term);
         }
 

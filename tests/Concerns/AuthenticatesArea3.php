@@ -104,7 +104,7 @@ trait AuthenticatesArea3
         $before = $state;
         foreach ($state['terms'] as &$t) {
             if ($t['id'] === $id) {
-                unset($t['paymentFlow'], $t['financePayment']);
+                unset($t['paymentFlow'], $t['financePayment'], $t['completionFlow'], $t['barpFlow'], $t['barpAttestation'], $t['barpAttestationHistory']); // This fixture predates per-payment BA PP.
                 $found = $t;
             }
         }

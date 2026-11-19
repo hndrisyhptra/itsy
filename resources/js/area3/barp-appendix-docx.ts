@@ -1,12 +1,13 @@
 import type { State,Project,Deal,Spk,Term } from './domain';
 import { barpAppendixData,BARP_APPENDIX_LEFT,BARP_APPENDIX_RIGHT } from './barp-appendix-content';
-import { canExportBarp } from './barp-content';
+import { canExportBarp,barpParentReady } from './barp-content';
 import { barpWordFilename,BARP_DOCX_MIME } from './barp-file';
 import { ooxmlZip } from './ooxml-zip';
 import { xmlHeader,wns,relns,officeRel,paragraph,tableRow,table } from './word-ooxml';
 export { BARP_DOCX_MIME };
 export function barpAppendixWordFilename(spk:Spk,term:Term){return 'Lampiran-'+barpWordFilename(spk,term);}
 export function createBarpAppendixDocx(state:State,project:Project,deal:Deal,spk:Spk,term:Term){
+  if(!barpParentReady(project,deal,spk,term))throw new Error('PP, BA KH dan SPK harus Sah sebelum mengunduh BA RP.');
   if(!canExportBarp(term))throw new Error('Word lampiran tersedia setelah pengajuan dikirim.');
   return createReconciliationAppendixDocx(barpAppendixData(state,project,deal,spk,term));
 }

@@ -19,7 +19,8 @@ import { appUrl } from './laravel';
 
 export function DocumentPackageButton({s,bappId,bapp}:{s:State;bappId:string;bapp?:Bapp}){
   const [open,setOpen]=useState(false);
-  if((bapp??s.bapps.find(b=>b.id===bappId))?.status!=='Sah')return null;
+  const selected=bapp??s.bapps.find(b=>b.id===bappId);
+  if(selected?.status!=='Sah'||s.terms.find(t=>t.id===selected.termId)?.type!=='Final')return null;
   return <><Button className="icon-action" aria-label="Unduh semua dokumen PP sampai Lampiran BA PP" title="Unduh semua dokumen · Word / PDF" onClick={()=>setOpen(true)}><Download size={16}/></Button>{open&&<DocumentPackageModal s={s} bappId={bappId} onClose={()=>setOpen(false)}/>}</>;
 }
 export function DocumentPackageContents({s,c,kasbons=new Map()}:{s:State;c:DocumentPackage;kasbons?:Map<string,KasbonData>}){
@@ -34,6 +35,7 @@ export function DocumentPackageContents({s,c,kasbons=new Map()}:{s:State;c:Docum
     {c.terms.map(t=><div key={t.id}>
       {section('barp','BA Rekonsiliasi Pekerjaan '+barpStageLabel(t),<BarpDocument project={p} deal={d} spk={v} term={t}/>)}
       {section('barp-appendix','Lampiran Rekonsiliasi '+barpStageLabel(t),<BarpAppendix state={s} project={p} deal={d} spk={v} term={t}/>)}
+      {t.id!==final.id&&c.completions.has(t.id)&&<>{section('bapp-stage','BA PP '+barpStageLabel(t),<BappDocument project={p} deal={d} spk={v} term={t} bapp={c.completions.get(t.id)}/>)}{section('bapp-stage-appendix','Lampiran BA PP '+barpStageLabel(t),<BappAppendix state={s} project={p} deal={d} spk={v} term={t} bapp={c.completions.get(t.id)}/>)}</>}
       {kasbons.has(t.id)&&section('kasbon','Form Kasbon '+barpStageLabel(t),<KasbonDocument data={kasbons.get(t.id)!} term={t} kasbonId={t.kasbon?.id}/>)}
     </div>)}
     {section('bapp','BA Penyelesaian Pekerjaan',<BappDocument project={p} deal={d} spk={v} term={final}/>)}

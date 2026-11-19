@@ -65,6 +65,8 @@ class UsernameApprovalV3Test extends TestCase
         $s = $this->getJson('/api/prototype/state')->json('state');
         $p = app(PrototypeWorkspaceService::class)->scenario('B')['projects'][0];
         $p['id'] = $p['rootId'] = 'pp-five-approvers';
+        $p['issueDate'] = '2026-11-01';
+        $p['workStartDate'] = '2026-11-02';
         $p['workflowVersion'] = 2; // Client cannot downgrade the new server workflow.
         $p['unit'] = 'Konstruksi';
         $p['branch'] = 'PEKALONGAN';
@@ -95,6 +97,48 @@ class UsernameApprovalV3Test extends TestCase
         $p['planBudget'] = $b;
 
         return $p;
+    }
+
+    public function test_independent_issue_and_work_dates_persist_in_sql_and_invalid_edits_are_atomic(): void
+    {
+        $p = $this->budgetProject();
+        $p['date'] = '2026-11-02';
+        $p['issueDate'] = '2099-01-01'; // Hidden client date must not override the visible Header date.
+        $p['workStartDate'] = '2026-11-04';
+        $p['documentDatePolicy'] = 'forged-opt-out';
+        foreach ([1, 0, 1, 0, 0] as $i => $days) {
+            $p['schedule'][$i] = ['name' => 'FORGED', 'days' => $days, 'start' => '2100-01-01', 'end' => '2100-01-02'];
+        }
+        $missingStart = $p;
+        unset($missingStart['workStartDate']);
+        $this->api('saveProject', [$missingStart, true])->assertUnprocessable(); // Client stage dates are not an input start.
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $this->api('saveProject', [$p, false])->assertOk();
+        $queries = count(DB::getQueryLog());
+        DB::disableQueryLog();
+        $this->assertLessThanOrEqual(100, $queries); // Creation includes new BOQ, budget and five schedule rows plus the revision read.
+        fwrite(STDERR, "\nIndependent schedule HTTP save: ".$queries." queries.\n");
+        $saved = $this->projectRecord($p['id']);
+        $this->assertSame('pre-work-issue-v1', $saved['documentDatePolicy']);
+        $this->assertSame('2026-11-02', $saved['date']);
+        $this->assertSame('2026-11-04', $saved['schedule'][0]['start']);
+        $this->assertSame('2026-11-05', $saved['schedule'][2]['end']);
+        $sql = DB::table('project_plans')->where('source_id', $p['id'])->first();
+        $this->assertSame('2026-11-02', json_decode($sql->document_data, true)['issueDate']);
+        $this->assertDatabaseHas('project_plan_schedule', ['pp_id' => $sql->id_pp, 'stage_no' => 3, 'start_date' => '2026-11-05', 'end_date' => '2026-11-05']);
+        $revision = PrototypeWorkspace::first()->revision;
+        foreach (['2026-11-05', '2026-02-30'] as $badDate) {
+            $bad = array_replace($saved, ['date' => $badDate, 'issueDate' => '2000-01-01', 'documentDatePolicy' => 'forged-opt-out']);
+            $this->api('saveProject', [$bad, false])->assertUnprocessable();
+            $this->assertSame($revision, PrototypeWorkspace::first()->revision);
+            $this->assertSame($saved, $this->projectRecord($p['id']));
+        }
+        $saved['date'] = '2026-11-03';
+        unset($saved['issueDate'], $saved['workStartDate']); // Older client must not clear persisted independent dates.
+        $this->api('saveProject', [$saved, false])->assertOk();
+        $this->assertSame($saved['schedule'], $this->projectRecord($p['id'])['schedule']);
+        $this->assertSame('2026-11-03', $this->projectRecord($p['id'])['issueDate']);
     }
 
     public function test_account_jabatan_is_canonical_in_pp_and_real_decision_snapshots_without_get_backfill(): void
@@ -389,7 +433,8 @@ class UsernameApprovalV3Test extends TestCase
     public function test_bakh_dates_are_server_derived_from_pp_and_persist_in_sql_for_old_draft_and_attestation(): void
     {
         $p = $this->budgetProject();
-        $p['date'] = '2026-11-30';
+        $p['date'] = '2026-11-29';
+        $p['workStartDate'] = '2026-11-30';
         $this->accounts['Head of PMO']->forceFill(['name' => 'Selected Head QA', 'nik' => 'QA-PMO-17'])->save();
         foreach ([1, 4, 7, 1, 1] as $i => $days) {
             $p['schedule'][$i]['days'] = $days;
@@ -403,6 +448,7 @@ class UsernameApprovalV3Test extends TestCase
         $saved = $this->projectRecord($p['id']);
         $deal = app(PrototypeWorkspaceService::class)->scenario('C')['deals'][0];
         $deal['id'] = 'bakh-date-http-qa';
+        $deal['date'] = '2026-11-29';
         $deal['no'] = 'BAKH/DATES/QA';
         $deal['projectId'] = $p['id'];
         $deal['start'] = '2000-01-01';
@@ -634,7 +680,8 @@ class UsernameApprovalV3Test extends TestCase
     public function test_fixed_pp_template_ignores_client_redaction_and_dates_and_submits_without_invented_team(): void
     {
         $p = $this->newProject();
-        $p['date'] = '2028-02-28';
+        $p['date'] = '2028-02-20';
+        $p['workStartDate'] = '2028-02-28';
         $p['intro'] = 'Redaksi client';
         $p['teamText'] = 'Tim client';
         $p['team'] = [['name' => 'Nama rekaan', 'job' => 'Peran rekaan']];

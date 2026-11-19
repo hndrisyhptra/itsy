@@ -68,6 +68,8 @@ class BoqWorkbookImportTest extends TestCase
     {
         $p = app(PrototypeWorkspaceService::class)->scenario('B')['projects'][0];
         $p['id'] = $p['rootId'] = 'pp-file-import';
+        $p['issueDate'] = '2026-11-01';
+        $p['workStartDate'] = '2026-11-02';
         $p['branch'] = 'DENPASAR';
         $p['unit'] = 'Konstruksi';
         $p['riskLevel'] = 'SEDANG';
@@ -153,7 +155,7 @@ class BoqWorkbookImportTest extends TestCase
         $workspace = app(PrototypeWorkspaceService::class)->workspace(request());
         $directory = app(BoqImportStorage::class)->directory($workspace, $import['source']['id']);
         $manifest = Storage::disk('local')->get($directory.'/manifest.json');
-        $archive = $workspace->getRawOriginal('state');
+        $archive = $workspace->fresh()->getRawOriginal('state'); // Explicit test-only archive inspection; runtime query omits it.
         $p['boq'][0]['qty'] = 12;
         $p['boq'][0]['m'] = 1;
         $p['budget'] = 9;

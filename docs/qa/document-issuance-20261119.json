@@ -1,0 +1,190 @@
+{
+  "date": "2026-11-19",
+  "feature": "Ordered document issue dates and independent PP work start",
+  "authority": {
+    "order": "PP issue <= BA KH issue <= SPK issue <= PP work start",
+    "spacing": "One day suggested only; equality allowed",
+    "pp_closing_date_column": "unchanged, empty"
+  },
+  "storage": {
+    "marker": "pre-work-issue-v1",
+    "fields": [
+      "project_plans.document_data.issueDate",
+      "project_plans.document_data.workStartDate",
+      "project_plan_schedule existing projection"
+    ],
+    "migration": false,
+    "get_backfill": false,
+    "live_writes": false
+  },
+  "php": {
+    "tests": 366,
+    "assertions": 8870,
+    "db": "SQLite :memory: only",
+    "shared_vectors": 14,
+    "new_tests": 6
+  },
+  "frontend": {
+    "tests": 397,
+    "new_tests": 5
+  },
+  "query": {
+    "pure_helpers": 0,
+    "complete_project_creation_http_including_revision_read": 98,
+    "creation_fixture_budget": 100,
+    "existing_budget_update_fixture": 84,
+    "existing_update_budget": 90,
+    "new_sql_api_lookup": 0,
+    "load_benchmark": false
+  },
+  "build": {
+    "typescript_vite": "passed",
+    "pint": "passed",
+    "manifest_references": 45,
+    "preload_dependencies": 36,
+    "profiles": 3,
+    "diff_check": "passed"
+  },
+  "browser": [
+    {
+      "unit": "Konstruksi",
+      "mode": "editor",
+      "viewports": [
+        375,
+        768,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "js_errors": 0,
+      "requests": 2,
+      "writes": 0
+    },
+    {
+      "unit": "Konstruksi",
+      "mode": "pp",
+      "viewports": [
+        375,
+        768,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "js_errors": 0,
+      "requests": 2,
+      "writes": 0
+    },
+    {
+      "unit": "Konstruksi",
+      "mode": "fields",
+      "viewports": [
+        375,
+        768,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "js_errors": 0,
+      "requests": 2,
+      "writes": 0
+    },
+    {
+      "unit": "Operation",
+      "mode": "editor",
+      "viewports": [
+        375,
+        768,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "js_errors": 0,
+      "requests": 2,
+      "writes": 0
+    },
+    {
+      "unit": "Operation",
+      "mode": "pp",
+      "viewports": [
+        375,
+        768,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "js_errors": 0,
+      "requests": 2,
+      "writes": 0
+    },
+    {
+      "unit": "Operation",
+      "mode": "fields",
+      "viewports": [
+        375,
+        768,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "js_errors": 0,
+      "requests": 2,
+      "writes": 0
+    }
+  ],
+  "browser_checks": [
+    "Header PP issue input separated from usage",
+    "Work start and HK edits recompute inclusive work end",
+    "Usage edit leaves work start/end intact",
+    "Chronology native bounds and notice",
+    "SPK min=selected BA issue, max=PP work start",
+    "Empty VIII date cells retained",
+    "No external requests or write transactions"
+  ],
+  "render": {
+    "docx": 2,
+    "native_pages": 6,
+    "all_native_pages_visually_inspected": true,
+    "browser_pdf": 2,
+    "browser_pages": 8,
+    "browser_contact_sheets_visually_inspected": true,
+    "nonblank": true,
+    "zip_crc_xml": "passed",
+    "word_closing_date_and_signature_cells_empty": true,
+    "artifacts": "/private/tmp/area3-document-issuance-20261119"
+  },
+  "regression": [
+    "Server-owned marker ignores client opt-out",
+    "Missing new start is not taken from client stage dates",
+    "Older client omission retains saved independent dates",
+    "Invalid updates do not change revision or volume balances",
+    "Equal dates accepted by actual package submission",
+    "Historical unmarked pending frozen package finishes at Head without rewriting saved BA/SPK dates",
+    "Original Branch signing places, unit permissions and financial tests retained"
+  ],
+  "limits": [
+    "Fixtures only; no its/MySQL live, aaPanel, .env, worker, migration or Dompis change",
+    "No live user login, production browser, Microsoft Word desktop or physical print verification",
+    "No load/concurrency benchmark",
+    "BA KH/SPK native render and full combined package not rerendered; unchanged generators consume saved valid dates",
+    "Historical v1/v2 workflows retain their original schedule semantics"
+  ],
+  "notes": [
+    "Initial old unrestricted-date/header-schedule fixtures updated to latest explicit editable behavior; historical cases retained separately",
+    "Initial browser selectors used button instead of actual tab role; harness corrected",
+    "Initial plain PP content harness overflowed because it omitted the real modal; actual DocumentPreview modal verified without production CSS changes",
+    "Chrome launch required approved execution outside restricted context; all requests intercepted to synthetic host",
+    "Native XML date text is split across runs; verification flattens text before asserting dates"
+  ]
+}

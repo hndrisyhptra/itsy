@@ -31,10 +31,10 @@ class ContractNumberTest extends TestCase
     {
         [$state, $spk] = $this->fixture(true);
         $state['projects'][0]['schedule'] = [['name' => 'QA', 'days' => 15, 'start' => '2026-11-05', 'end' => '2026-11-19']];
-        $state['deals'][0] = array_replace($state['deals'][0], ['date' => '2026-11-06', 'start' => '2026-11-05', 'end' => '2026-11-19']);
-        $spk = array_replace($spk, ['date' => '2026-11-09', 'start' => '2026-11-05', 'end' => '2026-11-19']);
+        $state['deals'][0] = array_replace($state['deals'][0], ['date' => '2026-11-03', 'start' => '2026-11-05', 'end' => '2026-11-19']);
+        $spk = array_replace($spk, ['date' => '2026-11-04', 'start' => '2026-11-05', 'end' => '2026-11-19']);
         $after = app(PrototypeDomain::class)->execute($state, 'saveSpk', [$spk, 'save'])['state'];
-        $this->assertSame('2026-11-09', $after['spks'][0]['date']);
+        $this->assertSame('2026-11-04', $after['spks'][0]['date']);
         $this->assertSame('2026-11-19', $after['spks'][0]['end']);
         $this->assertSame($state['deals'], $after['deals']);
         $deal = array_replace($state['deals'][0], ['no' => 'BAKH-EXACT-QA', 'status' => 'Draft', 'start' => '2026-11-06', 'end' => '2026-11-18']);
@@ -99,7 +99,7 @@ class ContractNumberTest extends TestCase
         foreach ([false, true] as $spk) {
             [$state, $doc] = $this->fixture($spk);
             if ($spk) {
-                $doc['date'] = '2100-12-31';
+                $doc['date'] = $state['deals'][0]['date'];
                 $doc['place'] = 'CLIENT CITY';
             }
             $collection = $spk ? 'spks' : 'deals';

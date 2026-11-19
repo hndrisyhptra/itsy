@@ -140,5 +140,9 @@ trait ProjectContractBundle
         if ($periodError = SpkIssuance::periodError($v, $d)) {
             $this->fail($periodError);
         }
+        $p = $this->record('projects', $d['projectId']);
+        if ($error = DocumentIssuance::spkError($p, $d, $v, $formal)) {
+            $this->fail($error);
+        }
     }
 }

@@ -136,28 +136,51 @@ class RelationalWorkflowStore
         }
         DB::table('number_sequences')->updateOrInsert(['rule_id' => $ruleId, 'scope_key' => 'GLOBAL'], ['next_value' => $state['settings']['nextPpSequence']]);
 
+        // Batch immutable lookup keys only for changed PP; never cache across requests/workers.
+        $changedProjects = array_values(array_filter($state['projects'], fn ($p) => isset($changed['projects'][$p['id']])));
+        $branches = $units = [];
+        $headers = collect();
+        if ($changedProjects) {
+            $names = array_values(array_unique(array_map(fn ($p) => mb_strtoupper($p['branch']), $changedProjects)));
+            foreach (DB::table('branches')->whereIn(DB::raw('UPPER(name)'), $names)->get(['id_branch', 'name']) as $branch) {
+                $branches[mb_strtoupper($branch->name)] ??= $branch;
+            }
+            $codes = array_values(array_unique(array_map(fn ($p) => $p['unit'] === 'Operation' ? 'OPERATION' : 'KONSTRUKSI', $changedProjects)));
+            $units = DB::table('work_units')->whereIn('code', $codes)->pluck('id_work_unit', 'code')->all();
+            $ids = array_map(fn ($p) => $key('projects', $p['id']), $changedProjects);
+            // Keep each IN bounded for SQLite fixtures and MySQL placeholder limits.
+            foreach (array_chunk($ids, 500) as $chunk) {
+                foreach (DB::table('project_plans')->whereIn('id_pp', $chunk)->get(['id_pp', 'created_by', 'created_at']) as $header) {
+                    $headers->put($header->id_pp, $header);
+                }
+            }
+        }
+        $projectIds = [];
+
         // Insert parent PP headers before linking root/parent references (including historical ordering).
         foreach ($state['projects'] as $i => $p) {
             if (! isset($changed['projects'][$p['id']])) {
                 continue;
             }
             $id = $key('projects', $p['id']);
-            $branch = DB::table('branches')->whereRaw('UPPER(name) = ?', [mb_strtoupper($p['branch'])])->first();
+            $branch = $branches[mb_strtoupper($p['branch'])] ?? null;
             if (! $branch) {
                 throw new RuntimeException('Branch PP tidak ditemukan: '.$p['branch']);
             }
             $unitCode = $p['unit'] === 'Operation' ? 'OPERATION' : 'KONSTRUKSI';
-            $unit = DB::table('work_units')->where('code', $unitCode)->value('id_work_unit');
+            $unit = $units[$unitCode] ?? null;
             if (! $unit) {
                 $unit = $unitCode === 'KONSTRUKSI' ? 1 : 2;
                 DB::table('work_units')->insert(['id_work_unit' => $unit, 'code' => $unitCode, 'name' => $p['unit']]);
+                $units[$unitCode] = $unit;
             }
-            $projectId = DB::table('projects')->where('project_code', $p['projectCode'])->value('id_project');
+            $projectId = $projectIds[$p['projectCode']] ?? DB::table('projects')->where('project_code', $p['projectCode'])->value('id_project');
             if (! $projectId) {
                 $projectId = $key('project', mb_strtolower($p['projectCode']));
                 DB::table('projects')->insert(['id_project' => $projectId, 'project_code' => $p['projectCode'], 'branch_id' => $branch->id_branch, 'work_unit_id' => $unit, 'name' => $p['name']]);
             }
-            $existing = DB::table('project_plans')->where('id_pp', $id)->first();
+            $projectIds[$p['projectCode']] = $projectId;
+            $existing = $headers->get($id);
             $number = $state['settings']['issuedPpNumbers'][$p['no']] ?? null;
             $this->record($workspace, 'projects', $p, $i, [
                 'project_id' => $projectId, 'branch_id' => $branch->id_branch, 'work_unit_id' => $unit, 'pp_no' => $p['no'],
@@ -455,40 +478,69 @@ class RelationalWorkflowStore
             ]);
         }
         DB::table('project_plan_team')->where('pp_id', $pp)->delete();
+        $team = [];
         foreach ($p['team'] as $row) {
-            DB::table('project_plan_team')->insert(['pp_id' => $pp, 'user_id' => $this->user($row['userId'] ?? null), 'name_snapshot' => $row['name'], 'job_snapshot' => $row['job']]);
+            $team[] = ['pp_id' => $pp, 'user_id' => $this->user($row['userId'] ?? null), 'name_snapshot' => $row['name'], 'job_snapshot' => $row['job']];
         }
+        foreach (array_chunk($team, 100) as $chunk) {
+            DB::table('project_plan_team')->insert($chunk);
+        }
+        $schedule = [];
         foreach ($p['schedule'] as $i => $row) {
-            DB::table('project_plan_schedule')->updateOrInsert(['pp_id' => $pp, 'stage_no' => $i + 1], ['stage_name' => $row['name'], 'work_days' => $row['days'], 'start_date' => $row['start'] ?: null, 'end_date' => $row['end'] ?: null]);
+            $schedule[] = ['pp_id' => $pp, 'stage_no' => $i + 1, 'stage_name' => $row['name'], 'work_days' => $row['days'], 'start_date' => $row['start'] ?: null, 'end_date' => $row['end'] ?: null];
         }
+        if ($schedule) {
+            DB::table('project_plan_schedule')->upsert($schedule, ['pp_id', 'stage_no'], ['stage_name', 'work_days', 'start_date', 'end_date']);
+        }
+        $costs = [];
         foreach (['mandor' => 'MANDOR', 'material' => 'NONSTOCK', 'bop' => 'BOP', 'permit' => 'PERMIT'] as $field => $type) {
-            DB::table('project_plan_costs')->updateOrInsert(['pp_id' => $pp, 'cost_type' => $type], ['amount' => $p['costs'][$field]]);
+            $costs[] = ['pp_id' => $pp, 'cost_type' => $type, 'amount' => $p['costs'][$field]];
         }
+        DB::table('project_plan_costs')->upsert($costs, ['pp_id', 'cost_type'], ['amount']);
         DB::table('project_plan_budget_rows')->where('pp_id', $pp)->delete();
+        $budgetRows = [];
         foreach (['mandor', 'materials', 'bop', 'usage'] as $category) {
             foreach ($p['planBudget'][$category] ?? [] as $i => $row) {
-                DB::table('project_plan_budget_rows')->insert(['id_budget_row' => $key('budget', $p['id'].'|'.$category.'|'.$i), 'pp_id' => $pp, 'category' => $category, 'position' => $i, 'row_data' => $this->json($row)]);
+                $budgetRows[] = ['id_budget_row' => $key('budget', $p['id'].'|'.$category.'|'.$i), 'pp_id' => $pp, 'category' => $category, 'position' => $i, 'row_data' => $this->json($row)];
             }
+        }
+        foreach (array_chunk($budgetRows, 100) as $chunk) {
+            DB::table('project_plan_budget_rows')->insert($chunk);
         }
         if (! empty($p['parentId'])) {
             return;
         }
-        $domain = app(PrototypeDomain::class)->load($state);
-        $keep = [];
+        $keep = $lines = $componentsToWrite = [];
         foreach ($p['boq'] as $row) {
             $boq = $key('boq', $p['id'].'|'.$row['id']);
             $keep[] = $boq;
             $k = $this->khsIndex[$row['khsId']];
             $source = preg_match('/^db-price-(\d+)$/D', $row['khsId'], $m) ? (int) $m[1] : null;
-            DB::table('boq_lines')->updateOrInsert(['id_boq' => $boq], ['root_pp_id' => $pp, 'khs_price_id' => null, 'source_price_id' => $source, 'source_row_id' => $row['id'], 'source_data' => $this->json($row), 'designator_code_snapshot' => $k['code'], 'description_snapshot' => $k['name'], 'unit_snapshot' => $k['unit']]);
+            $lines[] = ['id_boq' => $boq] + ['root_pp_id' => $pp, 'khs_price_id' => null, 'source_price_id' => $source, 'source_row_id' => $row['id'], 'source_data' => $this->json($row), 'designator_code_snapshot' => $k['code'], 'description_snapshot' => $k['name'], 'unit_snapshot' => $k['unit']];
             foreach (['m', 's'] as $c) {
                 if ($row[$c] === null) {
                     continue;
                 }
                 $id = $key('boq-component', $p['id'].'|'.$row['id'].'|'.$c);
-                DB::table('boq_components')->updateOrInsert(['id_boq_component' => $id], ['boq_line_id' => $boq, 'component' => strtoupper($c), 'quantity' => $row['qty'], 'official_unit_price' => $row[$c]]);
+                $componentsToWrite[] = ['id_boq_component' => $id] + ['boq_line_id' => $boq, 'component' => strtoupper($c), 'quantity' => $row['qty'], 'official_unit_price' => $row[$c]];
 
             }
+        }
+        $sourceRows = array_combine($keep, array_column($p['boq'], 'id'));
+        // MySQL upsert also considers other unique keys. Preserve fail-closed identity checks.
+        foreach (array_chunk($keep, 500) as $chunk) {
+            foreach (DB::table('boq_components')->whereIn('boq_line_id', $chunk)->get(['id_boq_component', 'boq_line_id', 'component']) as $existing) {
+                $expected = $key('boq-component', $p['id'].'|'.$sourceRows[$existing->boq_line_id].'|'.strtolower($existing->component));
+                if ($existing->id_boq_component !== $expected) {
+                    throw new RuntimeException('Identitas proyeksi komponen BOQ tidak sesuai. Data tidak ditimpa.');
+                }
+            }
+        }
+        foreach (array_chunk($lines, 50) as $chunk) {
+            DB::table('boq_lines')->upsert($chunk, ['id_boq'], ['root_pp_id', 'khs_price_id', 'source_price_id', 'source_row_id', 'source_data', 'designator_code_snapshot', 'description_snapshot', 'unit_snapshot']);
+        }
+        foreach (array_chunk($componentsToWrite, 100) as $chunk) {
+            DB::table('boq_components')->upsert($chunk, ['id_boq_component'], ['boq_line_id', 'component', 'quantity', 'official_unit_price']);
         }
         $removed = DB::table('boq_lines')->where('root_pp_id', $pp)->whereNotIn('id_boq', $keep)->pluck('id_boq');
         $components = DB::table('boq_components')->whereIn('boq_line_id', $removed)->pluck('id_boq_component');

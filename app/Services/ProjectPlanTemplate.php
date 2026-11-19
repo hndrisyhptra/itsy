@@ -11,11 +11,12 @@ final class ProjectPlanTemplate
     {
         $template = json_decode(file_get_contents(resource_path('data/project-plan-template.json')), true, flags: JSON_THROW_ON_ERROR);
         $schedule = $project['schedule'] ?? [];
-        $date = $project['date'] ?? '';
+        $independent = ($project['documentDatePolicy'] ?? '') === DocumentIssuance::POLICY;
+        $date = $independent ? ($project['workStartDate'] ?? '') : ($project['date'] ?? '');
         $cursor = is_string($date) && preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/D', $date)
             ? DateTimeImmutable::createFromFormat('!Y-m-d', $date) : false;
-        if (! $cursor || $cursor->format('Y-m-d') !== $date || ! is_array($schedule) || ! array_is_list($schedule) || ($complete ? count($schedule) !== 5 : count($schedule) > 5)) {
-            self::invalid('Isi Saat Penggunaan dan lima HK jadwal pelaksanaan.');
+        if ((! $cursor && ($complete || $date !== '')) || ($cursor && $cursor->format('Y-m-d') !== $date) || ! is_array($schedule) || ! array_is_list($schedule) || ($complete ? count($schedule) !== 5 : count($schedule) > 5)) {
+            self::invalid($independent ? 'Isi Tanggal Mulai Pekerjaan dan lima HK jadwal pelaksanaan.' : 'Isi Saat Penggunaan dan lima HK jadwal pelaksanaan.');
         }
         $total = 0;
         foreach ($template['stages'] as $i => $name) {
@@ -25,12 +26,12 @@ final class ProjectPlanTemplate
             }
             $days = (int) $days;
             $total += $days;
-            $end = $days ? $cursor->modify('+'.($days - 1).' days') : $cursor;
-            if ($total > 1000000 || ($days && strlen($end->format('Y-m-d')) !== 10)) {
+            $end = $days && $cursor ? $cursor->modify('+'.($days - 1).' days') : $cursor;
+            if ($total > 1000000 || ($days && $end && strlen($end->format('Y-m-d')) !== 10)) {
                 self::invalid('Durasi jadwal di luar rentang tanggal yang didukung.');
             }
-            $project['schedule'][$i] = ['name' => $name, 'days' => $days, 'start' => $days ? $cursor->format('Y-m-d') : '', 'end' => $days ? $end->format('Y-m-d') : ''];
-            if ($days) {
+            $project['schedule'][$i] = ['name' => $name, 'days' => $days, 'start' => $days && $cursor ? $cursor->format('Y-m-d') : '', 'end' => $days && $end ? $end->format('Y-m-d') : ''];
+            if ($days && $end) {
                 $cursor = $end->modify('+1 day');
             }
         }

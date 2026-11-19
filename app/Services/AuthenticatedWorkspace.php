@@ -100,7 +100,7 @@ class AuthenticatedWorkspace
         $state['terms'] = array_values(array_filter($state['terms'], fn ($t) => isset($ids[$t['spkId']])));
         $ids = array_fill_keys(array_column($state['terms'], 'id'), true);
         $state['bapps'] = array_values(array_filter($state['bapps'], fn ($b) => isset($ids[$b['termId']])));
-        $routes = ['/project-plan' => 'projects', '/boq' => 'projects', '/ba-kh' => 'deals', '/spk' => 'spks', '/termin' => 'terms', '/ba-pp' => 'bapps'];
+        $routes = ['/project-plan' => 'projects', '/boq' => 'projects', '/ba-kh' => 'deals', '/spk' => 'spks', '/termin' => 'terms', '/ba-rp' => 'terms', '/ba-pp' => 'bapps'];
         $routeIds = [];
         foreach ($routes as $prefix => $collection) {
             $routeIds[$prefix] = array_fill_keys(array_column($state[$collection], 'id'), true);
@@ -166,6 +166,7 @@ class AuthenticatedWorkspace
             'saveSpkFinance', 'saveSpk' => $deal($input['dealId'] ?? ''),
             'createTerm', 'createSettlementTerm' => $spk($input),
             'submitFinanceTerm', 'saveTerm' => $spk($input['spkId'] ?? ''),
+            'attestBarp' => $term($input['id'] ?? ''),
             'prepareBapp', 'adoptFinancePayment', '_issueKasbon', '_submitSettlementKasbon', '_attachTransferProof', 'decideFinancePayment', 'requestPartialPayment', 'verifyPartialPayment', 'payPartialPayment', 'decide', 'recordApm', 'settleFinancePayment', 'updatePaymentApm', 'setKasbonPrintSigner', 'decideLegacySettlementReview', 'recordPayment', 'verifyTermScan', '_attachTermScan', '_attachTermWorkEvidence', 'removeTermWorkEvidence' => $term($input),
             'attestBapp', 'releaseVolume', 'createContinuation' => $bapp($input),
             default => null,

@@ -98,7 +98,7 @@ trait PrototypeWorkflowV2
         if ($old && ! $this->canReviseSubmission($old)) {
             $this->fail('PP terkunci pada status ini.');
         }
-        $p = array_intersect_key($input, array_flip(['id', 'name', 'unit', 'branch', 'projectCode', 'budget', 'date', 'rootId', 'parentId', 'sourceBapp', 'allocations', 'intro', 'team', 'schedule', 'costs', 'risk', 'communication', 'quality', 'created']));
+        $p = array_intersect_key($input, array_flip(['id', 'name', 'unit', 'branch', 'projectCode', 'budget', 'date', 'rootId', 'parentId', 'sourceBapp', 'allocations', 'intro', 'team', 'schedule', 'costs', 'risk', 'communication', 'quality', 'created', 'workStartDate']));
         $this->enum($p['unit'] ?? '', ['Konstruksi', 'Operation']);
         if (! collect($this->state['branches'])->contains(fn ($b) => $b['name'] === ($p['branch'] ?? '') && $b['active'])) {
             $this->fail('Pilih Branch aktif dari daftar penugasan.');
@@ -106,6 +106,15 @@ trait PrototypeWorkflowV2
         $version = ($old['workflowVersion'] ?? 1) >= 2 ? $old['workflowVersion'] : (($this->state['schema'] ?? 1) >= 3 ? 3 : 2);
         if ($version >= 3) {
             $p['moneyPolicy'] = WholeRupiah::POLICY;
+            foreach (['workStartDate'] as $field) {
+                if (! array_key_exists($field, $p) && array_key_exists($field, $old ?? [])) {
+                    $p[$field] = $old[$field];
+                }
+            }
+            $p = DocumentIssuance::planning($p, $old);
+            if ($error = DocumentIssuance::projectError($p, $submit)) {
+                $this->fail($error);
+            }
             $p = ProjectPlanTemplate::apply($p, $submit);
         }
         $scheme = $old && (! empty($old['approvalHistory']) || ! empty($old['approvals']))

@@ -3,6 +3,22 @@ name: area3-business-workflow
 description: Implement its Area 3 Project Plan, BOQ, mandor contracting, assigned two-stage approvals, scan verification and full APM settlement, APM gating, BA PP and continuation state transitions.
 ---
 
+## 19 November 2026 — Explicit BA RP attestation and independent BA PP date
+
+Latest user requires a real next-action button, Sahkan BA RP in its document card, then explicit Buat BA PP and Sahkan BA PP; both have Admin-selected document dates. Follow latest docs/WORK_DOCUMENTS_FLOW.md correction. New terms get server-owned barpFlow=attest-before-bapp-v1; save Draft no longer creates BA PP, attestBarp atomically saves canonical positive work/complete BARP under Admin/Branch/unit/Head/pending-evidence guards, captures actual actor/time/source without financial decisions. prepareBapp and current BAPP/payment/proof gates require source-current BARP; original unmarked running/paid/history stay, no GET adoption. Source edits archive both attestations; same saves retain; rejected seven-stage cycles permit actual work correction/re-attestation/new kasbon/restart PM without altering prior decisions. BA PP own date saved on attest in existing JSON, valid calendar, legacy fallback only saved BARP date; Branch city readonly, shared HTML/Word/print/package and blank wetTTD. BARP physical exports require current attestation and Sah parents; BAPP export remains independently gated. Existing schema, no migration/live mutations; maps/20DOM, one indexed pending-evidence query per new attestation, no perrow SQL/PII/poller. Append actual query/test/browser/Word/server limits.
+
+## 19 November 2026 — Work documents for every Partial and Final
+
+Follow latest docs/WORK_DOCUMENTS_FLOW.md: user explicitly requires BA RP/lampiran→BA PP/lampiran Sah→kasbon for each payment includingPartial. Server-owned v2markers, source/actualactor/uniqueperterm, zero fake approvals/paid. Keep oldrunning/paid/v1 and explicit legacy adoption; Final-only release/continuation/closure, exact UUID/Branch/unit/private/revision/receipt, blank wetTTD and max20part Finalpackage. Sidebar/workstage actions and saved-only payment forms,20DOM/mapreadmodels/no perrowSQL/newpoller; record actual helper/HTTP/worker/browser/Word/server limits. No migration/live mutations.
+
+## 19 November 2026 — PP issue-date Header correction
+
+Follow latest docs/DOCUMENT_ISSUANCE_DATES.md: no separate TanggalTerbitPP input or document Header row. Explicit editablev3 saves canonicalize internal issueDate from visible SaatPenggunaan; ignore client issueDate and never require removed field. Keep independent start/HK/inclusive end and original chronology, frozen Sah/Terbit/pending dates/manifest, blank VIII date/WordTTD; no GET/backfill/migration/live writes. Test no-hidden-input save, anti-forgery, canonical visible-date rejection, old frozen Head approval and actual Word/print/browser limits.
+
+## 19 November 2026 — Date chronology and independent schedule
+
+Follow latest docs/DOCUMENT_ISSUANCE_DATES.md: PPissue≤BAKHissue≤SPKissue≤PPworkstart, equality allowed/one-day spacing suggestion only. New editablev3 server policy uses issueDate/workStartDate existingJSON; fiveHK inclusive schedule independent from SaatPenggunaan. Preserve unmarked pending approvals and Sah/Terbit snapshots, blank PP VIII date cells/undated stamps/blank printedTTD, no bulkbackfill/migration/live mutation. New continuation start empty. Test date/calendar/order, invalidatomic rollback, legacyHead, query0helper and responsive/browser/Word/PDF actual limits.
+
 ## 18 November 2026 — Saved BARP before payment approvals
 
 Follow docs/BAPP_BEFORE_PAYMENT.md and latest user authority: new/explicitly adopted Final completion allows Admin BAPP attestation from saved complete BARP before any approval; source-bound BAPP must precede kasbon/payment. Changes invalidate current attestation into history, no financial/ledger acceptance from BAPP. Keep seven approvals, scope/private/UUID/revision/Head and release/full-package complete-approval gates; legacy/paid untouched. No migration, pure0SQL; verify 0approval attestation, change/re-attest, legacyexplicit, unit403, proof/lunas, blank Word/nonblankprint and document actual query/render/server limits.

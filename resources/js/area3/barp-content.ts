@@ -1,3 +1,4 @@
+import {barpCurrent,requiresBarp} from './bapp-workflow';
 import { isOperation } from './work-unit';
 import { projectSigningPlace } from './document-place';
 import { isSingleFinalBarp } from './barp-labels';
@@ -24,8 +25,9 @@ export function rupiahWords(value:number){
   if(!Number.isFinite(value)||value<0||value>Number.MAX_SAFE_INTEGER)throw new Error('Nilai BARP tidak valid.');
   return `${integerWords(Math.trunc(value))} Rupiah`;
 }
-export function canExportBarp(term:Term){return ['Diajukan','Disetujui'].includes(term.status);}
-export function canPrintBarp(term:Term){return term.status==='Disetujui'&&approvalRoles(term).every(role=>term.approvals.some(a=>a.role===role&&a.decision==='Setujui'&&((term.workflowVersion??1)<2||a.userId===selectedApprover(term,role))));}
+export function barpParentReady(project:Project,deal:Deal,spk:Spk,term:Term){return !requiresBarp(term)||project.status==='Sah'&&deal.status==='Sah'&&spk.status==='Sah';}
+export function canExportBarp(term:Term){return requiresBarp(term)?barpCurrent(term):['Diajukan','Disetujui'].includes(term.status);}
+export function canPrintBarp(term:Term){return requiresBarp(term)?barpCurrent(term):term.status==='Disetujui'&&approvalRoles(term).every(role=>term.approvals.some(a=>a.role===role&&a.decision==='Setujui'&&((term.workflowVersion??1)<2||a.userId===selectedApprover(term,role))));}
 export const BARP_TEXT={
   sow:'TELKOM AKSES dan Mandor sepakat bahwa lingkup pekerjaan (SoW) berdasarkan hasil Rekonsiliasi proyek dimaksud adalah sebagaimana BoQ detail terlampir.',
   note:'TELKOM AKSES dan Mandor sepakat apabila di kemudian hari ditemukan adanya perbedaan hasil Rekonsiliasi dengan hasil pengecekan fisik di lapangan yang berakibat terjadinya kelebihan bayar dari Telkom Akses ke Mandor, maka Mandor bersedia mengembalikan kelebihan bayar tersebut ke Telkom Akses.',

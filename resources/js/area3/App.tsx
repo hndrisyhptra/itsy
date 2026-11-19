@@ -1,12 +1,10 @@
+import {workspaceInboxCount,workspaceSearch} from './shell-read-model';
 import { ChangePasswordForm } from './change-password';
 import { ThemeToggle, readTheme, saveTheme, type Theme } from './theme-toggle';
-import {canReviewLegacySettlement} from './legacy-settlement-review';
-import { adminKasbonPending } from './finance-payment';
-import { financeTaskPending } from './partial-payment';
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useMemo, useState, useEffect, lazy, Suspense } from 'react';
 import { LayoutDashboard, FolderKanban, FileSignature, ReceiptText, ClipboardCheck, Inbox, Database, ChartNoAxesCombined, Settings, PanelLeftClose, PanelLeftOpen, Search, Bell, ChevronDown, ChevronRight, ArrowUpRight, FlaskConical, Menu, KeyRound } from 'lucide-react';
 import { useStore, mutate, reset, clearAllDrafts, persistenceError, persistencePending, waitForPersistence, confirmedRevision, inboxRevision, refreshInboxState } from './store';
-import { type State, ROLES, getDeal, dateLabel, operational } from './domain';
+import { type State, ROLES, dateLabel, operational } from './domain';
 import { SCENARIOS } from './seed';
 import { boot, relativePath } from './laravel';
 import { createInboxSync, inboxSyncRoute } from './inbox-sync';
@@ -26,9 +24,11 @@ const FinancePaymentList=lazy(()=>import('./finance-payment-list').then(m=>({def
 const Terms=lazy(()=>import('./payments').then(m=>({default:m.Terms})));
 const TermEditor=lazy(()=>import('./payments').then(m=>({default:m.TermEditor})));
 const ApprovalInbox=lazy(()=>import('./payments').then(m=>({default:m.ApprovalInbox})));
-const Bapps=lazy(()=>import('./payments').then(m=>({default:m.Bapps})));
+const WorkDocuments=lazy(()=>import('./work-documents').then(m=>({default:m.WorkDocuments})));
+const WorkDocumentEditor=lazy(()=>import('./work-documents').then(m=>({default:m.WorkDocumentEditor})));
+const NewWorkDocument=lazy(()=>import('./work-documents').then(m=>({default:m.NewWorkDocument})));
 const BappDetail=lazy(()=>import('./payments').then(m=>({default:m.BappDetail})));
-import { canApproveProject, canApproveTerm, selectActor } from './domain';
+import { selectActor } from './domain';
 const MasterKhs=lazy(()=>import('./management').then(m=>({default:m.MasterKhs})));
 const Reports=lazy(()=>import('./management').then(m=>({default:m.Reports})));
 const SettingsPage=lazy(()=>import('./management').then(m=>({default:m.SettingsPage})));
@@ -36,16 +36,16 @@ const MasterDesignator=lazy(()=>import('./master-designator').then(m=>({default:
 import { MASTER_TABS } from './master-data';
 const NAV = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard }, { path: '/project-plan', label: 'Project Plan', icon: FolderKanban },
-  { path: '/spk', label: 'SPK', icon: FileSignature }, { path: '/termin', label: 'Pembayaran', icon: ReceiptText },
-  { path: '/ba-pp', label: 'BA PP', icon: ClipboardCheck }, { path: '/inbox', label: 'Inbox Approval', icon: Inbox },
+  { path: '/spk', label: 'SPK', icon: FileSignature }, { path: '/ba-pp', label: 'BA RP & BA PP', icon: ClipboardCheck },
+  { path: '/termin', label: 'Pembayaran', icon: ReceiptText }, { path: '/inbox', label: 'Inbox Approval', icon: Inbox },
   { path: '/master-designator', label: 'Master Designator', icon: Database }, { path: '/laporan', label: 'Laporan', icon: ChartNoAxesCombined },
   { path: '/pengaturan', label: 'Pengaturan', icon: Settings },
 ];
 export default function App() {
   const s = useStore(), path = usePath(), clean = path.split('?')[0], parts = clean.split('/').filter(Boolean), module = parts[0] ?? 'dashboard', id = parts[1];
-  const navModule = module === 'boq' ? 'project-plan' : module === 'ba-kh' ? 'spk' : module === 'master-khs' ? 'master-designator' : module;
+  const navModule = module === 'ba-rp' ? 'ba-pp' : module === 'boq' ? 'project-plan' : module === 'ba-kh' ? 'spk' : module === 'master-khs' ? 'master-designator' : module;
   const [collapsed, collapse] = useState(false), [mobile, setMobile] = useState(false), [query, setQuery] = useState(''), [panel, setPanel] = useState(''), [theme, setTheme] = useState<Theme>(readTheme);
-  const [scenario, setScenario] = useState(''), [mastersOpen,setMastersOpen]=useState(navModule==='master-designator');
+  const [scenario, setScenario] = useState(''), [mastersOpen,setMastersOpen]=useState(navModule==='master-designator'),[workOpen,setWorkOpen]=useState(navModule==='ba-pp');
   const [inboxSyncStatus,setInboxSyncStatus]=useState('Inbox diperbarui otomatis setiap 15 detik.');
   useEffect(()=>{
     if(!boot?.account)return;
@@ -56,24 +56,22 @@ export default function App() {
     document.addEventListener('visibilitychange',wake);window.addEventListener('focus',wake);window.addEventListener('popstate',wake);
     return()=>{sync.stop();document.removeEventListener('visibilitychange',wake);window.removeEventListener('focus',wake);window.removeEventListener('popstate',wake);};
   },[]);
-  useEffect(()=>{if(navModule==='master-designator')setMastersOpen(true);},[navModule]);
+  useEffect(()=>{if(navModule==='master-designator')setMastersOpen(true);if(navModule==='ba-pp')setWorkOpen(true);},[navModule]);
   useEffect(() => { const listener=(event:Event) => { const message=(event as CustomEvent<string>).detail; toast(message,true); navigate('/dashboard'); }; window.addEventListener('area3:server-error',listener); return () => window.removeEventListener('area3:server-error',listener); },[]);
   useEffect(() => { document.documentElement.dataset.theme = theme; saveTheme(theme); }, [theme]);
   useEffect(() => { setMobile(false); setPanel(''); setQuery(''); document.title = `${NAV.find(n => n.path === `/${navModule}`)?.label ?? 'Dashboard'} · it's Area 3`; }, [path]);
-  const inboxCount = s.projects.filter(p => canApproveProject(s, p)).length + s.terms.filter(t => canApproveTerm(s, t) || canReviewLegacySettlement(s,t) || (s.role === 'Finance' && financeTaskPending(t)) || (operational(s) && adminKasbonPending(t))).length, active = NAV.find(n => n.path === `/${navModule}`);
-  const searchResults = query.trim() ? [
-    ...s.projects.filter(p => `${p.no} ${p.name}`.toLowerCase().includes(query.toLowerCase())).map(p => ({ title: p.no, detail: p.name, route: `/project-plan/${p.id}` })),
-    ...s.spks.filter(v => `${v.no} ${getDeal(s, v.dealId).mandor}`.toLowerCase().includes(query.toLowerCase())).map(v => ({ title: v.no, detail: getDeal(s, v.dealId).mandor, route: `/spk/${v.id}` })),
-  ].slice(0, 6) : [];
+  const inboxCount = useMemo(()=>workspaceInboxCount(s),[s]), active = NAV.find(n => n.path === `/${navModule}`);
+  const searchResults = useMemo(()=>workspaceSearch(s,query),[s,query]);
   let content;
   if (module === 'dashboard' || !parts.length) content = <Dashboard s={s}/>;
   else if (module === 'project-plan') content = !id ? <Projects s={s}/> : id === 'new' || parts[2] === 'edit' ? <ProjectEditor key={`${s.scenario}-${id}-edit`} s={s} id={id}/> : parts[2] === 'timeline' ? <ProjectTimeline key={id} s={s} id={id}/> : <ProjectDetail s={s} id={id}/>;
   else if (module === 'boq') content = boot?.account ? (id && s.projects.some(p=>p.id===id) ? <ProjectDetail s={s} id={id}/> : <Projects s={s}/>) : <BoqPage key={`${s.scenario}-${id}`} s={s} id={id}/>;
   else if (module === 'ba-kh') content = !id ? <Contracts s={s} kind="deal"/> : <DealEditor key={`${s.scenario}-${id}`} s={s} id={id}/>;
   else if (module === 'spk') content = id === 'ba-kh' ? <DealEditor key={`${s.scenario}-${parts[2]}`} s={s} id={parts[2] ?? 'new'}/> : !id ? <ContractHub s={s}/> : <SpkEditor key={`${s.scenario}-${id}`} s={s} id={id}/>;
-  else if (module === 'termin') content = id==='list-payment'?<FinancePaymentList s={s}/>:!id || id === 'new' ? <Terms s={s} create={id === 'new'}/> : <TermEditor key={`${s.scenario}-${id}`} s={s} id={id}/>;
+  else if (module === 'ba-rp') content = id==='new'?<NewWorkDocument s={s}/>:id?<WorkDocumentEditor key={id} s={s} id={id}/>:<WorkDocuments s={s}/>;
+  else if (module === 'termin') content = id==='list-payment'?<FinancePaymentList s={s}/>:id==='new'?<NewWorkDocument s={s}/>:!id?<Terms s={s}/> : <TermEditor key={`${s.scenario}-${id}`} s={s} id={id}/>;
   else if (module === 'inbox') content = <ApprovalInbox s={s}/>;
-  else if (module === 'ba-pp') content = id ? <BappDetail key={`${s.scenario}-${id}`} s={s} id={id}/> : <Bapps s={s}/>;
+  else if (module === 'ba-pp') content = id ? <BappDetail key={`${s.scenario}-${id}`} s={s} id={id}/> : <WorkDocuments s={s} tab="bapp"/>;
   else if (module === 'master-designator' || module === 'master-khs') content = boot?.account ? <MasterDesignator key={id ?? (module==='master-khs'?'khs':'designator')} s={s} entity={MASTER_TABS.find(t=>t.id===id)?.id ?? (module==='master-khs'?'khs':'designator')}/> : <MasterKhs s={s}/>;
   else if (module === 'laporan') content = <Reports s={s}/>;
   else if (module === 'pengaturan') content = <SettingsPage s={s}/>;
@@ -83,7 +81,7 @@ export default function App() {
     <aside className={`sidebar ${mobile ? 'mobile-open' : ''}`}>
       <Link to="/dashboard" className="brand"><span className="brand-mark">i<span>t</span></span><span className="brand-text">it's <strong>Area 3</strong><small>WORKSPACE</small></span></Link>
       <div className="workspace-label">WORKSPACE <span>AREA 3</span></div>
-      <nav aria-label="Menu utama">{NAV.map((n, i) => <div key={n.path} className={i === 6 ? 'nav-section' : ''}>{i === 6 && <div className="nav-caption">ADMINISTRASI</div>}{n.path==='/master-designator'?<><button type="button" className={`nav-link master-nav-parent ${navModule==='master-designator'?'active':''}`} title={n.label} aria-label={n.label} aria-expanded={mastersOpen} aria-controls="master-submenu" onClick={()=>{if(collapsed){collapse(false);setMastersOpen(true);}else setMastersOpen(v=>!v);}}><n.icon size={18}/><span>{n.label}</span><ChevronDown className={mastersOpen?'master-chevron open':'master-chevron'} size={14}/></button>{mastersOpen&&<div id="master-submenu" className="master-submenu">{MASTER_TABS.map(t=><Link key={t.id} title={t.label} aria-label={t.label} className={`nav-link ${navModule==='master-designator'&&(id===t.id||(!id&&(module==='master-khs'?'khs':'designator')===t.id))?'active':''}`} to={'/master-designator/'+t.id}><ChevronRight size={13}/><span>{t.label}</span></Link>)}</div>}</>:<Link className={`nav-link ${navModule === n.path.slice(1) ? 'active' : ''}`} title={n.label} to={n.path}><n.icon size={18}/><span>{n.label}</span>{n.path === '/inbox' && inboxCount > 0 && <b>{inboxCount}</b>}</Link>}{n.path==='/termin'&&['Finance','Mgr Finance & Settlement'].includes(s.role)&&<div className="master-submenu"><Link className={`nav-link ${id==='list-payment'?'active':''}`} title="List Payment" to="/termin/list-payment"><ChevronRight size={13}/><span>List Payment</span></Link></div>}</div>)}</nav>
+      <nav aria-label="Menu utama">{NAV.map((n, i) => <div key={n.path} className={i === 6 ? 'nav-section' : ''}>{i === 6 && <div className="nav-caption">ADMINISTRASI</div>}{n.path==='/ba-pp'?<><button type="button" className={`nav-link master-nav-parent ${navModule==='ba-pp'?'active':''}`} title={n.label} aria-label={n.label} aria-expanded={workOpen} aria-controls="work-document-submenu" onClick={()=>{if(collapsed){collapse(false);setWorkOpen(true);}else setWorkOpen(v=>!v);}}><n.icon size={18}/><span>{n.label}</span><ChevronDown className={workOpen?'master-chevron open':'master-chevron'} size={14}/></button>{workOpen&&<div id="work-document-submenu" className="master-submenu">{[['/ba-rp','BA RP'],['/ba-pp','BA PP']].map(([route,label])=><Link key={route} to={route} title={label} className={`nav-link ${module===route.slice(1)?'active':''}`}><ChevronRight size={13}/><span>{label}</span></Link>)}</div>}</>:n.path==='/master-designator'?<><button type="button" className={`nav-link master-nav-parent ${navModule==='master-designator'?'active':''}`} title={n.label} aria-label={n.label} aria-expanded={mastersOpen} aria-controls="master-submenu" onClick={()=>{if(collapsed){collapse(false);setMastersOpen(true);}else setMastersOpen(v=>!v);}}><n.icon size={18}/><span>{n.label}</span><ChevronDown className={mastersOpen?'master-chevron open':'master-chevron'} size={14}/></button>{mastersOpen&&<div id="master-submenu" className="master-submenu">{MASTER_TABS.map(t=><Link key={t.id} title={t.label} aria-label={t.label} className={`nav-link ${navModule==='master-designator'&&(id===t.id||(!id&&(module==='master-khs'?'khs':'designator')===t.id))?'active':''}`} to={'/master-designator/'+t.id}><ChevronRight size={13}/><span>{t.label}</span></Link>)}</div>}</>:<Link className={`nav-link ${navModule === n.path.slice(1) ? 'active' : ''}`} title={n.label} to={n.path}><n.icon size={18}/><span>{n.label}</span>{n.path === '/inbox' && inboxCount > 0 && <b>{inboxCount}</b>}</Link>}{n.path==='/termin'&&['Finance','Mgr Finance & Settlement'].includes(s.role)&&<div className="master-submenu"><Link className={`nav-link ${id==='list-payment'?'active':''}`} title="List Payment" to="/termin/list-payment"><ChevronRight size={13}/><span>List Payment</span></Link></div>}</div>)}</nav>
       <div className="sidebar-bottom"><div className="prototype-note"><FlaskConical size={15}/><div><strong>{boot?.account ? "Workspace Area 3" : "Ruang demonstrasi"}</strong><small>{boot?.account ? "Penyimpanan transaksi MySQL" : "Data contoh pengujian"}</small></div></div><Button onClick={() => collapse(!collapsed)} aria-label="Ubah lebar menu" className="collapse-button">{collapsed ? <PanelLeftOpen size={17}/> : <><PanelLeftClose size={17}/><span>Ringkas menu</span></>}</Button></div>
     </aside>
     <div className="main-shell"><header className="topbar"><Button className="mobile-toggle" aria-label="Buka menu" onClick={() => setMobile(!mobile)}><Menu size={19}/></Button><div className="breadcrumbs"><Link to="/dashboard">Workspace</Link><ChevronRight size={13}/><span>{active?.label ?? 'Dashboard'}</span>{id && <><ChevronRight size={13}/><span>{navModule==='master-designator' ? MASTER_TABS.find(t=>t.id===id)?.label??'Designator' : id === 'new' ? 'Baru' : module==='termin'&&id==='list-payment'?'List Payment':module === 'project-plan' && parts[2] === 'timeline' ? 'Timeline' : 'Detail'}</span></>}</div><div className="top-actions"><Button className="mobile-search" aria-label="Buka pencarian" onClick={() => setPanel('search')}><Search size={18}/></Button><div className="global-search"><Search size={15}/><input aria-label="Pencarian global" placeholder="Cari PP, SPK, proyek…" value={query} onChange={e => setQuery(e.target.value)}/><kbd>⌕</kbd>{query && <div className="search-results">{searchResults.length ? searchResults.map(r => <Link to={r.route} key={r.route}><strong>{r.title}</strong><small>{r.detail}</small><ArrowUpRight size={14}/></Link>) : <p>Tidak ada hasil untuk “{query}”.</p>}</div>}</div><Button className="icon-button" aria-label="Notifikasi" onClick={() => setPanel(panel === 'notifications' ? '' : 'notifications')}><Bell size={18}/>{inboxCount > 0 && <i className="notification-dot"/>}</Button><ThemeToggle theme={theme} onChange={setTheme}/><button className="profile-button" aria-label="Buka profil" onClick={() => setPanel(panel === 'profile' ? '' : 'profile')}><span className="avatar">{s.profile.name.trim().split(/\s+/).slice(0,2).map(v => v[0]).join('').toUpperCase()}</span><span>{s.profile.name}<small>{s.role}</small></span><ChevronDown size={14}/></button></div></header>

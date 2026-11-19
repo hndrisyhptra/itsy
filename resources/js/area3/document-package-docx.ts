@@ -18,7 +18,7 @@ export function createDocumentPackageDocx(s:State,c:DocumentPackage,pp:PpWordBlo
   if(c.terms.some(t=>t.kasbon&&!kasbons.has(t.id)))throw new Error('Kasbon aktif belum lengkap. Muat ulang paket dokumen.');
   const {project:p,deal:d,spk:v,final}=c;
   const docs=[createProjectPlanDocx(pp),createBakhDocx(s,p,d,'bakh'),createBakhDocx(s,p,d,'appendix'),createSpkDocx(p,d,v,logo),createSpkAppendixDocx(s,p,d,v)];
-  for(const t of c.terms){docs.push(createBarpDocx(p,d,v,t),createBarpAppendixDocx(s,p,d,v,t));const data=kasbons.get(t.id);if(data)docs.push(createKasbonDocx(data,logo,t,t.kasbon?.id));}
-  docs.push(createBappDocx(p,d,v,final),createBappAppendixDocx(s,p,d,v,final));
+  for(const t of c.terms){docs.push(createBarpDocx(p,d,v,t),createBarpAppendixDocx(s,p,d,v,t));const b=c.completions.get(t.id);if(t.id!==final.id&&b)docs.push(createBappDocx(p,d,v,t,b),createBappAppendixDocx(s,p,d,v,t,b));const data=kasbons.get(t.id);if(data)docs.push(createKasbonDocx(data,logo,t,t.kasbon?.id));}
+  docs.push(createBappDocx(p,d,v,final,c.bapp),createBappAppendixDocx(s,p,d,v,final,c.bapp));
   return mergeDocx(docs);
 }

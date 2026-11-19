@@ -41,7 +41,7 @@ test('new and saved draft BA KH gets code 01 for save, generate and attest despi
 
 test('SPK derives code 02 from the PP rather than the BA KH number for every save action',()=>{
   for(const action of ['save','generate','attest']as const)for(const savedDraft of [false,true]){
-    const {s,spk}=spkFixture();spk.place='CLIENT CITY';spk.date='2100-12-31';if(savedDraft)s.spks.push(structuredClone(spk));
+    const {s,spk}=spkFixture();spk.place='CLIENT CITY';spk.date=s.deals[0].date;if(savedDraft)s.spks.push(structuredClone(spk));
     const before=JSON.stringify(spk);assert.equal(blankSpk(s,spk.dealId).no,vectors[0].spk);
     saveSpk(s,spk,action);assert.equal(s.spks[0].no,vectors[0].spk);assert.equal(JSON.stringify(spk),before);
     assert.equal(s.deals[0].no,'BAKH/HISTORIS');assert.equal(s.spks[0].place,'Surabaya');assert.equal(s.spks[0].date,spk.date);
@@ -73,7 +73,7 @@ test('issued legacy numbers survive attestation and Sah documents remain locked 
   saveDeal(s,{...deal,no:vectors[0].bakh},'attest');assert.equal(s.deals[0].no,'BAKH/LAMA');
   assert.throws(()=>saveDeal(s,deal),/sah/);
   const {s:ss,spk}=spkFixture();spk.status='Terbit';spk.no='SPK/LAMA';ss.spks.push(structuredClone(spk));
-  saveSpk(ss,{...spk,no:vectors[0].spk,place:'CLIENT CITY',date:'2100-12-31'},'attest');assert.equal(ss.spks[0].no,'SPK/LAMA');assert.equal(ss.spks[0].place,spk.place);assert.equal(ss.spks[0].date,spk.date);
+  saveSpk(ss,{...spk,no:vectors[0].spk,place:'CLIENT CITY',date:'2026-11-02'},'attest');assert.equal(ss.spks[0].no,'SPK/LAMA');assert.equal(ss.spks[0].place,spk.place);assert.equal(ss.spks[0].date,spk.date);
   assert.throws(()=>saveSpk(ss,spk),/sah/);
 });
 

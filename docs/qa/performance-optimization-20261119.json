@@ -1,0 +1,135 @@
+{
+  "date": "2026-11-19",
+  "feature": "Measured query and frontend optimization",
+  "changes": [
+    "Runtime workspace metadata projection omits archived state in common HTTP/command/upload/Finance lock paths; explicit archival/provisioning reads remain.",
+    "Changed-PP Branch/unit/header batch lookups (header ID chunks500), request-local Project ID lookup reuse preserving database collation.",
+    "BOQ lines50/components100, team/budget100, schedule/cost unique-key upserts inside unchanged atomic transaction; component-ID preflight prevents unexpected MySQL alternate-unique remap.",
+    "Same before/after hash reused by audit and receipt, no altered serialisation or access cache.",
+    "React App memoized inbox by state and search by state/query; PP-first max6 early stop and exact SPK/deal Map."
+  ],
+  "repository_tests": {
+    "php": {
+      "passed": 372,
+      "assertions": 9122,
+      "environment": "SQLite :memory: fail-closed",
+      "log": "/private/tmp/area3-performance-final2-php.log"
+    },
+    "frontend": {
+      "passed": 412,
+      "log": "/private/tmp/area3-performance-fe.log"
+    },
+    "new_regressions": {
+      "php": 3,
+      "frontend": 3
+    },
+    "build": "TypeScript/Vite passed",
+    "assets": {
+      "manifest_references": 46,
+      "actual_preloads": 37,
+      "profiles": 3
+    },
+    "pint": "passed",
+    "diff_check": "passed"
+  },
+  "measurements": {
+    "full_write_20_pp": {
+      "before": 1330,
+      "after": 353,
+      "reduction_percent": 73.46,
+      "before_log": "/private/tmp/area3-performance-before.log",
+      "after_log": "/private/tmp/area3-performance-fixtures.log",
+      "scope": "Same existing isolated WorkflowPerformance fixture; not one normal UI command/concurrent load."
+    },
+    "incremental_metadata_write": {
+      "before": 8,
+      "after": 8
+    },
+    "create_500_boq_1000_components": {
+      "queries": 59,
+      "budget": 90,
+      "log": "/private/tmp/area3-performance-fixtures.log"
+    },
+    "repeat_write_500_boq": {
+      "before": 3044,
+      "after": 48,
+      "reduction_percent": 98.42,
+      "projection_parity": "Six SQL tables byte-equal: boq_lines/components/volume_balances/budget_rows/schedule/costs. Same warmed existing-record fixture and frozen clock.",
+      "extra_isolated_phpunit": "1 test,1 assertion separate from repo suite",
+      "log": "/private/tmp/area3-performance-comparison.log",
+      "temporary_baseline_sha256": "f9b37f265c584b01c4569393a8af6511930e2d625d19197292fe9fb4e9a955fb",
+      "temporary_benchmark_sha256": "c2ea3d79c2799fc4b19bf8dbe59abe23042e32fca645ac8003ae5b1a090f3b45",
+      "method": "Baseline snapshot before child batching but after request-local reference lookup batching; isolates child-write delta, no live DB."
+    },
+    "complete_pp_http": {
+      "before": 98,
+      "after": 75
+    },
+    "budget_update_http": {
+      "before": 84,
+      "after": 55
+    },
+    "workspace_archive": {
+      "fixture_bytes": 524304,
+      "runtime_selects_checked": 3,
+      "state_or_star_selected": false,
+      "archive_after_command": "byte-identical"
+    },
+    "unchanged_payment_query_fixtures": {
+      "barp_attest": 38,
+      "bapp_attest": 36,
+      "approval_stages": [
+        55,
+        57,
+        58,
+        59,
+        60,
+        61,
+        65
+      ],
+      "transfer_worker": 44,
+      "settle_apm_edit": 40
+    }
+  },
+  "frontend_regressions": [
+    "Exact old PP/SPK result order, casing, whitespace, empty query, dangling relation and no mutation.",
+    "10,000 PP: six initial matches touched, result cap6 and no SPK/deal collection access; 5,000 SPK exact Map join.",
+    "Inbox counts match old predicates for all current roles/actors across legacy scenarios, including OR per-term semantics."
+  ],
+  "browser": {
+    "results": {
+      "records": 1000,
+      "posts": 0,
+      "jsErrors": [],
+      "checks": [
+        "PP-first six results and exact SPK/deal search",
+        "375/768/1440 light/dark no page overflow",
+        "Theme, notifications and search do not mutate or crash"
+      ]
+    },
+    "method": "Actual App with1000PP/deal/SPK/term synthetic fixture; all external requests blocked and metadata transport mocked.",
+    "checks": [
+      "20DOM rows",
+      "PP-first6result and one exact matching SPK",
+      "Theme no-confirmation and preserved result",
+      "375/768/1440 light/dark no page overflow",
+      "Zero POST,zero JSerror"
+    ],
+    "visually_reviewed": "large-list-dark.png",
+    "load_claim": false
+  },
+  "limits": [
+    "No production MySQL EXPLAIN/concurrent load/aaPanel server profile; SQLite counts and browser fixture are scoped evidence only.",
+    "Authorized boot graph/reference reads, full command validation, workspace serialization lock, complete events/approval/audit history still exist; further architecture requires real server profile.",
+    "No Word/PDF rerender because templates/models/renderers unchanged.",
+    "No universal bottleneck-free or latency guarantee."
+  ],
+  "operational": {
+    "migration_schema_index_dependency_api_poller_added": false,
+    "live_its_env_worker_server_dompis_mutation": false,
+    "commit_push_deploy": false,
+    "data_approval_money_ledger_guards": "Preserved; isolated tests cover current/legacy/paid/Operation/Branch/Finance/private/proof/optionalAPM/revision/replay, zero/nullable, quantity/removal/rollback and identity conflicts.",
+    "simulation": "Only isolated test data and browser transport; runtime changes remain real SQL operations."
+  },
+  "test_correction": "One existing BOQ test inspected archive through runtime model. It now explicitly fetches the archive in test setup so archive preservation remains verified without restoring production archive reads."
+}

@@ -129,8 +129,8 @@ test('SPK city and issue date follow shared calendar vectors and readonly city/u
   const doc=docxParts(createSpkDocx(p,d,spk,logo))['word/document.xml'];assert.match(doc,/MATARAM, 11 November 2026/);assert.doesNotMatch(doc,/LOP LAMA QA/);
   const html=renderToStaticMarkup(createElement(SpkIssueFields,{project:p,spk,disabled:false,onDateChange:()=>{}}));
   assert.match(html,/aria-label="Tempat penerbitan SPK" readOnly="" value="MATARAM"/);
-  assert.match(html,/aria-label="Tanggal SPK" type="date" value="2026-11-11"/);
-  assert.doesNotMatch(html,/\s(?:max|min)=/);
+  assert.match(html,/aria-label="Tanggal SPK" type="date"[^>]*value="2026-11-11"/);
+  assert.match(html,/max="2026-11-02"/);
   for(const [date,label] of [['2000-02-29','29 Februari 2000'],['2100-12-31','31 Desember 2100']]){
     const selected={...spk,date};
     assert.equal(spkDocumentData(p,d,selected).placeDate,`MATARAM, ${label}`);

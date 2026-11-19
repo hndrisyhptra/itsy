@@ -15,7 +15,7 @@ function fixture() {
   const s=normalizeWorkflow(seed('B'));s.schema=3;
   for(const [i,role]of APPROVERS_V3.entries())if(!s.users.some(u=>u.role===role))s.users.push({id:'qa-approver-'+i,name:'QA '+role,email:`qa-${i}@example.test`,role,active:true});
   s.actorUserId=s.users.find(u=>u.role==='Admin Konstruksi')!.id;
-  const p={...blankProject(),unit:'Konstruksi',name:'QA Header Only',branch:s.branches![0].name,projectCode:'HEADER-ONLY-QA',budget:100000,date:'2026-11-05'};
+  const p={...blankProject(),unit:'Konstruksi',name:'QA Header Only',branch:s.branches![0].name,projectCode:'HEADER-ONLY-QA',budget:100000,date:'2026-11-05',issueDate:'2026-11-01',workStartDate:'2026-11-05'};
   p.schedule=[];
   return {s,p};
 }

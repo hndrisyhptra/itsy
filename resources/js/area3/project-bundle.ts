@@ -1,3 +1,4 @@
+import { spkIssuanceError } from './document-issuance';
 import { type State, type Project, type Deal, getProject, getDeal, requireAdmin, dealErrors, now } from './domain';
 import { saveProjectV2, canReviseSubmission } from './workflow';
 import { recordCommand } from './commands';
@@ -23,7 +24,7 @@ export function submitProjectBundle(s:State,id:string){
   if(!deals.length||deals.length!==spks.length)throw new Error('Lengkapi BA KH dan SPK sebelum mengajukan paket PP.');
   saveProjectV2(s,p,true,true);const saved=getProject(s,id);
   for(const d of deals){const errors=dealErrors(s,d,true);if(d.status!=='Draft'||errors.length)throw new Error(errors.join('\n')||'BA KH paket harus berupa draf.');}
-  for(const v of spks){if(v.status!=='Draft'||!v.payeeVersion||!v.address.trim()||!v.supervisor.trim()||!v.phone.trim()||!v.signer.trim()||!v.start||!v.end||!spkCalendarDate(v.date))throw new Error('Lengkapi draf SPK dan simpan data Mandor sebelum pengajuan paket.');const d=getDeal(s,v.dealId);const periodError=spkPeriodError(v,d);if(periodError)throw new Error(periodError);}
+  for(const v of spks){if(v.status!=='Draft'||!v.payeeVersion||!v.address.trim()||!v.supervisor.trim()||!v.phone.trim()||!v.signer.trim()||!v.start||!v.end||!spkCalendarDate(v.date))throw new Error('Lengkapi draf SPK dan simpan data Mandor sebelum pengajuan paket.');const d=getDeal(s,v.dealId);const periodError=spkPeriodError(v,d);if(periodError)throw new Error(periodError);const issueError=spkIssuanceError(p,d,v,true);if(issueError)throw new Error(issueError);}
   saved.contractBundle!.submissions.push({id:crypto.randomUUID(),at:now(),documents:{}});
 }
 export function approveProjectBundle(s:State,p:Project){if(!usesContractBundle(p))return;const {deals,spks}=bundleDocuments(s,p),submission=p.contractBundle!.submissions.at(-1);if(!submission)throw new Error('Versi paket belum diajukan.');for(const d of deals){const errors=dealErrors(s,d,true);if(errors.length)throw new Error(errors.join('\n'));d.status='Sah';d.approvedWithProject={ppId:p.id,submissionId:submission.id};}for(const v of spks){v.status='Sah';v.approvedWithProject={ppId:p.id,submissionId:submission.id};}}

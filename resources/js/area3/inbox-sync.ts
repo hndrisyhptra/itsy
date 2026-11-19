@@ -1,5 +1,5 @@
 export const INBOX_SYNC_INTERVAL=15000;
-export const inboxSyncRoute=(path:string)=>['/dashboard','/inbox','/project-plan','/termin','/spk','/ba-kh','/spk/ba-kh','/ba-pp','/laporan'].includes(path.split('?')[0].replace(/\/$/,'')||'/dashboard');
+export const inboxSyncRoute=(path:string)=>['/dashboard','/inbox','/project-plan','/termin','/spk','/ba-kh','/spk/ba-kh','/ba-rp','/ba-pp','/laporan'].includes(path.split('?')[0].replace(/\/$/,'')||'/dashboard');
 
 type SyncOptions={visible:()=>boolean;eligible:()=>boolean;revision:()=>number;probe:(signal:AbortSignal)=>Promise<number>;refresh:(signal:AbortSignal)=>Promise<void>;status?:(value:string)=>void;timer?:(fn:()=>void,ms:number)=>ReturnType<typeof setTimeout>;cancel?:(id:ReturnType<typeof setTimeout>)=>void;now?:()=>number};
 

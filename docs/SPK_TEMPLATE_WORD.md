@@ -85,3 +85,8 @@ Audit: [CHANGELOG.md](CHANGELOG.md), [LARAVEL_QA.md](LARAVEL_QA.md), WORKPLAN.md
 ## 19 November 2026 — Tempat mengikuti Branch
 
 Otoritas terbaru pengguna mengganti kota penandatanganan BA KH/SPK/BARP/BAPP dengan Branch PP terkait untuk form, preview, Word, cetak dan paket, termasuk output dokumen lama tanpa GET backfill. Tanggal/identitas/history/nilai tetap; tabel VIII.PENUTUP PP beserta kolom tanggal kosong tidak diubah sesuai konfirmasi pengguna. Tidak menambah kota/tanggal pada lampiran yang tidak memilikinya atau mengubah kasbon. Ini menggantikan kota tetap Surabaya/old place presentation hanya pada lingkup tersebut. Lihat [DOCUMENT_SIGNING_PLACE](DOCUMENT_SIGNING_PLACE.md) dan QA19November.
+
+
+## 19 November 2026 — Aturan tanggal dokumen terbaru
+
+Lihat [DOCUMENT_ISSUANCE_DATES.md](DOCUMENT_ISSUANCE_DATES.md). Pengguna menetapkan PP ≤ BA KH ≤ SPK ≤ awal pekerjaan; tanggal sama boleh, jarak1hari hanya saran. Ini menggantikan aturan18November tentang tanggal SPK bebas untuk dokumen baru/draf tersimpan eksplisit. Jadwal PPv3 memakai Tanggal Mulai Pekerjaan, tidak lagi Saat Penggunaan, dan akhir dihitung HK inklusif. Sah/Terbit/paket unmarked yang sedang approval tidak ditulis ulang; PP VIII tanggal tetap kosong. Marker/dua field JSON dan tabel tahap existing, tanpa migration/SQLhelper/API baru. Bukti serta batas pengujian ada di dokumen terbaru dan QAJSON.

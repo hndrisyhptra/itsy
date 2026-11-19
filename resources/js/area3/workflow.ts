@@ -1,3 +1,4 @@
+import { planningDates, projectIssueError } from './document-issuance';
 import { isOperation, OPERATION_APPROVERS, eligibleApprover, unitOptions } from './work-unit';
 import { approveProjectBundle } from './project-bundle';
 import { WHOLE_RUPIAH } from './currency';
@@ -71,7 +72,7 @@ export function saveProjectV2(s: State, input: Project, submit: boolean, submitt
   if (old && !canReviseSubmission(old)) throw new Error('PP terkunci pada status ini.');
   const version = (old?.workflowVersion ?? 1) >= 2 ? old!.workflowVersion! : s.schema >= 3 ? 3 : 2;
   p.moneyPolicy=version>=3?WHOLE_RUPIAH:undefined;
-  if (version >= 3) Object.assign(p, applyPlanTemplate(p, true, submit));
+  if (version >= 3) {for(const field of ['workStartDate'] as const)if(!Object.hasOwn(p,field)&&old&&Object.hasOwn(old,field))p[field]=old[field];Object.assign(p, applyPlanTemplate(planningDates(p,old), true, submit));}
   else { delete p.planTemplateVersion; delete p.teamText; delete p.durationDays; delete p.planBudget; delete p.planBudgetTotals; delete p.signatureRows; delete p.signatureUsers; delete p.closing; delete p.riskLevel; }
   p.approvalScheme=projectApprovalScheme(old??p);
   if(!unitOptions(s).includes(p.unit)||(old&&(old.unit==='Operation'?'Operation':'Konstruksi')!==p.unit))throw new Error('Unit kerja PP tidak sesuai akun atau dokumen tersimpan.');
@@ -99,6 +100,7 @@ export function saveProjectV2(s: State, input: Project, submit: boolean, submitt
     p.previousPlanning=old?.previousPlanning??(old&&!old.planBudget?{costs:structuredClone(old.costs),risk:old.risk,communication:old.communication,quality:old.quality}:undefined);
     p.signatureUsers=Object.fromEntries(Object.entries(chain).map(([role,id])=>{const u=s.users.find(u=>u.id===id)!;return [role,{userId:u.id,name:u.name,nik:u.nik??'',job:u.jabatan?.trim()??''}];}));
   }
+  const dateError=projectIssueError(p,submit);if(dateError)throw new Error(dateError);
   const errors = projectErrors(s, p,version>=3&&!p.parentId&&!submit); if (errors.length) throw new Error(errors.join('\n'));
   if (submit && (!p.intro.trim() || (!p.planTemplateVersion && (!p.team.length || p.team.some(t => !t.name.trim() || !t.job.trim()))) || (!p.planBudget && !p.risk.trim()) || !p.communication.trim() || !p.quality.trim() || p.schedule.some(v => (!p.planTemplateVersion || v.days > 0) && (!v.start || !v.end)))) throw new Error('Lengkapi seluruh rencana PP sebelum diajukan.');
   p.workflowVersion = version; p.pmUserId = chain[isOperation(p)?'Officer 1 Operation':'PM Konstruksi']; if (version >= 3) p.approverUserIds = chain; else p.managerUserId = chain['Manager Konstruksi']; p.status = submit ? 'Diajukan' : 'Draft'; p.approvals = []; p.approvalHistory = old?.approvalHistory ?? [];

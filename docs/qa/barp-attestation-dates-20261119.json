@@ -1,0 +1,206 @@
+{
+  "date": "2026-11-19",
+  "feature": "Pengesahan BA RP, pembuatan BA PP eksplisit dan tanggal dokumen terpisah",
+  "authority": "User requests next-step buttons, Sahkan BA RP in Dokumen BA RP, Buat BA PP only after attestation, and Admin-selected dates in both documents. Branch signing place remains automatic.",
+  "storage": {
+    "new_term_marker": "barpFlow=attest-before-bapp-v1",
+    "barp": "payment_terms.document_data.barp / barpAttestation / barpAttestationHistory",
+    "bapp_date": "ba_completions.document_data.date",
+    "migration": false,
+    "live_writes": false,
+    "legacy": "No read-time/bulk adoption. Existing unmarked running/paid records keep saved flow; explicit editable attestation may adopt."
+  },
+  "guards": [
+    "Admin + Branch/Region/work unit + Head correction",
+    "Sah PP/BAKH/SPK + positive bounded actuals + complete calendar-valid BARP",
+    "pending evidence blocks physical attestation",
+    "canonical source invalidates both attestations with retained actor/time/history",
+    "identical saves retain Sah",
+    "kasbon current-version rejection allows correction/re-attestation and fresh seven-stage cycle",
+    "BAPP export independently gated from newly Sah BARP; both keep blank wet signatures",
+    "paid/approval/money/net/ledger/release/continuation rules retained"
+  ],
+  "automated": {
+    "php": {
+      "passed": 369,
+      "assertions": 9095,
+      "environment": "SQLite :memory: fail-closed",
+      "log": "/private/tmp/area3-barp-final4-php.log"
+    },
+    "frontend": {
+      "passed": 407,
+      "log": "/private/tmp/area3-barp-final-fe.log"
+    },
+    "build": "TypeScript/Vite passed",
+    "assets": {
+      "manifest_references": 46,
+      "preloads": 37,
+      "profiles": 3
+    },
+    "pint": "passed",
+    "diff_check": "passed"
+  },
+  "queries": {
+    "barp_attestation_http": 38,
+    "bapp_attestation_http": 36,
+    "seven_approval_stages": [
+      55,
+      57,
+      58,
+      59,
+      60,
+      61,
+      65
+    ],
+    "sessionless_transfer_worker": 44,
+    "settle_and_apm_edit": 40,
+    "new_bar_p_pending_upload_check": "one indexed lookup per attestation command",
+    "catalog": "same authorized loaded Map graph and 20 DOM rows, not SQL paging",
+    "limits": "Isolated fixtures only; no production load benchmark or live server query inspection."
+  },
+  "browser": {
+    "evidence": [
+      {
+        "unit": "Konstruksi",
+        "commands": [
+          "createSettlementTerm",
+          "attestBarp",
+          "prepareBapp",
+          "attestBapp"
+        ],
+        "cancel_writes": 0,
+        "approvals": 0,
+        "paid": 0,
+        "preview_buttons": 4,
+        "barpDate": "2026-11-20",
+        "bappDate": "2026-11-23",
+        "viewports": [
+          375,
+          768,
+          1440
+        ],
+        "themes": [
+          "light",
+          "dark"
+        ],
+        "js_errors": 0
+      },
+      {
+        "unit": "Operation",
+        "commands": [
+          "createSettlementTerm",
+          "attestBarp",
+          "prepareBapp",
+          "attestBapp"
+        ],
+        "cancel_writes": 0,
+        "approvals": 0,
+        "paid": 0,
+        "preview_buttons": 4,
+        "barpDate": "2026-11-20",
+        "bappDate": "2026-11-23",
+        "viewports": [
+          375,
+          768,
+          1440
+        ],
+        "themes": [
+          "light",
+          "dark"
+        ],
+        "js_errors": 0
+      }
+    ],
+    "transport": "Actual App/components + synthetic state/mock command/private transport; all external requests blocked. Stops at opening kasbon, no browser financial submission/transfer. Real isolated HTTP covers seven approvals/transfer/settle/rejection/pending-evidence/Head guards.",
+    "checks": [
+      "Cancel YA/TIDAK 0/1 mutation",
+      "Draft save does not create BA PP; attest does not create BA PP",
+      "Explicit Buat BA PP routes exact confirmed term",
+      "BA RP 20 Nov and BA PP 23 Nov display separately",
+      "Four previews and native Word generation",
+      "Next-step table button routes exact payment",
+      "375/768/1440 light+dark; no JS errors/page overflow"
+    ],
+    "harness_notes": [
+      "Exact label locators initially missed helper/option text; corrected to prefix matching without product label changes.",
+      "Screenshots wait for persistence and theme transitions; no production CSS workaround."
+    ],
+    "screenshots_visually_checked": [
+      "Konstruksi-list-barp.png",
+      "Operation-barp-sah.png"
+    ]
+  },
+  "documents": {
+    "native_docx_xml_crc_checked": 6,
+    "native_rendered_documents": 4,
+    "native_rendered_pages": 6,
+    "browser_pdf_documents": 4,
+    "browser_pdf_pages": 6,
+    "all_12_pages_visually_reviewed": "Three contact sheets; source PNGs retained",
+    "render_evidence": [
+      {
+        "name": "Konstruksi-barp",
+        "file": "/private/tmp/area3-barp-attestation-20261119/Konstruksi-barp-render/Konstruksi-barp.pdf",
+        "pages": 2,
+        "nonblank": true,
+        "date": "20 November 2026"
+      },
+      {
+        "name": "Konstruksi-barp",
+        "file": "/private/tmp/area3-barp-attestation-20261119/Konstruksi-barp-browser.pdf",
+        "pages": 2,
+        "nonblank": true,
+        "date": "20 November 2026"
+      },
+      {
+        "name": "Konstruksi-bapp",
+        "file": "/private/tmp/area3-barp-attestation-20261119/Konstruksi-bapp-render/Konstruksi-bapp.pdf",
+        "pages": 1,
+        "nonblank": true,
+        "date": "23 November 2026"
+      },
+      {
+        "name": "Konstruksi-bapp",
+        "file": "/private/tmp/area3-barp-attestation-20261119/Konstruksi-bapp-browser.pdf",
+        "pages": 1,
+        "nonblank": true,
+        "date": "23 November 2026"
+      },
+      {
+        "name": "Operation-barp",
+        "file": "/private/tmp/area3-barp-attestation-20261119/Operation-barp-render/Operation-barp.pdf",
+        "pages": 2,
+        "nonblank": true,
+        "date": "20 November 2026"
+      },
+      {
+        "name": "Operation-barp",
+        "file": "/private/tmp/area3-barp-attestation-20261119/Operation-barp-browser.pdf",
+        "pages": 2,
+        "nonblank": true,
+        "date": "20 November 2026"
+      },
+      {
+        "name": "Operation-bapp",
+        "file": "/private/tmp/area3-barp-attestation-20261119/Operation-bapp-render/Operation-bapp.pdf",
+        "pages": 1,
+        "nonblank": true,
+        "date": "23 November 2026"
+      },
+      {
+        "name": "Operation-bapp",
+        "file": "/private/tmp/area3-barp-attestation-20261119/Operation-bapp-browser.pdf",
+        "pages": 1,
+        "nonblank": true,
+        "date": "23 November 2026"
+      }
+    ],
+    "limits": "Appendices checked as native XML only this revision, not re-rendered; complete combined package not freshly rendered. No Microsoft Word desktop/physical print/live login/server/MySQL DDL/Telegram/real transfer test."
+  },
+  "operational": {
+    "deploy": false,
+    "commit_push": false,
+    "active_its_env_worker_dompis_change": false,
+    "simulation": "Only QA browser fixtures and isolated test data. Application feature uses authenticated SQL commands, not demo state."
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "date": "2026-11-19",
+  "feature": "Legacy BARP locked, paid first payment and current unpaid second payment",
+  "user_case": "Termin 1 sudah lunas; Termin 2 sedang pengajuan; BARP tersimpan, BAPP belum dibuat.",
+  "diagnosis": "Reproduced local code/UI dead end: WorkNextAction required barpCurrent for all creation, legacy has no new attestation marker and readonly BARP cannot supply one. Existing backend prepareBapp already supports explicit eligible unpaid legacy preparation. No user/server record inspection.",
+  "changes": [
+    "Shared savedBappPreparationAllowed guard mirrors existing prepareBapp eligibility.",
+    "Actual next-step creation button in list/card and missing-BAPP route.",
+    "Saved amount passed from indexed list model; same exact term UUID and confirmed-state navigation.",
+    "Readonly core BARP stays locked; actual return/rejection required for changes; paid sibling preserved.",
+    "New requiresBarp gate, roles, scope, Head/settlement/money/private/ledger/approval rules unchanged."
+  ],
+  "automated": {
+    "php": {
+      "passed": 369,
+      "assertions": 9095,
+      "log": "/private/tmp/area3-legacy-barp-final-php.log"
+    },
+    "frontend": {
+      "passed": 409,
+      "new_regressions": 2,
+      "log": "/private/tmp/area3-legacy-barp-final-fe.log"
+    },
+    "build": "TypeScript/Vite passed",
+    "assets": {
+      "manifest_references": 46,
+      "preloads": 37,
+      "profiles": 3
+    },
+    "diff_check": "passed"
+  },
+  "browser": {
+    "results": [
+      {
+        "unit": "Konstruksi",
+        "termStatus": "Diajukan",
+        "commands": [
+          "prepareBapp"
+        ],
+        "cancelWrites": 0,
+        "paidFirstUnchanged": true,
+        "barpLocked": true,
+        "approvalsUnchanged": true,
+        "bappExactTerm": true,
+        "viewports": [
+          375,
+          768,
+          1440
+        ],
+        "themes": [
+          "light",
+          "dark"
+        ],
+        "jsErrors": 0
+      },
+      {
+        "unit": "Operation",
+        "termStatus": "Disetujui",
+        "commands": [
+          "prepareBapp"
+        ],
+        "cancelWrites": 0,
+        "paidFirstUnchanged": true,
+        "barpLocked": true,
+        "approvalsUnchanged": true,
+        "bappExactTerm": true,
+        "viewports": [
+          375,
+          768,
+          1440
+        ],
+        "themes": [
+          "light",
+          "dark"
+        ],
+        "jsErrors": 0
+      }
+    ],
+    "method": "Actual App, synthetic two-payment state, command transport mocked; external requests blocked. Existing backend pure legacy prepare regression and full SQL memory suite rerun.",
+    "reviewed_screenshots": [
+      "Konstruksi-locked-barp.png",
+      "Operation-bapp-ready.png"
+    ],
+    "limits": "Stops at prepared BAPP form, not financial submission/transfer/live login/server. Word/PDF not rerendered because generators/models unchanged."
+  },
+  "performance": {
+    "new_sql": 0,
+    "new_endpoint": 0,
+    "new_schema_or_migration": 0,
+    "new_poller": 0,
+    "query_evidence": "Existing pure legacy prepareBapp regression asserts zero DB queries; existing BAPP HTTP fixture36. No new server queries or query-per-row. Read model is client20DOM/loaded Map, not SQL pagination/load benchmark."
+  },
+  "operational": {
+    "live_its_env_server_worker_dompis_mutation": false,
+    "commit_push_deploy_migrate": false,
+    "data_rewrite": "No bulk/GET backfill, financial status reset, fabricated BARP attestation or altered prior approval. Explicit prepareBapp retains established server audit/revision/receipt/source gates."
+  }
+}

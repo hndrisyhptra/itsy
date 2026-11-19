@@ -54,3 +54,16 @@ Regresi domain PHP/TS 500 komponen melarang linear KHS find/record per baris; PH
 Lihat [LARAVEL_QA](LARAVEL_QA.md) dan [bukti terstruktur](qa/pp-header-boq-khs-20261109.json) untuk hasil akhir. Uji mencakup mismatch tanpa konfirmasi, client forging, KHS berubah saat draf, snapshot submitted tetap, total SQL setelah volume/hapus, Rp0 sebelum upload, urutan tab/read-only, legacy v2, PP lanjutan, ceiling Mandor, nullable/zero, formula/source serta guards SQL dan rollback.
 
 Tes menggunakan fail-closed SQLite `:memory:` dan disk privat palsu. Ekspresi CHECK dieksekusi pada tabel test SQLite; SQL ALTER MySQL/MariaDB diverifikasi dengan mock, bukan migration pada engine produksi. Browser autentikasi/responsif/keyboard, Microsoft Word/cetak dan beban banyak pengguna belum diuji ulang. Upload/pricing/SQL merupakan implementasi nyata pada aplikasi login; contoh BOQ tetap simulasi offline saja dan tidak tersedia pada akun aktif.
+
+
+## 19 November 2026 — Aturan tanggal dokumen terbaru
+
+Lihat [DOCUMENT_ISSUANCE_DATES.md](DOCUMENT_ISSUANCE_DATES.md). Pengguna menetapkan PP ≤ BA KH ≤ SPK ≤ awal pekerjaan; tanggal sama boleh, jarak1hari hanya saran. Ini menggantikan aturan18November tentang tanggal SPK bebas untuk dokumen baru/draf tersimpan eksplisit. Jadwal PPv3 memakai Tanggal Mulai Pekerjaan, tidak lagi Saat Penggunaan, dan akhir dihitung HK inklusif. Sah/Terbit/paket unmarked yang sedang approval tidak ditulis ulang; PP VIII tanggal tetap kosong. Marker/dua field JSON dan tabel tahap existing, tanpa migration/SQLhelper/API baru. Bukti serta batas pengujian ada di dokumen terbaru dan QAJSON.
+
+## 19 November 2026 — Koreksi Header tanpa Tanggal Terbit PP
+
+Permintaan pengguna menghapus tambahan Tanggal Terbit PP pada Header. Pengguna juga menegaskan tanggal dokumen dapat disesuaikan selama tidak melampaui jadwal/HK; urutan wajib dan batas awal pekerjaan yang dikonfirmasi sebelumnya tetap berlaku. Form Header dan tabel Header pada preview/Word/cetak/paket PP tidak lagi menampilkan kolom tersebut. **Saat Penggunaan** menjadi acuan tanggal PP untuk penyusunan/revisi editable, sementara awal pekerjaan tetap dipilih terpisah pada Jadwal Proyek dan akhir dihitung HK inklusif.
+
+Server/TypeScript `planning` memaksakan internal `issueDate = date` pada penyimpanan editablev3; `issueDate` client diabaikan dan tidak menjadi isian wajib tersembunyi. Validasi mengarahkan pengguna ke Saat Penggunaan atau awal pekerjaan, bukan form yang sudah dihapus. PP ≤ BA KH ≤ SPK ≤ awal pekerjaan, equality boleh, jarak1hari hanya saran. Tanggal BA KH/SPK tetap dapat dipilih manual dalam batas tersebut. Field internal lama tidak dihapus/backfill: Sah/Terbit/paket pending memakai snapshot/manifest/keputusan tersimpan, tidak dinilai ulang dari Saat Penggunaan pada GET/preview/Head. VIII.PENUTUP tetap kosong, Branch place dan blank wetTTD tetap.
+
+Menggunakan JSON/tabel yang sama,0SQLhelper/API/schema/migration/dependency baru. Perubahan kode lokal, tanpa liveits/MySQL/.env/daemon/server/Dompis write. Hasil dan keterbatasan QA terbaru dicatat di [audit koreksi](qa/document-issuance-no-header-20261119.json); hasil penanggalan awal di bagian sebelumnya tetap sebagai riwayat.

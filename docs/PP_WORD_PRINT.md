@@ -68,3 +68,16 @@ Tanggal cap PP/kasbon tidak ditampilkan. Pengaju kasbon otomatis ditandai setela
 ## 19 November 2026 — Tempat mengikuti Branch
 
 Otoritas terbaru pengguna mengganti kota penandatanganan BA KH/SPK/BARP/BAPP dengan Branch PP terkait untuk form, preview, Word, cetak dan paket, termasuk output dokumen lama tanpa GET backfill. Tanggal/identitas/history/nilai tetap; tabel VIII.PENUTUP PP beserta kolom tanggal kosong tidak diubah sesuai konfirmasi pengguna. Tidak menambah kota/tanggal pada lampiran yang tidak memilikinya atau mengubah kasbon. Ini menggantikan kota tetap Surabaya/old place presentation hanya pada lingkup tersebut. Lihat [DOCUMENT_SIGNING_PLACE](DOCUMENT_SIGNING_PLACE.md) dan QA19November.
+
+
+## 19 November 2026 — Aturan tanggal dokumen terbaru
+
+Lihat [DOCUMENT_ISSUANCE_DATES.md](DOCUMENT_ISSUANCE_DATES.md). Pengguna menetapkan PP ≤ BA KH ≤ SPK ≤ awal pekerjaan; tanggal sama boleh, jarak1hari hanya saran. Ini menggantikan aturan18November tentang tanggal SPK bebas untuk dokumen baru/draf tersimpan eksplisit. Jadwal PPv3 memakai Tanggal Mulai Pekerjaan, tidak lagi Saat Penggunaan, dan akhir dihitung HK inklusif. Sah/Terbit/paket unmarked yang sedang approval tidak ditulis ulang; PP VIII tanggal tetap kosong. Marker/dua field JSON dan tabel tahap existing, tanpa migration/SQLhelper/API baru. Bukti serta batas pengujian ada di dokumen terbaru dan QAJSON.
+
+## 19 November 2026 — Koreksi Header tanpa Tanggal Terbit PP
+
+Permintaan pengguna menghapus tambahan Tanggal Terbit PP pada Header. Pengguna juga menegaskan tanggal dokumen dapat disesuaikan selama tidak melampaui jadwal/HK; urutan wajib dan batas awal pekerjaan yang dikonfirmasi sebelumnya tetap berlaku. Form Header dan tabel Header pada preview/Word/cetak/paket PP tidak lagi menampilkan kolom tersebut. **Saat Penggunaan** menjadi acuan tanggal PP untuk penyusunan/revisi editable, sementara awal pekerjaan tetap dipilih terpisah pada Jadwal Proyek dan akhir dihitung HK inklusif.
+
+Server/TypeScript `planning` memaksakan internal `issueDate = date` pada penyimpanan editablev3; `issueDate` client diabaikan dan tidak menjadi isian wajib tersembunyi. Validasi mengarahkan pengguna ke Saat Penggunaan atau awal pekerjaan, bukan form yang sudah dihapus. PP ≤ BA KH ≤ SPK ≤ awal pekerjaan, equality boleh, jarak1hari hanya saran. Tanggal BA KH/SPK tetap dapat dipilih manual dalam batas tersebut. Field internal lama tidak dihapus/backfill: Sah/Terbit/paket pending memakai snapshot/manifest/keputusan tersimpan, tidak dinilai ulang dari Saat Penggunaan pada GET/preview/Head. VIII.PENUTUP tetap kosong, Branch place dan blank wetTTD tetap.
+
+Menggunakan JSON/tabel yang sama,0SQLhelper/API/schema/migration/dependency baru. Perubahan kode lokal, tanpa liveits/MySQL/.env/daemon/server/Dompis write. Hasil dan keterbatasan QA terbaru dicatat di [audit koreksi](qa/document-issuance-no-header-20261119.json); hasil penanggalan awal di bagian sebelumnya tetap sebagai riwayat.

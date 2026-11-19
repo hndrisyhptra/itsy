@@ -5,7 +5,7 @@ import { type State, type Term, type Role, normalizeWorkflow, saveProject, decid
 
 function state(scenario = 'B') { return normalizeWorkflow(seed(scenario)); }
 function actor(s: State, role: Role, id?: string) { s.role = role; selectActor(s, id ?? s.users.find(u => u.role === role && u.active)!.id); }
-function project(s: State) { const p = structuredClone(s.projects[0]); p.id = p.rootId = 'pp-v2-new'; p.no = 'FORGED'; p.unit = 'Konstruksi'; p.pmUserId = 'user-1'; p.managerUserId = 'user-2'; p.boq = [{ ...p.boq[0], id: 'new-row', qty: 10.125, m: 1 }]; return p; }
+function project(s: State) { const p = structuredClone(s.projects[0]); p.issueDate='2026-11-01';p.workStartDate=p.date;p.id = p.rootId = 'pp-v2-new'; p.no = 'FORGED'; p.unit = 'Konstruksi'; p.pmUserId = 'user-1'; p.managerUserId = 'user-2'; p.boq = [{ ...p.boq[0], id: 'new-row', qty: 10.125, m: 1 }]; return p; }
 function payment(s: State, final = false) { assignProjectApprovers(s, s.projects[0].id, 'user-1', 'user-2'); const id = createTerm(s, s.spks[0].id), t = s.terms.find(t => t.id === id)!; t.type = final ? 'Final' : 'Parsial'; const row = s.deals[0].rows[0].rowId; t.actuals = { [row]: { m: 100, s: 80 } }; saveTerm(s, t, true); return s.terms.find(t => t.id === id)!; }
 function approve(s: State, t: Term) { actor(s, 'PM Konstruksi'); decide(s, t.id, 'Setujui', 'PM demo'); actor(s, 'Manager Konstruksi'); decide(s, t.id, 'Setujui', 'Manager demo'); }
 

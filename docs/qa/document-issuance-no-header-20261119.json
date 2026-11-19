@@ -1,0 +1,194 @@
+{
+  "date": "2026-11-19",
+  "feature": "PP Header without a separate issue-date input or document row",
+  "authority": {
+    "order": "PP issue <= BA KH issue <= SPK issue <= PP work start",
+    "spacing": "One day suggested only; equality allowed",
+    "pp_closing_date_column": "unchanged, empty",
+    "correction": "User removes Tanggal Terbit PP and keeps editable dates bounded by the previously confirmed work chronology",
+    "pp_reference": "Saat Penggunaan on explicit editable v3 save; frozen historical issueDate stays unchanged"
+  },
+  "storage": {
+    "marker": "pre-work-issue-v1",
+    "fields": [
+      "project_plans.document_data.issueDate",
+      "project_plans.document_data.workStartDate",
+      "project_plan_schedule existing projection"
+    ],
+    "migration": false,
+    "get_backfill": false,
+    "live_writes": false,
+    "client_issueDate": "ignored by canonical editable save; not a required input"
+  },
+  "php": {
+    "tests": 366,
+    "assertions": 8870,
+    "db": "SQLite :memory: only",
+    "shared_vectors": 14,
+    "new_tests": 6
+  },
+  "frontend": {
+    "tests": 397,
+    "new_tests": 5
+  },
+  "query": {
+    "pure_helpers": 0,
+    "complete_project_creation_http_including_revision_read": 98,
+    "creation_fixture_budget": 100,
+    "existing_budget_update_fixture": 84,
+    "existing_update_budget": 90,
+    "new_sql_api_lookup": 0,
+    "load_benchmark": false
+  },
+  "build": {
+    "typescript_vite": "passed",
+    "pint": "passed",
+    "manifest_references": 45,
+    "preload_dependencies": 36,
+    "profiles": 3,
+    "diff_check": "passed"
+  },
+  "browser": [
+    {
+      "unit": "Konstruksi",
+      "mode": "editor",
+      "viewports": [
+        375,
+        768,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "js_errors": 0,
+      "requests": 2,
+      "writes": 0
+    },
+    {
+      "unit": "Konstruksi",
+      "mode": "pp",
+      "viewports": [
+        375,
+        768,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "js_errors": 0,
+      "requests": 2,
+      "writes": 0
+    },
+    {
+      "unit": "Konstruksi",
+      "mode": "fields",
+      "viewports": [
+        375,
+        768,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "js_errors": 0,
+      "requests": 2,
+      "writes": 0
+    },
+    {
+      "unit": "Operation",
+      "mode": "editor",
+      "viewports": [
+        375,
+        768,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "js_errors": 0,
+      "requests": 2,
+      "writes": 0
+    },
+    {
+      "unit": "Operation",
+      "mode": "pp",
+      "viewports": [
+        375,
+        768,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "js_errors": 0,
+      "requests": 2,
+      "writes": 0
+    },
+    {
+      "unit": "Operation",
+      "mode": "fields",
+      "viewports": [
+        375,
+        768,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "js_errors": 0,
+      "requests": 2,
+      "writes": 0
+    }
+  ],
+  "browser_checks": [
+    "No Tanggal Terbit PP input on actual ProjectEditor",
+    "No extra issue-date row on actual PP preview",
+    "Saat Penggunaan remains editable",
+    "Work start and HK edits recompute inclusive end",
+    "Valid Saat Penggunaan edit leaves work dates intact",
+    "Work start before PP reference shows native bounds and warning",
+    "SPK date bounds retained",
+    "VIII dates empty",
+    "No live server requests or write transactions"
+  ],
+  "render": {
+    "docx": 2,
+    "native_pages": 6,
+    "all_native_pages_visually_inspected": true,
+    "browser_pdf": 2,
+    "browser_pages": 8,
+    "browser_contact_sheets_visually_inspected": true,
+    "nonblank": true,
+    "zip_crc_xml": "passed",
+    "word_closing_date_and_signature_cells_empty": true,
+    "artifacts": "/private/tmp/area3-no-issue-header-20261119",
+    "removed_header_row_absent_in_docx_pdf": true
+  },
+  "regression": [
+    "Canonical issueDate comes from Header date despite forged client issueDate",
+    "Omitting issueDate does not block a valid save",
+    "Late/invalid visible date edits reject atomically with revision and ledger intact",
+    "Independent schedule remains canonical and does not use usage as start",
+    "Old frozen package can finish at Head with unchanged saved issue dates",
+    "Full existing workflow, financial and access suites retained"
+  ],
+  "limits": [
+    "Fixtures only; no its/MySQL live, aaPanel, .env, worker, migration or Dompis change",
+    "No live user login, production browser, Microsoft Word desktop or physical print verification",
+    "No load/concurrency benchmark",
+    "BA KH/SPK native render and full combined package not rerendered; unchanged generators consume saved valid dates",
+    "Historical v1/v2 workflows retain their original schedule semantics"
+  ],
+  "notes": [
+    "Updated previous date-only fixture examples to obey the visible PP reference before BA KH; no validation gate removed",
+    "Initial browser script waited for the deliberately deleted field; selector changed to the retained date input",
+    "Chrome launch required approved separate test execution; all requests intercepted to synthetic host",
+    "No migration, live account, its/MySQL, worker, aaPanel or Dompis changes"
+  ]
+}

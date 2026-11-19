@@ -1,4 +1,4 @@
-import { bappCurrent } from './bapp-workflow';
+import { barpCurrent,requiresBarp,bappCurrent,requiresBapp } from './bapp-workflow';
 import { Check,Clock3 } from 'lucide-react';
 import type { State,Project,Term,Role,Deal,Spk,Bapp } from './domain';
 import { approvalRoles,selectedApprover,nextApprovalRole } from './domain';
@@ -16,7 +16,7 @@ export function paymentFlowSteps(t:Term,bapp?:Bapp):FlowStep[]{
   const approvals={label:modern?'7 Approval':'Approval Dokumen',detail:t.status==='Diajukan'?`Menunggu ${nextApprovalRole(t)??'approval'}`:['Ditolak','Dikembalikan'].includes(t.status)?`Perbaikan dan ajukan ulang dari ${approvalRoles(t)[0]}`:approved?'Seluruh persetujuan selesai':`${t.approvals.length}/${approvalRoles(t).length} persetujuan`,done:approved,current:t.status==='Diajukan'};
   if(!finance)return [approvals,{label:'Berkas & Finance',detail:`Scan TTD: ${t.scan?.status??'belum diunggah'}`,done:t.scan?.status==='Valid'},{label:'Realisasi',detail:t.apm?`APM ${t.apm}`:'Mengikuti alur pembayaran tersimpan',done:paid}];
   const proof=!!t.transferProof&&t.transferProof.kasbonId===t.kasbon?.id;
-  return [...(t.type==='Final'&&t.completionFlow==='bapp-before-payment-v1'?[{label:'BA RP',detail:'Rekonsiliasi Final tersimpan',done:!!t.barp},{label:'Sahkan BA PP',detail:bappCurrent(bapp,t)?'BA PP Sah sesuai BA RP':'Admin mengesahkan sebelum pengajuan kasbon/pembayaran',done:bappCurrent(bapp,t),current:!bappCurrent(bapp,t)}]:[]),...(modern?[kasbon,approvals]:[approvals,kasbon]),...(!modern?[{label:'Review Finance',detail:t.financePayment?.status??'Menunggu review',done:['Diverifikasi','Dibayar'].includes(t.financePayment?.status??''),current:t.financePayment?.status==='Kasbon Terbit'}]:[]),
+  return [...(requiresBapp(t)?[{label:'BA RP',detail:requiresBarp(t)?barpCurrent(t)?'BA RP Sah sesuai data tersimpan':'Admin melengkapi tanggal dan mengesahkan BA RP':'Rekonsiliasi pekerjaan tersimpan',done:requiresBarp(t)?barpCurrent(t):!!t.barp&&!!bapp,current:requiresBarp(t)&&!barpCurrent(t)},{label:'Sahkan BA PP',detail:bappCurrent(bapp,t)?'BA PP Sah sesuai BA RP':'Admin mengesahkan sebelum pengajuan kasbon/pembayaran',done:bappCurrent(bapp,t),current:(!requiresBarp(t)||barpCurrent(t))&&!bappCurrent(bapp,t)}]:[]),...(modern?[kasbon,approvals]:[approvals,kasbon]),...(!modern?[{label:'Review Finance',detail:t.financePayment?.status??'Menunggu review',done:['Diverifikasi','Dibayar'].includes(t.financePayment?.status??''),current:t.financePayment?.status==='Kasbon Terbit'}]:[]),
     {label:'Bukti Transfer',detail:proof?'Bukti transfer versi kasbon aktif tersimpan':'Diunggah Finance setelah persetujuan',done:proof,current:approved&&!proof},
     {label:'Tandai Lunas',detail:paid?(t.apm?`Lunas · APM ${t.apm}`:'Lunas · APM belum diisi (opsional)'):'Finance menandai lunas setelah upload bukti',done:paid,current:approved&&proof&&!paid}];
 }

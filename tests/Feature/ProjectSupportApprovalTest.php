@@ -47,6 +47,8 @@ class ProjectSupportApprovalTest extends TestCase
         $state = $this->getJson('/api/prototype/state')->assertOk()->json('state');
         $p = app(PrototypeWorkspaceService::class)->scenario('B')['projects'][0];
         $p['id'] = $p['rootId'] = 'pp-project-support';
+        $p['issueDate'] = '2026-11-01';
+        $p['workStartDate'] = '2026-11-02';
         $p['branch'] = 'PEKALONGAN';
         $p['unit'] = 'Konstruksi';
         $p['riskLevel'] = 'SEDANG';

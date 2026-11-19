@@ -60,3 +60,8 @@ Snapshot per dokumen masih digunakan untuk rincian dinamis, riwayat v1 tanpa ide
 104 pengujian PHP / 1.406 assertion pada SQLite `:memory:`; 67 pengujian frontend; build produksi dan Pint lulus. Pengujian tambahan membuktikan pembacaan tetap berjalan setelah arsip tidak digunakan, satu ID Project memiliki dua PP, nomor dan ID unik, serta rollback SQL menyeluruh.
 
 Pada server MariaDB sementara terisolasi, salinan cadangan berhasil dimigrasikan/dipindahkan dua kali tanpa duplikasi. Uji perintah server berhasil menjalankan PP → lima approval → BA KH/SPK → termin Final → lima approval → scan → verifikasi Finance → APM, menghasilkan 20 receipt, 3 movement, 1 SPK, 1 scan dan 1 settlement. Scan dalam uji MySQL ini berupa metadata sintetis; validasi upload file aktual tetap diuji pada suite HTTP terisolasi. Tidak ada transaksi/akun uji yang ditambahkan ke database pengguna. Browser setelah login belum diuji manual pada sesi ini.
+
+
+## 19 November 2026 — Optimasi workspace, BOQ dan App shell
+
+Pembacaan workspace runtime tidak memuat arsip state; lookup PP berubah dibatch, BOQ/jadwal/biaya/tim/anggaran ditulis dalam batch dengan preflight identitas komponen dan rollback. Audit/receipt berbagi hash identik percommand. Inbox/search App memakai memo state/query, hasil6PP-first dan Map exactdeal. Nominal, zero/nullable, snapshot/source/history/paid/Branch/unit/approval/private/ledger dan lock tetap; tanpa migration/indeks/API/poller/cacheakses baru atau livewrite. Full-write20PP1330→353query; PP500BOQ/1000komponen59query; completePPHTTP98→75 danbudgetupdate84→55 pada fixture isolated. Batas load/server/bootstrap/Word serta hasil lengkap: [PERFORMANCE_OPTIMIZATION](PERFORMANCE_OPTIMIZATION.md), [QA](qa/performance-optimization-20261119.json).

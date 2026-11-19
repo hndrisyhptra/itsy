@@ -58,3 +58,19 @@ Browser sintetis6kombinasi375/768/1440×light/dark menggunakan React sebenarnya 
 Tidak ada migration baru **untuk fitur BA PP ini**. Operator tetap harus menerapkan migration fitur terdahulu yang belum terpasang. Setelah backup, pull kode lengkap, build aset dan periksa manifest; restart hanya worker upload Area 3 agar handler memakai kode baru, lalu muat ulang halaman. Jangan reset/migrate:fresh/seed database berdata. Agen tidak deploy/restart/migrate/.env atau mengubah its aktif/Dompis. Backup SQLite demo233472byte/0600 dibuat baca-saja sebelum edit.
 
 Belum diuji: aaPanel/MySQL aktual, akun live, concurrency/load besar, Microsoft Word desktop, cetak/TTD fisik dan transfer bank nyata. Transaksi browser hanya fixture sintetis; keputusan/payment produksi tidak disimulasikan sebagai kejadian nyata.
+
+## 19 November 2026 — BA RP dan BA PP setiap pengajuan sebelum pembayaran
+
+Pengguna meminta alur sederhana SPK→BA RP+lampiran→Sahkan BA PP+lampiran→Kasbon/Pembayaran, dan mengonfirmasi Parsial juga wajib BA PP. Sidebar BA RP&BA PP dipindahkan sebelum Pembayaran dengan dua submenu/tab, daftar20/search, langkah bernomor dan satu tombol utama per tahap. Pengesahan/lanjut menunggu server, YA/TIDAK tetap, input aktual dipusatkan di BA RP, empat preview disediakan di pembayaran dan fitur release hanya Final/collapsible.
+
+Marker server bapp-each-payment-v2/barp-each-payment-v2 pada transaksi baru memakai satu BA PP perterm existingFKfinal_term_id (tanpa typeCHECK), nomorBAPP/SPK/Tn unik, source-current invalidasi/riwayat pengesahan. v1/historical/paid tidak dibackfill; SiapkanBA PP adopsi lama eksplisit mempertahankan actualapproval/UUID. Kasbon/transfer/pelunasan menahan sumber belumSah, Partial tidak menutup PP atau membuka release/continuation. Paket Final mencakup BA PP Partial aktual/lampiran, max20parts; uang/PPh/7approval/Branch/unit/private gates tetap. Map-based loadedreadmodel/20DOM, no perrow SQL/API, safe listpoller existing; Partial transfer menambah satuindexedBAPPlookup sepertiFinal. Tidak ada migration/dependency/livewrite/its/env/server/Dompis change. [Aturan dan bukti QA](WORK_DOCUMENTS_FLOW.md).
+
+
+## 19 November 2026 — Pengesahan BA RP dan tanggal BA PP tersendiri
+
+Menambah tombol Langkah Berikutnya, Sahkan BA RP pada card dokumen, lalu Buat BA PP eksplisit dan Sahkan BA PP. New server marker barpFlow=attest-before-bapp-v1 menghindari pembuatan BA PP dari simpan draf; attestation source/actor/time, revision/receipt/Branch/unit/Head/upload guards dan invalidasi dua dokumen menjaga sumber. Tanggal BA RP dan BA PP dipilih terpisah, tempat otomatis Branch, kalender valid, legacy read memakai tanggal tersimpan tanpa backfill. Word/cetak BARP Sah tersedia dengan parent Sah, BAPP Draft tetap dikunci terpisah. Revisi setelah penolakan tetap melalui kasbon versi baru/all-seven restart. Existing JSON/tabel,0migration/APIendpoint/dependency/poller/live write. Detail serta batas verifikasi: [WORK_DOCUMENTS_FLOW](WORK_DOCUMENTS_FLOW.md), [QA](qa/barp-attestation-dates-20261119.json).
+
+
+## 19 November 2026 — Jalur BA PP Termin 2 dari BA RP lama tersimpan
+
+Memperbaiki tombol lanjut yang terhenti pada BA RP legacy terkunci. Admin kini dapat memilih Buat BA PP dari BA RP Tersimpan untuk exact unpaid term yang memenuhi prepareBapp existing, termasuk Diajukan/Disetujui. Termin1 lunas dan approval/history/isi BARP Termin2 tetap; tidak membuat term lain/markSah palsu/reset status. Form pending/approved tetap perlu pengembalian/penolakan nyata untuk koreksi. New BARP gate, scope dan settlement guards tetap. UI memakai loaded Map/20DOM/amount existing,0newSQL/API/schema/migration/live write. Lihat [WORK_DOCUMENTS_FLOW](WORK_DOCUMENTS_FLOW.md) dan [QA](qa/legacy-barp-bapp-20261119.json).

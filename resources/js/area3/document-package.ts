@@ -1,3 +1,4 @@
+import {bappCurrent,requiresBapp} from './bapp-workflow';
 import type { State } from './domain';
 import { canPrintBarp } from './barp-content';
 
@@ -10,7 +11,9 @@ export function documentPackage(s:State,bappId:string){
   if(project.status!=='Sah'||deal.status!=='Sah'||spk.status!=='Sah'||final.type!=='Final'||!canPrintBarp(final))throw new Error('Paket membutuhkan PP, BA KH, SPK Sah dan seluruh approval Final lengkap.');
   const terms=s.terms.filter(t=>t.spkId===spk.id&&t.number<=final.number&&t.status==='Disetujui').sort((a,b)=>a.number-b.number);
   if(terms.length>3||!terms.every(canPrintBarp))throw new Error('Persetujuan dokumen pembayaran belum lengkap.');
-  return {bapp,final,spk,deal,project,terms};
+  const completions=new Map(s.bapps.filter(b=>b.status==='Sah').map(b=>[b.termId,b]));
+  if(terms.some(t=>requiresBapp(t)&&!bappCurrent(completions.get(t.id),t)))throw new Error('BA PP tiap pengajuan harus Sah sesuai BA RP sebelum paket diunduh.');
+  return {bapp,final,spk,deal,project,terms,completions};
 }
 export type DocumentPackage = ReturnType<typeof documentPackage>;
 export function documentPackageFilename(no:string,extension:'docx'|'pdf'){

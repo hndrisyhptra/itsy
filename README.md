@@ -1,5 +1,9 @@
 # it's Area 3 — Construction Workspace
 
+**19 November 2026 — Dokumen sebelum pembayaran:** sidebar BA RP & BA PP sebelum Pembayaran. SPK Sah → Sahkan BA RP → Buat BA PP → Sahkan BA PP & Lanjut Kasbon → Isi Kasbon & Ajukan Pembayaran. Berlaku tiap pengajuan, termasuk Parsial. Approval/paid lama tidak dikonversi massal; pelepasan tetap Final. Tanpa migration baru. [Panduan](docs/WORK_DOCUMENTS_FLOW.md).
+
+**19 November 2026 — Penanggalan baru (koreksi Header):** tidak ada isian tambahan Tanggal Terbit PP. Saat Penggunaan menjadi acuan tanggal PP; awal pekerjaan diisi terpisah pada Jadwal Proyek dan akhir otomatis berdasarkan HK. Urutan PP ≤ BA KH ≤ SPK ≤ awal pekerjaan, equality boleh dan jarak1hari hanya saran. Preview/Word/cetak mengikuti Header tanpa kolom tambahan; tanggal VIII.PENUTUP tetap kosong. Snapshot Sah/approval lama tidak ditulis ulang dan tidak ada migration khusus. [Panduan dan QA](docs/DOCUMENT_ISSUANCE_DATES.md).
+
 **18 November 2026 — Dashboard:** tab Summary mempertahankan Matriks Project per Region; tab Status Approval menampilkan matriks angka Paket PP dan Pembayaran per Branch sesuai akses/Unit Kerja. Klik angka untuk daftar, pencarian, Detail/Timeline/Preview. Tidak perlu migration khusus fitur dashboard. [Panduan dan QA](docs/DASHBOARD_APPROVAL_MATRIX.md).
 
 **18 November 2026 — Tanggal SPK:** tanggal penerbitan dapat dipilih lampau maupun mendatang pada draf, tanpa batas hari ini/tanggal mulai pekerjaan. Preview/Word/cetak mengikuti pilihan; Surabaya dan kunci dokumen terbit tetap. Tidak perlu migration khusus fitur ini. [Aturan dan QA](docs/SPK_TEMPLATE_WORD.md).
@@ -234,3 +238,18 @@ Pengaturan → Telegram (Superadmin) dan Profil & Preferensi → Telegram Approv
 
 
 **19 November 2026 — Tempat penandatanganan dokumen:** BA KH, SPK, BA RP dan BA PP memakai Branch PP terkait pada form/preview/Word/cetak/paket, dengan tanggal tersimpan. Tabel VIII.PENUTUP PP tetap termasuk kolom tanggal kosong sesuai konfirmasi pengguna. Tidak memerlukan migration atau backfill dokumen lama. [Perilaku, verifikasi dan deployment](docs/DOCUMENT_SIGNING_PLACE.md).
+
+
+## 19 November 2026 — Pengesahan BA RP dan tanggal BA PP tersendiri
+
+Menambah tombol Langkah Berikutnya, Sahkan BA RP pada card dokumen, lalu Buat BA PP eksplisit dan Sahkan BA PP. New server marker barpFlow=attest-before-bapp-v1 menghindari pembuatan BA PP dari simpan draf; attestation source/actor/time, revision/receipt/Branch/unit/Head/upload guards dan invalidasi dua dokumen menjaga sumber. Tanggal BA RP dan BA PP dipilih terpisah, tempat otomatis Branch, kalender valid, legacy read memakai tanggal tersimpan tanpa backfill. Word/cetak BARP Sah tersedia dengan parent Sah, BAPP Draft tetap dikunci terpisah. Revisi setelah penolakan tetap melalui kasbon versi baru/all-seven restart. Existing JSON/tabel,0migration/APIendpoint/dependency/poller/live write. Detail serta batas verifikasi: [WORK_DOCUMENTS_FLOW](docs/WORK_DOCUMENTS_FLOW.md), [QA](docs/qa/barp-attestation-dates-20261119.json).
+
+
+## 19 November 2026 — Jalur BA PP Termin 2 dari BA RP lama tersimpan
+
+Memperbaiki tombol lanjut yang terhenti pada BA RP legacy terkunci. Admin kini dapat memilih Buat BA PP dari BA RP Tersimpan untuk exact unpaid term yang memenuhi prepareBapp existing, termasuk Diajukan/Disetujui. Termin1 lunas dan approval/history/isi BARP Termin2 tetap; tidak membuat term lain/markSah palsu/reset status. Form pending/approved tetap perlu pengembalian/penolakan nyata untuk koreksi. New BARP gate, scope dan settlement guards tetap. UI memakai loaded Map/20DOM/amount existing,0newSQL/API/schema/migration/live write. Lihat [WORK_DOCUMENTS_FLOW](docs/WORK_DOCUMENTS_FLOW.md) dan [QA](docs/qa/legacy-barp-bapp-20261119.json).
+
+
+## 19 November 2026 — Optimasi workspace, BOQ dan App shell
+
+Pembacaan workspace runtime tidak memuat arsip state; lookup PP berubah dibatch, BOQ/jadwal/biaya/tim/anggaran ditulis dalam batch dengan preflight identitas komponen dan rollback. Audit/receipt berbagi hash identik percommand. Inbox/search App memakai memo state/query, hasil6PP-first dan Map exactdeal. Nominal, zero/nullable, snapshot/source/history/paid/Branch/unit/approval/private/ledger dan lock tetap; tanpa migration/indeks/API/poller/cacheakses baru atau livewrite. Full-write20PP1330→353query; PP500BOQ/1000komponen59query; completePPHTTP98→75 danbudgetupdate84→55 pada fixture isolated. Batas load/server/bootstrap/Word serta hasil lengkap: [PERFORMANCE_OPTIMIZATION](docs/PERFORMANCE_OPTIMIZATION.md), [QA](docs/qa/performance-optimization-20261119.json).

@@ -24,3 +24,8 @@ Pemeriksaan database sebelum perubahan menemukan PP dengan jadwal **30 November�
 Cadangan: `storage/app/private/backups/its-before-bakh-auto-dates-20261105-104913.sql`, 1.000.681 byte, SHA-256 `43034315e98c91222af61e1e5960c32c69ed735a370328f341823020d404adeb`. Akun, master, arsip workspace, file sumber dan data Dompis Prov tidak diubah.
 
 Verifikasi: fixture tanggal bersama PHP/TypeScript mencakup lintas bulan, tahun kabisat, batas kalender maksimum, tahap nol, jeda historis dan jadwal tidak valid. Uji server mencakup draft lama, simpan/generate/pengesahan, snapshot terbit serta input tanggal palsu; uji HTTP memastikan tanggal hasil normalisasi tersimpan ke SQL. Uji frontend mencakup periode PP lanjutan, draft browser dan dua kontrol baca saja tanpa alert periode. Seluruh pengujian PHP tetap SQLite `:memory:` fail-closed; tidak ada transaksi uji di database pengguna. Uji browser setelah login belum dilakukan manual.
+
+
+## 19 November 2026 — Aturan tanggal dokumen terbaru
+
+Lihat [DOCUMENT_ISSUANCE_DATES.md](DOCUMENT_ISSUANCE_DATES.md). Pengguna menetapkan PP ≤ BA KH ≤ SPK ≤ awal pekerjaan; tanggal sama boleh, jarak1hari hanya saran. Ini menggantikan aturan18November tentang tanggal SPK bebas untuk dokumen baru/draf tersimpan eksplisit. Jadwal PPv3 memakai Tanggal Mulai Pekerjaan, tidak lagi Saat Penggunaan, dan akhir dihitung HK inklusif. Sah/Terbit/paket unmarked yang sedang approval tidak ditulis ulang; PP VIII tanggal tetap kosong. Marker/dua field JSON dan tabel tahap existing, tanpa migration/SQLhelper/API baru. Bukti serta batas pengujian ada di dokumen terbaru dan QAJSON.

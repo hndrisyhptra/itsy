@@ -1,5 +1,5 @@
 import { projectSigningPlace } from './document-place';
-import { bappPhysicalReady } from './bapp-workflow';
+import { bappPhysicalReady,earlyBapp } from './bapp-workflow';
 import { dealTotal, type State, type Project, type Deal, type Spk, type Term, type Bapp } from './domain';
 import { barpAppendixData } from './barp-appendix-content';
 import type { WordRun } from './word-ooxml';
@@ -11,11 +11,11 @@ const percent=new Intl.NumberFormat('id-ID',{maximumFractionDigits:2});
 /** Presentation of the selected inspection/payment only; never write BA PP identity or ledger. */
 export function bappDocumentData(project:Project,deal:Deal,spk:Spk,term:Term,bapp?:Bapp){
   const barp=barpDocumentData(project,deal,spk,term),single=isSingleFinalBarp(term);
-  const date=bakhDocumentDate(term.barp?.date),start=bakhDocumentDate(term.barp?.start??spk.start),end=bakhDocumentDate(term.barp?.end??spk.end);
+  const date=bakhDocumentDate(bapp?.date??term.barp?.date),start=bakhDocumentDate(term.barp?.start??spk.start),end=bakhDocumentDate(term.barp?.end??spk.end);
   const contract=dealTotal(deal);
   const data={
     title:'BERITA ACARA PENYELESAIAN PEKERJAAN',date,
-    job:barp.job,mandor:barp.mandor,waspang:barp.waspang,head:barp.head,headJob:barp.headJob,status:bappPhysicalReady(bapp,term)?'':barp.status,
+    job:barp.job,mandor:barp.mandor,waspang:barp.waspang,head:barp.head,headJob:barp.headJob,status:bappPhysicalReady(bapp,term)?'':earlyBapp(bapp)?'DRAF — BA PP BELUM DISAHKAN':barp.status,
     start:start?.full??'…',end:end?.full??'…',progress:contract>0?`${percent.format(barp.total/contract*100)}%`:'…',
     stage:single?'':`Tahap ${term.number}`,payment:single?'pembayaran':`Termin ${term.number}`,
     total:barp.total,totalText:`Rp ${barp.totalText},-`,
@@ -29,5 +29,5 @@ export function bappDocumentData(project:Project,deal:Deal,spk:Spk,term:Term,bap
 
 export function bappAppendixData(state:State,project:Project,deal:Deal,spk:Spk,term:Term,bapp?:Bapp){
   const data=barpAppendixData(state,project,deal,spk,term);
-  return {...data,status:bappPhysicalReady(bapp,term)?'':data.status,title:'LAMPIRAN BERITA ACARA PENYELESAIAN PEKERJAAN',signatures:[data.signatures[0],...data.signatures.slice(-2)]};
+  return {...data,status:bappPhysicalReady(bapp,term)?'':earlyBapp(bapp)?'DRAF — BA PP BELUM DISAHKAN':data.status,title:'LAMPIRAN BERITA ACARA PENYELESAIAN PEKERJAAN',signatures:[data.signatures[0],...data.signatures.slice(-2)]};
 }

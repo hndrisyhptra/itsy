@@ -105,7 +105,7 @@ class FinanceDocuments
     private function locked(PrototypeWorkspace $w, callable $fn): array
     {
         return DB::transaction(function () use ($w, $fn) {
-            $locked = PrototypeWorkspace::whereKey($w->id)->lockForUpdate()->firstOrFail();
+            $locked = PrototypeWorkspace::runtimeQuery()->whereKey($w->id)->lockForUpdate()->firstOrFail();
             abort_unless($locked->relational_migrated_at, 503, 'Penyimpanan relasional belum aktif.');
 
             return $fn($locked);
@@ -258,9 +258,9 @@ class FinanceDocuments
         $r = $this->authorize($w, $id, $kind === 'transfer-proof', true);
         if ($kind === 'transfer-proof') {
             $t = json_decode($r->term_data, true, 512, JSON_THROW_ON_ERROR);
-            if ($t['type'] === 'Final' && ($t['completionFlow'] ?? '') === 'bapp-before-payment-v1') {
+            if (PrototypeDomain::requiresBapp($t)) {
                 $data = DB::table('ba_completions')->where('workspace_id', $w->id)->where('final_term_id', $r->id_payment_term)->value('document_data');
-                abort_unless($data && PrototypeDomain::bappCurrent(json_decode($data, true, 512, JSON_THROW_ON_ERROR), $t), 422, 'Sahkan BA PP sesuai BA RP sebelum unggah bukti transfer pembayaran Final.');
+                abort_unless($data && PrototypeDomain::bappCurrent(json_decode($data, true, 512, JSON_THROW_ON_ERROR), $t), 422, 'Sahkan BA PP sesuai BA RP sebelum unggah bukti transfer pembayaran.');
             }
             abort_unless(PrototypeDomain::legacyReviewApproved($t) && PrototypeDomain::usesFinancePayment($t) && $t['status'] === 'Disetujui' && $t['apmStatus'] !== 'Valid' && isset($t['kasbon']) && ($t['financePayment']['status'] ?? '') === 'Diverifikasi', 422, 'Bukti transfer hanya untuk kasbon yang sudah disetujui Finance dan belum lunas.');
         }

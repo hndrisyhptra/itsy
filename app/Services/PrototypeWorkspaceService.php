@@ -47,7 +47,7 @@ class PrototypeWorkspaceService
         app(AuthenticatedWorkspace::class)->account();
         $key = hash('sha256', 'area3-authenticated-workflow-v1');
 
-        $existing = PrototypeWorkspace::where('owner_key', $key)->first();
+        $existing = PrototypeWorkspace::runtimeQuery()->where('owner_key', $key)->first();
         if ($existing) {
             return $existing;
         }
@@ -76,7 +76,7 @@ class PrototypeWorkspaceService
     public function command(PrototypeWorkspace $workspace, array $input, bool $includePayload = true): array
     {
         return DB::transaction(function () use ($workspace, $input, $includePayload) {
-            $row = PrototypeWorkspace::whereKey($workspace->id)->lockForUpdate()->firstOrFail();
+            $row = PrototypeWorkspace::runtimeQuery()->whereKey($workspace->id)->lockForUpdate()->firstOrFail();
             $access = app(AuthenticatedWorkspace::class);
             $before = $access->bind(app(RelationalWorkflowStore::class)->read($row));
             $access->authorize($before, $input['command'], $input['args']);
@@ -125,6 +125,9 @@ class PrototypeWorkspaceService
                     ->where('kind', $input['command'] !== 'saveProject' ? 'evidence' : 'boq')->whereIn('status', ['queued', 'processing'])->exists();
                 abort_if($pending, 422, 'Tunggu antrean upload dokumen ini selesai sebelum mengajukan approval.');
             }
+            if ($input['command'] === 'attestBarp') {
+                abort_if(DB::table('upload_tasks')->where('workspace_id', $row->id)->where('document_id', $input['args'][0]['id'])->where('kind', 'evidence')->whereIn('status', ['queued', 'processing'])->exists(), 422, 'Tunggu upload eviden selesai sebelum mengesahkan BA RP.');
+            }
             if ($input['command'] === '_submitSettlementKasbon') {
                 abort_if(DB::table('upload_tasks')->where('workspace_id', $row->id)->where('document_id', $input['args'][0])->where('kind', 'evidence')->whereIn('status', ['queued', 'processing'])->exists(), 422, 'Tunggu upload eviden selesai sebelum pengajuan kasbon.');
             }
@@ -156,11 +159,13 @@ class PrototypeWorkspaceService
             $row->revision++;
             app(RelationalWorkflowStore::class)->write($row, $state, $before);
             $row->save();
+            $beforeHash = hash('sha256', json_encode($before, JSON_THROW_ON_ERROR));
+            $afterHash = hash('sha256', json_encode($state, JSON_THROW_ON_ERROR));
             DB::table('prototype_audits')->insert([
                 'workspace_id' => $row->id, 'request_id' => $input['request_id'], 'command' => $input['command'],
                 'actor_role' => $before['role'], 'actor_user_id' => auth()->id(), 'revision' => $row->revision,
-                'before_hash' => hash('sha256', json_encode($before, JSON_THROW_ON_ERROR)),
-                'after_hash' => hash('sha256', json_encode($state, JSON_THROW_ON_ERROR)), 'created_at' => now(),
+                'before_hash' => $beforeHash,
+                'after_hash' => $afterHash, 'created_at' => now(),
             ]);
             $receipt = (string) Str::uuid();
             DB::table('command_receipts')->insert([
@@ -168,8 +173,8 @@ class PrototypeWorkspaceService
                 'actor_user_id' => auth()->id(), 'command_name' => $input['command'],
                 'aggregate_type' => 'WORKSPACE', 'aggregate_id' => $row->id,
                 'expected_revision' => $input['revision'], 'resulting_revision' => $row->revision,
-                'before_sha256' => hash('sha256', json_encode($before, JSON_THROW_ON_ERROR)),
-                'after_sha256' => hash('sha256', json_encode($state, JSON_THROW_ON_ERROR)), 'created_at' => now(),
+                'before_sha256' => $beforeHash,
+                'after_sha256' => $afterHash, 'created_at' => now(),
             ]);
             foreach ($balanceQuery()->get() as $balance) {
                 $old = $balances->get($balance->boq_component_id);

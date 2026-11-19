@@ -14,6 +14,7 @@ use App\Services\UploadQueue;
 use App\Services\WorkUnitAccess;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -60,7 +61,24 @@ class BundleSettlementTest extends TestCase
         return $this->postJson('/api/finance/terms/'.$t['id'].'/kasbon', ['data' => $form ?? $this->kasbon($t), 'revision' => PrototypeWorkspace::first()->revision, 'request_id' => (string) Str::uuid()]);
     }
 
-    private function draftPayment(): array
+    private function attestWorkBarp(): void
+    {
+        $t = $this->term();
+        if (PrototypeDomain::requiresBarp($t) && ! PrototypeDomain::barpCurrent($t)) {
+            $this->api('attestBarp', [$t])->assertOk();
+        }
+    }
+
+    private function attestCurrentWorkBapp(array $t): void
+    {
+        $b = collect($this->state()['bapps'])->firstWhere('termId', $t['id']);
+        if ($b && $b['status'] !== 'Sah') {
+            $this->attestWorkBarp();
+            $this->api('attestBapp', [$b['id'], $b['no']])->assertOk();
+        }
+    }
+
+    private function draftPayment(bool $prepareWork = true): array
     {
         $this->withoutVite();
         Storage::fake('local');
@@ -74,8 +92,144 @@ class BundleSettlementTest extends TestCase
         $t['barp']['date'] = $s['spks'][0]['start'];
         $this->api('saveTerm', [$t, false])->assertOk();
         $this->completeMandorPayee($t['spkId']);
+        if ($prepareWork) {
+            $this->attestWorkBarp();
+            $this->api('prepareBapp', [$t['id']])->assertOk();
+        }
 
         return $this->term();
+    }
+
+    public function test_barp_attestation_precedes_explicit_bapp_creation_and_each_document_keeps_its_date(): void
+    {
+        $t = $this->draftPayment(false);
+        $this->assertSame('attest-before-bapp-v1', $t['barpFlow']);
+        $this->assertDatabaseCount('ba_completions', 0);
+        $this->api('prepareBapp', [$t['id']])->assertUnprocessable();
+        $this->submitKasbon($t)->assertUnprocessable();
+        $revision = PrototypeWorkspace::first()->revision;
+        $bad = $t;
+        $bad['barp']['date'] = '2026-02-30';
+        $this->api('attestBarp', [$bad])->assertUnprocessable();
+        $this->assertSame($revision, PrototypeWorkspace::first()->revision);
+        $this->asRole('Finance');
+        $this->api('attestBarp', [$t])->assertForbidden();
+        $this->asRole('Admin Operation');
+        $this->api('attestBarp', [$t])->assertForbidden();
+        $this->asRole('Admin Konstruksi');
+        $balances = DB::table('volume_balances')->orderBy('boq_component_id')->get()->toJson();
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $this->api('attestBarp', [$t])->assertOk();
+        $count = count(DB::getQueryLog());
+        DB::disableQueryLog();
+        $this->assertLessThanOrEqual(80, $count);
+        fwrite(STDERR, "\nBARP attestation HTTP: ".$count." queries.\n");
+        $saved = $this->term();
+        $this->assertTrue(PrototypeDomain::barpCurrent($saved));
+        $this->assertSame('db-user-'.$this->accounts['Admin Konstruksi']->getKey(), $saved['barpAttestation']['by']);
+        $this->assertDatabaseCount('ba_completions', 0);
+        $this->assertDatabaseCount('approval_decisions', 0);
+        $this->api('prepareBapp', [$t['id']])->assertOk();
+        $b = $this->state()['bapps'][0];
+        $this->assertSame($t['barp']['date'], $b['date']);
+        $this->api('prepareBapp', [$t['id']])->assertOk();
+        $this->assertDatabaseCount('ba_completions', 1);
+        $this->api('attestBapp', [$b['id'], $b['no'], '', '2026-02-30'])->assertUnprocessable();
+        $this->api('attestBapp', [$b['id'], $b['no'], '', '2026-11-23'])->assertOk();
+        $b = $this->state()['bapps'][0];
+        $this->assertSame('2026-11-23', $b['date']);
+        $this->assertSame($t['barp']['date'], $this->term()['barp']['date']);
+        $this->assertTrue(PrototypeDomain::bappCurrent($b, $this->term()));
+        $row = DB::table('ba_completions')->first();
+        $this->assertSame('2026-11-23', json_decode($row->document_data, true)['date']);
+        // Forged attestation/marker fields cannot survive an ordinary draft edit.
+        $changed = $this->term();
+        $changed['barp']['date'] = '2026-11-22';
+        $changed['barpAttestation']['source'] = PrototypeDomain::bappBasis($changed);
+        unset($changed['barpFlow']);
+        $this->api('saveTerm', [$changed, false])->assertOk();
+        $changed = $this->term();
+        $this->assertSame('attest-before-bapp-v1', $changed['barpFlow']);
+        $this->assertFalse(PrototypeDomain::barpCurrent($changed));
+        $this->assertCount(1, $changed['barpAttestationHistory']);
+        $this->assertSame('Draft', $this->state()['bapps'][0]['status']);
+        $this->api('attestBapp', [$b['id'], $b['no'], '', '2026-11-23'])->assertUnprocessable();
+        $this->api('attestBarp', [$changed])->assertOk();
+        $this->api('attestBapp', [$b['id'], $b['no'], '', '2026-11-23'])->assertOk();
+        $this->assertDatabaseCount('approval_decisions', 0);
+        $this->assertSame(0, $this->term()['paid']);
+        $this->assertSame($balances, DB::table('volume_balances')->orderBy('boq_component_id')->get()->toJson());
+        // Rejection still allows Admin to correct and re-attest work before a new kasbon cycle.
+        $this->submitKasbon($this->term())->assertOk();
+        $oldKasbon = $this->term()['kasbon']['id'];
+        $this->asRole('PM Konstruksi');
+        $this->api('decide', [$t['id'], 'Tolak', 'QA koreksi tanggal'])->assertOk();
+        $this->asRole('Admin Konstruksi');
+        $revised = $this->term();
+        $revised['barp']['date'] = '2026-11-24';
+        $this->api('saveTerm', [$revised, false])->assertOk();
+        $this->api('attestBarp', [$this->term()])->assertOk();
+        $this->api('attestBapp', [$b['id'], $b['no'], '', '2026-11-25'])->assertOk();
+        $this->submitKasbon($this->term())->assertOk();
+        $this->assertNotSame($oldKasbon, $this->term()['kasbon']['id']);
+        $this->assertCount(0, $this->term()['approvals']);
+        $this->assertCount(1, $this->term()['history']);
+        $this->assertSame('Diajukan', $this->term()['status']);
+
+    }
+
+    public function test_pending_work_evidence_blocks_barp_attestation_without_losing_saved_work(): void
+    {
+        $t = $this->draftPayment(false);
+        $task = $this->post('/api/uploads/payments/'.$t['id'].'/evidence', [
+            'file' => UploadedFile::fake()->createWithContent('work.pdf', "%PDF-1.4\n1 0 obj\n<< /Type /Catalog >>\nendobj\n%%EOF"),
+            'request_id' => (string) Str::uuid(), 'revision' => PrototypeWorkspace::first()->revision,
+        ], ['Accept' => 'application/json'])->assertAccepted()->json('task.id');
+        $revision = PrototypeWorkspace::first()->revision;
+        $this->api('attestBarp', [$t])->assertUnprocessable()->assertJsonPath('message', 'Tunggu upload eviden selesai sebelum mengesahkan BA RP.');
+        $this->assertSame($revision, PrototypeWorkspace::first()->revision);
+        $this->assertFalse(PrototypeDomain::barpCurrent($this->term()));
+        app(UploadQueue::class)->process($task);
+        $this->api('attestBarp', [$this->term()])->assertOk();
+        $this->assertTrue(PrototypeDomain::barpCurrent($this->term()));
+        $this->assertDatabaseCount('ba_completions', 0);
+        $this->assertDatabaseCount('approval_decisions', 0);
+    }
+
+    public function test_partial_bapp_blocks_kasbon_until_attested_and_never_releases_or_closes_work(): void
+    {
+        $t = $this->draftPayment();
+        $this->assertSame('bapp-each-payment-v2', $t['completionFlow']);
+        $this->get('/ba-rp')->assertOk();
+        $this->get('/ba-rp/'.$t['id'])->assertOk();
+        $b = collect($this->state()['bapps'])->firstWhere('termId', $t['id']);
+        $this->assertSame('barp-each-payment-v2', $b['completionPolicy']);
+        $this->assertStringEndsWith('/T1', $b['no']);
+        $revision = PrototypeWorkspace::first()->revision;
+        $balances = DB::table('volume_balances')->orderBy('boq_component_id')->get()->toJson();
+        $this->submitKasbon($t)->assertUnprocessable();
+        $this->assertSame($revision, PrototypeWorkspace::first()->revision);
+        $this->assertDatabaseCount('finance_kasbons', 0);
+        $this->asRole('Finance');
+        $this->api('attestBapp', [$b['id'], $b['no']])->assertForbidden();
+        $this->asRole('Admin Konstruksi');
+        $this->attestWorkBarp();
+        $this->api('attestBapp', [$b['id'], $b['no']])->assertOk();
+        $this->assertDatabaseCount('approval_decisions', 0);
+        $this->assertSame($balances, DB::table('volume_balances')->orderBy('boq_component_id')->get()->toJson());
+        $this->api('releaseVolume', [$b['id'], []])->assertUnprocessable();
+        $this->api('createContinuation', [$b['id'], '', [], ''])->assertUnprocessable();
+        $t['actuals'][array_key_first($t['actuals'])]['s'] = 2;
+        $this->api('saveTerm', [$t, false])->assertOk();
+        $changed = collect($this->state()['bapps'])->firstWhere('id', $b['id']);
+        $this->assertSame('Draft', $changed['status']);
+        $this->assertCount(1, $changed['attestationHistory']);
+        $this->submitKasbon($this->term())->assertUnprocessable();
+        $this->attestWorkBarp();
+        $this->api('attestBapp', [$b['id'], $b['no']])->assertOk();
+        $this->submitKasbon($this->term())->assertOk();
+        $this->assertSame(0, $this->term()['paid']);
     }
 
     public function test_final_bapp_is_attested_before_any_payment_approval_and_changes_require_reattestation(): void
@@ -98,6 +252,7 @@ class BundleSettlementTest extends TestCase
         $this->asRole('Finance');
         $this->api('attestBapp', [$b['id'], $b['no']])->assertForbidden();
         $this->asRole('Admin Konstruksi');
+        $this->attestWorkBarp();
         DB::enableQueryLog();
         DB::flushQueryLog();
         $this->api('attestBapp', [$b['id'], $b['no']])->assertOk();
@@ -121,8 +276,10 @@ class BundleSettlementTest extends TestCase
         $this->assertArrayNotHasKey('source', $b);
         $this->assertDatabaseHas('ba_completions', ['status' => 'DRAFT', 'attested_by' => null, 'attested_at' => null]);
         $this->submitKasbon($this->term())->assertUnprocessable();
+        $this->attestWorkBarp();
         $this->api('attestBapp', [$b['id'], $b['no']])->assertOk();
         $source = collect($this->state()['bapps'])->firstWhere('id', $b['id'])['source'];
+        $this->attestCurrentWorkBapp($t);
         $this->submitKasbon($this->term())->assertOk();
         $this->assertCount(0, $this->term()['approvals']);
         $this->assertSame($source, collect($this->state()['bapps'])->firstWhere('id', $b['id'])['source']);
@@ -135,7 +292,7 @@ class BundleSettlementTest extends TestCase
         $s = $this->state();
         $s['terms'][0]['type'] = 'Final';
         $s['terms'][0]['status'] = 'Diajukan';
-        unset($s['terms'][0]['completionFlow']);
+        unset($s['terms'][0]['completionFlow'], $s['terms'][0]['barpFlow'], $s['terms'][0]['barpAttestation']);
         $s['bapps'] = [];
         DB::enableQueryLog();
         DB::flushQueryLog();
@@ -163,6 +320,7 @@ class BundleSettlementTest extends TestCase
         foreach (['Admin Konstruksi', ...PrototypeDomain::APPROVERS_V3, 'Mgr Finance & Settlement'] as $role) {
             $this->accounts[$role]->update(['jabatan' => 'Jabatan kasbon QA '.$role]);
         }
+        $this->attestCurrentWorkBapp($t);
         $this->submitKasbon($t, $this->kasbon($t) + ['issuerJob' => 'FORGED', 'signers' => ['Head of PMO' => ['job' => 'FORGED']]])->assertOk();
         $data = $this->getJson('/api/finance/terms/'.$t['id'].'/kasbon?current_only=1')->assertOk()->json('documents.0.data');
         $this->assertSame('Jabatan kasbon QA Admin Konstruksi', $data['issuerJob']);
@@ -184,6 +342,7 @@ class BundleSettlementTest extends TestCase
             $this->api('saveTerm', [$t, false])->assertOk();
             $t = $this->term();
             $b = collect($this->state()['bapps'])->firstWhere('termId', $t['id']);
+            $this->attestWorkBarp();
             $this->api('attestBapp', [$b['id'], $b['no']])->assertOk();
         }
         $archive = PrototypeWorkspace::first()->getRawOriginal('state');
@@ -193,6 +352,7 @@ class BundleSettlementTest extends TestCase
         $bad['settlementUserId'] = 'db-user-'.$this->accounts['Mgr Bussiness Support']->getKey();
         $this->submitKasbon($t, $bad)->assertUnprocessable();
         $this->assertDatabaseCount('finance_kasbons', 0);
+        $this->attestCurrentWorkBapp($t);
         $this->submitKasbon($t)->assertOk();
         $t = $this->term();
         $roles = [...PrototypeDomain::APPROVERS_V3, 'Mgr Finance & Settlement', 'Finance'];
@@ -258,8 +418,10 @@ class BundleSettlementTest extends TestCase
             $this->api('saveTerm', [$t, false])->assertOk();
             $t = $this->term();
             $b = collect($this->state()['bapps'])->firstWhere('termId', $t['id']);
+            $this->attestWorkBarp();
             $this->api('attestBapp', [$b['id'], $b['no']])->assertOk();
         }
+        $this->attestCurrentWorkBapp($t);
         $this->submitKasbon($t)->assertOk();
         $this->asRole('Finance');
         $this->api('settleFinancePayment', [$t['id'], ''])->assertUnprocessable();
@@ -365,6 +527,7 @@ class BundleSettlementTest extends TestCase
     public function test_settlement_rejection_preserves_kasbon_and_decisions_then_restarts_pm_with_new_version(int $stage): void
     {
         $t = $this->draftPayment();
+        $this->attestCurrentWorkBapp($t);
         $this->submitKasbon($t)->assertOk();
         $roles = [...PrototypeDomain::APPROVERS_V3, 'Mgr Finance & Settlement', 'Finance'];
         foreach (array_slice($roles, 0, $stage) as $role) {
@@ -378,6 +541,7 @@ class BundleSettlementTest extends TestCase
         $this->assertCount($stage + 1, $old['history']);
         $this->assertSame([], $old['approvals']);
         $this->asRole('Admin Konstruksi');
+        $this->attestCurrentWorkBapp($old);
         $this->submitKasbon($old)->assertOk();
         $new = $this->term();
         $this->assertSame('PM Konstruksi', PrototypeDomain::nextApprovalRole($new));
@@ -404,6 +568,8 @@ class BundleSettlementTest extends TestCase
         $s = $this->state();
         $p = app(PrototypeWorkspaceService::class)->scenario('B')['projects'][0];
         $p['id'] = $p['rootId'] = 'pp-bundle-qa';
+        $p['issueDate'] = '2026-11-01';
+        $p['workStartDate'] = '2026-11-02';
         $p['branch'] = 'PEKALONGAN';
         $p['unit'] = $operation ? 'Operation' : 'Konstruksi';
         $p['riskLevel'] = 'SEDANG';
@@ -441,10 +607,10 @@ class BundleSettlementTest extends TestCase
         $v['id'] = 'spk-bundle-qa';
         $v['dealId'] = $d['id'];
         $v['start'] = $v['end'] = $d['start'];
-        $v['date'] = '2100-12-31';
+        $v['date'] = $d['start'];
         $this->api('saveSpk', [$v, 'save'])->assertOk();
         $v = collect($this->state()['spks'])->firstWhere('id', $v['id']);
-        $this->assertSame('2100-12-31', $v['date']);
+        $this->assertSame($d['start'], $v['date']);
         $this->completeMandorPayee($v['id']);
 
         return [$p, $d, $v];
@@ -478,8 +644,12 @@ class BundleSettlementTest extends TestCase
         $t['actuals'] = ['bundle-row' => ['m' => 0, 's' => 1]];
         $this->api('saveTerm', [$t, false])->assertOk();
         $t = $this->term();
+        $this->attestWorkBarp();
+        $this->api('prepareBapp', [$t['id']])->assertOk();
         $b = collect($this->state()['bapps'])->firstWhere('termId', $t['id']);
+        $this->attestWorkBarp();
         $this->api('attestBapp', [$b['id'], $b['no']])->assertOk();
+        $this->attestCurrentWorkBapp($t);
         $this->submitKasbon($t)->assertOk();
         $document = $this->getJson('/api/finance/terms/'.$t['id'].'/kasbon?current_only=1')->assertOk()->json('documents.0.data');
         $this->assertSame('operation-v1', $document['approvalScheme']);
@@ -531,6 +701,60 @@ class BundleSettlementTest extends TestCase
         }
     }
 
+    public function test_package_rejects_reversed_or_late_issue_dates_without_changing_revision_or_ledger(): void
+    {
+        [$p, $d, $v] = $this->package();
+        $revision = PrototypeWorkspace::first()->revision;
+        $balances = DB::table('volume_balances')->orderBy('boq_component_id')->get()->toJson();
+        foreach (['2026-10-31', '2026-11-03'] as $badDate) {
+            $this->api('saveDeal', [array_replace($d, ['date' => $badDate, 'documentDatePolicy' => 'forged']), 'save'])->assertUnprocessable();
+            $this->api('saveSpk', [array_replace($v, ['date' => $badDate, 'documentDatePolicy' => 'forged']), 'save'])->assertUnprocessable();
+            $this->assertSame($revision, PrototypeWorkspace::first()->revision);
+            $this->assertSame($balances, DB::table('volume_balances')->orderBy('boq_component_id')->get()->toJson());
+        }
+        // Equal dates are valid: the one-day spacing is guidance, not an extra gate.
+        $this->api('submitProjectBundle', [$p['id']])->assertOk();
+        $this->assertDatabaseCount('approval_decisions', 0);
+    }
+
+    public function test_pending_unmarked_historical_package_can_finish_without_rewriting_its_saved_dates(): void
+    {
+        [$p, $d, $v] = $this->package();
+        $this->api('submitProjectBundle', [$p['id']])->assertOk();
+        foreach (array_slice(PrototypeDomain::APPROVERS_V3, 0, 4) as $role) {
+            $this->asRole($role);
+            $this->api('decideProject', [$p['id'], 'Setujui', 'QA'])->assertOk();
+        }
+        $this->asRole('Head of PMO');
+        $state = $this->state();
+        foreach ($state['projects'] as &$project) {
+            if ($project['id'] === $p['id']) {
+                unset($project['documentDatePolicy'], $project['issueDate'], $project['workStartDate']);
+            }
+        }
+        unset($project);
+        foreach (['deals', 'spks'] as $collection) {
+            foreach ($state[$collection] as &$document) {
+                unset($document['documentDatePolicy']);
+                $document['date'] = $collection === 'deals' ? '2026-11-06' : '2026-11-09';
+                $hash = hash('sha256', json_encode(Arr::sortRecursive($document), JSON_THROW_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION));
+                foreach ($state['projects'] as &$project) {
+                    if ($project['id'] === $p['id']) {
+                        $project['contractBundle']['submissions'][0]['documents'][$collection][$document['id']] = $hash;
+                    }
+                }
+                unset($project);
+            }
+            unset($document);
+        }
+        // A synthetic pre-update frozen package; no persisted/live workspace is changed here.
+        $result = app(PrototypeDomain::class)->execute($state, 'decideProject', [$p['id'], 'Setujui', 'Historical QA'])['state'];
+        $this->assertSame('Sah', collect($result['projects'])->firstWhere('id', $p['id'])['status']);
+        $this->assertSame('2026-11-06', $result['deals'][0]['date']);
+        $this->assertSame('2026-11-09', $result['spks'][0]['date']);
+        $this->assertArrayNotHasKey('documentDatePolicy', $result['spks'][0]);
+    }
+
     public function test_pp_bakh_spk_one_frozen_package_only_commits_after_five_real_approvals(): void
     {
         [$p,$d,$v] = $this->package();
@@ -546,7 +770,7 @@ class BundleSettlementTest extends TestCase
             $s = $this->state();
             $spk = collect($s['spks'])->firstWhere('id', $v['id']);
             $this->assertSame($i === 4 ? 'Sah' : 'Draft', $spk['status']);
-            $this->assertSame('2100-12-31', $spk['date']);
+            $this->assertSame($v['date'], $spk['date']);
         }
         $this->assertDatabaseHas('work_orders', ['source_id' => $v['id'], 'status' => 'Sah']);
         $this->assertSame('Sah', json_decode(DB::table('contracts')->where('source_id', $d['id'])->value('document_data'), true)['status']);

@@ -67,8 +67,9 @@ class PrototypeDomain
             'updatePaymentApm' => $this->updatePaymentApm($args[0] ?? '', $args[1] ?? ''),
             'recordApm' => $this->recordApm($args[0] ?? '', $args[1] ?? '', (bool) ($args[2] ?? true)),
             'recordPayment' => $this->recordPayment($args[0] ?? '', $args[1] ?? 0, $args[2] ?? ''),
+            'attestBarp' => $this->attestBarp($this->object($args[0] ?? null)),
             'prepareBapp' => $this->prepareBapp($args[0] ?? '', $resultId),
-            'attestBapp' => $this->attestBapp($args[0] ?? '', $args[1] ?? ''),
+            'attestBapp' => $this->attestBapp($args[0] ?? '', $args[1] ?? '', $args[3] ?? null),
             'releaseVolume' => $this->releaseVolume($args[0] ?? '', $this->object($args[1] ?? null)),
             'createContinuation' => $this->createContinuation($args[0] ?? '', $args[1] ?? '', $this->object($args[2] ?? null), $args[3] ?? '', $resultId),
             'updateKhs' => $this->updateKhs($this->object($args[0] ?? null), (bool) ($args[1] ?? false)),
@@ -602,6 +603,9 @@ class PrototypeDomain
                 $this->fail('Periode mandor harus di dalam jadwal PP dan tidak melebihi total HK.');
             }
         }
+        if ($error = DocumentIssuance::bakhError($p, $d, $formal)) {
+            $this->fail($error);
+        }
     }
 
     private function saveDeal(array $d, string $action): string
@@ -623,6 +627,7 @@ class PrototypeDomain
             $d = $old;
         } else {
             $project = $this->record('projects', $d['projectId'] ?? '');
+            $d['documentDatePolicy'] = DocumentIssuance::POLICY;
             $d['signingPlace'] = DocumentSigningPlace::fromProject($project);
             // Keep the legacy place only for existing SPK defaults; it is no longer a BA KH input.
             $d['place'] = $old['place'] ?? $this->text($d['place'] ?? '', 1000);
@@ -686,6 +691,7 @@ class PrototypeDomain
         $d = $this->record('deals', $v['dealId'] ?? '');
         $project = $this->record('projects', $d['projectId']);
         if (($old['status'] ?? '') !== 'Terbit') {
+            $v['documentDatePolicy'] = DocumentIssuance::POLICY;
             $v = SpkIssuance::sync($v, $project);
         }
         $this->assertBundleDocumentEditable($project, $action);
@@ -710,6 +716,9 @@ class PrototypeDomain
         $this->date($v['end']);
         if ($periodError = SpkIssuance::periodError($v, $d)) {
             $this->fail($periodError);
+        }
+        if ($error = DocumentIssuance::spkError($project, $d, $v, $action !== 'save')) {
+            $this->fail($error);
         }
         $this->validateDeal($d, true);
         $v['status'] = $action === 'attest' ? 'Sah' : ($action === 'generate' ? 'Terbit' : 'Draft');
@@ -828,7 +837,15 @@ class PrototypeDomain
                 $t['barpHistory'][] = ['at' => $t['submitted'], 'document' => $t['barp']];
             }
         }
-        if ((self::usesSettlementPayment($t) || ($t['completionFlow'] ?? '') === 'bapp-before-payment-v1') && $t['type'] === 'Final') {
+        $this->invalidateBarp($t);
+        if (($t['completionFlow'] ?? '') === 'bapp-each-payment-v2') {
+            if (! self::requiresBarp($t) || collect($this->state['bapps'])->contains('termId', $t['id'])) {
+                $this->ensureBapp($t, true);
+            }
+            if ($submit) {
+                $this->assertBappBeforePayment($t);
+            }
+        } elseif ((self::usesSettlementPayment($t) || ($t['completionFlow'] ?? '') === 'bapp-before-payment-v1') && $t['type'] === 'Final') {
             $b = $this->ensureBapp($t, true);
             if (($b['completionPolicy'] ?? '') === 'barp-before-approval-v1') {
                 $t['completionFlow'] = 'bapp-before-payment-v1';
@@ -982,26 +999,36 @@ class PrototypeDomain
         return null;
     }
 
-    private function attestBapp(string $id, string $no): null
+    private function attestBapp(string $id, string $no, ?string $date = null): null
     {
         $this->admin();
         $b = $this->record('bapps', $id);
         $t = $this->record('terms', $b['termId']);
-        $early = ($b['completionPolicy'] ?? '') === 'barp-before-approval-v1';
-        if ($b['status'] === 'Sah' || $t['type'] !== 'Final' || ($early ? ! in_array($t['status'], ['Draft', 'Diajukan', 'Disetujui'], true) : ($t['status'] !== 'Disetujui' || count($t['approvals']) !== $this->approvalCount($t)))) {
-            $this->fail('BA PP terkunci atau BA RP Final belum siap.');
+        $early = self::earlyBapp($b);
+        if (self::requiresBarp($t) && ! self::barpCurrent($t)) {
+            $this->fail('Sahkan BA RP sesuai data tersimpan sebelum mengesahkan BA PP.');
+        }
+        if ($b['status'] === 'Sah' || ($t['type'] !== 'Final' && ($b['completionPolicy'] ?? '') !== 'barp-each-payment-v2') || ($early ? ! in_array($t['status'], ['Draft', 'Diajukan', 'Disetujui'], true) : ($t['status'] !== 'Disetujui' || count($t['approvals']) !== $this->approvalCount($t)))) {
+            $this->fail('BA PP terkunci atau BA RP belum siap.');
         }
         if ($early) {
             $spk = $this->record('spks', $t['spkId']);
             $deal = $this->record('deals', $spk['dealId']);
             $pp = $this->record('projects', $deal['projectId']);
             if ($spk['status'] !== 'Sah' || $deal['status'] !== 'Sah' || $pp['status'] !== 'Sah' || empty($t['barp']) || $this->termTotal($t) <= 0) {
-                $this->fail('PP, BA KH, SPK Sah dan BA RP Final tersimpan wajib sebelum pengesahan BA PP.');
+                $this->fail('PP, BA KH, SPK Sah dan BA RP tersimpan wajib sebelum pengesahan BA PP.');
             }
             BarpTemplate::save($this->state, $t, $t, true);
             $b['source'] = self::bappBasis($t);
             $b['attestedBy'] = $this->state['actorUserId'] ?? '';
             $b['attestedAt'] = now()->toISOString();
+        }
+        if ($date !== null || self::requiresBarp($t)) {
+            $selected = $date ?? ($b['date'] ?? '');
+            if (! DocumentIssuance::calendar($selected)) {
+                $this->fail('Isi tanggal dokumen BA PP yang valid.');
+            }
+            $b['date'] = $selected;
         }
         $this->required(['no' => $no], ['no']);
         $b['no'] = trim($no);
@@ -1116,7 +1143,10 @@ class PrototypeDomain
                 $p['contractBundle'] = ['version' => 1, 'submissions' => []];
                 $p['continuationNotes'] = $notes;
                 $p['schedule'] = array_fill(0, 5, ['days' => 1]);
-                $p = ProjectPlanTemplate::apply($p);
+                $p['documentDatePolicy'] = DocumentIssuance::POLICY;
+                $p['issueDate'] = now('Asia/Jakarta')->toDateString();
+                $p['workStartDate'] = '';
+                $p = ProjectPlanTemplate::apply($p, false);
                 $owners = [];
                 $budgetKhs = array_column($this->state['khs'], null, 'id');
                 foreach ($root['boq'] as $row) {

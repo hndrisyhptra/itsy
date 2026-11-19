@@ -74,7 +74,7 @@ Route::middleware(PrivatePrototype::class)->group(function () {
         Route::get('/', fn () => redirect()->route('prototype.dashboard'));
         Route::get('/dashboard', [PrototypeController::class, 'show'])->name('prototype.dashboard');
         Route::get('/{module}/{path?}', [PrototypeController::class, 'show'])
-            ->where('module', 'project-plan|boq|ba-kh|spk|termin|inbox|ba-pp|master-designator|master-khs|laporan|pengaturan')
+            ->where('module', 'project-plan|boq|ba-kh|spk|ba-rp|termin|inbox|ba-pp|master-designator|master-khs|laporan|pengaturan')
             ->where('path', '[a-zA-Z0-9/-]+');
     });
 });

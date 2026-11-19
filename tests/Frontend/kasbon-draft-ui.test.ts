@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { seed } from '../../resources/js/area3/seed';
-import { normalizeWorkflow, APPROVERS_V3, createSettlementTerm } from '../../resources/js/area3/domain';
+import { normalizeWorkflow, APPROVERS_V3, createSettlementTerm,saveTerm,getTerm,attestBarp,prepareBapp,attestBapp } from '../../resources/js/area3/domain';
 
 test('Admin can access kasbon from a new, returned or rejected payment Draft before any approval',async()=>{
   const s=normalizeWorkflow(seed('D'));s.schema=3;s.role='Admin Konstruksi';s.actorUserId=s.users.find(u=>u.role===s.role&&u.active)!.id;
@@ -16,10 +16,10 @@ test('Admin can access kasbon from a new, returned or rejected payment Draft bef
   const {TermEditor}=await import('../../resources/js/area3/payments');
   for(const status of ['Draft','Dikembalikan','Ditolak'] as const){
     t.status=status;const html=renderToStaticMarkup(createElement(TermEditor,{s,id}));
-    assert.match(html,/>Ajukan Kasbon<\/button>/,status+' must mount the kasbon button/event listener before approval');
-    assert.match(html,/Ajukan Termin<\/button>/);assert.doesNotMatch(html,/Approve Payment<\/button>/);
+    assert.match(html,/>Isi Kasbon &amp; Ajukan Pembayaran<\/button>/,status+' must mount the kasbon button/event listener before approval');
+    assert.doesNotMatch(html,/Ajukan Termin<\/button>|Ajukan Payment<\/button>/);assert.match(html,/<button[^>]*disabled[^>]*>Isi Kasbon &amp; Ajukan Pembayaran<\/button>/);assert.doesNotMatch(html,/Approve Payment<\/button>/);
   }
-  t.type='Final';assert.match(renderToStaticMarkup(createElement(TermEditor,{s,id})),/Ajukan Payment<\/button>/);
-  t.status='Diajukan';const submitted=renderToStaticMarkup(createElement(TermEditor,{s,id}));
-  assert.doesNotMatch(submitted,/>Ajukan Kasbon<\/button>/);assert.match(submitted,/Menunggu tujuh approval berurutan/);
+  t.status='Draft';t.actuals={[s.deals[0].rows[0].rowId]:{m:1,s:1}};t.barp!.date=s.spks[0].start;saveTerm(s,t,false);s.actorUserId='qa-admin';attestBarp(s,getTerm(s,id));prepareBapp(s,id);const current=getTerm(s,id),b=s.bapps.find(b=>b.termId===id)!;attestBapp(s,b.id,b.no);assert.doesNotMatch(renderToStaticMarkup(createElement(TermEditor,{s,id})),/<button[^>]*disabled[^>]*>Isi Kasbon &amp; Ajukan Pembayaran<\/button>/);
+  current.status='Diajukan';const submitted=renderToStaticMarkup(createElement(TermEditor,{s,id}));
+  assert.doesNotMatch(submitted,/>Isi Kasbon &amp; Ajukan Pembayaran<\/button>/);assert.match(submitted,/Menunggu tujuh approval berurutan/);
 });
