@@ -1,5 +1,7 @@
 # Penolakan dan pengajuan ulang PP dan pembayaran
 
+> **20 November 2026 — Revisi Operation:** PP v3 Operation yang dikembalikan menggunakan lima peran Operation pada penyimpanan/pengajuan ulang berikutnya; routing siklus Konstruksi historis tetap dicatat terpisah. PP Diajukan/Sah dan pembayaran lama tidak otomatis dikonversi. Lihat [OPERATION_REVISION_TIMELINE](OPERATION_REVISION_TIMELINE.md).
+
 > **20 November 2026:** tombol Tolak dihilangkan dari PP/pembayaran; gunakan Kembalikan untuk Revisi. Backend dan data penolakan lama di bawah tetap kompatibel. Batalkan Persetujuan Saya berbeda: mempertahankan prefix approval sebelum akun pembatal, bukan pengajuan ulang dari awal. Lihat [APPROVAL_SELF_RESET](APPROVAL_SELF_RESET.md).
 
 ## Perubahan terbaru 15 November 2026

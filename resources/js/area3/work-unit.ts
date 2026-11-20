@@ -2,6 +2,7 @@ import type {Role,State,Project} from './domain';
 export const OPERATION_APPROVERS:Role[]=['Officer 1 Operation','Manager Branch Operation','Officer 1 SS','Manager SS','General Manager Operation'];
 export function isOperation(document:{approvalScheme?:string}){return document.approvalScheme==='operation-v1';}
 export function headRole(document:{approvalScheme?:string}): 'Head of PMO'|'General Manager Operation'{return isOperation(document)?'General Manager Operation':'Head of PMO';}
+export function workUnitAdmin(document:{unit?:string;approvalScheme?:string}){return document.unit==='Operation'||isOperation(document)?'Admin Operation':'Admin Konstruksi';}
 export function unitOptions(s:Pick<State,'role'|'users'|'actorUserId'>):string[]{
   const units=s.users.find(u=>u.id===s.actorUserId)?.workUnits;
   if(units)return units;

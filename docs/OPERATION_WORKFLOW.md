@@ -1,5 +1,7 @@
 # Unit kerja Operation — 18 November 2026
 
+> **20 November 2026 — Revisi Operation:** PP v3 Operation yang dikembalikan menggunakan lima peran Operation pada penyimpanan/pengajuan ulang berikutnya; routing siklus Konstruksi historis tetap dicatat terpisah. PP Diajukan/Sah dan pembayaran lama tidak otomatis dikonversi. Lihat [OPERATION_REVISION_TIMELINE](OPERATION_REVISION_TIMELINE.md).
+
 Implementasi ini menjalankan konsep yang disetujui pengguna: dokumen dan perhitungan swakelola tetap memakai template yang sama, sedangkan unit, pelaksana dan approval mengikuti Operation. Ketentuan ini menambah alur Operation; riwayat Konstruksi dan dokumen lama tidak dikonversi massal.
 
 ## Flow baru

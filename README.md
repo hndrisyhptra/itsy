@@ -1,5 +1,7 @@
 # it's Area 3 — Construction Workspace
 
+**20 November 2026 — Revisi Operation:** editor PP yang dikembalikan memakai lima approver Operation dan mempertahankan unit/identitas PP tersimpan meskipun cache form lama berbeda. Pengajuan ulang historis menyimpan asal siklus tanpa mengubah keputusan lama. Timeline memisahkan unit pada ID Project yang sama. Tidak ada migration baru. [Perilaku, data lama dan pengujian](docs/OPERATION_REVISION_TIMELINE.md).
+
 **20 November 2026 — Approval:** kartu keputusan PP/pembayaran terpisah, Tolak diganti Kembalikan untuk Revisi; approver dapat membatalkan persetujuannya sendiri dengan alasan dan konfirmasi, selama belum ada proses lanjutan/keuangan yang mengunci. Riwayat tetap, tahap sebelumnya dipertahankan. Tanpa migration baru. [Aturan, optimasi dan penerapan](docs/APPROVAL_SELF_RESET.md).
 
 **20 November 2026 — Volume bilangan bulat:** input volume Kesepakatan Harga, BA RP/pembayaran, BOQ/Mandor, Non Stock/BOP dan pelepasan/alokasi hanya menerima angka bulat tanpa koma/desimal, termasuk upload BOQ. Pecahan ditolak tanpa pembulatan. Snapshot/approval/data lama tidak dikonversi; tidak perlu migration khusus. Build aset dan restart worker upload Area3 saat deploy. [Aturan dan QA](docs/WHOLE_VOLUME_INPUT.md).

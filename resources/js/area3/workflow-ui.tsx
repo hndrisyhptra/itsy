@@ -1,6 +1,6 @@
 import { ApprovalDecisionCard, ApprovalResetHistory } from './approval-actions';
 import { VolumeInput } from './volume-input';
-import { eligibleApprover, isOperation, OPERATION_APPROVERS, headRole } from './work-unit';
+import { eligibleApprover, isOperation, OPERATION_APPROVERS, headRole, workUnitAdmin } from './work-unit';
 import { moneyLine } from './currency';
 import { usesContractBundle } from './project-bundle';
 import { ProjectBundleReview, ProjectBundleInboxPreview } from './project-bundle-review';
@@ -13,7 +13,7 @@ import { UploadProgressView } from './upload-progress-view';
 import { uploadTask, type UploadTask } from './upload-queue';
 import { Upload } from 'lucide-react';
 import { DEFAULT_PP_NUMBER_FORMAT } from './workflow';
-import { type State, type Project, type Approval, type Role, projectApprovalScheme, usesBusinessSupport, APPROVERS_V3, approvalRoles, selectedApprover, assignPaymentApprovers, uid, money, num, boqTotal, operational, branchOptions, decideProject, canApproveProject, assignProjectApprovers, setNumberFormat } from './domain';
+import { type State, type Project, type Approval, type Role, projectApprovalScheme, canReviseSubmission, usesBusinessSupport, APPROVERS_V3, approvalRoles, selectedApprover, assignPaymentApprovers, uid, money, num, boqTotal, operational, branchOptions, decideProject, canApproveProject, assignProjectApprovers, setNumberFormat } from './domain';
 import { mutate, uploadBoq, waitForPersistence, persistencePending } from './store';
 import { boot, appUrl } from './laravel';
 import { Link, Card, Field, Input, Button, Table, Notice, Badge, attempt, confirmAction, ActionLink, toast } from './ui';
@@ -83,22 +83,23 @@ function FuturePaymentApprovers({s,p}:{s:State;p:Project}) {
 }
 export function ProjectApprovalPanel({ s, p }: { s: State; p: Project }) {
   const [pm, setPm] = useState(p.pmUserId ?? ''), [manager, setManager] = useState(p.managerUserId ?? '');
-  const legacy = (p.workflowVersion ?? 1) < 2, roles = approvalRoles(p,true);
+  const legacy = (p.workflowVersion ?? 1) < 2,displayProject=canReviseSubmission(p)?{...p,approvalScheme:projectApprovalScheme(p)}:p, roles = approvalRoles(displayProject,true);
 
   return <><Card title={legacy ? 'Riwayat Project Plan' : 'Approval Project Plan'} subtitle={legacy ? 'Dokumen historis tetap dipertahankan.' : roles.join(' → ')}>
     <SubmissionRejectionNotice document={p} history={p.approvalHistory}/><div className="actions"><BoqMandorPreviewButton s={s} p={p}/></div><ProjectBundleReview key={p.id} s={s} p={p} embedded/>
     {p.headApprovalReopen && <Notice tone="warning">Approval Head dibuka ulang: {p.headApprovalReopen.reason} Keputusan Head terdahulu tetap menjadi riwayat dan tidak berlaku sebagai persetujuan pada siklus koreksi.</Notice>}
-    {!legacy && <><div className="form-grid">{roles.map(role => <ApproverSelect key={role} s={s} branch={p.branch} unit={p.unit} role={role} label={role} value={selectedApprover(p,role)} onChange={() => {}} disabled/>)}</div><Notice>Status PP: {p.status} · {p.approvals?.length ?? 0}/{roles.length} disetujui. {usesContractBundle(p)?`BA KH dan SPK dapat ditinjau sebagai bagian paket; pengesahan mengikuti persetujuan ${headRole(p)}.`:'SPK tersedia setelah seluruh approval lengkap.'}</Notice></>}
+    {!legacy && <><div className="form-grid">{roles.map(role => <ApproverSelect key={role} s={s} branch={p.branch} unit={p.unit} role={role} label={role} value={selectedApprover(p,role)} onChange={() => {}} disabled/>)}</div><Notice>Status PP: {p.status} · {p.approvals?.length ?? 0}/{roles.length} disetujui. {usesContractBundle(p)?`BA KH dan SPK dapat ditinjau sebagai bagian paket; pengesahan mengikuti persetujuan ${headRole(displayProject)}.`:'SPK tersedia setelah seluruh approval lengkap.'}</Notice></>}
     {legacy && s.schema < 3 && <><div className="form-grid"><ApproverSelect s={s} branch={p.branch} unit={p.unit} role="PM Konstruksi" label="PM Konstruksi" value={pm} onChange={setPm} disabled={!operational(s)}/><ApproverSelect s={s} branch={p.branch} unit={p.unit} role="Manager Konstruksi" label="Manager Konstruksi" value={manager} onChange={setManager} disabled={!operational(s)}/></div>{operational(s) && <Button confirm="Simpan penanggung jawab Project Plan ini?" onClick={() => attempt(() => mutate(d => assignProjectApprovers(d,p.id,pm,manager)), 'Penanggung jawab tersimpan.')}>Simpan Penanggung Jawab</Button>}</>}
     {!!p.approvalHistory?.length && <Table headers={['Approver', 'Keputusan', 'Catatan', 'Waktu']}>{p.approvalHistory.map((a, i) => <tr key={i}><td>{a.actorName ?? a.userId}<small>{a.role}</small></td><td>{a.decision}</td><td>{a.note}</td><td>{new Date(a.at).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}</td></tr>)}</Table>}
     {s.schema >= 3 && ((p.workflowVersion ?? 1) < 3||usesBusinessSupport(p)||(p.unit==='Operation'&&!isOperation(p))) && p.status === 'Sah' && <FuturePaymentApprovers s={s} p={p}/>}
-  </Card>{!legacy&&<ApprovalDecisionCard key={p.id+'-'+s.actorUserId} s={s} document={p} project/>}<ApprovalResetHistory key={p.id} document={p}/></>;
+  </Card>{!legacy&&<ApprovalDecisionCard key={p.id+'-'+s.actorUserId} s={s} document={displayProject} project/>}<ApprovalResetHistory key={p.id} document={p}/></>;
 }
 
-export function SubmissionRejectionNotice({document,history=[]}:{document:{status:string;workflowVersion?:number};history?:Approval[]}) {
-  const last=history.at(-1);
-  if((document.workflowVersion??1)<3 || !['Ditolak','Draft'].includes(document.status) || last?.decision!=='Tolak')return null;
-  return <Notice tone="warning"><strong>Pengajuan ditolak. Perbaiki dan ajukan ulang dari awal.</strong><p>Catatan {last.actorName??last.role}: {last.note}</p><p>Admin Konstruksi perlu menyimpan perbaikan dan mengajukan kembali. Seluruh approval dimulai dari PM Konstruksi; keputusan sebelumnya tetap ada di riwayat.</p></Notice>;
+export function SubmissionRejectionNotice({document,history=[]}:{document:{status:string;workflowVersion?:number;unit?:string;approvalScheme?:Project['approvalScheme']};history?:Approval[]}) {
+  const last=history.at(-1),returned=last?.decision==='Kembalikan';
+  if((document.workflowVersion??1)<3 || !['Ditolak','Dikembalikan','Draft'].includes(document.status) || !last || !['Tolak','Kembalikan'].includes(last.decision))return null;
+  const scheme=document.unit==='Operation'?'operation-v1':document.approvalScheme,first=approvalRoles({...document,approvalScheme:scheme},true)[0];
+  return <Notice tone="warning"><strong>{returned?'Pengajuan dikembalikan untuk revisi.':'Pengajuan ditolak.'} Perbaiki dan ajukan ulang dari awal.</strong><p>Catatan {last.actorName??last.role}: {last.note}</p><p>{workUnitAdmin(document)} perlu menyimpan perbaikan dan mengajukan kembali. Seluruh approval dimulai dari {first}; keputusan sebelumnya tetap ada di riwayat.</p></Notice>;
 }
 
 export function ProjectInbox({ s }: { s: State }) {

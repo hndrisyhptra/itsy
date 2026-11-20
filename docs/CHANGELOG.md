@@ -693,3 +693,11 @@ QA full381PHP/9330assertions memory lulus; sesudah penambahan assertion snapshot
 - **Batalkan Persetujuan Saya** membatalkan own+downstream approval aktif; prefix dan riwayat asli dipertahankan. Branch/unit/UUID/versi, pending upload, manifest dan finansial diperiksa server. Lunas/proof/APM/proses lanjutan/pelepasan mengunci pembatalan. Mendukung Konstruksi/Operation5+2 dan review Finance historis tanpa membuat keputusan palsu.
 - Inbox PP menyediakan Sudah Saya Setujui; detail/timeline menyimpan audit pembatalan20baris/page. Pilihan pembayaran tetap exactUUID sesudah persetujuan; catatan tetap pada kegagalan yang masih berwenang. Preview kasbon tidak mengambil cap yang sudah dicabut dari history/cache.
 - Siklus SQL lama/komponen identik tidak ditulis ulang. Reminder mengikuti tahap baru dan kunci review keuangan historis dirancang ulang setelah reset eksplisit. Tidak ada migration atau otomatis mengubah data/status lama saat pull. Worker Area3-notifications perlu dimulai ulang saat penerapan, mengikuti prosedur worker proyek tanpa menyentuh worker lain. [Aturan dan QA](APPROVAL_SELF_RESET.md).
+
+
+## 20 November 2026 — Perbaikan edit PP dan timeline Operation
+
+- PP Operation yang dikembalikan menampilkan Officer1Operation → ManagerBranchOperation → Officer1SS → ManagerSS → GM pada editor dan pengajuan ulang. Cache draf lama tidak mengubah unit/UUID/status dokumen; isian pengguna tetap tersedia.
+- Perubahan skema pada PP historis hanya saat simpan revisi yang diizinkan, dengan batas siklus server-owned. Keputusan/run/step lama tetap; PP pending/Sah dan pembayaran historis tidak dikonversi otomatis. Transisi legacy ditahan bila sudah memiliki proses lanjutan/koreksi khusus.
+- Timeline memisahkan unit pada IDProject sama, memakai label AdminOperation, menampilkan urutan approval sebenarnya dan aktivitas BA RP exactUUID. Catatan pengembalian ditampilkan pada revisi.
+- Tidak ada migration, endpoint atau polling baru. Referensi akun batch, siklus lama identik dilewati; query fixture revisi57/43 totalHTTP. [Panduan dan QA](OPERATION_REVISION_TIMELINE.md).

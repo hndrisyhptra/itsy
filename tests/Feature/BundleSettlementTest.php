@@ -8,8 +8,10 @@ use App\Services\AuthenticatedWorkspace;
 use App\Services\FinancePaymentCatalog;
 use App\Services\KasbonSettlement;
 use App\Services\NegotiationProjectCatalog;
+use App\Services\OperationProjectRevision;
 use App\Services\PrototypeDomain;
 use App\Services\PrototypeWorkspaceService;
+use App\Services\RelationalWorkflowStore;
 use App\Services\UploadQueue;
 use App\Services\WorkUnitAccess;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -616,6 +618,169 @@ class BundleSettlementTest extends TestCase
         $this->completeMandorPayee($v['id']);
 
         return [$p, $d, $v];
+    }
+
+    private function operationRevisionFixture(bool $legacy): array
+    {
+        [$p, $d, $v] = $this->package(! $legacy);
+        $this->api('submitProjectBundle', [$p['id']])->assertOk();
+        $roles = $legacy ? PrototypeDomain::APPROVERS_V3 : WorkUnitAccess::OPS_APPROVERS;
+        $this->asRole($roles[0]);
+        $this->api('decideProject', [$p['id'], 'Setujui', 'Keputusan asli'])->assertOk();
+        $this->asRole($roles[1]);
+        $this->api('decideProject', [$p['id'], 'Kembalikan', 'Perbaiki uraian Operation'])->assertOk();
+        if ($legacy) {
+            // Synthetic pre-Operation saved PP only; production never rewrites a unit/approval via SQL.
+            $w = PrototypeWorkspace::first();
+            $store = app(RelationalWorkflowStore::class);
+            $before = $store->read($w);
+            $after = $before;
+            foreach ($after['projects'] as &$row) {
+                if ($row['id'] === $p['id']) {
+                    $row['unit'] = 'Operation';
+                }
+            }
+            unset($row);
+            DB::transaction(fn () => $store->write($w, $after, $before));
+            $region = DB::table('branches')->where('name', $p['branch'])->value('region_id');
+            foreach (['Manager SS', 'General Manager Operation'] as $role) {
+                DB::table('users')->where('id_user', $this->accounts[$role]->id_user)->update(['access_scope' => 'REGION', 'id_regions' => $region]);
+            }
+        }
+        $this->asRole('Admin Operation');
+        $p = collect($this->state()['projects'])->firstWhere('id', $p['id']);
+
+        return [$p, $d, $v];
+    }
+
+    public static function operationRevisionModes(): array
+    {
+        return ['marked-operation' => [false], 'legacy-construction-cycle' => [true]];
+    }
+
+    #[DataProvider('operationRevisionModes')]
+    public function test_returned_operation_revision_keeps_old_sql_cycle_and_resubmits_to_operation(bool $legacy): void
+    {
+        [$p, $d, $v] = $this->operationRevisionFixture($legacy);
+        $oldRuns = DB::table('approval_runs')->get()->toJson();
+        $oldSteps = DB::table('approval_steps')->get()->toJson();
+        $oldDecisions = DB::table('approval_decisions')->orderBy('id_approval_decision')->get()->toJson();
+        $archive = PrototypeWorkspace::first()->getRawOriginal('state');
+        $history = $p['approvalHistory'];
+        $p['approverUserIds'] = [];
+        foreach (WorkUnitAccess::OPS_APPROVERS as $role) {
+            $p['approverUserIds'][$role] = 'db-user-'.$this->accounts[$role]->id_user;
+        }
+        $p['approvalScheme'] = 'business-support'; // Server owns routing and provenance, not the client.
+        $p['operationApprovalRevision'] = ['firstCycleNo' => 999, 'before' => ['approvalScheme' => 'operation-v1']];
+        $p['name'] = 'Uraian Operation setelah revisi';
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $response = $this->api('saveProjectBundle', [$p, false])->assertOk();
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+        $this->assertLessThanOrEqual(110, count($queries));
+        fwrite(STDERR, "\nOperation revised PP ".($legacy ? 'legacy' : 'marked').': '.count($queries)." HTTP queries.\n");
+        $saved = collect($response->json('state.projects'))->firstWhere('id', $p['id']);
+        $this->assertSame('operation-v1', $saved['approvalScheme']);
+        $this->assertSame($history, $saved['approvalHistory']);
+        $this->assertSame([], $saved['approvals']);
+        $this->assertSame(WorkUnitAccess::OPS_APPROVERS, array_keys($saved['approverUserIds']));
+        $this->assertSame($oldRuns, DB::table('approval_runs')->get()->toJson());
+        $this->assertSame($oldSteps, DB::table('approval_steps')->get()->toJson());
+        $this->assertSame($oldDecisions, DB::table('approval_decisions')->orderBy('id_approval_decision')->get()->toJson());
+        if ($legacy) {
+            $this->assertSame(2, $saved['operationApprovalRevision']['firstCycleNo']);
+            $this->assertSame('project-support-first', $saved['operationApprovalRevision']['before']['approvalScheme']);
+            $again = $saved;
+            $again['operationApprovalRevision']['firstCycleNo'] = 999;
+            $againResponse = $this->api('saveProjectBundle', [$again, false])->assertOk();
+            $this->assertSame($saved['operationApprovalRevision'], collect($againResponse->json('state.projects'))->firstWhere('id', $p['id'])['operationApprovalRevision']);
+            $w = PrototypeWorkspace::first();
+            $store = app(RelationalWorkflowStore::class);
+            $full = $store->read($w);
+            DB::transaction(fn () => $store->write($w, $full));
+            $this->assertSame($oldRuns, DB::table('approval_runs')->get()->toJson());
+            $this->assertSame($oldSteps, DB::table('approval_steps')->get()->toJson());
+            $this->assertSame($oldDecisions, DB::table('approval_decisions')->orderBy('id_approval_decision')->get()->toJson());
+        } else {
+            $this->assertArrayNotHasKey('operationApprovalRevision', $saved);
+        }
+        $revision = PrototypeWorkspace::first()->revision;
+        $bad = $saved;
+        $bad['unit'] = 'Konstruksi';
+        $this->api('saveProjectBundle', [$bad, false])->assertForbidden();
+        $bad = $saved;
+        $bad['approverUserIds']['Officer 1 Operation'] = 'db-user-'.$this->accounts['PM Konstruksi']->id_user;
+        $this->api('saveProjectBundle', [$bad, false])->assertUnprocessable();
+        $this->assertSame($revision, PrototypeWorkspace::first()->revision);
+        $this->api('submitProjectBundle', [$p['id']])->assertOk();
+        $latest = DB::table('approval_runs')->orderByDesc('cycle_no')->first();
+        $this->assertSame(WorkUnitAccess::OPS_APPROVERS, array_map(fn ($code) => AccountAccess::ROLES[$code], DB::table('approval_steps')->where('run_id', $latest->id_approval_run)->orderBy('step_no')->pluck('expected_role')->all()));
+        $this->assertSame([4], DB::table('approval_steps')->where('run_id', $latest->id_approval_run)->distinct()->pluck('approval_order_version')->all());
+        $new = collect($this->state()['projects'])->firstWhere('id', $p['id']);
+        $this->assertSame('Officer 1 Operation', PrototypeDomain::nextApprovalRole($new, true));
+        $this->assertSame($history, $new['approvalHistory']);
+        $this->asRole('PM Konstruksi');
+        $this->api('decideProject', [$p['id'], 'Setujui', 'Bukan giliran'])->assertForbidden();
+        foreach (WorkUnitAccess::OPS_APPROVERS as $role) {
+            $this->asRole($role);
+            $this->api('decideProject', [$p['id'], 'Setujui', 'Revisi Operation'])->assertOk();
+        }
+        $this->asRole('Admin Operation');
+        $final = collect($this->state()['projects'])->firstWhere('id', $p['id']);
+        $this->assertSame('Sah', $final['status']);
+        $this->assertSame($history, array_slice($final['approvalHistory'], 0, count($history)));
+        $this->assertSame($oldDecisions, DB::table('approval_decisions')->whereIn('id_approval_decision', collect(json_decode($oldDecisions, true))->pluck('id_approval_decision'))->orderBy('id_approval_decision')->get()->toJson());
+        $this->assertSame($archive, PrototypeWorkspace::first()->getRawOriginal('state'));
+        $this->assertDatabaseHas('contracts', ['source_id' => $d['id'], 'signer_name' => $this->accounts['General Manager Operation']->name]);
+        $this->api('createSettlementTerm', [$v['id']])->assertOk();
+        $term = collect($this->state()['terms'])->firstWhere('spkId', $v['id']);
+        $this->assertSame([...WorkUnitAccess::OPS_APPROVERS, 'Mgr Finance & Settlement', 'Finance'], PrototypeDomain::approvalRoles($term));
+    }
+
+    public function test_legacy_operation_revision_with_downstream_payment_is_blocked_without_sql_or_history_mutation(): void
+    {
+        [$p, $d, $v] = $this->operationRevisionFixture(true);
+        $s = $this->state();
+        $s['terms'][] = ['id' => 'paid-history-qa', 'spkId' => $v['id'], 'paid' => 100];
+        $before = $s;
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        try {
+            app(OperationProjectRevision::class)->marker($p, 'operation-v1', $s['actorUserId'], $s);
+            $this->fail('A historical payment must prevent routing conversion.');
+        } catch (ValidationException $error) {
+            $this->assertStringContainsString('proses lanjutan', $error->getMessage());
+        }
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+        $this->assertCount(0, $queries);
+        $this->assertSame($before, $s);
+    }
+
+    public function test_pending_legacy_operation_is_not_converted_by_get_or_a_locked_save(): void
+    {
+        [$p] = $this->package();
+        $this->api('submitProjectBundle', [$p['id']])->assertOk();
+        $w = PrototypeWorkspace::first();
+        $store = app(RelationalWorkflowStore::class);
+        $before = $store->read($w);
+        $after = $before;
+        foreach ($after['projects'] as &$row) {
+            if ($row['id'] === $p['id']) {
+                $row['unit'] = 'Operation';
+            }
+        }
+        unset($row);
+        DB::transaction(fn () => $store->write($w, $after, $before));
+        $original = DB::table('project_plans')->where('source_id', $p['id'])->value('document_data');
+        $this->asRole('Admin Operation');
+        $saved = collect($this->state()['projects'])->firstWhere('id', $p['id']);
+        $this->assertSame('project-support-first', $saved['approvalScheme']);
+        $this->assertArrayNotHasKey('operationApprovalRevision', $saved);
+        $this->api('saveProjectBundle', [$saved, false])->assertUnprocessable();
+        $this->assertSame($original, DB::table('project_plans')->where('source_id', $p['id'])->value('document_data'));
     }
 
     public function test_operation_package_and_payment_follow_five_then_seven_real_approvals_with_unit_isolation(): void

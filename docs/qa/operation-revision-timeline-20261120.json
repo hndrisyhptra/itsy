@@ -1,0 +1,221 @@
+{
+  "date": "2026-11-20",
+  "feature": "Operation PP revisions, approval routing and unit-specific timeline",
+  "authorization": "User requests returned Operation PP edit/approval and timeline to follow Operation.",
+  "behavior": {
+    "editable_operation_approvers": [
+      "Officer 1 Operation",
+      "Manager Branch Operation",
+      "Officer 1 SS",
+      "Manager SS",
+      "General Manager Operation"
+    ],
+    "payment_new": [
+      "same five Operation roles",
+      "Mgr Finance & Settlement",
+      "Finance"
+    ],
+    "cache": "Saved PP UUID/unit/status/root/history and routing metadata override stale local drafts; editable inputs retained.",
+    "history": "Explicit legacy revision captures old routing boundary; original Construction decisions remain actual historical decisions.",
+    "frozen": "Pending/Sah historical chains and historical payments unchanged on GET/deploy.",
+    "guard": "Legacy conversion held for downstream terms/continuation/Head correction; empty active approvals and closed previous cycle required.",
+    "timeline": "same Project code plus same canonical unit; exact clicked PP and BARP activity; dynamic admin/role labels."
+  },
+  "php": {
+    "status": "passed",
+    "tests": 419,
+    "assertions": 12109,
+    "seconds": 85.68,
+    "database": "isolated fail-closed SQLite :memory: with fake storage",
+    "command": "/Applications/XAMPP/xamppfiles/bin/php artisan test --compact",
+    "targeted_cases": 4,
+    "targeted_assertions": 150,
+    "coverage": [
+      "marked Operation real return/edit/save/resubmit/five actual approvals",
+      "legacy Construction-scheme Operation real return/new Operation cycle",
+      "original SQL runs/steps/decisions identical after save; legacy routing full projection",
+      "forged marker ignored and stable over subsequent saves",
+      "unit change403 and wrong-role approver422 without revision change",
+      "old Construction actor cannot approve new Operation cycle",
+      "GM document signer and newly created seven-role payment",
+      "downstream legacy transition held with helper0SQL/no state mutation",
+      "legacy pending GET/save remains frozen"
+    ]
+  },
+  "frontend": {
+    "status": "passed",
+    "tests": 451,
+    "new_tests": 6,
+    "coverage": [
+      "returned legacy editor/approver picker/detail card Operation labels",
+      "stale unit/id/status/routing/history cannot replace saved metadata; editable text retained",
+      "explicit save records routing source once; client marker ignored",
+      "same Project code cross-unit timeline/activities isolation",
+      "actual Operation PP and payment labels, exact BARP event",
+      "Construction revision and legacy pending/Sah unchanged",
+      "downstream transition guard no mutation"
+    ]
+  },
+  "browser": {
+    "status": "passed",
+    "cases": [
+      {
+        "name": "legacy-edit",
+        "commands": [
+          "saveProject"
+        ],
+        "js_errors": 0,
+        "viewports": [
+          375,
+          768,
+          1440
+        ],
+        "themes": [
+          "light",
+          "dark"
+        ]
+      },
+      {
+        "name": "legacy-timeline",
+        "commands": [],
+        "js_errors": 0,
+        "viewports": [
+          375,
+          768,
+          1440
+        ],
+        "themes": [
+          "light",
+          "dark"
+        ]
+      },
+      {
+        "name": "marked-edit",
+        "commands": [
+          "saveProject"
+        ],
+        "js_errors": 0,
+        "viewports": [
+          375,
+          768,
+          1440
+        ],
+        "themes": [
+          "light",
+          "dark"
+        ]
+      },
+      {
+        "name": "marked-timeline",
+        "commands": [],
+        "js_errors": 0,
+        "viewports": [
+          375,
+          768,
+          1440
+        ],
+        "themes": [
+          "light",
+          "dark"
+        ]
+      },
+      {
+        "name": "construction-edit",
+        "commands": [
+          "saveProject"
+        ],
+        "js_errors": 0,
+        "viewports": [
+          375,
+          768,
+          1440
+        ],
+        "themes": [
+          "light",
+          "dark"
+        ]
+      },
+      {
+        "name": "construction-timeline",
+        "commands": [],
+        "js_errors": 0,
+        "viewports": [
+          375,
+          768,
+          1440
+        ],
+        "themes": [
+          "light",
+          "dark"
+        ]
+      }
+    ],
+    "runtime": "Actual React App with synthetic boot/state; mocked command transport applies pure domain, PHP HTTP tested separately.",
+    "checks": [
+      "legacy/marked Operation and Construction control",
+      "opposite-unit/wrong-UUID/number/root stale localStorage cached draft",
+      "five correct approver options, saved unit readonly, editable name retained",
+      "Operation preview title and GM signature role",
+      "TIDAK0write / YA1save, exact target and retained original history; confirmed cache cleared",
+      "timeline same-unit-only totals/selector/events and seven-stage payment track",
+      "detail approval card uses same planned roles, historical decisions unchanged",
+      "375/768/1440 light/dark no page overflow and0JSerrors"
+    ],
+    "visual_inspection": [
+      "legacy edit full screen",
+      "Operation timeline desktop",
+      "legacy editor field card",
+      "legacy detail approval card with original Construction history"
+    ],
+    "external_network": "blocked; fixture responses only",
+    "artifacts_directory": "/private/tmp/area3-operation-revision-20261120"
+  },
+  "checks": {
+    "typescript_vite": "passed",
+    "scoped_pint": "passed",
+    "diff_check": "passed",
+    "assets": {
+      "manifest_references": 47,
+      "preload_dependencies": 38,
+      "profiles": 3,
+      "status": "passed"
+    }
+  },
+  "performance": {
+    "new_read_queries": 0,
+    "new_api_schema_migration_dependency_poller": 0,
+    "revision_marked_operation_http_queries": 57,
+    "revision_legacy_operation_http_queries": 43,
+    "fixture": "one BOQ row package; total authenticated command/response queries, not extra queries or production latency",
+    "downstream_guard_helper_queries": 0,
+    "existing_20pp_full_write_queries": 353,
+    "existing_20pp_incremental_queries": 8,
+    "existing_500boq_1000components_queries": 59,
+    "notes": [
+      "batch actor references including historical routing",
+      "skip unchanged older cycles",
+      "timeline map grouping and parent passed to payment label;20activityDOM",
+      "existing aggregate command read/validation remains a scalability limit"
+    ]
+  },
+  "qa_corrections": [
+    "First full PHP run overlapped targeted PHP tests sharing fake local storage; file-count/private-fixture interference observed. Final full suite ran without another PHP test process and passed.",
+    "Historical SQL comparison sorted by primary key; no reliance on unordered SELECT order.",
+    "Browser initial sandbox launch retried with permission, label lookup adjusted to actual composed label."
+  ],
+  "limits": [
+    "No server/aaPanel/live account/MySQL data inspected or changed for this fix",
+    "No migration/seed/status SQL edit/backfill/env/APP_KEY/Dompis/worker/deploy/commit/push",
+    "No fresh native Word or browser PDF render; existing automatic export tests passed and interactive Operation preview checked",
+    "No production load/concurrency benchmark or actual Telegram/financial transfer"
+  ],
+  "deployment": {
+    "new_migration": false,
+    "steps": [
+      "deploy matching code/build assets",
+      "reload browser",
+      "restart only Area 3 project workers according to domain-update procedure"
+    ],
+    "existing_data": "No automatic conversion. Allowed explicit editable Operation PP revisions only; pending/Sah/paid historical records remain frozen."
+  }
+}

@@ -559,15 +559,16 @@ class RelationalWorkflowStore
         if (($document['workflowVersion'] ?? 1) < 2) {
             return; // Legacy identity-less decisions remain verbatim in the document record.
         }
-        $roles = PrototypeDomain::storedApprovalRoles($document, $project);
         $cycles = ProjectHeadReopen::cycles($document, $project);
-        // A self-reset appends a cycle; unchanged older cycles are already persisted under
+        // A self-reset or explicit unit-flow revision starts a cycle; older cycles are persisted under
         // this workspace lock. Keep their rows byte-identical instead of rewriting history.
-        if ($previous && ! empty($document['approvalResets']) && PrototypeDomain::storedApprovalRoles($previous, $project) === $roles) {
+        if ($previous && (! empty($document['approvalResets']) || ($project && ! empty($document['operationApprovalRevision'])))) {
             $oldCycles = ProjectHeadReopen::cycles($previous, $project);
             $last = array_key_last($cycles);
             foreach ($cycles as $i => $decisions) {
-                if ($i !== $last && isset($oldCycles[$i]) && $oldCycles[$i] === $decisions) {
+                $routing = $project ? OperationProjectRevision::cycleDocument($document, $i + 1) : $document;
+                $oldRouting = $project ? OperationProjectRevision::cycleDocument($previous, $i + 1) : $previous;
+                if ($i !== $last && isset($oldCycles[$i]) && $oldCycles[$i] === $decisions && PrototypeDomain::storedApprovalRoles($routing, $project) === PrototypeDomain::storedApprovalRoles($oldRouting, $project)) {
                     unset($cycles[$i]);
                 }
             }
@@ -577,7 +578,11 @@ class RelationalWorkflowStore
         $selectedIds[] = $document['preparedBy']['userId'] ?? '';
         $selectedIds[] = $document['pmUserId'] ?? '';
         $selectedIds[] = $document['managerUserId'] ?? '';
-        foreach ($cycles as $decisions) {
+        foreach ($cycles as $i => $decisions) {
+            $routing = $project ? OperationProjectRevision::cycleDocument($document, $i + 1) : $document;
+            foreach ([...array_values($routing['approverUserIds'] ?? []), $routing['pmUserId'] ?? '', $routing['managerUserId'] ?? ''] as $selected) {
+                $selectedIds[] = $selected;
+            }
             foreach ($decisions as $decision) {
                 $selectedIds[] = $decision['userId'] ?? '';
             }
@@ -599,6 +604,8 @@ class RelationalWorkflowStore
             if (! $decisions && ! in_array($document['status'], ['Diajukan', 'Sah', 'Disetujui'], true)) {
                 continue;
             }
+            $routing = $project ? OperationProjectRevision::cycleDocument($document, $i + 1) : $document;
+            $roles = PrototypeDomain::storedApprovalRoles($routing, $project);
             $run = $this->id($workspace->id, 'approval-run', ($project ? 'PP' : 'TERM').'|'.$document['id'].'|'.$i);
             $last = $decisions ? $decisions[array_key_last($decisions)] : null;
             $status = match ($last['decision'] ?? '') {
@@ -608,10 +615,10 @@ class RelationalWorkflowStore
             $byRole = array_column($decisions, null, 'role');
             foreach ($roles as $step => $role) {
                 $decision = $byRole[$role] ?? null;
-                $selected = $decision['userId'] ?? (($document['workflowVersion'] ?? 1) >= 3 ? ($document['approverUserIds'][$role] ?? null) : ($document[$step === 0 ? 'pmUserId' : 'managerUserId'] ?? null));
+                $selected = $decision['userId'] ?? (($routing['workflowVersion'] ?? 1) >= 3 ? ($routing['approverUserIds'][$role] ?? null) : ($routing[$step === 0 ? 'pmUserId' : 'managerUserId'] ?? null));
                 $user = $this->user($selected);
                 $id = $this->id($workspace->id, 'approval-step', $run.'|'.$step);
-                DB::table('approval_steps')->updateOrInsert(['id_approval_step' => $id], ['run_id' => $run, 'step_no' => $step + 1, 'expected_role' => array_search($role, AccountAccess::ROLES, true), 'assigned_user_id' => $user, 'assigned_name_snapshot' => $decision['actorName'] ?? ($names[$user] ?? ''), 'workflow_version' => $document['workflowVersion'], 'approval_order_version' => WorkUnitAccess::operation($document) ? 4 : (! $project && PrototypeDomain::usesSettlementPayment($document) ? 3 : (($document['approvalScheme'] ?? '') === 'project-support-first' ? 2 : 1))]);
+                DB::table('approval_steps')->updateOrInsert(['id_approval_step' => $id], ['run_id' => $run, 'step_no' => $step + 1, 'expected_role' => array_search($role, AccountAccess::ROLES, true), 'assigned_user_id' => $user, 'assigned_name_snapshot' => $decision['actorName'] ?? ($names[$user] ?? ''), 'workflow_version' => $document['workflowVersion'], 'approval_order_version' => WorkUnitAccess::operation($routing) ? 4 : (! $project && PrototypeDomain::usesSettlementPayment($routing) ? 3 : (($routing['approvalScheme'] ?? '') === 'project-support-first' ? 2 : 1))]);
                 if ($decision) {
                     $data = ['step_id' => $id, 'actor_user_id' => $this->user($decision['userId'] ?? null), 'actor_name_snapshot' => $decision['actorName'] ?? '', 'decision' => match ($decision['decision']) {
                         'Setujui' => 'APPROVE', 'Kembalikan' => 'RETURN', 'Tolak' => 'REJECT'

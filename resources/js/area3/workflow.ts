@@ -8,13 +8,14 @@ import { applyBudgetPlan } from './plan-budget';
 import { AUTO_KHS_NOTE, AUTO_KHS_POLICY } from './boq-pricing';
 import { applyPlanTemplate } from './plan-template';
 import { recordCommand } from './commands';
+import { operationRevisionMarker } from './project-revision';
 import { type State, type Project, type Term, type Role, type Approval, getProject, getTerm, requireAdmin, requireFinance, validVolume, boqTotal, projectErrors, now, log } from './domain';
 
 export const APPROVERS_V3: Role[] = ['PM Konstruksi', 'Admin Area', 'Mgr Project Support', 'Mgr Deployment', 'Head of PMO'];
 export const APPROVERS_V3_PREVIOUS: Role[] = ['PM Konstruksi', 'Admin Area', 'Mgr Deployment', 'Mgr Project Support', 'Head of PMO'];
 export const APPROVERS_V3_LEGACY:Role[]=['PM Konstruksi','Admin Area','Mgr Deployment','Mgr Bussiness Support','Head of PMO'];
 export function usesBusinessSupport(document:AssignedDocument){return document.approvalScheme==='business-support'||(!document.approvalScheme&&Object.hasOwn(document.approverUserIds??{},'Mgr Bussiness Support')&&!Object.hasOwn(document.approverUserIds??{},'Mgr Project Support'));}
-export function projectApprovalScheme(document?:Project):'project-support-first'|'project-support'|'business-support'|'operation-v1' {return document&&(!canReviseSubmission(document)||(document.approvalHistory?.length??0)>0||(document.approvals?.length??0)>0)?(usesBusinessSupport(document)?'business-support':document.approvalScheme??'project-support'):document?.unit==='Operation'?'operation-v1':'project-support-first';}
+export function projectApprovalScheme(document?:Project):'project-support-first'|'project-support'|'business-support'|'operation-v1' {if(document?.unit==='Operation'&&(document.workflowVersion??3)>=3&&canReviseSubmission(document))return 'operation-v1';return document&&(!canReviseSubmission(document)||(document.approvalHistory?.length??0)>0||(document.approvals?.length??0)>0)?(usesBusinessSupport(document)?'business-support':document.approvalScheme??'project-support'):document?.unit==='Operation'?'operation-v1':'project-support-first';}
 type AssignedDocument = {paymentFlow?:string;approvalScheme?:'project-support-first'|'project-support'|'business-support'|'operation-v1';workflowVersion?:number; pmUserId?:string; managerUserId?:string; approverUserIds?:Partial<Record<Role,string>>};
 export function canReviseSubmission(document: {status:string;workflowVersion?:number}) { return ['Draft','Dikembalikan'].includes(document.status) || ((document.workflowVersion ?? 1) >= 3 && document.status === 'Ditolak'); }
 export function approvalRoles(document: AssignedDocument, project = false): Role[] { if(isOperation(document))return [...OPERATION_APPROVERS,...(!project&&document.paymentFlow==='kasbon-settlement-v2'?['Mgr Finance & Settlement','Finance'] as Role[]:[])];return !project&&document.workflowVersion===3&&document.paymentFlow==='kasbon-settlement-v2'?[...APPROVERS_V3,'Mgr Finance & Settlement','Finance']:(document.workflowVersion ?? 1) >= 3 ? (usesBusinessSupport(document)?APPROVERS_V3_LEGACY:APPROVERS_V3) : project || (document.workflowVersion ?? 1) >= 2 ? ['PM Konstruksi','Manager Konstruksi'] : ['PM Konstruksi','Manager Konstruksi','Finance']; }
@@ -75,6 +76,7 @@ export function saveProjectV2(s: State, input: Project, submit: boolean, submitt
   if (version >= 3) {for(const field of ['workStartDate'] as const)if(!Object.hasOwn(p,field)&&old&&Object.hasOwn(old,field))p[field]=old[field];Object.assign(p, applyPlanTemplate(planningDates(p,old), true, submit));}
   else { delete p.planTemplateVersion; delete p.teamText; delete p.durationDays; delete p.planBudget; delete p.planBudgetTotals; delete p.signatureRows; delete p.signatureUsers; delete p.closing; delete p.riskLevel; }
   p.approvalScheme=projectApprovalScheme(old??p);
+  p.operationApprovalRevision=operationRevisionMarker(old,p.approvalScheme,s.actorUserId??'',s);
   if(!unitOptions(s).includes(p.unit)||(old&&(old.unit==='Operation'?'Operation':'Konstruksi')!==p.unit))throw new Error('Unit kerja PP tidak sesuai akun atau dokumen tersimpan.');
   p.approvalOrderChange=old?.approvalOrderChange;
   p.headApprovalReopen=old?.headApprovalReopen;
@@ -105,7 +107,7 @@ export function saveProjectV2(s: State, input: Project, submit: boolean, submitt
   if (submit && (!p.intro.trim() || (!p.planTemplateVersion && (!p.team.length || p.team.some(t => !t.name.trim() || !t.job.trim()))) || (!p.planBudget && !p.risk.trim()) || !p.communication.trim() || !p.quality.trim() || p.schedule.some(v => (!p.planTemplateVersion || v.days > 0) && (!v.start || !v.end)))) throw new Error('Lengkapi seluruh rencana PP sebelum diajukan.');
   p.workflowVersion = version; p.pmUserId = chain[isOperation(p)?'Officer 1 Operation':'PM Konstruksi']; if (version >= 3) p.approverUserIds = chain; else p.managerUserId = chain['Manager Konstruksi']; p.status = submit ? 'Diajukan' : 'Draft'; p.approvals = []; p.approvalHistory = old?.approvalHistory ?? []; if(old?.approvalResets)p.approvalResets=structuredClone(old.approvalResets);else delete p.approvalResets;
   if (!old) { s.settings ??= { ppNumberFormat: DEFAULT_PP_NUMBER_FORMAT, nextPpSequence: 1, ppNumberFormatVersion: 2 }; rememberProjectNumber(s,p,number); s.settings.nextPpSequence = number.nextSequence; s.projects.unshift(p); } else s.projects[s.projects.indexOf(old)] = p;
-  log(s, submit ? 'PP diajukan ke PM terpilih' : 'Draft PP dan BOQ disimpan', p.no, '/project-plan/' + p.id); return p.id;
+  log(s, submit ? `PP diajukan ke ${isOperation(p)?'Officer 1 Operation':'PM Konstruksi'} terpilih` : 'Draft PP dan BOQ disimpan', p.no, '/project-plan/' + p.id); return p.id;
 }
 export function decideProject(s: State, id: string, decision: Approval['decision'], note: string) {
   recordCommand('decideProject', [id, decision, note]); const p = getProject(s, id), role = projectApprovalRole(p);

@@ -2,13 +2,15 @@ import { settlementRecorded } from './payment-settlement';
 import { usesFinancePayment, financePaymentLabel } from './finance-payment';
 import { usesPartialPayment, documentStatus, partialPaymentLabel } from './partial-payment';
 import { type State, type Project, type Term, nextApprovalRole } from './domain';
+import {workUnitAdmin} from './work-unit';
+import {projectApprovalScheme,approvalRoles} from './workflow';
 
 /** Read-only projection of the Branch-scoped state supplied by Laravel. */
 export function projectTimeline(s:State,id:string) {
   const anchor=s.projects.find(p=>p.id===id);
   if(!anchor) return undefined;
   const code=anchor.projectCode.trim().toUpperCase();
-  const projects=s.projects.filter(p=>code?p.projectCode.trim().toUpperCase()===code:p.id===id);
+  const projects=s.projects.filter(p=>(p.unit==='Operation')===(anchor.unit==='Operation')&&(code?p.projectCode.trim().toUpperCase()===code:p.id===id));
   const projectIds=new Set(projects.map(p=>p.id));
   const deals=s.deals.filter(d=>projectIds.has(d.projectId)),dealProjects=new Map(deals.map(d=>[d.id,d.projectId]));
   const spks=s.spks.filter(v=>dealProjects.has(v.dealId)),spkProjects=new Map(spks.map(v=>[v.id,dealProjects.get(v.dealId)!]));
@@ -25,6 +27,7 @@ export function projectTimeline(s:State,id:string) {
     if(parts[0]==='ba-kh') return dealProjects.get(parts[1]);
     if(parts[0]==='spk') return parts[1]==='ba-kh'?dealProjects.get(parts[2]):spkProjects.get(parts[1]);
     if(parts[0]==='termin') return termProjects.get(parts[1]);
+    if(parts[0]==='ba-rp') return termProjects.get(parts[1]);
     if(parts[0]==='ba-pp') return bappProjects.get(parts[1]);
     return undefined;
   };
@@ -36,15 +39,15 @@ export function projectTimeline(s:State,id:string) {
 export function projectPosition(p:Project):string {
   if(p.status==='Sah') return (p.workflowVersion??1)<2?'PP Sah · alur historis':'PP Sah · seluruh approval selesai';
   if(p.status==='Diajukan') return 'Menunggu approval '+(nextApprovalRole(p,true)??'—');
-  if(p.status==='Dikembalikan') return 'Dikembalikan · menunggu perbaikan Admin Konstruksi';
-  if(p.status==='Ditolak') return (p.workflowVersion??1)>=3?'Ditolak · menunggu perbaikan dan pengajuan ulang Admin Konstruksi dari PM':'Ditolak · proses PP berhenti';
+  if(p.status==='Dikembalikan') return 'Dikembalikan · menunggu perbaikan '+workUnitAdmin(p);
+  if(p.status==='Ditolak') return (p.workflowVersion??1)>=3?`Ditolak · menunggu perbaikan dan pengajuan ulang ${workUnitAdmin(p)} dari ${approvalRoles({...p,approvalScheme:projectApprovalScheme(p)},true)[0]}`:'Ditolak · proses PP berhenti';
   return 'Draft · belum diajukan';
 }
 
-export function paymentPosition(t:Term):string {
+export function paymentPosition(t:Term,project?:Pick<Project,'unit'>):string {
   if(t.status==='Diajukan') return 'Menunggu approval '+(nextApprovalRole(t)??'—');
-  if(t.status==='Dikembalikan') return 'Dikembalikan · menunggu perbaikan Admin Konstruksi';
-  if(t.status==='Ditolak') return (t.workflowVersion??1)>=3?'Ditolak · menunggu perbaikan dan pengajuan ulang Admin Konstruksi dari PM':'Ditolak · proses pembayaran berhenti';
+  if(t.status==='Dikembalikan') return 'Dikembalikan · menunggu perbaikan '+workUnitAdmin({...t,unit:t.unit??project?.unit});
+  if(t.status==='Ditolak') return (t.workflowVersion??1)>=3?`Ditolak · menunggu perbaikan dan pengajuan ulang ${workUnitAdmin({...t,unit:t.unit??project?.unit})} dari ${approvalRoles(t)[0]}`:'Ditolak · proses pembayaran berhenti';
   if(t.status==='Draft') return t.paymentFlow==='kasbon-settlement-v2'?'Draft · lengkapi aktual dan kasbon sebelum tujuh approval':'Draft · belum diajukan';
   if((t.workflowVersion??1)<2) return t.apmStatus==='Valid'?'APM valid · lihat realisasi pembayaran':'Menunggu APM';
   if(usesFinancePayment(t)&&settlementRecorded(t))return 'Tagihan lunas · '+(t.apm?'APM '+t.apm:'APM belum diisi')+' · Berkas '+documentStatus(t);

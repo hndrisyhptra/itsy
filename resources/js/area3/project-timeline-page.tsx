@@ -14,11 +14,13 @@ import { type State, type Project, type Term, type Approval, nextApprovalRole, a
 import { projectTimeline, projectPosition, paymentPosition } from './project-timeline';
 import { PageTitle, Card, Badge, Link, Notice, Table, Empty, Field } from './ui';
 import { appUrl } from './laravel';
+import {canReviseSubmission,projectApprovalScheme} from './workflow';
 
 const stamp=(value?:string)=>value&&Number.isFinite(Date.parse(value))?new Intl.DateTimeFormat('id-ID',{dateStyle:'medium',...(value.includes('T')?{timeStyle:'short' as const}:{}),timeZone:'Asia/Jakarta'}).format(new Date(value)):'Waktu tidak tercatat';
 
 export function ApprovalTrack({s,document,project=false}:{s:State;document:Project|Term;project?:boolean}) {
-  const roles=approvalRoles(document,project), approvals=document.approvals??[],waiting=document.status==='Diajukan'?nextApprovalRole(document,project):undefined;
+  const displayDocument=project&&canReviseSubmission(document)?{...document,approvalScheme:projectApprovalScheme(document as Project)}:document;
+  const roles=approvalRoles(displayDocument,project),waiting=document.status==='Diajukan'?nextApprovalRole(document,project):undefined;
   return <ol className="project-approval-track" aria-label={project?'Tahap approval PP':'Tahap approval pembayaran'}>{roles.map((role,i)=>{
     const decision=currentFlowApproval(document,role,project),current=role===waiting;
     const name=decision?.actorName??s.users.find(u=>u.id===(decision?.userId??selectedApprover(document,role)))?.name;
@@ -34,14 +36,14 @@ function DecisionHistory({s,rows}:{s:State;rows:Approval[]}) {
   </Table>;
 }
 
-function PaymentTimeline({s,t}:{s:State;t:Term}) {
+function PaymentTimeline({s,t,project}:{s:State;t:Term;project:Project}) {
   const spk=s.spks.find(v=>v.id===t.spkId)!,deal=s.deals.find(d=>d.id===spk.dealId)!;
   const amount=termTotal(s,t),modern=(t.workflowVersion??1)>=2;
   const validFinance=(t.workflowVersion??1)>=3?t.scan?.status==='Valid'&&t.financeApproval?.decision==='Setujui'&&t.financeApproval.scanId===t.scan.id:t.scan?.status==='Valid';
   const financeDecisions=[...legacyReviewDecisions(t),...(usesSettlementPayment(t)?[]:(t.financePaymentHistory??[]))];
   const scans=[...(t.scanHistory??[]),...(t.scan?[t.scan]:[])];
   return <article className="project-payment-timeline"><div className="project-timeline-heading"><div><h3>Pembayaran · {barpStageLabel(t)||'Final'}</h3><p>{spk.no} · {deal.mandor}</p></div><Link className="btn" to={'/termin/'+t.id}>Lihat pembayaran <ArrowUpRight size={14}/></Link></div>
-    <div className="project-current-position"><Badge>{t.status}</Badge><strong>{paymentPosition(t)}</strong><span>{t.approvals.length}/{approvalRoles(t).length} approval dokumen</span></div>
+    <div className="project-current-position"><Badge>{t.status}</Badge><strong>{paymentPosition(t,project)}</strong><span>{t.approvals.length}/{approvalRoles(t).length} approval dokumen</span></div>
     <ApprovalResetHistory document={t}/><PaymentFlowOverview t={t} bapp={s.bapps.find(b=>b.termId===t.id)}/><ApprovalTrack s={s} document={t}/>
     {usesPartialPayment(t)&&<div className="project-finance-stage"><strong>Finance · Payment Parsial</strong><Badge>{t.paymentRequest?.status??'Belum diajukan'}</Badge><span>{partialPaymentLabel(t)} · Berkas {documentStatus(t)}{t.paymentRequest?.decision&&` · ${t.paymentRequest.decision.actorName}`}</span></div>}
     {t.legacySettlementReview&&<div className="project-finance-stage"><strong>Mgr Finance &amp; Settlement · Review tambahan kasbon</strong><Badge>{legacyReviewApproved(t)?'Disetujui':t.legacySettlementReview.decision?.decision==='Kembalikan'?'Dikembalikan':'Menunggu'}</Badge><span>{t.legacySettlementReview.name} · Kasbon v{t.kasbon?.version}{t.legacySettlementReview.decision&&' · '+stamp(t.legacySettlementReview.decision.at)}</span></div>}
@@ -61,9 +63,9 @@ export function ProjectTimeline({s,id}:{s:State;id:string}) {
   const shown=data.projects.filter(p=>!filter||p.id===filter),events=data.events.filter(e=>!filter||e.projectId===filter);
   const settled=data.terms.filter(t=>t.status==='Disetujui'&&t.paid>=paymentDue(t,termTotal(s,t))&&termTotal(s,t)>0&&((t.workflowVersion??1)<2||settlementRecorded(t))).length;
   return <><PageTitle back="/project-plan" title="Timeline ID Project" description={data.anchor.projectCode}><Badge>{data.projects.length} PP</Badge></PageTitle>
-    <Notice>Satu ID Project dapat memiliki beberapa PP. Timeline mengikuti akses Branch akun; BOQ, approval dan pembayaran setiap PP tetap terpisah.</Notice>
+    <Notice>Satu ID Project dapat memiliki beberapa PP. Timeline unit {data.anchor.unit==='Operation'?'Operation':'Konstruksi'} mengikuti akses Branch akun; BOQ, approval dan pembayaran setiap PP tetap terpisah.</Notice>
     <div className="summary-cards compact"><div><span>Project Plan</span><strong>{data.projects.length}</strong></div><div><span>PP Sah</span><strong>{data.projects.filter(p=>p.status==='Sah').length}</strong></div><div><span>Pengajuan pembayaran</span><strong>{data.terms.length}</strong></div><div><span>Tagihan lunas</span><strong>{settled}</strong></div></div>
-    <div className="project-timeline-filter"><Field label="Tampilkan PP"><select value={filter} onChange={e=>{setSelection({anchor:id,value:e.target.value});setActivityPage(1);}}><option value="">Seluruh PP pada ID Project ini</option>{data.projects.map(p=><option key={p.id} value={p.id}>{p.no} · {p.branch}</option>)}</select></Field></div>
+    <div className="project-timeline-filter"><Field label="Tampilkan PP"><select value={filter} onChange={e=>{setSelection({anchor:id,value:e.target.value});setActivityPage(1);}}><option value="">Seluruh PP pada ID Project ini · unit {data.anchor.unit==='Operation'?'Operation':'Konstruksi'}</option>{data.projects.map(p=><option key={p.id} value={p.id}>{p.no} · {p.branch}</option>)}</select></Field></div>
     {shown.map(p=>{
       const {deals,spks,terms:relatedTerms,bapps}=data.byProject.get(p.id)!;
       const terms=[...relatedTerms].sort((a,b)=>a.spkId.localeCompare(b.spkId)||a.number-b.number);
@@ -74,7 +76,7 @@ export function ProjectTimeline({s,id}:{s:State;id:string}) {
         {(p.workflowVersion??1)>=2?<><ApprovalTrack s={s} document={p} project/><ApprovalResetHistory document={p}/></>:<p className="muted">PP menggunakan alur historis. Persetujuan yang tidak tercatat tidak dibuat otomatis.</p>}
         <details><summary>Riwayat keputusan PP ({p.approvalHistory?.length??0})</summary><DecisionHistory s={s} rows={p.approvalHistory??[]}/></details>
         <h3 className="project-timeline-section">BA KH &amp; SPK</h3>{deals.length?<Table headers={['BA KH','Mandor','Status BA KH','SPK / Status']}>{deals.map(d=><tr key={d.id}><td><Link to={'/spk/ba-kh/'+d.id}>{d.no}</Link></td><td>{d.mandor}</td><td><Badge>{d.status}</Badge></td><td>{spks.filter(v=>v.dealId===d.id).map(v=><div key={v.id}><Link to={'/spk/'+v.id}>{v.no}</Link> <Badge>{v.status}</Badge></div>)}{!spks.some(v=>v.dealId===d.id)&&'SPK belum dibuat'}</td></tr>)}</Table>:<p className="muted">BA KH dan SPK belum dibuat.</p>}
-        <h3 className="project-timeline-section">Pengajuan pembayaran</h3>{terms.length?terms.map(t=><PaymentTimeline key={t.id} s={s} t={t}/>):<p className="muted">Belum ada pengajuan pembayaran pada PP ini.</p>}
+        <h3 className="project-timeline-section">Pengajuan pembayaran</h3>{terms.length?terms.map(t=><PaymentTimeline key={t.id} s={s} t={t} project={p}/>):<p className="muted">Belum ada pengajuan pembayaran pada PP ini.</p>}
         {!!bapps.length&&<><h3 className="project-timeline-section">BA PP &amp; pelepasan volume</h3><Table headers={['BA PP','Status','Pelepasan volume','Dokumen']}>{bapps.map(b=><tr key={b.id}><td><Link to={'/ba-pp/'+b.id}>{b.no}</Link></td><td><Badge>{b.status}</Badge></td><td>{b.releaseHistory.length} aktivitas pelepasan</td><td><DocumentPackageButton s={s} bappId={b.id} bapp={b}/></td></tr>)}</Table></>}
       </Card>;
     })}

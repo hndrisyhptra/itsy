@@ -1,7 +1,7 @@
 import { barpCurrent,requiresBarp,bappCurrent,requiresBapp } from './bapp-workflow';
 import { Check,Clock3 } from 'lucide-react';
 import type { State,Project,Term,Role,Deal,Spk,Bapp } from './domain';
-import { approvalRoles,selectedApprover,nextApprovalRole } from './domain';
+import { approvalRoles,selectedApprover,nextApprovalRole,projectApprovalScheme } from './domain';
 import { usesContractBundle } from './project-bundle';
 import { usesFinancePayment,usesSettlementPayment } from './finance-payment';
 import { settlementRecorded } from './payment-settlement';
@@ -24,12 +24,12 @@ function FlowStrip({steps,label}:{steps:FlowStep[];label:string}){return <ol cla
 export function PaymentFlowOverview({t,bapp}:{t:Term;bapp?:Bapp}){return <div className="workflow-overview-panel"><FlowStrip steps={paymentFlowSteps(t,bapp)} label="Alur pembayaran tersimpan"/>{usesFinancePayment(t)&&<p className="workflow-overview-note">Berkas {documentStatus(t)} · {t.scan?`Scan ${t.scan.status}`:'Scan TTD dapat disusulkan; pembayaran tidak menunggu upload berkas.'} {t.scan&&t.scan.status!=='Valid'?'Scan yang tersedia perlu diverifikasi Finance.':''}</p>}</div>;}
 export function ProjectFlowOverview({s,p,documents}:{s:State;p:Project;documents?:{deals:Deal[];spks:Spk[]}}){
   const deals=documents?.deals??s.deals.filter(d=>d.projectId===p.id),ids=new Set(deals.map(d=>d.id)),spks=documents?.spks??s.spks.filter(v=>ids.has(v.dealId)),bundle=usesContractBundle(p);
-  const submitted=p.status==='Diajukan'||p.status==='Sah',done=p.status==='Sah';
+  const submitted=p.status==='Diajukan'||p.status==='Sah',done=p.status==='Sah',revisionRoles=approvalRoles({...p,approvalScheme:projectApprovalScheme(p)},true);
   const steps:FlowStep[]=bundle?[
     {label:'Draf PP',detail:'Header, BOQ dan perencanaan',done:submitted||!!p.boq.length},
     {label:'BA KH & SPK',detail:`${deals.length} BA KH · ${spks.length} SPK`,done:!!deals.length&&!!spks.length,current:!submitted},
     {label:'Ajukan Paket',detail:'PP + BA KH + SPK satu pengajuan',done:submitted},
-    {label:'5 Approval',detail:p.status==='Diajukan'?`Menunggu ${nextApprovalRole(p,true)}`:done?'Paket Sah':p.status==='Ditolak'||p.status==='Dikembalikan'?`Perbaiki paket; ulang dari ${approvalRoles(p,true)[0]}`:approvalRoles(p,true).join(' → '),done,current:p.status==='Diajukan'},
+    {label:'5 Approval',detail:p.status==='Diajukan'?`Menunggu ${nextApprovalRole(p,true)}`:done?'Paket Sah':p.status==='Ditolak'||p.status==='Dikembalikan'?`Perbaiki paket; ulang dari ${revisionRoles[0]}`:approvalRoles(p,true).join(' → '),done,current:p.status==='Diajukan'},
   ]:[{label:'PP Historis',detail:'Mengikuti alur dan keputusan tersimpan',done},{label:'BA KH & SPK',detail:`${deals.length} BA KH · ${spks.length} SPK`,done:spks.some(v=>v.status==='Sah')}];
   return <FlowStrip steps={steps} label={bundle?'Alur paket PP, BA KH dan SPK':'Alur PP historis'}/>;
 }
