@@ -15,14 +15,14 @@ test('BA PP appendix total uses all approved terms, not only the last Final', ()
   const s = seed('E'), bapp = s.bapps[0], term = getTerm(s,bapp.termId), spk = getSpk(s,term.spkId), deal = getDeal(s,spk.dealId);
   const html = renderToStaticMarkup(createElement(DocumentPreview, { state:s, kind:'Lampiran BA Penyelesaian Pekerjaan', bapp, term, spk, deal, onClose:()=>{} }));
   const summary = html.match(/<tfoot>[\s\S]*?<\/tfoot>/)?.[0] ?? '';
-  assert.match(summary,/85\.922\.250/);
+  assert.match(summary,/75\.033\.750/);
   assert.match(html,/900/);
 });
 test('continuation PP preview totals its allocated quantities rather than full root BOQ', () => {
   const s = seed(), project = s.projects.find(p=>p.parentId)!;
   const html = renderToStaticMarkup(createElement(DocumentPreview, { state:s, kind:'Project Plan', project, onClose:()=>{} }));
   const summary = html.match(/class="doc-total"[\s\S]*?<\/div>/)?.[0] ?? '';
-  assert.match(summary,/33\.695\.000/);
+  assert.match(summary,/33\.370\.000/);
   assert.doesNotMatch(summary,/134\.780\.000/);
 });
 test('new payment print is gated by two approvals and retains approval gates with template Waspang and Mandor signature spaces', () => {

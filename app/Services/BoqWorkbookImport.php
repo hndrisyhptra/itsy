@@ -186,8 +186,8 @@ class BoqWorkbookImport
                     continue; // Footer totals are never quantities or source prices.
                 }
                 $qty = $this->decimal($columns['G'] ?? [], $row, 'G', 3);
-                if ($qty > 1000000000) {
-                    $this->invalid("Volume G{$row} tidak boleh melebihi satu miliar.");
+                if ($qty > 1000000000 || floor($qty) !== $qty) {
+                    $this->invalid("Volume G{$row} harus bilangan bulat tanpa koma atau desimal dan tidak melebihi satu miliar.");
                 }
                 if ($qty === 0.0) {
                     continue;

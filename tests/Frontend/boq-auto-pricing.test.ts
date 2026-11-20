@@ -13,7 +13,7 @@ function fixture(){
   const s=normalizeWorkflow(seed('B'));s.schema=3;s.projects=[];
   const p:Project={...blankProject(),name:'QA Automatic BOQ',unit:'Konstruksi',projectCode:'AUTO-KHS-QA',branch:s.branches![0].name,date:'2026-11-09',workflowVersion:3};
   s.khs[0]={...s.khs[0],m:100,s:20};
-  p.boq=[{id:'row-auto-1',khsId:s.khs[0].id,qty:2.005,m:999,s:999,excelM:700,excelS:0,reviewed:false,note:'',version:0}];
+  p.boq=[{id:'row-auto-1',khsId:s.khs[0].id,qty:2,m:999,s:999,excelM:700,excelS:0,reviewed:false,note:'',version:0}];
   p.boqUpload={id:'source-auto',name:'qa.xlsx',sha256:'a'.repeat(64),size:100,sheet:'BoQ',package:s.khs[0].package,sourceRows:1,sourceTotal:1403.5,uploadedBy:'qa',uploadedAt:'2026-11-09T00:00:00Z'};
   return {s,p};
 }

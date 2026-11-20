@@ -10,7 +10,7 @@ function fixture() {
   const s=seed('D'),spk=s.spks[0],deal=s.deals.find(d=>d.id===spk.dealId)!;
   const file:WorkEvidence={id:'2811f464-c30c-4b70-8471-a4d8f14666de',name:'Eviden pekerjaan.pdf',mime:'application/pdf',extension:'pdf',size:1234,sha256:'a'.repeat(64),uploadedBy:'user-1',uploadedAt:'2026-11-05T03:00:00.000Z'};
   const t:Term={id:'term-evidence-qa',spkId:spk.id,number:1,type:'Parsial',status:'Draft',actuals:{},approvals:[],history:[],apm:'',apmStatus:'Belum Terbit',paid:0,paymentHistory:[],workEvidence:[file]};
-  const row=deal.rows[0];t.actuals={[row.rowId]:{m:row.m ? .125 : 0,s:row.s ? .125 : 0}};
+  const row=deal.rows[0];t.actuals={[row.rowId]:{m:row.m ? 1 : 0,s:row.s ? 1 : 0}};
   s.terms.push(t);return {s,t,file};
 }
 

@@ -580,6 +580,8 @@ class BundleSettlementTest extends TestCase
         $k = collect($s['khs'])->first(fn ($k) => $k['active'] && ($k['s'] ?? 0) >= 100);
         $p['boq'] = [['id' => 'bundle-row', 'khsId' => $k['id'], 'qty' => 10, 'm' => $k['m'], 's' => $k['s']]];
         $budget = json_decode(file_get_contents(base_path('tests/Fixtures/pp-budget-vector.json')), true)['project']['planBudget'];
+        $budget['materials'][0]['qty'] = 1;
+        $budget['materials'][0]['price'] = 25.03; // Same amount with a whole input quantity.
         $budget['mandor'] = [['rowId' => 'bundle-row', 'qtyM' => 0, 'qtyS' => 5, 'priceM' => 0, 'priceS' => 100]];
         $p['planBudget'] = $budget;
         $this->api('saveProject', [$p, true])->assertUnprocessable();
@@ -717,7 +719,7 @@ class BundleSettlementTest extends TestCase
         $this->assertDatabaseCount('approval_decisions', 0);
     }
 
-    public function test_pending_unmarked_historical_package_can_finish_without_rewriting_its_saved_dates(): void
+    public function test_pending_unmarked_historical_package_can_finish_without_rewriting_its_saved_dates_or_fractional_volume(): void
     {
         [$p, $d, $v] = $this->package();
         $this->api('submitProjectBundle', [$p['id']])->assertOk();
@@ -736,6 +738,9 @@ class BundleSettlementTest extends TestCase
         foreach (['deals', 'spks'] as $collection) {
             foreach ($state[$collection] as &$document) {
                 unset($document['documentDatePolicy']);
+                if ($collection === 'deals') {
+                    $document['rows'][0]['qs'] = 1.5; // Simulated pre-update frozen source, not a new submission.
+                }
                 $document['date'] = $collection === 'deals' ? '2026-11-06' : '2026-11-09';
                 $hash = hash('sha256', json_encode(Arr::sortRecursive($document), JSON_THROW_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION));
                 foreach ($state['projects'] as &$project) {
@@ -752,6 +757,7 @@ class BundleSettlementTest extends TestCase
         $this->assertSame('Sah', collect($result['projects'])->firstWhere('id', $p['id'])['status']);
         $this->assertSame('2026-11-06', $result['deals'][0]['date']);
         $this->assertSame('2026-11-09', $result['spks'][0]['date']);
+        $this->assertEquals(1.5, $result['deals'][0]['rows'][0]['qs']);
         $this->assertArrayNotHasKey('documentDatePolicy', $result['spks'][0]);
     }
 

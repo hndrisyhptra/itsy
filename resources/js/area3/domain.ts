@@ -1,3 +1,4 @@
+import { isWholeVolume, isHistoricalVolume, VOLUME_MESSAGE } from './whole-volume';
 import { barpKasbonReturned,barpCurrent,requiresBarp,invalidateBarp,bappBasis,ensureBapp,assertBappBeforePayment,earlyBapp } from './bapp-workflow';
 import { unitOptions, isOperation } from './work-unit';
 import type { LegacySettlementReview } from './legacy-settlement-review';
@@ -52,7 +53,7 @@ export const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ja
 export const num = (v: number) => new Intl.NumberFormat('id-ID', { maximumFractionDigits: 3 }).format(v);
 export const dateLabel = (v?: string) => v ? new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium', timeZone: 'Asia/Jakarta' }).format(new Date(v)) : '—';
 export const round = (v: number) => Math.round((v + Number.EPSILON) * 100) / 100;
-export const validVolume = (v: number) => Number.isFinite(v) && v >= 0 && Math.abs(v * 1000 - Math.round(v * 1000)) < 0.000001;
+export const validVolume = isWholeVolume;
 export const volumeRound = (v: number) => Math.round((v + Number.EPSILON) * 1000) / 1000;
 export const operational = (s: State) => s.role === 'Admin Konstruksi' || s.role === 'Admin Operation' || s.role === 'Superadmin';
 export function requireAdmin(s: State) { if (!operational(s)) throw new Error('Hanya Admin Konstruksi atau Superadmin yang diotorisasi dapat menjalankan tindakan dokumen ini.'); }
@@ -140,20 +141,21 @@ export function importDemo(s: State, projectId: string) {
 export function reviewBoq(s: State, projectId: string, rowId: string, note: string) {
   recordCommand('reviewBoq', [projectId, rowId, note]); requireAdmin(s); const p = getProject(s, projectId); if (p.boqStatus !== 'Review') throw new Error('BOQ bukan draft review.'); const r = p.boq.find(r => r.id === rowId)!; const k = s.khs.find(k => k.id === r.khsId); if (!k?.active) throw new Error('Designator aktif tidak ditemukan.'); if (!note.trim()) throw new Error('Catatan review wajib diisi.'); Object.assign(r, { reviewed: true, note: note.trim(), m: k.m, s: k.s, version: k.version }); log(s, 'Selisih BOQ direview', `${p.no} · ${k.code}`, `/boq/${p.id}`); }
 export function finalizeBoq(s: State, projectId: string) {
-  recordCommand('finalizeBoq', [projectId]); requireAdmin(s); const p = getProject(s, projectId); if (p.boqStatus !== 'Review' || !p.boq.length) throw new Error('Muat BOQ terlebih dahulu.'); if (p.boq.some(r => { const k = s.khs.find(k => k.id === r.khsId); return !k?.active || !r.reviewed || r.version !== k.version || !Number.isFinite(r.qty) || r.qty <= 0; })) throw new Error('Finalisasi diblokir: selesaikan seluruh review dan revalidasi Master KHS.'); p.boqStatus = 'Final'; log(s, 'BOQ difinalisasi', `${p.no} · ${money(boqTotal(p))}`, `/boq/${p.id}`); }
+  recordCommand('finalizeBoq', [projectId]); requireAdmin(s); const p = getProject(s, projectId); if (p.boqStatus !== 'Review' || !p.boq.length) throw new Error('Muat BOQ terlebih dahulu.'); if (p.boq.some(r => { const k = s.khs.find(k => k.id === r.khsId); return !k?.active || !r.reviewed || r.version !== k.version || !validVolume(r.qty) || r.qty <= 0; })) throw new Error('Finalisasi diblokir: selesaikan seluruh review dan revalidasi Master KHS.'); p.boqStatus = 'Final'; log(s, 'BOQ difinalisasi', `${p.no} · ${money(boqTotal(p))}`, `/boq/${p.id}`); }
 export function blankDeal(s: State, projectId: string): Deal {
   const p = getProject(s, projectId); const root = getProject(s, p.rootId); const period=bakhPeriod(p);
   return syncBakhSigner(s,{ moneyPolicy:s.schema>=3?WHOLE_RUPIAH:undefined, id: uid('bakh'), projectId, no: contractNumber(p.no,'01'), mandor: '', status: 'Draft', rows: root.boq.map(r => { const mandorM=p.planBudget?mandorSphThreshold(p,r.id,'m')??0:null,mandorS=p.planBudget?mandorSphThreshold(p,r.id,'s')??0:null;return { rowId: r.id, m: false, s: false, qm: 0, qs: 0, pm: mandorM??(s.schema>=3?wholeRupiah:round)((r.m??0)*.85), ps: mandorS??(s.schema>=3?wholeRupiah:round)((r.s??0)*.85), sphM: mandorM??(s.schema>=3?wholeRupiah:round)((r.m??0)*.8), sphS: mandorS??(s.schema>=3?wholeRupiah:round)((r.s??0)*.8), offerM: (s.schema>=3?wholeRupiah:round)((r.m??0)*.9), offerS: (s.schema>=3?wholeRupiah:round)((r.s??0)*.9), capM:r.m,capS:r.s };}), documentDatePolicy:DOCUMENT_DATE_POLICY,signingPlace: projectSigningPlace(p), place: '', location: '', witel: '', date: issueDateSuggestion(p,'bakh'), start: period?.start ?? '', end: period?.end ?? '', signer: '', fo: '', jointer: '', evidence: '' });
 }
-export function dealErrors(s: State, d: Deal, formal = false) {
+export function dealErrors(s: State, d: Deal, formal = false, wholeVolumes = true) {
   const e: string[] = [], p = getProject(s, d.projectId);
   if (!usesContractBundle(p)&&(p.boqStatus !== 'Final' || p.status !== 'Sah' || ((p.workflowVersion ?? 1) >= 2 && p.approvals?.length !== approvalRoles(p, true).length))) e.push('PP harus sah dan BOQ harus final.');
   if (!d.no.trim() || !d.mandor.trim()) e.push('Nomor BA KH dan Mandor wajib diisi.');
   if (s.deals.some(v => v.id !== d.id && v.no === d.no.trim())) e.push('Nomor BA KH sudah digunakan.');
   if (!d.rows.some(r => r.m || r.s)) e.push('Pilih minimal satu komponen pekerjaan.');
+  if(wholeVolumes&&d.rows.some(r=>!validVolume(r.qm)||!validVolume(r.qs)))e.push(VOLUME_MESSAGE);
   for (const r of d.rows) for (const c of ['m', 's'] as Component[]) if (r[c]) {
     const q = c === 'm' ? r.qm : r.qs, price = c === 'm' ? r.pm : r.ps, cap = c === 'm' ? r.capM : r.capS;
-    if (cap === null || !validVolume(q) || q <= 0 || q > capacity(s, p, r.rowId, c, d.id)) e.push(`${r.rowId.split('-row-').at(-1)} · Volume ${c === 'm' ? 'Material' : 'Jasa'} melebihi ketersediaan atau tidak valid.`);
+    if (cap === null || !(wholeVolumes?validVolume:isHistoricalVolume)(q) || q <= 0 || q > capacity(s, p, r.rowId, c, d.id)) e.push(`${r.rowId.split('-row-').at(-1)} · Volume ${c === 'm' ? 'Material' : 'Jasa'} melebihi ketersediaan atau tidak valid.`);
     if (!Number.isFinite(price) || price < 0 || price > (cap ?? 0)) e.push(`Harga ${c === 'm' ? 'Material' : 'Jasa'} harus 0 sampai harga KHS komponen tersebut.`);
     for (const proposal of c === 'm' ? [r.sphM, r.offerM] : [r.sphS, r.offerS]) if (!Number.isFinite(proposal) || proposal < 0) e.push('Harga SPH/penawaran harus angka nonnegatif.');
     if(sphThresholdApplies(s,d)) {
@@ -178,10 +180,10 @@ export function saveDeal(s: State, input: Deal, action: 'save' | 'generate' | 'a
   requireAdmin(s);assertBundleEditable(getProject(s,input.projectId),action); const old = s.deals.find(v => v.id === input.id); if (old?.status === 'Sah') throw new Error('Snapshot BA KH sah tidak dapat diedit.'); const d = syncBakhSigner(s,syncDealNumber(s,syncBakhPeriod(s,structuredClone(input)))); d.evidence = old?.evidence ?? '';delete d.signingPlace;
   if(old?.status!=='Terbit'&&!bakhPeriod(getProject(s,d.projectId)))throw new Error('Jadwal PP belum lengkap atau total HK belum valid untuk periode BA KH otomatis.');
   d.moneyPolicy=old?.status==='Terbit'?old.moneyPolicy:s.schema>=3?WHOLE_RUPIAH:undefined;
-  if(d.moneyPolicy===WHOLE_RUPIAH){const rawErrors=dealErrors(s,d,false);if(rawErrors.length)throw new Error(rawErrors.join('\n'));}
+  if(d.moneyPolicy===WHOLE_RUPIAH){const rawErrors=dealErrors(s,d,false,old?.status!=='Terbit');if(rawErrors.length)throw new Error(rawErrors.join('\n'));}
   if(d.moneyPolicy===WHOLE_RUPIAH)d.rows=d.rows.map(r=>{const next={...r};for(const key of ['pm','ps','sphM','sphS','offerM','offerS'] as const){if(!Number.isFinite(r[key])||r[key]<0)throw new Error('Harga rupiah harus nonnegatif.');next[key]=wholeRupiah(r[key]);}return next;});
   if (old?.status === 'Terbit') { if (action !== 'attest') throw new Error('BA KH terbit terkunci; hanya pengesahan dokumen tersedia.'); Object.assign(d, structuredClone(old)); } else { d.documentDatePolicy=DOCUMENT_DATE_POLICY;d.signingPlace=projectSigningPlace(getProject(s,d.projectId));d.place=old?.place??input.place??''; }
-  const e = dealErrors(s, d, action !== 'save'); if (e.length) throw new Error(e.join('\n'));
+  const e = dealErrors(s, d, action !== 'save', old?.status!=='Terbit'); if (e.length) throw new Error(e.join('\n'));
   d.status = action === 'attest' ? 'Sah' : action === 'generate' ? 'Terbit' : 'Draft';
   if (old) s.deals[s.deals.indexOf(old)] = d; else s.deals.push(d); log(s, action === 'attest' ? 'BA KH disahkan' : action === 'generate' ? 'BA KH diterbitkan' : 'Negosiasi disimpan', d.no, `/ba-kh/${d.id}`); return d.id;
 }
@@ -197,7 +199,7 @@ export function applySpk(s:State,input:Spk,action:'save'|'generate'|'attest'='sa
   if (action !== 'save' && v.signerSource === 'pp-head-pmo' && (!v.signerUserId || !v.signer)) throw new Error('Head of PMO terpilih pada PP belum memiliki identitas penandatangan yang valid.');
   if (action !== 'save' && (!v.place || !v.date || !v.start || !v.end || !v.address || !v.supervisor || !v.phone || !v.signer || !v.position)) throw new Error('Lengkapi seluruh informasi SPK sebelum penerbitan.');
   const periodError=spkPeriodError(v,d);if(periodError)throw new Error(periodError);const issueError=spkIssuanceError(bundleProject,d,v,action!=='save');if(issueError)throw new Error(issueError);
-  const errs = dealErrors(s, d, true); if (errs.length) throw new Error(errs.join('\n'));
+  const errs = dealErrors(s, d, true, false); if (errs.length) throw new Error(errs.join('\n'));
   v.status = action === 'attest' ? 'Sah' : action === 'generate' ? 'Terbit' : 'Draft'; if (old) s.spks[s.spks.indexOf(old)] = v; else s.spks.push(v);
   log(s, action === 'attest' ? 'SPK disahkan · volume committed' : action === 'generate' ? 'SPK diterbitkan' : 'Draft SPK disimpan', v.no, `/spk/${v.id}`); return v.id;
 }
@@ -207,6 +209,7 @@ export function createSettlementTerm(s:State,spkId:string){recordCommand('create
 function applyCreateTerm(s:State,spkId:string){ requireAdmin(s); const reason = nextTermReason(s, spkId); if (reason) throw new Error(reason); const number = s.terms.filter(t => t.spkId === spkId).length + 1; const t: Term = { id: uid('termin'), spkId, number, type: number === 3 ? 'Final' : 'Parsial', status: 'Draft', actuals: {}, approvals: [], history: [], apm: '', apmStatus: 'Belum Terbit', paid: 0, paymentHistory: [] }; if (s.schema >= 2) { const p = projectForSpk(s, getSpk(s, spkId)); const version = s.schema >= 3 ? 3 : 2; const chain = validateAssignments(s, { ...p, workflowVersion: version, approvalScheme:p.unit==='Operation'?'operation-v1':'project-support-first', approverUserIds: (p.workflowVersion ?? 1) >= 3&&!usesBusinessSupport(p)&&(p.unit!=='Operation'||isOperation(p)) ? p.approverUserIds : p.paymentApproverUserIds }); Object.assign(t, { workflowVersion: version, unit:p.unit, approvalScheme:version>=3?(p.unit==='Operation'?'operation-v1':'project-support-first'):undefined, pmUserId: chain[p.unit==='Operation'?'Officer 1 Operation':'PM Konstruksi'], ...(version >= 3 ? { moneyPolicy:WHOLE_RUPIAH, approverUserIds: structuredClone(chain), financeHistory: [], paymentFlow:'kasbon-v1',financePayment:{status:'Menunggu Approval'} } : { managerUserId: chain['Manager Konstruksi'] }) }); } t.barp=blankBarp(s,t); s.terms.push(t); log(s, 'Draft termin dibuat', `${getSpk(s, spkId).no} · Termin ${number}`, `/termin/${t.id}`); return t.id; }
 export function termErrors(s: State, t: Term) {
   const d = getDeal(s, getSpk(s, t.spkId).dealId), e: string[] = [];
+  if(Object.values(t.actuals).some(q=>!validVolume(q.m??0)||!validVolume(q.s??0)))e.push(VOLUME_MESSAGE);
   if (t.number === 3 && t.type !== 'Final') e.push('Termin ketiga wajib Final.');
   if (t.number > 3) e.push('Maksimal tiga termin.');
   for (const r of d.rows) for (const c of ['m', 's'] as Component[]) { const q = t.actuals[r.rowId]?.[c] ?? 0; if (!validVolume(q) || (!r[c] && q !== 0) || q > remaining(s, t.spkId, r, c)) e.push(`Volume aktual ${c === 'm' ? 'Material' : 'Jasa'} melebihi sisa komitmen atau tidak valid.`); }
@@ -300,7 +303,7 @@ export function releaseVolume(s: State, id: string, quantities: Record<string, {
   recordCommand('releaseVolume', [id, quantities]);
   requireAdmin(s); const b = s.bapps.find(b => b.id === id)!; const t = getTerm(s, b.termId); if (b.status !== 'Sah' || t.type !== 'Final' || t.status !== 'Disetujui' || t.approvals.length !== approvalCount(t)) throw new Error('BA PP sah dan approval Final lengkap wajib sebelum pelepasan.');
   const d = getDeal(s, getSpk(s, t.spkId).dealId); let total = 0;
-  for (const [rowId, q] of Object.entries(quantities)) { const r = d.rows.find(r => r.rowId === rowId); if (!r) throw new Error('Item pelepasan tidak dikenal.'); for (const c of ['m', 's'] as Component[]) { if (!validVolume(q[c]) || q[c] > remaining(s, t.spkId, r, c)) throw new Error('Pelepasan melebihi sisa volume yang belum accepted.'); total += q[c]; } }
+  for (const [rowId, q] of Object.entries(quantities)) { const r = d.rows.find(r => r.rowId === rowId); if (!r) throw new Error('Item pelepasan tidak dikenal.'); for (const c of ['m', 's'] as Component[]) { if (!validVolume(q[c])) throw new Error(VOLUME_MESSAGE); if (q[c] > remaining(s, t.spkId, r, c)) throw new Error('Pelepasan melebihi sisa volume yang belum accepted.'); total += q[c]; } }
   if (total <= 0) throw new Error('Pilih volume positif untuk dilepas.');
   for (const [rowId, q] of Object.entries(quantities)) { const old = b.released[rowId] ?? { m: 0, s: 0 }; b.released[rowId] = { m: volumeRound(old.m + q.m), s: volumeRound(old.s + q.s) }; } b.releaseHistory.push({ quantities: structuredClone(quantities), at: now(), actor: s.role }); log(s, 'Volume dilepas oleh Admin', b.no, `/ba-pp/${b.id}`);
 }
@@ -310,7 +313,7 @@ export function createContinuation(s: State, bappId: string, no: string, allocat
   requireAdmin(s); const b = s.bapps.find(b => b.id === bappId)!; const t = getTerm(s, b.termId); if (b.status !== 'Sah' || t.type !== 'Final' || t.status !== 'Disetujui' || t.approvals.length !== approvalCount(t) || !b.releaseHistory.length) throw new Error('BA PP sah, Final approved dan otorisasi pelepasan wajib.');
   if (s.schema < 2 && (!no.trim() || s.projects.some(p => p.no.toLowerCase() === no.trim().toLowerCase()))) throw new Error('No PP Baru wajib unik dan diisi manual.');
   const parent = projectForSpk(s, getSpk(s, t.spkId)), root = getProject(s, parent.rootId); let budget = 0, qTotal = 0;
-  for (const [id, q] of Object.entries(allocations)) { const row = root.boq.find(r => r.id === id); if (!row) throw new Error('Item alokasi tidak dikenal.'); for (const c of ['m', 's'] as Component[]) { if (!validVolume(q[c]) || q[c] > continuationAvailable(s, b, id, c) || q[c] > ledger(s, root.id, id, c).available) throw new Error('Volume lanjutan melebihi volume dilepas yang masih tersedia.'); qTotal += q[c]; budget += s.schema>=3?moneyLine(q[c],row[c]??0,0,0,{moneyPolicy:WHOLE_RUPIAH}):q[c]*(row[c]??0); } }
+  for (const [id, q] of Object.entries(allocations)) { const row = root.boq.find(r => r.id === id); if (!row) throw new Error('Item alokasi tidak dikenal.'); for (const c of ['m', 's'] as Component[]) { if (!validVolume(q[c])) throw new Error(VOLUME_MESSAGE); if (q[c] > continuationAvailable(s, b, id, c) || q[c] > ledger(s, root.id, id, c).available) throw new Error('Volume lanjutan melebihi volume dilepas yang masih tersedia.'); qTotal += q[c]; budget += s.schema>=3?moneyLine(q[c],row[c]??0,0,0,{moneyPolicy:WHOLE_RUPIAH}):q[c]*(row[c]??0); } }
   if (qTotal <= 0) throw new Error('Pilih minimal satu volume untuk PP lanjutan.');
   const p = blankProject(); Object.assign(p, { no: no.trim(), name: `${parent.name} — Lanjutan`, unit: parent.unit, branch: parent.branch, projectCode: parent.projectCode, moneyPolicy:s.schema>=3?WHOLE_RUPIAH:undefined,budget:s.schema>=3?wholeRupiah(budget):round(budget), date: today(), rootId: root.id, parentId: parent.id, sourceBapp: b.id, allocations: structuredClone(allocations), intro: notes, boqStatus: 'Final', boq: [], schedule: structuredClone(parent.schedule) }); if (s.schema >= 2) { const number = previewProjectNumber(s, { ...parent, unit: parent.unit === 'Operation' ? 'Operation' : 'Konstruksi' }); p.no = number.value; p.unit = parent.unit === 'Operation' ? 'Operation' : 'Konstruksi'; p.workflowVersion = s.schema >= 3 ? 3 : 2; p.approvalScheme=parent.unit==='Operation'?'operation-v1':'project-support-first'; if (s.schema >= 3) p.approverUserIds = structuredClone(parent.approverUserIds ?? parent.paymentApproverUserIds ?? {}); p.pmUserId = parent.pmUserId; p.managerUserId = parent.managerUserId; p.approvals = []; p.approvalHistory = []; rememberProjectNumber(s,p,number); s.settings!.nextPpSequence = number.nextSequence; } if (s.schema >= 3) { Object.assign(p,{issueDate:today(),workStartDate:'',documentDatePolicy:DOCUMENT_DATE_POLICY}); p.contractBundle={version:1,submissions:[]}; Object.assign(p, applyBudgetPlan(s, applyPlanTemplate({ ...p, schedule: blankProject().schedule, continuationNotes: notes }, true, false), false, true)); const actor=s.users.find(u=>u.id===s.actorUserId);p.preparedBy={userId:actor?.id??'',name:actor?.name??'',nik:actor?.nik??'',role:s.role,at:now(),job:actor?.jabatan?.trim()??''}; } s.projects.push(p); log(s, 'PP lanjutan dibuat · volume reserved', `${p.no} ← ${parent.no}`, `/project-plan/${p.id}`); return p.id;
 }

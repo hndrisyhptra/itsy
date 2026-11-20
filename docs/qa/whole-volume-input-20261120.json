@@ -1,0 +1,108 @@
+{
+  "date": "2026-11-20",
+  "feature": "Whole physical quantity inputs",
+  "input_policy": {
+    "min": 0,
+    "max": 1000000000,
+    "ascii_digits_only": true,
+    "reject_fraction_without_rounding_or_stripping": true
+  },
+  "coverage": [
+    "BOQ Plan form and upload including cached formula result",
+    "Mandor M/J quantities",
+    "Non Stock quantities",
+    "BOP counts",
+    "Editable agreement and bundle submission",
+    "BA RP/payment actuals",
+    "Release and continuation"
+  ],
+  "data_preservation": [
+    "No SQL type changes or migration",
+    "No backfill or GET writes",
+    "Issued and frozen pending snapshots retain historical fraction",
+    "Maintenance budget preserves saved precision",
+    "Money/price/PPh/ledger authority preserved",
+    "Existing historical JSON fixture files unchanged"
+  ],
+  "tests": {
+    "php_full": {
+      "passed": 381,
+      "assertions": 9330,
+      "database": "SQLite :memory:"
+    },
+    "latest_pending_fraction_and_volume_target": {
+      "passed": 6,
+      "assertions": 127
+    },
+    "frontend": {
+      "passed": 417,
+      "failed": 0
+    },
+    "typescript_vite": "passed",
+    "pint": "passed",
+    "diff_check": "passed",
+    "assets": {
+      "references": 46,
+      "preloads": 37,
+      "profiles": 3
+    }
+  },
+  "query_evidence": {
+    "pure_volume_validator": 0,
+    "rejected_http": 18,
+    "rejected_http_budget": 35,
+    "rejected_http_revision_and_table_snapshots_identical": true,
+    "existing_500_boq_1000_components_write": 59,
+    "new_queries": 0,
+    "not_a_server_load_benchmark": true
+  },
+  "browser": {
+    "report": "/private/tmp/area3-whole-volume-20261120/browser-results.json",
+    "fixture": "Actual shared VolumeInput component, not a signed-in app session",
+    "cases": 6,
+    "controls_per_case": 5,
+    "viewports": [
+      375,
+      768,
+      1440
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "invalid_keys_per_control": 5,
+    "invalid_full_input_strings_per_control": 7,
+    "invalid_callbacks": 0,
+    "js_errors": 0,
+    "page_overflow": false,
+    "historical_disabled_1_5_unchanged": true,
+    "external_font_requests_blocked": true,
+    "os_clipboard_not_tested": true,
+    "screenshots_reviewed": [
+      "375-light.png",
+      "1440-dark.png"
+    ]
+  },
+  "limits": [
+    "No production login, SQL inspection/write, MariaDB DDL, concurrency or load test",
+    "No Word/PDF rerender: document generators and formatting unchanged",
+    "Whole-input browser rejection tested with fill, not OS clipboard",
+    "Old editable drafts containing fractions require explicit correction; no automatic conversion",
+    "Counts are separate successful full and final targeted runs"
+  ],
+  "deployment": {
+    "migration_required": false,
+    "build_required": true,
+    "upload_worker_restart_required_by_operator": true,
+    "agent_deployed": false,
+    "agent_changed_env_or_live_data": false,
+    "agent_committed_or_pushed": false
+  },
+  "logs": [
+    "/private/tmp/area3-whole-volume-php-final.log",
+    "/private/tmp/area3-whole-volume-legacy-regression.log",
+    "/private/tmp/area3-whole-volume-fe-final.log",
+    "/private/tmp/area3-whole-volume-build-final.log",
+    "/private/tmp/area3-whole-volume-assets.log"
+  ]
+}

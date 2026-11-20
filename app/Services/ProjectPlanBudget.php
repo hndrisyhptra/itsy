@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Support\WholeRupiah;
+use App\Support\WholeVolume;
 use Illuminate\Validation\ValidationException;
 
 final class ProjectPlanBudget
@@ -20,7 +21,7 @@ final class ProjectPlanBudget
     public static function apply(array $p, array $owners, bool $submit, bool $adoptMaterialRevenue = false): array
     {
         $whole = WholeRupiah::enabled($p);
-        $number = fn ($n, $volume = false) => ! $volume && $whole ? WholeRupiah::round(self::number($n)) : self::number($n, $volume);
+        $number = fn ($n, $volume = false) => $volume && $adoptMaterialRevenue ? WholeVolume::number($n) : (! $volume && $whole ? WholeRupiah::round(self::number($n)) : self::number($n, $volume));
         $product = fn ($q, $price) => self::product($q, $price, $whole);
         $input = $p['planBudget'] ?? [];
         if (! is_array($input)) {
@@ -66,7 +67,7 @@ final class ProjectPlanBudget
             }
             $r = ['rowId' => $owner['rowId']];
             foreach (['qtyM', 'qtyS', 'priceM', 'priceS'] as $key) {
-                $r[$key] = self::number($row[$key] ?? null, str_starts_with($key, 'qty'));
+                $r[$key] = str_starts_with($key, 'qty') ? $number($row[$key] ?? null, true) : self::number($row[$key] ?? null);
             }
             if ($r['qtyM'] > $owner['qm'] || $r['qtyS'] > $owner['qs'] || $r['priceM'] > ($owner['m'] ?? 0) || $r['priceS'] > ($owner['s'] ?? 0)) {
                 self::fail('Harga atau volume BOQ Mandor melebihi BOQ Plan per komponen.');

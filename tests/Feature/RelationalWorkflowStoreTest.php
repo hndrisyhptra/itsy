@@ -34,7 +34,7 @@ class RelationalWorkflowStoreTest extends TestCase
         unset($p['parentId'], $p['sourceBapp']);
         $p['approverUserIds'] = [];
         $k = collect($state['khs'])->firstWhere('active', true);
-        $p['boq'] = [['id' => 'row-'.$id, 'khsId' => $k['id'], 'qty' => 1.125]];
+        $p['boq'] = [['id' => 'row-'.$id, 'khsId' => $k['id'], 'qty' => 1]];
 
         return $p;
     }
@@ -124,8 +124,8 @@ class RelationalWorkflowStoreTest extends TestCase
         $created = $this->command('createTerm', [$spk['id']])->assertOk()->json('state');
         $term = collect($created['terms'])->firstWhere('spkId', $spk['id']);
         $term['actuals'] = [
-            $row['rowId'] => ['m' => $row['m'] ? 0.125 : 0, 's' => $row['s'] ? 0.125 : 0],
-            $other['rowId'] => ['m' => $other['m'] ? 0.125 : 0, 's' => $other['s'] ? 0.125 : 0],
+            $row['rowId'] => ['m' => $row['m'] ? 1 : 0, 's' => $row['s'] ? 1 : 0],
+            $other['rowId'] => ['m' => $other['m'] ? 1 : 0, 's' => $other['s'] ? 1 : 0],
         ];
         $this->command('saveTerm', [$term, false])->assertOk();
         $this->assertGreaterThan(0, DB::table('term_actuals')->count());

@@ -271,6 +271,8 @@ class BoqWorkbookImportTest extends TestCase
     public function test_bad_structure_missing_or_invalid_formula_results_precision_unknown_designator_and_unit_are_rejected_atomically(): void
     {
         $variants = [
+            fn ($x) => preg_replace('/(<c\b[^>]*\br="G75"[^>]*>\s*<v>)[^<]+/', '${1}1.5', $x),
+            fn ($x) => preg_replace('/<c\b[^>]*\br="G75"[^>]*>.*?<\/c>/s', '<c r="G75"><f>1/2</f><v>0.5</v></c>', $x),
             fn ($x) => preg_replace('/(<c\b[^>]*\br="G75"[^>]*>\s*<v>)[^<]+/', '${1}-1', $x),
             fn ($x) => preg_replace('/(<c\b[^>]*\br="G75"[^>]*>\s*<v>)[^<]+/', '${1}0.000000001', $x),
             fn ($x) => preg_replace('/<c\b[^>]*\br="G75"[^>]*>.*?<\/c>/s', '<c r="G75"><f>5+6</f></c>', $x),

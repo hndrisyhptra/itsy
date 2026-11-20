@@ -15,6 +15,8 @@ class ProjectPlanBudgetTest extends TestCase
         $owners = $fixture['owners'];
         $owners[0]['code'] = 'DESIGNATOR-QA';
         $p = $fixture['project'];
+        $p['planBudget']['materials'][0]['qty'] = 1;
+        $p['planBudget']['materials'][0]['price'] = 25.03;
         $current = ProjectPlanBudget::apply($p, $owners, true, true);
         $this->assertSame(ProjectPlanBudget::EDITABLE_NONSTOCK_POLICY, $current['planBudget']['marginPolicy']);
         foreach ($fixture['expectedEditableNonStock'] as $key => $value) {

@@ -22,6 +22,7 @@ import { serializeCsv } from './exports';
 import { appUrl, relativePath, boot, workspaceUrl } from './laravel';
 import { runConfirmedAction } from './confirmation';
 export { confirmAction } from './confirmation';
+export { VolumeInput } from './volume-input';
 export function navigate(path: string) { history.pushState({}, '', appUrl(path)); window.dispatchEvent(new Event('popstate')); window.scrollTo(0, 0); }
 export function usePath() { const [p, setP] = useState(relativePath(location.pathname) + location.search); useEffect(() => { const h = () => setP(relativePath(location.pathname) + location.search); window.addEventListener('popstate', h); return () => window.removeEventListener('popstate', h); }, []); return p; }
 export function Link({ to, children, className = '', ...props }: { to: string; children: ReactNode; className?: string; title?: string; 'aria-label'?: string; 'aria-current'?: React.AriaAttributes['aria-current'] }) { return <a href={appUrl(to)} className={className} {...props} onClick={e => { if (!e.metaKey && !e.ctrlKey && !e.shiftKey) { e.preventDefault(); navigate(to); } }}>{children}</a>; }

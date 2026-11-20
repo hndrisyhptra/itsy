@@ -54,7 +54,7 @@ test('templated continuation appendix retains only its allocated BOQ total and p
   const s=seed(), original=s.projects.find(p=>p.parentId)!, p=applyPlanTemplate({...original,risk:'Risiko QA dipertahankan',communication:'Komunikasi QA dipertahankan',quality:'Kualitas QA dipertahankan'});
   const html=renderToStaticMarkup(createElement(DocumentPreview,{state:s,kind:'Project Plan',project:p,onClose:()=>{}}));
   const total=html.match(/class="doc-total"[\s\S]*?<\/div>/)?.[0]??'';
-  assert.match(total,/33\.695\.000/);assert.doesNotMatch(total,/134\.780\.000/);
+  assert.match(total,/33\.370\.000/);assert.doesNotMatch(total,/134\.780\.000/);
   for(const text of [p.risk,p.communication,p.quality]) assert.ok(html.includes(text));
   assert.equal(original.planTemplateVersion,undefined);
 });

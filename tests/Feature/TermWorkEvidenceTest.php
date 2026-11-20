@@ -75,7 +75,7 @@ class TermWorkEvidenceTest extends TestCase
         $spk = collect($state['spks'])->firstWhere('id', $t['spkId']);
         $deal = collect($state['deals'])->firstWhere('id', $spk['dealId']);
         $r = $deal['rows'][0];
-        $t['actuals'] = [$r['rowId'] => ['m' => $r['m'] ? 0.125 : 0, 's' => $r['s'] ? 0.125 : 0]];
+        $t['actuals'] = [$r['rowId'] => ['m' => $r['m'] ? 1 : 0, 's' => $r['s'] ? 1 : 0]];
         $t['workEvidence'] = [['id' => 'forged', 'storage_key' => '../../secret']];
         $t['scan'] = ['status' => 'Valid'];
         $t['financeApproval'] = ['decision' => 'Setujui'];

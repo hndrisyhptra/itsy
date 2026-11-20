@@ -1,3 +1,4 @@
+import { isWholeVolume, VOLUME_MESSAGE } from './whole-volume';
 import { isOperation, OPERATION_APPROVERS } from './work-unit';
 import { WHOLE_RUPIAH, HALF_RUPIAH, wholeRupiah } from './currency';
 import type { State, Project, Role } from './domain';
@@ -90,7 +91,7 @@ export const usageLabel=(row:UsagePlanRow)=>row.category==='mandor'&&row.compone
 export function validatePlanBudget(s:State,p:Project,submit:boolean) {
   const b=p.planBudget!, owners=ownerPlanRows(s,p);
   const ownersByRow=new Map(owners.map(row=>[row.rowId,row]));
-  const number=(v:number,volume=false)=>{if(!Number.isFinite(v)||v<0||v>1000000000000||(volume&&(v>1000000000||Math.abs(v*1000-Math.round(v*1000))>0.000001))||(!volume&&Math.abs(v*100-Math.round(v*100))>0.0001))throw new Error('Angka anggaran harus nonnegatif; uang maksimal dua desimal, volume tiga desimal.');};
+  const number=(v:number,volume=false)=>{if(volume&&!isWholeVolume(v))throw new Error(VOLUME_MESSAGE);if(!Number.isFinite(v)||v<0||v>1000000000000||(volume&&(v>1000000000||Math.abs(v*1000-Math.round(v*1000))>0.000001))||(!volume&&Math.abs(v*100-Math.round(v*100))>0.0001))throw new Error('Angka anggaran harus nonnegatif; uang maksimal dua desimal, volume tiga desimal.');};
   const ids=(rows:{id:string}[])=>{if(rows.length>200||new Set(rows.map(r=>r.id)).size!==rows.length||rows.some(r=>!/^[a-zA-Z0-9-]{3,100}$/.test(r.id)))throw new Error('Baris anggaran harus memiliki ID unik, maksimal 200 baris per tabel.');};
   if(b.marginPolicy===EDITABLE_NONSTOCK_POLICY){const manual=b.materials.filter(row=>!row.sourceRowId);ids(manual);if(manual.some(row=>row.id.startsWith('material-mandor-')))throw new Error('ID tambahan Material Non Stock memakai kode yang dicadangkan.');const excluded=b.excludedMaterialRowIds??[];if(excluded.length>500||new Set(excluded).size!==excluded.length||excluded.some(id=>!ownersByRow.has(id)||ownersByRow.get(id)!.m===null))throw new Error('Daftar penghapusan Material Non Stock tidak valid.');}
   else if(b.marginPolicy!==OWNER_MATERIAL_POLICY)ids(b.materials);ids(b.bop); number(b.permit);

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Support\WholeRupiah;
+use App\Support\WholeVolume;
 
 /** New workflow; legacy document decisions remain unchanged. */
 trait PrototypeWorkflowV2
@@ -136,8 +137,8 @@ trait PrototypeWorkflowV2
             $seenKhs = $seenRows = [];
             foreach ($input['boq'] ?? [] as $row) {
                 $khs = $catalog[$row['khsId'] ?? ''] ?? null;
-                if (! $khs || ! $khs['active'] || $this->number($row['qty'] ?? 0, true) <= 0 || isset($seenKhs[$khs['id']])) {
-                    $this->fail('BOQ harus menggunakan designator aktif, unik, dan volume positif maksimal tiga desimal.');
+                if (! $khs || ! $khs['active'] || WholeVolume::number($row['qty'] ?? 0) <= 0 || isset($seenKhs[$khs['id']])) {
+                    $this->fail('BOQ harus menggunakan designator aktif, unik, dan volume positif bilangan bulat tanpa desimal.');
                 }
                 $rowId = $this->id($row['id'] ?? '');
                 if (isset($seenRows[$rowId])) {

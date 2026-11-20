@@ -74,7 +74,7 @@ class UsernameApprovalV3Test extends TestCase
         $p['costs']['permit'] = 0;
         $p['approverUserIds'] = $this->chain();
         $k = collect($s['khs'])->firstWhere('active', true);
-        $p['boq'] = [['id' => 'boq-five-approvers', 'khsId' => $k['id'], 'qty' => 10.125, 'm' => 1, 's' => 1]];
+        $p['boq'] = [['id' => 'boq-five-approvers', 'khsId' => $k['id'], 'qty' => 10, 'm' => 1, 's' => 1]];
 
         return $p;
     }
@@ -92,6 +92,8 @@ class UsernameApprovalV3Test extends TestCase
         $p['boq'][0]['khsId'] = $k['id'];
         $p['boq'][0]['qty'] = 10;
         $b = json_decode(file_get_contents(base_path('tests/Fixtures/pp-budget-vector.json')), true)['project']['planBudget'];
+        $b['materials'][0]['qty'] = 1;
+        $b['materials'][0]['price'] = 25.03; // Same amount with a whole input quantity.
         $b['mandor'] = [['rowId' => $p['boq'][0]['id'], 'qtyM' => 0, 'qtyS' => 5, 'priceM' => 0, 'priceS' => 100]];
         $b['usage'][0]['amount'] = $b['usage'][1]['amount'] = 250;
         $p['planBudget'] = $b;
@@ -749,7 +751,7 @@ class UsernameApprovalV3Test extends TestCase
         $this->assertSame($first['projectCode'], $other['projectCode']);
         $this->assertNotSame($first['no'], $other['no']);
         $this->assertNotSame($first['rootId'], $other['rootId']);
-        $this->assertEquals(10.125, $first['boq'][0]['qty']);
+        $this->assertEquals(10, $first['boq'][0]['qty']);
         $this->assertEquals(25, $other['boq'][0]['qty']);
         $this->asRole('PM Konstruksi');
         $this->api('decideProject', [$p['id'], 'Setujui', 'QA PP pertama'])->assertOk();

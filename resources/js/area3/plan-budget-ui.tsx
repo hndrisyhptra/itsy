@@ -1,3 +1,4 @@
+import { VolumeInput } from './volume-input';
 import { WHOLE_RUPIAH, HALF_RUPIAH } from './currency';
 import { Plus, Trash2 } from 'lucide-react';
 import { canReviseSubmission, type State, type Project, type Role, money, num, dateLabel, uid, usesBusinessSupport, selectedApprover } from './domain';
@@ -8,7 +9,8 @@ import { Table, Notice, Button, Field, Input } from './ui';
 
 const percentage=(value:number,base:number)=>{const percent=ratioPercent(value,base);return percent===null?'—':`${num(percent)}%`;};
 function AmountInput({label,value,disabled,onChange,volume=false,max}:{label:string;value:number;disabled:boolean;onChange:(n:number)=>void;volume?:boolean;max?:number}) {
-  return <input aria-label={label} className="number-input" type="number" min="0" max={max} step={volume?'0.001':'1'} disabled={disabled} value={Number.isFinite(value)?value:''} onChange={e=>onChange(e.target.value===''?0:Number(e.target.value))}/>;
+  if(volume)return <VolumeInput label={label} disabled={disabled} value={value} max={max} onChange={onChange}/>;
+  return <input aria-label={label} className="number-input" type="number" min="0" max={max} step="1" disabled={disabled} value={Number.isFinite(value)?value:''} onChange={e=>onChange(e.target.value===''?0:Number(e.target.value))}/>;
 }
 const priceCell=(value:number|null)=>value===null?'—':money(value);
 function VolumeLabel({m,s,qm,qs}:{m:number|null;s:number|null;qm:number;qs:number}){return m!==null&&s!==null&&qm!==qs?<>M {num(qm)} / J {num(qs)}</>:<>{num(m!==null?qm:qs)}</>;}

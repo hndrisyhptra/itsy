@@ -51,7 +51,7 @@ class PrototypeWorkflowV2Test extends TestCase
         $p['managerUserId'] = 'user-2';
         $p['boq'] = array_slice($p['boq'], 0, 1);
         $p['boq'][0]['id'] = 'row-v2-new';
-        $p['boq'][0]['qty'] = 10.125;
+        $p['boq'][0]['qty'] = 10;
         $p['boq'][0]['m'] = 1;
         $p['approvals'] = [['role' => 'Finance', 'decision' => 'Setujui']];
 
@@ -121,7 +121,7 @@ class PrototypeWorkflowV2Test extends TestCase
         $this->assertSame(18500, $saved['boq'][0]['m']);
         $this->assertSame('Diajukan', $saved['status']);
         $this->assertSame([], $saved['approvals']);
-        $this->assertEquals(313875, app(PrototypeDomain::class)->boqTotal($saved));
+        $this->assertEquals(310000, app(PrototypeDomain::class)->boqTotal($saved));
         $deal = $s['deals'][0] ?? ['id' => 'new-deal', 'projectId' => $p['id']];
         $deal['projectId'] = $p['id'];
         $this->rejected($s, 'saveDeal', [$deal, 'save']);

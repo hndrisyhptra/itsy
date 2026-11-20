@@ -18,6 +18,7 @@ function fixture() {
   for(const [i,role]of APPROVERS_V3.entries())if(!s.users.some(u=>u.role===role))s.users.push({id:`qa-role-${i}`,name:`QA ${role}`,nik:`000${i}`,email:`qa${i}@example.test`,role,active:true});
   s.actorUserId=s.users.find(u=>u.role==='Admin Konstruksi')?.id;
   const p=applyPlanTemplate({...structuredClone(s.projects[0]),...structuredClone(vector.project),id:'pp-budget-qa',rootId:'pp-budget-qa',unit:'Konstruksi',workflowVersion:3,status:'Draft',boq:[{...s.projects[0].boq[0],id:'boq-qa',khsId:'khs-qa',qty:10,m:100,s:200}],approverUserIds:Object.fromEntries(APPROVERS_V3.map(role=>[role,s.users.find(u=>u.role===role)!.id]))} as Project);
+  p.planBudget!.materials[0]={...p.planBudget!.materials[0],qty:1,price:25.03}; // Whole input, same independently expected material total.
   p.issueDate='2026-11-01';p.workStartDate=p.date;
   return {s,p};
 }
@@ -71,12 +72,12 @@ test('submitted historical budget version 1 keeps its original installment rows 
 
 test('continuation recap uses its component allocation and never adds the root budget again',()=>{
   const {s,p}=fixture();s.projects.push(structuredClone(p));
-  const child:Project={...structuredClone(p),id:'pp-budget-child',parentId:p.id,rootId:p.id,allocations:{'boq-qa':{m:1.5,s:2}}};
-  child.planBudget!.mandor[0].qtyM=1.5;child.planBudget!.mandor[0].qtyS=2;
+  const child:Project={...structuredClone(p),id:'pp-budget-child',parentId:p.id,rootId:p.id,allocations:{'boq-qa':{m:1,s:2}}};
+  child.planBudget!.mandor[0].qtyM=1;child.planBudget!.mandor[0].qtyS=2;
   child.planBudget!.materials=[];child.planBudget!.bop=[];child.planBudget!.permit=0;
   const before=JSON.stringify(p),result=applyBudgetPlan(s,child,true,true);
-  assert.equal(result.planBudgetTotals!.ownerTotal,550);assert.equal(result.planBudgetTotals!.total,55);
-  assert.deepEqual(result.planBudget!.usage,[{id:'usage-mandor-s',category:'mandor',component:'s',amount:40},{id:'usage-material',category:'material',amount:15}]);
+  assert.equal(result.planBudgetTotals!.ownerTotal,500);assert.equal(result.planBudgetTotals!.total,50);
+  assert.deepEqual(result.planBudget!.usage,[{id:'usage-mandor-s',category:'mandor',component:'s',amount:40},{id:'usage-material',category:'material',amount:10}]);
   assert.equal(JSON.stringify(p),before);
 });
 

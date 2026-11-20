@@ -54,7 +54,7 @@ class PrototypeDomainTest extends TestCase
         $d = collect($this->state['deals'])->firstWhere('id', $spk['dealId']);
         $t['type'] = $type;
         foreach ($d['rows'] as $r) {
-            $t['actuals'][$r['rowId']] = ['m' => $r['m'] ? round($r['qm'] * $ratio, 3) : 0, 's' => $r['s'] ? round($r['qs'] * $ratio, 3) : 0];
+            $t['actuals'][$r['rowId']] = ['m' => $r['m'] ? floor($r['qm'] * $ratio) : 0, 's' => $r['s'] ? floor($r['qs'] * $ratio) : 0];
         }
         $this->runCommand('saveTerm', [$t, true]);
 
@@ -182,7 +182,7 @@ class PrototypeDomainTest extends TestCase
         $this->approve($id, 'APM/QA/001');
         $second = $this->term(.2);
         $domain = app(PrototypeDomain::class)->load($this->state);
-        $this->assertEquals(22912600, $domain->termTotal(collect($this->state['terms'])->firstWhere('id', $second)));
+        $this->assertEquals(15125750, $domain->termTotal(collect($this->state['terms'])->firstWhere('id', $second)));
         $this->role('Admin Konstruksi');
         $this->state['terms'][1]['status'] = 'Draft';
         $draft = $this->state['terms'][1];

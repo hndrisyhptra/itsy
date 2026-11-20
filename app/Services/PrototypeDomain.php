@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Support\WholeRupiah;
+use App\Support\WholeVolume;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -503,7 +504,7 @@ class PrototypeDomain
         }
         foreach ($p['boq'] as $r) {
             $k = $this->record('khs', $r['khsId']);
-            if (! $k['active'] || ! $r['reviewed'] || $r['version'] !== $k['version'] || $this->number($r['qty'], true) <= 0) {
+            if (! $k['active'] || ! $r['reviewed'] || $r['version'] !== $k['version'] || WholeVolume::number($r['qty']) <= 0) {
                 $this->fail('Selesaikan seluruh review dan revalidasi Master KHS.');
             }
         }
@@ -514,7 +515,7 @@ class PrototypeDomain
         return null;
     }
 
-    private function validateDeal(array $d, bool $formal): void
+    private function validateDeal(array $d, bool $formal, bool $wholeVolumes = false): void
     {
         $p = $this->record('projects', $d['projectId'] ?? '');
         $root = $this->record('projects', $p['rootId']);
@@ -540,6 +541,10 @@ class PrototypeDomain
                 $this->fail('Baris kesepakatan tidak dikenal/duplikat.');
             }
             $seen[$r['rowId']] = true;
+            if ($wholeVolumes) {
+                WholeVolume::number($r['qm'] ?? 0);
+                WholeVolume::number($r['qs'] ?? 0);
+            }
             foreach (['m', 's'] as $c) {
                 if (! is_bool($r[$c] ?? null)) {
                     $this->fail('Lingkup komponen tidak valid.');
@@ -648,7 +653,7 @@ class PrototypeDomain
             }
         } elseif (($this->state['schema'] ?? 1) >= 3) {
             $d['moneyPolicy'] = WholeRupiah::POLICY;
-            $this->validateDeal($d, false); // Check raw inputs against ceilings before rounding.
+            $this->validateDeal($d, false, true); // Check raw inputs against ceilings before rounding.
             foreach ($d['rows'] as &$r) {
                 foreach (['pm', 'ps', 'sphM', 'sphS', 'offerM', 'offerS'] as $key) {
                     $r[$key] = WholeRupiah::round($this->number($r[$key] ?? -1));
@@ -657,7 +662,7 @@ class PrototypeDomain
             unset($r);
         }
         $d = BakhSigner::sync($this->state, $d, $action !== 'save');
-        $this->validateDeal($d, $action !== 'save');
+        $this->validateDeal($d, $action !== 'save', ($old['status'] ?? '') !== 'Terbit');
         $d['status'] = $action === 'attest' ? 'Sah' : ($action === 'generate' ? 'Terbit' : 'Draft');
         $this->put('deals', $d);
         $this->log($action === 'attest' ? 'BA KH disahkan' : 'BA KH disimpan', $d['no'], '/ba-kh/'.$d['id']);
@@ -815,7 +820,7 @@ class PrototypeDomain
         }
         foreach ($deal['rows'] as $r) {
             foreach (['m', 's'] as $c) {
-                $q = $this->number($t['actuals'][$r['rowId']][$c] ?? 0, true);
+                $q = WholeVolume::number($t['actuals'][$r['rowId']][$c] ?? 0);
                 if ((! $r[$c] && $q != 0) || $q > $this->remaining($t['spkId'], $r, $c)) {
                     $this->fail('Volume aktual melebihi sisa committed.');
                 }
@@ -1063,7 +1068,7 @@ class PrototypeDomain
                 $this->fail('Item pelepasan tidak dikenal.');
             }
             foreach (['m', 's'] as $c) {
-                $v = $this->number($q[$c] ?? 0, true);
+                $v = WholeVolume::number($q[$c] ?? 0);
                 if ($v > $this->remaining($t['spkId'], $r, $c)) {
                     $this->fail('Pelepasan melebihi sisa volume belum accepted.');
                 }
@@ -1111,7 +1116,7 @@ class PrototypeDomain
                 $this->fail('Item alokasi tidak dikenal.');
             }
             foreach (['m', 's'] as $c) {
-                $v = $this->number($q[$c] ?? 0, true);
+                $v = WholeVolume::number($q[$c] ?? 0);
                 $used = 0;
                 foreach ($this->state['projects'] as $p) {
                     if (($p['sourceBapp'] ?? '') === $bappId) {

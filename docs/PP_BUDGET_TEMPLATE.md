@@ -1,5 +1,7 @@
 # Anggaran, margin dan penutup Project Plan
 
+**20 November 2026:** volume Mandor, Non Stock dan jumlah BOP pada simpan/pengajuan editable harus bilangan bulat tanpa koma/desimal. Harga, rumus dan mode maintenance snapshot lama tetap. [Cakupan, data lama dan QA](WHOLE_VOLUME_INPUT.md).
+
 ## 17 November 2026 — Designator, tambahan/hapus Non Stock dan Total Nilai
 
 Permintaan terbaru menggantikan ketentuan IV.2 readonly di bawah untuk draf PP v3 yang dapat diedit. Kolom **Material** pada item bawaan menampilkan **kode designator saja**, tanpa uraian pekerjaan. Kode disimpan dari referensi sumber canonical; uraian lama tetap disimpan sebagai metadata. Item lama yang belum mempunyai kode memakai kecocokan sourceRowId pada referensi Owner yang sudah dimuat; item manual historis tetap teks tersimpannya bila tidak ada identitas sumber untuk menentukan kode.

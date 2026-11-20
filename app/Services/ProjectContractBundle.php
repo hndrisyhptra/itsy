@@ -70,7 +70,7 @@ trait ProjectContractBundle
             }
             $deal = BakhSigner::sync($this->state, $deal, true);
             $this->put('deals', $deal);
-            $this->validateDeal($deal, true);
+            $this->validateDeal($deal, true, true);
             $manifest['documents']['deals'][$deal['id']] = $this->bundleHash($deal);
         }
         foreach ($spks as $spk) {
