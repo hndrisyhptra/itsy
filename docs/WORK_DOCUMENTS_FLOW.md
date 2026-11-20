@@ -1,5 +1,18 @@
 # Dokumen pekerjaan sebelum kasbon dan pembayaran
 
+## 20 November 2026 — BA PP setelah pembayaran dikembalikan Finance
+
+Kasus pengguna: BA RP sudah diperbaiki dan Sah, tetapi pengesahan BA PP berikutnya terhenti. Reproduksi kode/HTTP terisolasi menemukan `saveTerm` mempertahankan status **Dikembalikan** setelah Kembalikan, sedangkan prepare/attest BA PP sebelumnya hanya menerima Draft/Diajukan/Disetujui. Kasus Tolak menjadi Draft pada simpan sehingga tes lama tidak menangkap pengembalian ini. Ini diagnosis kode lokal, bukan pemeriksaan record server pengguna.
+
+Alur koreksi tujuh tahap: **Ubah/Simpan BA RP → Sahkan BA RP → Periksa & Sahkan Ulang BA PP → Sahkan BA PP & Lanjut Kasbon → Perbaiki & Ajukan Kasbon → tujuh approval dari awal**. Jika BA PP belum ada, tombolnya **Buat BA PP**. Jika sudah ada, membuka dokumen term UUID yang sama, mempertahankan nomor/UUID dan tanggal yang dapat dipilih Admin; tidak membuat BA PP/tagihan/termin baru. Simpan identik tetap tidak membatalkan pengesahan. Jika sumber BA RP berubah, arsip kedua pengesahan lama dipertahankan dan keduanya wajib Sah sesuai sumber baru sebelum reissue kasbon.
+
+Shared `bappStatusAllowed` PHP/TS mempertahankan status existing dan menambah hanya pengembalian nyata current kasbon pada workflow3 `kasbon-settlement-v2`: keputusan terakhir Kembalikan/Tolak harus terikat UUID kasbon aktif, tanpa approval aktif, paid nol dan belum settlement. Prepare tetap memerlukan volume positif/BA RP current, attest tetap memerlukan tanggal sah dan parent PP/BA KH/SPK Sah. Guard role/Branch/Region/unit, receipt/revision, Head, private, actuals/capacity/whole-volume, pending evidence dan kasbon/payment tetap. Tidak mengubah status menjadi Draft secara paksa atau membuat keputusan Finance palsu. Kasbon versi lama tetap sampai Admin eksplisit mengajukan versi baru; keputusan SQL asli dan history tidak dihapus. Alur review Finance historis kasbon-v1 tidak otomatis dikonversi/reset.
+
+Petunjuk BA RP membedakan BA PP belum ada, perlu pengesahan ulang dan sudah Sah. Step Kasbon serta ringkasan pembayaran tidak menandai kasbon yang dikembalikan sebagai tahap selesai; sesudah BA PP Sah, Admin memperbarui kasbon. Pengajuan ulang kembali ke PM Konstruksi atau Officer1Operation sesuai unit, lalu seluruh tahap yang berlaku. Dokumen BA PP/Lampiran yang sudah disahkan ulang dapat dipreview/Word/cetak dengan gerbang sumber existing; TTD fisik tetap kosong, pembayaran/pelepasan volume tidak otomatis terjadi.
+
+Performa/penerapan: semua pemeriksaan tambahan dari graph loaded, helper **0SQL**, prepare existing **33HTTP query**, attest **36HTTP query** pada fixture Construction dan Operation; tanpa query per row/API/schema/migration/dependency/poller baru. Memakai command dan endpoint private existing. Pull tidak menulis ulang record/history/paid; server memerlukan build aset terbaru serta reload aplikasi sesuai prosedur proyek. Tidak ada migrate khusus fitur ini, data aktif/env/worker/server/Dompis tidak diubah agen. Lihat [hasil dan batas QA](qa/finance-return-work-documents-20261120.json).
+
+
 
 
 ## Koreksi pengajuan lama — Termin 1 lunas, Termin 2 sedang berjalan

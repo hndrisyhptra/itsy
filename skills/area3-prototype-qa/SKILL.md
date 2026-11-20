@@ -2,6 +2,11 @@
 name: area3-prototype-qa
 description: Test the its Area 3 interactive prototype through the linked business scenarios, permissions, persistence, financial/volume invariants, documents and responsive layouts.
 ---
+
+## 20 November 2026 — Work documents after a genuine Finance return
+
+Follow latest docs/WORK_DOCUMENTS_FLOW.md. Returned current-kasbon settlement-v2 workflow3 may prepare/re-attest exact-term BA PP after source-current BA RP, only actual current UUID return, no active decisions/paid/settlement. Existing BA PP is reused, changed-source attestations archived, no forced Draft/status/history/SQL decision rewrite. New kasbon explicit reissue restarts seven from first unit role; historical Finance-v1 review is not converted. UI distinguishes create/re-attest/ready; returned old kasbon is not a completed step. Keep Admin/Branch/unit/Region/Head/revision/receipt/private/whole-volume/money/ledger/pending evidence/parent/source/date guards and blank physical signatures. Loaded graph0newSQL/API/schema/migration/poller/live mutation; record actual isolated tests/query/browser/Word and server limits.
+
 ## 20 November 2026 — Operation PP revisions and unit-specific timeline
 
 Follow docs/OPERATION_REVISION_TIMELINE.md. User requires editable returned Operation PP to use Operation5 on next submission, including legacy Construction-scheme v3. Pin saved PP UUID/unit/state/routing metadata against stale form cache while keeping editable inputs. Only explicit allowed save creates server-owned operationApprovalRevision with firstCycleNo/old routing/actor/time; preserve original SQL runs/steps/decisions/history through per-cycle routing, no fake or renamed decisions. Submitted/Sah legacy remains frozen; block legacy transition with downstream terms/continuation/Head correction. Actual Branch/unit/Region/selected-account/receipt/revision/private/manifest/money/ledger guards stay. Timeline groups same Project code AND unit, exact clicked UUID, actual old history labels; draft/revision upcoming roles Operation, admin label Operation, exact BARP activities included. Loaded maps/batched accounts/no new query on read/API/schema/migration/dependency/poller/live writes. Record actual isolated HTTP/query/browser/export/server limits and append audits; supersedes old keep-legacy-scheme wording only for this explicit editable Operation revision.

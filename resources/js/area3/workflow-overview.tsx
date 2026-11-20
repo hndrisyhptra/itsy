@@ -1,4 +1,4 @@
-import { barpCurrent,requiresBarp,bappCurrent,requiresBapp } from './bapp-workflow';
+import { barpCurrent,requiresBarp,bappCurrent,requiresBapp,barpKasbonReturned } from './bapp-workflow';
 import { Check,Clock3 } from 'lucide-react';
 import type { State,Project,Term,Role,Deal,Spk,Bapp } from './domain';
 import { approvalRoles,selectedApprover,nextApprovalRole,projectApprovalScheme } from './domain';
@@ -12,7 +12,8 @@ export interface FlowStep {label:string;detail:string;done:boolean;current?:bool
 export function paymentFlowSteps(t:Term,bapp?:Bapp):FlowStep[]{
   const paid=settlementRecorded(t),finance=usesFinancePayment(t),modern=usesSettlementPayment(t);
   const approved=approvalRoles(t).every(role=>!!currentFlowApproval(t,role));
-  const kasbon={label:'Kasbon Admin',detail:t.kasbon?`Kasbon v${t.kasbon.version} tersimpan`:'Admin melengkapi dan mengajukan kasbon',done:!!t.kasbon,current:modern&&!t.kasbon||!modern&&approved&&!t.kasbon};
+  const returned=modern&&barpKasbonReturned(t);
+  const kasbon={label:'Kasbon Admin',detail:returned?'Perbaiki dan ajukan ulang kasbon setelah BA PP Sah':t.kasbon?`Kasbon v${t.kasbon.version} tersimpan`:'Admin melengkapi dan mengajukan kasbon',done:!!t.kasbon&&!returned,current:modern&&(!t.kasbon||returned)&&(!requiresBapp(t)||bappCurrent(bapp,t))||!modern&&approved&&!t.kasbon};
   const approvals={label:modern?'7 Approval':'Approval Dokumen',detail:t.status==='Diajukan'?`Menunggu ${nextApprovalRole(t)??'approval'}`:['Ditolak','Dikembalikan'].includes(t.status)?`Perbaikan dan ajukan ulang dari ${approvalRoles(t)[0]}`:approved?'Seluruh persetujuan selesai':`${t.approvals.length}/${approvalRoles(t).length} persetujuan`,done:approved,current:t.status==='Diajukan'};
   if(!finance)return [approvals,{label:'Berkas & Finance',detail:`Scan TTD: ${t.scan?.status??'belum diunggah'}`,done:t.scan?.status==='Valid'},{label:'Realisasi',detail:t.apm?`APM ${t.apm}`:'Mengikuti alur pembayaran tersimpan',done:paid}];
   const proof=!!t.transferProof&&t.transferProof.kasbonId===t.kasbon?.id;

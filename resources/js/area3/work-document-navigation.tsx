@@ -1,4 +1,4 @@
-import {barpCurrent,requiresBarp} from './bapp-workflow';
+import {barpCurrent,requiresBarp,barpKasbonReturned} from './bapp-workflow';
 import {Check,ArrowRight,FileText} from 'lucide-react';
 import type {State,Term} from './domain';
 import {operational,getSpk,getDeal,getProject} from './domain';
@@ -6,7 +6,7 @@ import {workBappReady,workPaymentReady} from './work-document-flow';
 import {Button,Card,Link,Notice} from './ui';
 export function WorkDocumentSteps({s,t,stage}:{s:State;t:Term;stage:'barp'|'bapp'|'payment'}){
  const b=s.bapps.find(b=>b.termId===t.id),ready=workBappReady(t,b);
- const steps=[{id:'barp',label:'BA RP & Lampiran',to:'/ba-rp/'+t.id,done:requiresBarp(t)?barpCurrent(t):!!b||t.status!=='Draft'},{id:'bapp',label:'Sahkan BA PP & Lampiran',to:'/ba-rp/'+t.id+'?step=bapp',done:ready},{id:'payment',label:'Kasbon & Pembayaran',to:'/termin/'+t.id,done:!!t.kasbon}];
+ const steps=[{id:'barp',label:'BA RP & Lampiran',to:'/ba-rp/'+t.id,done:requiresBarp(t)?barpCurrent(t):!!b||t.status!=='Draft'},{id:'bapp',label:'Sahkan BA PP & Lampiran',to:'/ba-rp/'+t.id+'?step=bapp',done:ready},{id:'payment',label:'Kasbon & Pembayaran',to:'/termin/'+t.id,done:!!t.kasbon&&!barpKasbonReturned(t)}];
  return <ol className="work-document-steps" aria-label="Tahapan dokumen pekerjaan">{steps.map((step,i)=><li key={step.id} className={step.id===stage?'active':step.done?'done':''}><Link to={step.to} aria-current={step.id===stage?'step':undefined}><span>{step.done?<Check size={14}/>:i+1}</span><strong>{step.label}</strong></Link></li>)}</ol>;
 }
 export function WorkDocumentReview({s,t,onPreview}:{s:State;t:Term;onPreview:(kind:string)=>void}){

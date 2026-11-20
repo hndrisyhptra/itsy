@@ -16,6 +16,7 @@ import {dashboardSummary} from '../../resources/js/area3/dashboard-summary';
 import {settlementRecorded} from '../../resources/js/area3/payment-settlement';
 import {createBappDocx} from '../../resources/js/area3/bapp-docx';
 import {createBappAppendixDocx} from '../../resources/js/area3/bapp-appendix-docx';
+import {paymentFlowSteps} from '../../resources/js/area3/workflow-overview';
 import {docxParts} from './helpers/docx-parts';
 
 function fixture(){const s=seed('E'),t=s.terms[0],v=s.spks.find(v=>v.id===t.spkId)!,d=s.deals.find(d=>d.id===v.dealId)!,p=s.projects.find(p=>p.id===d.projectId)!;s.schema=3;s.role='Admin Konstruksi';s.bapps=[];s.terms=[t];t.type='Parsial';t.status='Draft';t.completionFlow='bapp-each-payment-v2';t.paymentFlow='kasbon-settlement-v2';t.workflowVersion=3;t.paid=0;t.apm='';t.apmStatus='Belum Terbit';t.approvals=[];t.history=[];t.barp=blankBarp(s,t);t.barp.date=v.start;t.actuals={[d.rows[0].rowId]:{m:1,s:1}};saveTerm(s,t,false);return {s,t:getTerm(s,t.id),v,d,p};}
@@ -103,4 +104,28 @@ test('saved BAPP preparation keeps paid, role and new BARP attestation guards',(
  delete t.barpFlow;t.paid=1;assert.equal(savedBappPreparationAllowed(t,termTotal(s,t)),false);html=render(h(WorkDocuments,{s}));assert(!html.includes('Buat BA PP dari BA RP Tersimpan'));assert(html.includes('Detail Pembayaran'));
  t.paid=0;s.role='Finance';html=render(h(WorkDocuments,{s}));assert(!html.includes('Buat BA PP dari BA RP Tersimpan'));
  t.status='Ditolak';assert.equal(savedBappPreparationAllowed(t,termTotal(s,t)),false);t.status='Diajukan';t.actuals={};assert.equal(savedBappPreparationAllowed(t,termTotal(s,t)),false);
+});
+
+test('Finance return keeps exact BA PP reachable after BA RP re-attestation and preserves old kasbon history',()=>{
+ const {s,t,p,d,v}=fixture();s.bapps=[];s.actorUserId='qa-admin';t.barpFlow='attest-before-bapp-v1';attestBarp(s,t);let saved=getTerm(s,t.id);
+ const id=prepareBapp(s,t.id),b=s.bapps.find(b=>b.id===id)!;attestBapp(s,id,b.no);
+ saved.status='Dikembalikan';saved.kasbon={id:'old-current-kasbon'} as Term['kasbon'];saved.history=[{role:'Finance',decision:'Kembalikan',kasbonId:'old-current-kasbon',note:'Perbaiki tanggal',at:'2026-11-20T01:00:00Z'}];
+ const history=JSON.stringify(saved.history),changed=structuredClone(saved);changed.barp!.date='2026-11-25';saveTerm(s,changed,false);saved=getTerm(s,t.id);
+ assert.equal(saved.status,'Dikembalikan');assert.equal(b.status,'Draft');assert.throws(()=>attestBapp(s,id,b.no),/Sahkan BA RP/);
+ attestBarp(s,saved);saved=getTerm(s,t.id);assert(savedBappPreparationAllowed(saved,termTotal(s,saved)));
+ const html=render(h(TermEditor,{s,id:t.id,stage:'work'}));assert(html.includes('Periksa &amp; Sahkan Ulang BA PP'));assert(!html.includes('Buat BA PP</button>'));assert(html.includes('Approval dimulai kembali dari tahap pertama sesuai unit kerja'));
+ assert.equal(prepareBapp(s,t.id),id);assert.equal(s.bapps.length,1);attestBapp(s,id,b.no,undefined,'2026-11-26');assert(bappCurrent(b,saved));assert.equal(paymentFlowSteps(saved,b).find(step=>step.label==='Kasbon Admin')?.done,false);assert.equal(paymentFlowSteps(saved,b).find(step=>step.label==='Kasbon Admin')?.current,true);
+ for(const bytes of [createBappDocx(p,d,v,saved,b),createBappAppendixDocx(s,p,d,v,saved,b)])assert.doesNotMatch(docxParts(bytes)['word/document.xml'],/APPROVED|SALINAN REVIEW|DRAF —/);
+ const ready=render(h(TermEditor,{s,id:t.id,stage:'work'}));assert(ready.includes('Perbaiki Kasbon &amp; Ajukan Ulang'));assert.equal(JSON.stringify(saved.history),history);assert.equal(saved.kasbon?.id,'old-current-kasbon');assert.equal(saved.status,'Dikembalikan');assert.equal(saved.paid,0);
+});
+
+test('returned BAPP exception requires real current seven-stage return and no paid or active decisions',()=>{
+ const {s,t}=fixture();s.bapps=[];t.status='Dikembalikan';t.kasbon={id:'current'} as Term['kasbon'];
+ assert.equal(savedBappPreparationAllowed(t,termTotal(s,t)),false);
+ t.history=[{role:'Finance',decision:'Kembalikan',kasbonId:'stale',note:'Return',at:'2026-11-20T01:00:00Z'}];assert.equal(savedBappPreparationAllowed(t,termTotal(s,t)),false);
+ t.history[0].kasbonId='current';assert.equal(savedBappPreparationAllowed(t,termTotal(s,t)),true);
+ t.paid=1;assert.equal(savedBappPreparationAllowed(t,termTotal(s,t)),false);t.paid=0;
+ t.apmStatus='Valid';assert.equal(savedBappPreparationAllowed(t,termTotal(s,t)),false);t.apmStatus='Belum Terbit';
+ t.approvals=[{role:'PM Konstruksi',decision:'Setujui',kasbonId:'current',note:'QA',at:'2026-11-20T00:00:00Z'}];assert.equal(savedBappPreparationAllowed(t,termTotal(s,t)),false);t.approvals=[];
+ t.paymentFlow='kasbon-v1';assert.equal(savedBappPreparationAllowed(t,termTotal(s,t)),false);
 });

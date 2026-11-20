@@ -1016,7 +1016,7 @@ class PrototypeDomain
         if (self::requiresBarp($t) && ! self::barpCurrent($t)) {
             $this->fail('Sahkan BA RP sesuai data tersimpan sebelum mengesahkan BA PP.');
         }
-        if ($b['status'] === 'Sah' || ($t['type'] !== 'Final' && ($b['completionPolicy'] ?? '') !== 'barp-each-payment-v2') || ($early ? ! in_array($t['status'], ['Draft', 'Diajukan', 'Disetujui'], true) : ($t['status'] !== 'Disetujui' || count($t['approvals']) !== $this->approvalCount($t)))) {
+        if ($b['status'] === 'Sah' || ($t['type'] !== 'Final' && ($b['completionPolicy'] ?? '') !== 'barp-each-payment-v2') || ($early ? ! self::bappStatusAllowed($t) : ($t['status'] !== 'Disetujui' || count($t['approvals']) !== $this->approvalCount($t)))) {
             $this->fail('BA PP terkunci atau BA RP belum siap.');
         }
         if ($early) {

@@ -1,0 +1,118 @@
+{
+  "date": "2026-11-20",
+  "feature": "Returned Finance payment: re-attest exact BA PP after BA RP correction",
+  "authorization": "User requests a working continuation from corrected Sah BA RP to BA PP after Finance return, plus explanation.",
+  "root_cause": "Real Kembalikan preserves Dikembalikan on save/attest BARP; early BA PP prepare/attest previously admitted only Draft/Diajukan/Disetujui. Rejection-only regression missed it.",
+  "behavior": [
+    "Only genuine current-kasbon seven-stage workflow3 returns gain BA PP preparation/re-attestation eligibility, no active approvals/paid/settlement.",
+    "Reuse exact term BA PP; source changes archive both attestations. No duplicate bill or child, forced status reset or fake decisions.",
+    "Keep old kasbon UUID/history until explicit private reissue. New kasbon restarts first Construction/Operation approver through all seven.",
+    "Next-action and notice distinguish create/re-attest/ready; returned old kasbon no longer completes kasbon step."
+  ],
+  "php": {
+    "runner": "SQLite :memory:, testing guard; full suite run alone",
+    "tests": 422,
+    "assertions": 12279,
+    "passed": true,
+    "new_tests": 3,
+    "cases": "Finance actual six approvals then Finance Kembalikan for Construction and Operation; repair BARP/date, reuse one BAPP, re-attest, unchanged original SQL decisions and volume balances, new kasbon UUID and first-unit approver. Negative pure guard: stale/missing return, legacy, paid, APM valid, active approvals/version."
+  },
+  "frontend": {
+    "tests": 453,
+    "passed": true,
+    "new_tests": 2,
+    "cases": "Returned exact BA PP route/button/notice, retained status/old UUID/history, source re-attestation, pure guard parity negatives, kasbon step pending. New returned BA PP/appendix native DOCX XML smoke verifies no draft/review/APPROVED signature text. Existing legacy paid sibling/exact UUID/20 of1000 cases retained."
+  },
+  "query_measurements": {
+    "additional_queries": 0,
+    "pure_guard": 0,
+    "returned_prepare_bapp_http": {
+      "Construction": 33,
+      "Operation": 33
+    },
+    "returned_attest_bapp_http": {
+      "Construction": 36,
+      "Operation": 36
+    },
+    "existing_500_boq_1000_components_write": 59,
+    "note": "SQLite isolated fixture counts, not MySQL/load benchmark."
+  },
+  "browser": {
+    "actual_app": true,
+    "transport": "Synthetic boot/state/private response/command transport; external networks aborted, no live login/account/DB/API.",
+    "cases": [
+      {
+        "unit": "Konstruksi",
+        "exact_term": "termin-0f83bcbe-1399-4905-a78f-1ac9c5fe901c",
+        "commands": [
+          "attestBapp"
+        ],
+        "duplicate_bapps": 0,
+        "cancel_writes": 0,
+        "history_unchanged": true,
+        "old_kasbon_unchanged": true,
+        "revision_form_opened": true,
+        "viewports": [
+          375,
+          768,
+          1440
+        ],
+        "themes": [
+          "light",
+          "dark"
+        ],
+        "js_errors": 0
+      },
+      {
+        "unit": "Operation",
+        "exact_term": "termin-b5751523-ae18-4ec5-ba5b-7ba1d71cf7a4",
+        "commands": [
+          "attestBapp"
+        ],
+        "duplicate_bapps": 0,
+        "cancel_writes": 0,
+        "history_unchanged": true,
+        "old_kasbon_unchanged": true,
+        "revision_form_opened": true,
+        "viewports": [
+          375,
+          768,
+          1440
+        ],
+        "themes": [
+          "light",
+          "dark"
+        ],
+        "js_errors": 0
+      }
+    ],
+    "checks": "Current Sah BARP -> open existing BA PP exact term -> own date -> TIDAK 0 command, YA one attest -> payment -> reissue form loaded. Kasbon overview not complete while returned. Work page at375/768/1440 light/dark no page overflow;0 JS error. Kasbon reissue HTTP tested separately, not submitted from mocked browser.",
+    "screenshots_inspected": [
+      "Konstruksi BA RP next-action, full page",
+      "Operation kasbon revision modal, full page"
+    ],
+    "harness_corrections": "Chrome initial sandbox launch failed and was rerun with approved scope; initial date locator included field hint and was corrected to label regex. Final two cases passed.",
+    "artifacts": "/private/tmp/area3-finance-return-20261120"
+  },
+  "checks": {
+    "typescript_vite": true,
+    "pint_dirty": true,
+    "diff_check": true,
+    "assets": {
+      "manifest_references": 47,
+      "preload_dependencies": 38,
+      "profiles": 3
+    }
+  },
+  "limits": [
+    "Server/aaPanel/MySQL and actual user record not inspected.",
+    "DOCX template/generator layout unchanged; XML/smoke and existing export tests passed; no new Word/PDF visual render, desktop Word or physical print.",
+    "No real transfer, Telegram sends, load/parallel users/network benchmark."
+  ],
+  "deployment": {
+    "migration_required": false,
+    "operator": "Deploy PHP/TS update and rebuilt assets through existing project procedure; reload page. No SQL status rewrite needed.",
+    "agent_live_mutations": [],
+    "no_new": "SQL lookups/API/schema/migration/dependency/poller; no live its/env/APP_KEY/worker/server/Dompis/backfill/commit/push/deploy."
+  }
+}

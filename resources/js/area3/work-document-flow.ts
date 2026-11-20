@@ -1,7 +1,7 @@
 import type {State,Term,Bapp} from './domain';
 import {termTotalForDeal} from './domain';
 import {settlementRecorded} from './payment-settlement';
-import {barpCurrent,requiresBarp,bappCurrent,earlyBapp,requiresBapp} from './bapp-workflow';
+import {barpCurrent,requiresBarp,bappCurrent,earlyBapp,requiresBapp,bappStatusAllowed} from './bapp-workflow';
 
 /** Only the authorized loaded graph; never match by Project code or a sibling document. */
 export function workDocumentRows(s:State){
@@ -15,4 +15,4 @@ export function workPaymentReady(t:Term,b:Bapp|undefined){return !requiresBapp(t
 export const workBappReady=(t:Term,b:Bapp|undefined)=>bappCurrent(b,t)||!requiresBapp(t)&&b?.status==='Sah';
 
 /** Mirrors the existing explicit prepareBapp guard; does not unlock the saved BARP. */
-export function savedBappPreparationAllowed(t:Term,amount:number){return (t.workflowVersion??1)>=3&&['Draft','Diajukan','Disetujui'].includes(t.status)&&amount>0&&!!t.barp&&!settlementRecorded(t)&&t.paid===0&&(!requiresBarp(t)||barpCurrent(t));}
+export function savedBappPreparationAllowed(t:Term,amount:number){return (t.workflowVersion??1)>=3&&bappStatusAllowed(t)&&amount>0&&!!t.barp&&!settlementRecorded(t)&&t.paid===0&&(!requiresBarp(t)||barpCurrent(t));}

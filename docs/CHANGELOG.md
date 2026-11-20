@@ -701,3 +701,10 @@ QA full381PHP/9330assertions memory lulus; sesudah penambahan assertion snapshot
 - Perubahan skema pada PP historis hanya saat simpan revisi yang diizinkan, dengan batas siklus server-owned. Keputusan/run/step lama tetap; PP pending/Sah dan pembayaran historis tidak dikonversi otomatis. Transisi legacy ditahan bila sudah memiliki proses lanjutan/koreksi khusus.
 - Timeline memisahkan unit pada IDProject sama, memakai label AdminOperation, menampilkan urutan approval sebenarnya dan aktivitas BA RP exactUUID. Catatan pengembalian ditampilkan pada revisi.
 - Tidak ada migration, endpoint atau polling baru. Referensi akun batch, siklus lama identik dilewati; query fixture revisi57/43 totalHTTP. [Panduan dan QA](OPERATION_REVISION_TIMELINE.md).
+
+
+## 20 November 2026 — Lanjut BA PP setelah dikembalikan Finance
+
+- Perbaikan pengesahan BA PP saat pembayaran tujuh tahap masih Dikembalikan meskipun BA RP sudah Sah. BA PP yang sama dapat diperiksa/disahkan ulang; tidak membuat tagihan/dokumen ganda.
+- Tombol **Periksa & Sahkan Ulang BA PP**, petunjuk sesuai kondisi dan status kasbon revisi memperjelas BA RP → BA PP → perbaiki kasbon → ajukan ulang dari tahap pertama Konstruksi/Operation.
+- Keputusan/history SQL dan pembayaran lama tetap; genuine current-kasbon/role/scope/paid/source/revision guards dipertahankan. Tanpa migration/backfill/live mutation. [Alur dan QA](WORK_DOCUMENTS_FLOW.md).

@@ -39,6 +39,14 @@ trait BappWorkflow
             && in_array($last['decision'] ?? '', ['Tolak', 'Kembalikan'], true);
     }
 
+    /** A genuine returned current-kasbon cycle may repair its work documents without resubmitting yet. */
+    public static function bappStatusAllowed(array $t): bool
+    {
+        return in_array($t['status'], ['Draft', 'Diajukan', 'Disetujui'], true)
+            || ($t['status'] === 'Dikembalikan' && self::barpKasbonReturned($t)
+                && empty($t['approvals']) && ! self::settlementRecorded($t) && ($t['paid'] ?? 0) == 0);
+    }
+
     private function attestBarp(array $input): null
     {
         $this->admin();
@@ -141,7 +149,7 @@ trait BappWorkflow
     {
         $this->admin();
         $t = $this->record('terms', $id);
-        if (($t['workflowVersion'] ?? 1) < 3 || ! in_array($t['status'], ['Draft', 'Diajukan', 'Disetujui'], true) || $this->termTotal($t) <= 0 || empty($t['barp']) || self::settlementRecorded($t) || ($t['paid'] ?? 0) > 0) {
+        if (($t['workflowVersion'] ?? 1) < 3 || ! self::bappStatusAllowed($t) || $this->termTotal($t) <= 0 || empty($t['barp']) || self::settlementRecorded($t) || ($t['paid'] ?? 0) > 0) {
             $this->fail('Simpan BA RP dengan volume positif sebelum menyiapkan BA PP.');
         }
         if (self::requiresBarp($t) && ! self::barpCurrent($t)) {

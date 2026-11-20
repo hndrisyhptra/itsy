@@ -181,6 +181,98 @@ class BundleSettlementTest extends TestCase
 
     }
 
+    public function test_returned_bapp_guard_is_loaded_only_and_keeps_legacy_paid_and_current_kasbon_locks(): void
+    {
+        $this->withoutVite();
+        $t = ['status' => 'Dikembalikan', 'workflowVersion' => 3, 'paymentFlow' => 'kasbon-settlement-v2', 'paid' => 0, 'approvals' => [], 'kasbon' => ['id' => 'current'], 'history' => [['decision' => 'Kembalikan', 'kasbonId' => 'current']]];
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $this->assertTrue(PrototypeDomain::bappStatusAllowed($t));
+        foreach ([['paid' => 1], ['apmStatus' => 'Valid'], ['history' => [['decision' => 'Kembalikan', 'kasbonId' => 'old']]], ['approvals' => [['role' => 'Finance']]], ['paymentFlow' => 'kasbon-v1'], ['workflowVersion' => 2]] as $invalid) {
+            $this->assertFalse(PrototypeDomain::bappStatusAllowed(array_replace($t, $invalid)));
+        }
+        $this->assertCount(0, DB::getQueryLog());
+        DB::disableQueryLog();
+    }
+
+    public static function returnedWorkUnits(): array
+    {
+        return ['construction' => [false], 'operation' => [true]];
+    }
+
+    #[DataProvider('returnedWorkUnits')]
+    public function test_finance_return_repairs_same_bapp_and_reissues_kasbon_from_first_unit_approver(bool $operation): void
+    {
+        [$p, $d, $v] = $this->package($operation);
+        $roles = $operation ? WorkUnitAccess::OPS_APPROVERS : PrototypeDomain::APPROVERS_V3;
+        $this->api('submitProjectBundle', [$p['id']])->assertOk();
+        foreach ($roles as $role) {
+            $this->asRole($role);
+            $this->api('decideProject', [$p['id'], 'Setujui', 'QA package'])->assertOk();
+        }
+        $admin = $operation ? 'Admin Operation' : 'Admin Konstruksi';
+        $this->asRole($admin);
+        $this->api('createTerm', [$v['id']])->assertOk();
+        $t = $this->term();
+        $t['actuals'] = ['bundle-row' => ['m' => 0, 's' => 1]];
+        $this->api('attestBarp', [$t])->assertOk();
+        $this->api('prepareBapp', [$t['id']])->assertOk();
+        $b = $this->state()['bapps'][0];
+        $this->api('attestBapp', [$b['id'], $b['no']])->assertOk();
+        $this->submitKasbon($this->term())->assertOk();
+        foreach ([...$roles, 'Mgr Finance & Settlement'] as $role) {
+            $this->asRole($role);
+            $this->api('decide', [$t['id'], 'Setujui', 'QA payment'])->assertOk();
+        }
+        $this->asRole('Finance');
+        $this->api('decide', [$t['id'], 'Kembalikan', 'Perbaiki tanggal rekonsiliasi'])->assertOk();
+        $returned = $this->term();
+        $this->assertSame('Dikembalikan', $returned['status']);
+        $this->assertCount(7, $returned['history']);
+        $decisions = DB::table('approval_decisions')->orderBy('id_approval_decision')->get()->toJson();
+        $balances = DB::table('volume_balances')->orderBy('boq_component_id')->get()->toJson();
+        $this->asRole($admin);
+        $returned['barp']['date'] = '2026-11-25';
+        $this->api('saveTerm', [$returned, false])->assertOk();
+        $this->assertSame('Draft', $this->state()['bapps'][0]['status']);
+        $this->assertFalse(PrototypeDomain::barpCurrent($this->term()));
+        $revision = PrototypeWorkspace::first()->revision;
+        $this->api('attestBapp', [$b['id'], $b['no']])->assertUnprocessable();
+        $this->assertSame($revision, PrototypeWorkspace::first()->revision);
+        $this->api('attestBarp', [$this->term()])->assertOk();
+        $this->assertSame('Dikembalikan', $this->term()['status']);
+        $this->submitKasbon($this->term())->assertUnprocessable();
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $this->api('prepareBapp', [$t['id']])->assertOk();
+        $prepareQueries = count(DB::getQueryLog());
+        DB::flushQueryLog();
+        $this->api('attestBapp', [$b['id'], $b['no'], '', '2026-11-26'])->assertOk();
+        $attestQueries = count(DB::getQueryLog());
+        DB::disableQueryLog();
+        fwrite(STDERR, "\nReturned BAPP ".($operation ? 'Operation' : 'Construction').": prepare {$prepareQueries}, attest {$attestQueries} HTTP queries.\n");
+        $this->assertLessThanOrEqual(80, $prepareQueries);
+        $this->assertLessThanOrEqual(80, $attestQueries);
+        $this->assertDatabaseCount('ba_completions', 1);
+        $current = $this->state()['bapps'][0];
+        $this->assertSame($b['id'], $current['id']);
+        $this->assertCount(1, $current['attestationHistory']);
+        $this->assertTrue(PrototypeDomain::bappCurrent($current, $this->term()));
+        $this->assertSame($returned['history'], $this->term()['history']);
+        $this->assertSame($returned['kasbon']['id'], $this->term()['kasbon']['id']);
+        $this->assertSame($decisions, DB::table('approval_decisions')->orderBy('id_approval_decision')->get()->toJson());
+        $this->assertSame($balances, DB::table('volume_balances')->orderBy('boq_component_id')->get()->toJson());
+        $this->submitKasbon($this->term())->assertOk();
+        $new = $this->term();
+        $this->assertNotSame($returned['kasbon']['id'], $new['kasbon']['id']);
+        $this->assertSame('Diajukan', $new['status']);
+        $this->assertCount(0, $new['approvals']);
+        $this->assertSame($roles[0], PrototypeDomain::nextApprovalRole($new));
+        $this->assertSame($returned['history'], $new['history']);
+        $this->assertSame(0, $new['paid']);
+        $this->assertSame($decisions, DB::table('approval_decisions')->orderBy('id_approval_decision')->get()->toJson());
+    }
+
     public function test_pending_work_evidence_blocks_barp_attestation_without_losing_saved_work(): void
     {
         $t = $this->draftPayment(false);

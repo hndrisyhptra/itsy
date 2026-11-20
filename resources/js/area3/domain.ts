@@ -1,7 +1,7 @@
 import type {OperationApprovalRevision} from './project-revision';
 import type { ApprovalResetRecord } from './approval-reset';
 import { isWholeVolume, isHistoricalVolume, VOLUME_MESSAGE } from './whole-volume';
-import { barpKasbonReturned,barpCurrent,requiresBarp,invalidateBarp,bappBasis,ensureBapp,assertBappBeforePayment,earlyBapp } from './bapp-workflow';
+import { barpKasbonReturned,bappStatusAllowed,barpCurrent,requiresBarp,invalidateBarp,bappBasis,ensureBapp,assertBappBeforePayment,earlyBapp } from './bapp-workflow';
 import { unitOptions, isOperation } from './work-unit';
 import type { LegacySettlementReview } from './legacy-settlement-review';
 import { settlementRecorded } from './payment-settlement';
@@ -287,7 +287,7 @@ export function attestBarp(s:State,input:Term){
 }
 export function prepareBapp(s:State,id:string){
   recordCommand('prepareBapp',[id]);requireAdmin(s);const t=getTerm(s,id);
-  if((t.workflowVersion??1)<3||!['Draft','Diajukan','Disetujui'].includes(t.status)||termTotal(s,t)<=0||!t.barp||settlementRecorded(t)||t.paid>0)throw new Error('Simpan BA RP dengan volume positif sebelum menyiapkan BA PP.');
+  if((t.workflowVersion??1)<3||!bappStatusAllowed(t)||termTotal(s,t)<=0||!t.barp||settlementRecorded(t)||t.paid>0)throw new Error('Simpan BA RP dengan volume positif sebelum menyiapkan BA PP.');
   if(requiresBarp(t)&&!barpCurrent(t))throw new Error('Sahkan BA RP sebelum membuat BA PP.');
   const candidate={...t,completionFlow:'bapp-each-payment-v2' as const},b=ensureBapp(s,candidate,true);if(earlyBapp(b))t.completionFlow='bapp-each-payment-v2';log(s,'BA PP disiapkan dari BA RP',b.no,'/ba-pp/'+b.id);return b.id;
 }
@@ -295,7 +295,7 @@ export function attestBapp(s: State, id: string, no: string, _legacyEvidence?: s
   recordCommand('attestBapp',date===undefined?[id,no]:[id,no,'',date]);requireAdmin(s);const b=s.bapps.find(b=>b.id===id)!;
   if(b.status==='Sah')throw new Error('BA PP sudah disahkan.');const t=getTerm(s,b.termId),early=earlyBapp(b);
   if(requiresBarp(t)&&!barpCurrent(t))throw new Error('Sahkan BA RP sesuai data tersimpan sebelum mengesahkan BA PP.');
-  if(t.type!=='Final'&&b.completionPolicy!=='barp-each-payment-v2'||(early?!['Draft','Diajukan','Disetujui'].includes(t.status):t.status!=='Disetujui'||t.approvals.length!==approvalCount(t)))throw new Error('BA RP belum siap.');
+  if(t.type!=='Final'&&b.completionPolicy!=='barp-each-payment-v2'||(early?!bappStatusAllowed(t):t.status!=='Disetujui'||t.approvals.length!==approvalCount(t)))throw new Error('BA RP belum siap.');
   if(date!==undefined||requiresBarp(t)){const selected=date??b.date??'';if(!calendarDate(selected))throw new Error('Isi tanggal dokumen BA PP yang valid.');b.date=selected;}
   if(!no.trim())throw new Error('Nomor BA PP wajib diisi.');
   if(early){const v=getSpk(s,t.spkId),d=getDeal(s,v.dealId),p=getProject(s,d.projectId);if(v.status!=='Sah'||d.status!=='Sah'||p.status!=='Sah'||!t.barp||termTotal(s,t)<=0)throw new Error('PP, BA KH, SPK Sah dan BA RP tersimpan wajib sebelum pengesahan BA PP.');saveBarp(s,t,t,true);b.source=structuredClone(bappBasis(t));b.attestedBy=s.actorUserId??'';b.attestedAt=now();}
