@@ -35,9 +35,11 @@ function automaticKasbonMarks(d:KasbonData,t?:Term,kasbonId?:string):{issuer?:'i
 export function kasbonSignatures(d:KasbonData,t?:Term,kasbonId?:string):KasbonSignature[][]{
   const automatic=automaticKasbonMarks(d,t,kasbonId);
   const row=(role:Role,job:string,action='Memeriksa'):KasbonSignature=>{
-    const selected=d.signers[role],decision=t?.history.find(a=>a.role===role&&a.decision==='Setujui'&&(d.templateVersion===3?a.kasbonId===kasbonId:kasbonId===t.kasbon?.id)&&(!selected?.userId||a.userId===selected.userId));
+    const selected=d.signers[role],source=kasbonId===t?.kasbon?.id?t?.approvals:t?.history,decision=source?.find(a=>a.role===role&&a.decision==='Setujui'&&(d.templateVersion===3?a.kasbonId===kasbonId:kasbonId===t?.kasbon?.id)&&(!selected?.userId||a.userId===selected.userId));
     return {action,role,job:selected?.job?.trim()||job,name:selected?.name??decision?.actorName??'',approved:decision};
   };
+  const printDecision=d.printSignerApproval,activeReview=t?.legacySettlementReview?.decision;
+  const printApproved=printDecision&&printDecision.kasbonId===kasbonId&&printDecision.userId===d.printSigner?.userId&&printDecision.role==='Mgr Finance & Settlement'&&printDecision.decision==='Setujui'&&(kasbonId!==t?.kasbon?.id||activeReview?.decision==='Setujui'&&activeReview.userId===printDecision.userId&&activeReview.kasbonId===kasbonId&&activeReview.at===printDecision.at)?printDecision:undefined;
   const maker={action:'Membuat',name:d.issuer,job:d.issuerJob?.trim()||(d.templateVersion===2||d.templateVersion===3?(d.issuerRole??'Admin Konstruksi')+' · Pengaju Kasbon':'Finance · Penerbit Kasbon'),automatic:automatic.issuer};
   const evp={action:'Menyetujui / Mengetahui',name:d.evp,job:'EVP Area Jawa Bali',automatic:d.evp.trim()?automatic.evp:undefined};
   if(d.templateVersion===3)return [
@@ -45,5 +47,5 @@ export function kasbonSignatures(d:KasbonData,t?:Term,kasbonId?:string):KasbonSi
     [row(isOperation(d)?'Officer 1 SS':'Mgr Project Support',isOperation(d)?'Officer 1 SS':'Mgr Project Support Area Jawa Bali'),row(isOperation(d)?'Manager SS':'Mgr Deployment',isOperation(d)?'Manager SS':'Mgr Project Deployment Area Jawa Bali'),row(isOperation(d)?'General Manager Operation':'Head of PMO',isOperation(d)?'General Manager Operation':'Head of PMO Area Jawa Bali','Menyetujui')],
     [row('Mgr Finance & Settlement','Mgr Finance & Settlement Area Jawa Bali','Menyetujui'),evp],
   ].map(rows=>rows.map(r=>({...r,span:6/rows.length})));
-  return [[row('Mgr Deployment','Mgr Project Deployment Area Jawa Bali'),row('Mgr Project Support','Mgr Project Support Area Jawa Bali'),row('PM Konstruksi','Project Manager'),maker],[{...evp,span:2},row('Head of PMO','Head of PMO Area Jawa Bali','Menyetujui / Mengetahui'),{action:'Memeriksa',name:d.printSigner?.name??d.businessSupport,job:d.printSigner?.job??'Mgr Business Support Area Jawa Bali',approved:d.printSignerApproval&&d.printSignerApproval.kasbonId===kasbonId&&d.printSignerApproval.userId===d.printSigner?.userId&&d.printSignerApproval.role==='Mgr Finance & Settlement'&&d.printSignerApproval.decision==='Setujui'?d.printSignerApproval:undefined}]];
+  return [[row('Mgr Deployment','Mgr Project Deployment Area Jawa Bali'),row('Mgr Project Support','Mgr Project Support Area Jawa Bali'),row('PM Konstruksi','Project Manager'),maker],[{...evp,span:2},row('Head of PMO','Head of PMO Area Jawa Bali','Menyetujui / Mengetahui'),{action:'Memeriksa',name:d.printSigner?.name??d.businessSupport,job:d.printSigner?.job??'Mgr Business Support Area Jawa Bali',approved:printApproved}]];
 }

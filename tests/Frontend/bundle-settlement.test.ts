@@ -54,7 +54,7 @@ test('kasbon preview separates genuine matching decisions from maker/EVP adminis
   assert.equal((html.match(/kasbon-approval-stamp/g)??[]).length,7);assert.match(html,/Mgr Finance &amp; Settlement/);assert.equal((html.match(/class="kasbon-wet-signature"/g)??[]).length,7);assert.deepEqual(kasbonSignatures(d,t,'current-kasbon').map(rows=>rows.reduce((n,r)=>n+(r.span??1),0)),[6,6,6]);assert.equal(roles.length,7);assert.equal(t.history.length,7);assert.doesNotMatch(html,/OLD SLOT|MANDOR SIGNATURE|Ketua Mandor|Business Support|Admin Area|Admin Area QA|Finance QA|0011223344556677/);
   const marks=[...html.matchAll(/class="kasbon-approval-stamp"[^>]*>([\s\S]*?)<\/span>/g)];assert.equal(marks.filter(m=>m[1].includes('Persetujuan otomatis')).length,2);for(const mark of marks)assert.doesNotMatch(mark[1],/\d{1,2}[/. -]\d{1,2}[/. -]\d{4}|2026/);
   const archived=renderToStaticMarkup(createElement(KasbonDocument,{data:d,term:t,kasbonId:'other-kasbon'}));assert.doesNotMatch(archived,/APPROVED/);
-  t.history[0].userId='different-pm';assert.equal(kasbonSignatures(d,t,'current-kasbon').flat().filter(r=>r.approved).length,4);
+  t.approvals[0].userId='different-pm';assert.equal(kasbonSignatures(d,t,'current-kasbon').flat().filter(r=>r.approved).length,4);
 });
 
 test('maker mark requires recorded issuance, and EVP follows the actual Manager decision for this current kasbon only',()=>{

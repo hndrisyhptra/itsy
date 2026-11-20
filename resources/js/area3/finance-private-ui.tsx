@@ -3,7 +3,6 @@ import { approvalRoles } from './workflow';
 import { paymentLabel,paymentDescription } from './payment-labels';
 import { KasbonAmountNotice } from './kasbon-amount-notice';
 import {legacyReviewApproved} from './legacy-settlement-review';
-import {LegacySettlementReviewActions} from './legacy-finance-routing-ui';
 import { settlementRecorded } from './payment-settlement';
 import { settleFinancePayment, updatePaymentApm, setKasbonPrintSigner, canEditKasbonPrintSigner } from './finance-payment';
 import { paymentDue, kasbonQuote } from './kasbon-settlement';
@@ -125,13 +124,10 @@ export function FinanceKasbonPanel({s,t}:{s:State;t:Term}) {
     {finance&&ready&&!t.kasbon&&<Notice>Menunggu Admin Konstruksi mengisi dan mengajukan form kasbon.</Notice>}
     {!t.scan&&<Notice tone="warning">Berkas belum lengkap (NOK). Scan TTD dapat dilengkapi dan diverifikasi setelah pembayaran.</Notice>}
     {t.legacySettlementReview&&<Notice tone={legacyReviewApproved(t)?'success':'warning'}>{legacyReviewApproved(t)?'Mgr Finance & Settlement telah menyetujui kasbon aktif.':'Menunggu review Mgr Finance & Settlement.'} {t.legacySettlementReview.name}{t.legacySettlementReview.decision?.note&&' · '+t.legacySettlementReview.decision.note}</Notice>}
-    <LegacySettlementReviewActions s={s} t={t} onDone={()=>setReload(v=>v+1)}/>
     {t.financePayment?.decision?.note&&<Notice tone="warning">Catatan Finance: {t.financePayment.decision.note}</Notice>}
     {documents.length>0&&<div className="actions">{documents.map(d=><Button key={d.id} onClick={()=>{setPreview(d.id);setPrintSigner(d.data.printSigner?.userId??'');}}>Preview Kasbon v{d.version}{d.id!==t.kasbon?.id?' · Arsip':''}</Button>)}</div>}
     {finance&&ready&&t.kasbon&&<>
       {t.scan&&t.scan.status!=='Valid'&&<Notice tone="warning">Scan tersedia. Verifikasi pada bagian berkas sebelum Approve Payment/APM.</Notice>}
-      {!usesSettlementPayment(t)&&<><Field label="Catatan Finance / alasan pengembalian"><textarea maxLength={1000} value={note} disabled={busy} onChange={e=>setNote(e.target.value)}/></Field>
-      <div className="actions"><Button confirm="Kembalikan kasbon/payment kepada Admin untuk diperbaiki dengan catatan ini? Lima approval pekerjaan tetap tersimpan." disabled={busy||!note.trim()||t.financePayment?.status==='Dikembalikan'} onClick={()=>void command(d=>decideFinancePayment(d,t.id,'Kembalikan',note,t.kasbon!.id),'Kasbon dikembalikan kepada Admin untuk koreksi.')}>Kembalikan Kasbon</Button><Button primary confirm="Dokumen PP sampai kasbon sudah direview dan sesuai? Setujui pembayaran untuk diproses transfer oleh Finance." disabled={busy||!latest||t.financePayment?.status!=='Kasbon Terbit'||!!t.scan&&t.scan.status!=='Valid'} onClick={()=>void command(d=>decideFinancePayment(d,t.id,'Setujui',note,t.kasbon!.id),'Pembayaran disetujui Finance.')}>Approve Payment</Button></div></>}
       {t.financePayment?.status==='Diverifikasi'&&<PrivateUpload kind="transfer-proof" documentId={t.id} label="Bukti Transfer" onReady={()=>setReload(v=>v+1)}/>}
       {t.transferProof?.kasbonId===t.kasbon.id&&t.financePayment?.status==='Diverifikasi'&&<>
         <Field label="Nomor APM (opsional)" hint="Boleh dikosongkan. Nomor APM dapat ditambah atau diperbaiki setelah lunas."><Input disabled={busy||persistencePending} value={apm} onChange={setApm}/></Field>

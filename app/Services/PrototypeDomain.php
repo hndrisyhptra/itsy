@@ -10,6 +10,7 @@ use Illuminate\Validation\ValidationException;
 /** Server authority for the demo workflow. The React calculations are UX previews. */
 class PrototypeDomain
 {
+    use ApprovalResetWorkflow;
     use BappWorkflow;
     use FinancePaymentWorkflow;
     use PartialPaymentWorkflow;
@@ -30,6 +31,8 @@ class PrototypeDomain
             'saveProject' => ($state['schema'] ?? 1) >= 2 ? $this->saveProjectV2($this->object($args[0] ?? null), (bool) ($args[1] ?? false)) : $this->saveProject($this->object($args[0] ?? null), (bool) ($args[1] ?? false)),
             'saveProjectBundle' => $this->saveProjectBundle($this->object($args[0] ?? null), (bool) ($args[1] ?? false)),
             'submitProjectBundle' => $this->submitProjectBundle($args[0] ?? '', $args[1] ?? null),
+            'resetProjectApproval' => $this->resetApproval($args[0] ?? '', $this->object($args[1] ?? null), $args[2] ?? '', true, $args[3] ?? []),
+            'resetPaymentApproval' => $this->resetApproval($args[0] ?? '', $this->object($args[1] ?? null), $args[2] ?? '', false, $args[3] ?? []),
             'decideProject' => $this->decideProject($args[0] ?? '', $args[1] ?? '', $args[2] ?? ''),
             'assignProjectApprovers' => $this->assignProjectApprovers($args[0] ?? '', $args[1] ?? '', $args[2] ?? ''),
             'assignPaymentApprovers' => $this->assignPaymentApprovers($args[0] ?? '', $this->object($args[1] ?? null)),

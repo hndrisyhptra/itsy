@@ -2,6 +2,10 @@
 name: area3-prototype-qa
 description: Test the its Area 3 interactive prototype through the linked business scenarios, permissions, persistence, financial/volume invariants, documents and responsive layouts.
 ---
+## 20 November 2026 — Self-revocation and separate approval cards
+
+Follow docs/APPROVAL_SELF_RESET.md. User approves removing Tolak UI only, retaining backend/historical rejects; return requires note and normal full resubmission. Separate Approve Paket PP, BA KH, SPK / Approve Pembayaran cards; actual assigned actor may explicitly Batalkan Persetujuan Saya with reason/YA-TIDAK/current fingerprint. Revoke own and downstream active decisions only; retain prefix and original history/SQL rows, source-cycle-bound carried decisions, no fabricated approval. Preserve Branch/unit/Region/current kasbon/revision/receipt+actor/payload UUID replay/private/pending-upload/Head gates. Block financial proof/APM/paid/later term/released volume/PP descendants; Sah bundle can reopen only exact original manifest without downstream payment and remains locked during approval. Legacy Manager/Finance/partial/scan reset only own current financial review, not five work decisions. Active kasbon marks cannot reuse revoked history/cache. Server-owned approvalResets/resetVersion reuse document_data; no migration/live backfill/archive/env/worker/server mutation. Skip identical historic cycles/components; 20-row histories, memoized planner, existing polling only. Telegram legacy key rotates only after explicit reset. Append actual QA/query/browser/deployment limits; this supersedes older blanket no-live-reset wording solely for these authenticated self-revocation commands, never demo reset or maintenance bypass.
+
 
 ## 19 November 2026 — Explicit BA RP attestation and independent BA PP date
 

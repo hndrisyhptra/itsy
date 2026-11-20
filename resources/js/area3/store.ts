@@ -77,7 +77,9 @@ async function commit(command: Command, resultId?: string, scan?: { termId: stri
         : error instanceof Error ? error.message : 'Koneksi Laravel terputus.';
     persistenceError = `${message} Perubahan belum dikonfirmasi; data terakhir yang berhasil dimuat ditampilkan kembali. Draft formulir tetap tersedia.`;
     // Keep PP editor input mounted on a failed save; its explicit save handler shows the error.
-    if(scan?.kind!=='work-evidence'&&command.command!=='saveProject')window.dispatchEvent(new CustomEvent('area3:server-error',{detail:persistenceError}));
+    // Decision cards await persistence and show their own errors; keep their note and exact target mounted.
+    const localApprovalError=['decideProject','decide','decideFinancePayment','decideLegacySettlementReview','resetProjectApproval','resetPaymentApproval'].includes(command.command);
+    if(scan?.kind!=='work-evidence'&&command.command!=='saveProject'&&!localApprovalError)window.dispatchEvent(new CustomEvent('area3:server-error',{detail:persistenceError}));
     throw new Error(persistenceError);
   } finally { clearTimeout(timeout); persistencePending=false; emit(); }
 }

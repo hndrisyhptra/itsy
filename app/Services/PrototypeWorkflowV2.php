@@ -231,6 +231,9 @@ trait PrototypeWorkflowV2
         }
         $p['approvals'] = [];
         $p['approvalHistory'] = $old['approvalHistory'] ?? [];
+        if (isset($old['approvalResets'])) {
+            $p['approvalResets'] = $old['approvalResets'];
+        }
         if (isset($old['contractBundle'])) {
             $p['contractBundle'] = $old['contractBundle'];
         }

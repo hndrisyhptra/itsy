@@ -211,8 +211,9 @@ class RelationalWorkflowStore
             if (! $prior || Arr::only($prior, $planning) != Arr::only($p, $planning)) {
                 $this->projectChildren($workspace, $p, $state);
             }
-            $this->approvals($workspace, $p, true);
+            $this->approvals($workspace, $p, true, $prior);
         }
+        $previousDeals = array_column($previous['deals'] ?? [], null, 'id');
         foreach ($state['deals'] as $i => $d) {
             if (! isset($changed['deals'][$d['id']])) {
                 continue;
@@ -231,6 +232,10 @@ class RelationalWorkflowStore
                 'signer_name' => $spk['signer'] ?? $d['signer'] ?? '', 'signer_position' => $spk['position'] ?? $d['signerRole'] ?? '',
             ]);
             $p = $projects[$d['projectId']];
+            $oldDeal = $previousDeals[$d['id']] ?? null;
+            if ($oldDeal && $oldDeal['projectId'] === $d['projectId'] && $oldDeal['rows'] === $d['rows']) {
+                continue; // Status/signature corrections retain identical component snapshots.
+            }
             foreach ($d['rows'] as $r) {
                 foreach (['m', 's'] as $c) {
                     if (empty($r[$c]) || ($r[$c === 'm' ? 'qm' : 'qs'] ?? 0) <= 0) {
@@ -283,7 +288,7 @@ class RelationalWorkflowStore
             }
             $approvalFields = ['status', 'workflowVersion', 'approvalScheme', 'approverUserIds', 'pmUserId', 'managerUserId', 'approvals', 'history', 'submitted', 'preparedBy'];
             if (! $oldTerm || Arr::only($oldTerm, $approvalFields) != Arr::only($t, $approvalFields)) {
-                $this->approvals($workspace, $t, false);
+                $this->approvals($workspace, $t, false, $oldTerm);
             }
             $this->partialPaymentRequests($workspace, $t, $oldTerm);
             $fileFields = ['scan', 'scanHistory', 'apmStatus', 'apm', 'paymentHistory'];
@@ -549,13 +554,24 @@ class RelationalWorkflowStore
         DB::table('boq_lines')->whereIn('id_boq', $removed)->delete();
     }
 
-    private function approvals(PrototypeWorkspace $workspace, array $document, bool $project): void
+    private function approvals(PrototypeWorkspace $workspace, array $document, bool $project, ?array $previous = null): void
     {
         if (($document['workflowVersion'] ?? 1) < 2) {
             return; // Legacy identity-less decisions remain verbatim in the document record.
         }
         $roles = PrototypeDomain::storedApprovalRoles($document, $project);
         $cycles = ProjectHeadReopen::cycles($document, $project);
+        // A self-reset appends a cycle; unchanged older cycles are already persisted under
+        // this workspace lock. Keep their rows byte-identical instead of rewriting history.
+        if ($previous && ! empty($document['approvalResets']) && PrototypeDomain::storedApprovalRoles($previous, $project) === $roles) {
+            $oldCycles = ProjectHeadReopen::cycles($previous, $project);
+            $last = array_key_last($cycles);
+            foreach ($cycles as $i => $decisions) {
+                if ($i !== $last && isset($oldCycles[$i]) && $oldCycles[$i] === $decisions) {
+                    unset($cycles[$i]);
+                }
+            }
+        }
         // Resolve all selected/history actors once per document, including seven-step payments.
         $selectedIds = array_values($document['approverUserIds'] ?? []);
         $selectedIds[] = $document['preparedBy']['userId'] ?? '';

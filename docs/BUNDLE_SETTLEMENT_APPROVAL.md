@@ -114,3 +114,8 @@ Alur Operation kini dihubungkan secara eksplisit untuk role bawaan Officer 1 SS/
 ## 18 November 2026 — BA PP sejak BA RP disimpan
 
 Pengguna menegaskan BA PP dapat disahkan sebelum seluruh approval, sejak BA RP Final disimpan. Final pada alur baru/diadopsi eksplisit memakai source BARP server-owned dan menahan pengajuan pembayaran sampai BA PP Sah; perubahan BARP memerlukan pengesahan ulang. Dokumen utama/lampiran BA PP Sah dapat Word/print lebih awal, ruang TTD kosong; tujuh approval/ledger/release dan full-package export gate tetap. Tidak ada migration atau perubahan massal data lama. Lihat [BAPP_BEFORE_PAYMENT](BAPP_BEFORE_PAYMENT.md) untuk cakupan, data historis, query, QA dan deploy.
+
+
+## 20 November 2026 — Pembatalan persetujuan milik sendiri
+
+Lihat [APPROVAL_SELF_RESET](APPROVAL_SELF_RESET.md): actual active decision dapat dibatalkan pemiliknya dengan alasan/YA-TIDAK, prefix tetap dan downstream diulang. Status lunas/proof/APM/proses lanjutan menahan reset. Preview kasbon aktif hanya memberi cap dari keputusan aktif/version-bound, bukan history yang telah dibatalkan; arsip/Word/print tetap mengikuti aturan sebelumnya. Tanpa migrasi/backfill atau perubahan uang/data live.

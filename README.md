@@ -1,5 +1,7 @@
 # it's Area 3 — Construction Workspace
 
+**20 November 2026 — Approval:** kartu keputusan PP/pembayaran terpisah, Tolak diganti Kembalikan untuk Revisi; approver dapat membatalkan persetujuannya sendiri dengan alasan dan konfirmasi, selama belum ada proses lanjutan/keuangan yang mengunci. Riwayat tetap, tahap sebelumnya dipertahankan. Tanpa migration baru. [Aturan, optimasi dan penerapan](docs/APPROVAL_SELF_RESET.md).
+
 **20 November 2026 — Volume bilangan bulat:** input volume Kesepakatan Harga, BA RP/pembayaran, BOQ/Mandor, Non Stock/BOP dan pelepasan/alokasi hanya menerima angka bulat tanpa koma/desimal, termasuk upload BOQ. Pecahan ditolak tanpa pembulatan. Snapshot/approval/data lama tidak dikonversi; tidak perlu migration khusus. Build aset dan restart worker upload Area3 saat deploy. [Aturan dan QA](docs/WHOLE_VOLUME_INPUT.md).
 
 **19 November 2026 — Diagnosis reminder Telegram:** tersedia `php artisan area3:telegram-status`, perintah baca-saja untuk memeriksa konfigurasi CLI, tugas approval aktif, penerima dan antrean tanpa mengirim pesan/mengubah data. Tidak perlu migration/build khusus. Status scheduler pernah berjalan belum membuktikan koleksi berhasil; penyebab server perlu diperiksa dari hasil diagnosis. [Panduan](docs/TELEGRAM_APPROVAL.md#diagnosis-baca-saja--19-november-2026).

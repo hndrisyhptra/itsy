@@ -1,0 +1,279 @@
+{
+  "date": "2026-11-20",
+  "feature": "Approval self-revocation and separate decision cards",
+  "scope": {
+    "workflow": [
+      "Construction PP5",
+      "Operation PP5",
+      "Construction payment7",
+      "Operation payment7",
+      "legacy Manager settlement review",
+      "legacy Finance kasbon",
+      "legacy partial request",
+      "legacy scan review"
+    ],
+    "ui": [
+      "remove Tolak buttons; preserve backend/historical decisions",
+      "separate PP/payment decision cards",
+      "actual-owner reset with note and YA/TIDAK",
+      "prefix retained; own/downstream approvals repeated",
+      "paged reset audit in detail/timeline",
+      "exact UUID Inbox selection and note retained on conflict",
+      "current kasbon stamps exclude revoked active decisions/history/cache"
+    ]
+  },
+  "php": {
+    "command": "/Applications/XAMPP/xamppfiles/bin/php artisan test --compact",
+    "tests": 415,
+    "assertions": 11959,
+    "seconds": 78.97,
+    "database": "isolated fail-closed SQLite :memory:",
+    "status": "passed",
+    "reset_tests": 34,
+    "reset_assertions": 2649,
+    "coverage": [
+      "24 actual HTTP stage cases with SQL history integrity and reapproval",
+      "actor/payload-bound request UUID replay",
+      "blank/stale/same-role-other-account/Superadmin/Branch denial",
+      "queued uploads and unattached private proof block",
+      "financial/later-term/release invariants",
+      "server-owned metadata and multi-reset same-offset cycles",
+      "four legacy financial modes keep five SQL work decisions",
+      "legacy reminder keys rotate after explicit reset",
+      "stale archived kasbon review is not an owned current decision"
+    ]
+  },
+  "frontend": {
+    "tests": 445,
+    "status": "passed",
+    "reset_tests": 28,
+    "coverage": [
+      "all 24 stages Construction/Operation with retained prefix/history",
+      "stale/wrong actor/blank note/financial guards",
+      "active kasbon marks and stale Manager cached annotation",
+      "separate editor/inbox cards and 20-row reset history",
+      "existing Word/print blank signature tests retained"
+    ]
+  },
+  "checks": {
+    "typescript_vite": "passed",
+    "pint_changed_php": "passed",
+    "assets": {
+      "manifest_references": 47,
+      "preload_dependencies": 38,
+      "profiles": 3,
+      "status": "passed"
+    },
+    "diff_check": "passed"
+  },
+  "queries": {
+    "reset_pp_construction_http": 80,
+    "reset_pp_operation_http": 80,
+    "reset_payment_construction_http": 71,
+    "reset_payment_operation_http": 71,
+    "before_optimization_pp_payment": [
+      118,
+      94
+    ],
+    "fixture": "six BOQ rows, complete auth/transaction/revision/response; not production benchmark",
+    "existing_performance": {
+      "20_pp_full": 353,
+      "20_pp_incremental": 8,
+      "500_boq_1000_components_explicit_pp": 59
+    },
+    "optimizations": [
+      "skip byte-identical historical approval cycles",
+      "skip identical contract component rows",
+      "batch actor references",
+      "memoized UI plan and in-memory graph maps; paged20 DOM"
+    ],
+    "new_schema_or_migrations": 0,
+    "new_get_endpoint_or_poller": 0,
+    "legacy_note": "existing command aggregate graph read remains; not a production load test"
+  },
+  "browser": {
+    "status": "passed",
+    "fixture": "actual React App, synthetic boot, mocked commands applying pure domain; PHP commands separately tested above",
+    "cases": [
+      {
+        "name": "Konstruksi-PP-approved",
+        "commands": [
+          "resetProjectApproval",
+          "resetProjectApproval"
+        ],
+        "cancel_writes": 0,
+        "js_errors": 0,
+        "viewports": [
+          375,
+          768,
+          1440
+        ],
+        "themes": [
+          "light",
+          "dark"
+        ]
+      },
+      {
+        "name": "Konstruksi-PP-pending",
+        "commands": [
+          "decideProject"
+        ],
+        "cancel_writes": 0,
+        "js_errors": 0,
+        "viewports": [
+          375,
+          768,
+          1440
+        ],
+        "themes": [
+          "light",
+          "dark"
+        ]
+      },
+      {
+        "name": "Konstruksi-Payment-approved",
+        "commands": [
+          "resetPaymentApproval",
+          "resetPaymentApproval"
+        ],
+        "cancel_writes": 0,
+        "js_errors": 0,
+        "viewports": [
+          375,
+          768,
+          1440
+        ],
+        "themes": [
+          "light",
+          "dark"
+        ]
+      },
+      {
+        "name": "Konstruksi-Payment-pending",
+        "commands": [
+          "decide"
+        ],
+        "cancel_writes": 0,
+        "js_errors": 0,
+        "viewports": [
+          375,
+          768,
+          1440
+        ],
+        "themes": [
+          "light",
+          "dark"
+        ]
+      },
+      {
+        "name": "Operation-PP-approved",
+        "commands": [
+          "resetProjectApproval",
+          "resetProjectApproval"
+        ],
+        "cancel_writes": 0,
+        "js_errors": 0,
+        "viewports": [
+          375,
+          768,
+          1440
+        ],
+        "themes": [
+          "light",
+          "dark"
+        ]
+      },
+      {
+        "name": "Operation-PP-pending",
+        "commands": [
+          "decideProject"
+        ],
+        "cancel_writes": 0,
+        "js_errors": 0,
+        "viewports": [
+          375,
+          768,
+          1440
+        ],
+        "themes": [
+          "light",
+          "dark"
+        ]
+      },
+      {
+        "name": "Operation-Payment-approved",
+        "commands": [
+          "resetPaymentApproval",
+          "resetPaymentApproval"
+        ],
+        "cancel_writes": 0,
+        "js_errors": 0,
+        "viewports": [
+          375,
+          768,
+          1440
+        ],
+        "themes": [
+          "light",
+          "dark"
+        ]
+      },
+      {
+        "name": "Operation-Payment-pending",
+        "commands": [
+          "decide"
+        ],
+        "cancel_writes": 0,
+        "js_errors": 0,
+        "viewports": [
+          375,
+          768,
+          1440
+        ],
+        "themes": [
+          "light",
+          "dark"
+        ]
+      }
+    ],
+    "network": "fixture host fulfilled; all outside requests aborted",
+    "checks": [
+      "no Tolak buttons",
+      "own reset blank note and TIDAK produce no POST",
+      "409 conflict retains note and exact route/state",
+      "successful reset retains prefix and original history",
+      "approve TIDAK/YA",
+      "Inbox preserves exact selected document after task exits waiting list",
+      "375/768/1440 light/dark without page overflow",
+      "0 JavaScript errors"
+    ],
+    "visual_inspection": [
+      "Construction PP approved desktop",
+      "Operation Payment approved desktop",
+      "Construction Payment pending desktop",
+      "Construction Payment pending 375 light/dark"
+    ],
+    "qa_harness_corrections": [
+      "wait for completed persistence before checking cleared note/button enabled",
+      "supply documents array in synthetic private metadata response",
+      "wait for responsive CSS transition before mobile screenshots"
+    ],
+    "artifacts_directory": "/private/tmp/area3-approval-reset-20261120"
+  },
+  "limits": [
+    "No live MySQL or aaPanel execution/inspection for this feature",
+    "No real Telegram delivery/load benchmark",
+    "No fresh native Word/browser PDF export run; existing automated export rules passed",
+    "No migration/seed/live reset/archive/backfill/env/APP_KEY/Dompis mutation",
+    "No worker restart/deploy/commit/push by agent"
+  ],
+  "deployment": {
+    "new_migration": false,
+    "build": "use current assets and reload browser",
+    "workers": [
+      "restart only area3-notifications for new reminder resolver",
+      "follow Area 3 upload-domain deployment restart procedure for area3-uploads"
+    ],
+    "existing_data": "unchanged until explicit authorized self-reset; paid/proof/APM/downstream/release locked"
+  }
+}

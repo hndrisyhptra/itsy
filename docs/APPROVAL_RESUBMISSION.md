@@ -1,5 +1,7 @@
 # Penolakan dan pengajuan ulang PP dan pembayaran
 
+> **20 November 2026:** tombol Tolak dihilangkan dari PP/pembayaran; gunakan Kembalikan untuk Revisi. Backend dan data penolakan lama di bawah tetap kompatibel. Batalkan Persetujuan Saya berbeda: mempertahankan prefix approval sebelum akun pembatal, bukan pengajuan ulang dari awal. Lihat [APPROVAL_SELF_RESET](APPROVAL_SELF_RESET.md).
+
 ## Perubahan terbaru 15 November 2026
 
 [BUNDLE_SETTLEMENT_APPROVAL](BUNDLE_SETTLEMENT_APPROVAL.md) berlaku untuk dokumen baru: paket PP/BA KH/SPK dengan lima approval; kasbon sebelum tujuh approval pembayaran, tambahan Mgr Finance & Settlement dan Finance7, cap preview/blank Word/PDF. Histori/alur bertanda lama tetap; tidak ada bulk adoption dokumen berjalan. Ketentuan lama berikut tetap menjadi referensi historis bila berbeda.

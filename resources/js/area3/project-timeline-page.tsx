@@ -1,3 +1,4 @@
+import { ApprovalResetHistory } from './approval-actions';
 import { ProjectFlowOverview,PaymentFlowOverview,currentFlowApproval } from './workflow-overview';
 import { DocumentPackageButton } from './document-package-ui';
 import { usesContractBundle } from './project-bundle';
@@ -41,7 +42,7 @@ function PaymentTimeline({s,t}:{s:State;t:Term}) {
   const scans=[...(t.scanHistory??[]),...(t.scan?[t.scan]:[])];
   return <article className="project-payment-timeline"><div className="project-timeline-heading"><div><h3>Pembayaran · {barpStageLabel(t)||'Final'}</h3><p>{spk.no} · {deal.mandor}</p></div><Link className="btn" to={'/termin/'+t.id}>Lihat pembayaran <ArrowUpRight size={14}/></Link></div>
     <div className="project-current-position"><Badge>{t.status}</Badge><strong>{paymentPosition(t)}</strong><span>{t.approvals.length}/{approvalRoles(t).length} approval dokumen</span></div>
-    <PaymentFlowOverview t={t} bapp={s.bapps.find(b=>b.termId===t.id)}/><ApprovalTrack s={s} document={t}/>
+    <ApprovalResetHistory document={t}/><PaymentFlowOverview t={t} bapp={s.bapps.find(b=>b.termId===t.id)}/><ApprovalTrack s={s} document={t}/>
     {usesPartialPayment(t)&&<div className="project-finance-stage"><strong>Finance · Payment Parsial</strong><Badge>{t.paymentRequest?.status??'Belum diajukan'}</Badge><span>{partialPaymentLabel(t)} · Berkas {documentStatus(t)}{t.paymentRequest?.decision&&` · ${t.paymentRequest.decision.actorName}`}</span></div>}
     {t.legacySettlementReview&&<div className="project-finance-stage"><strong>Mgr Finance &amp; Settlement · Review tambahan kasbon</strong><Badge>{legacyReviewApproved(t)?'Disetujui':t.legacySettlementReview.decision?.decision==='Kembalikan'?'Dikembalikan':'Menunggu'}</Badge><span>{t.legacySettlementReview.name} · Kasbon v{t.kasbon?.version}{t.legacySettlementReview.decision&&' · '+stamp(t.legacySettlementReview.decision.at)}</span></div>}
     {usesFinancePayment(t)&&!usesSettlementPayment(t)&&<div className="project-finance-stage"><strong>Finance · Kasbon &amp; Payment</strong><Badge>{financePaymentLabel(t)}</Badge><span>Kasbon {t.kasbon?'v'+t.kasbon.version:'belum terbit'} · Bukti transfer {t.transferProof?'tersimpan':'belum diunggah'} · Berkas {documentStatus(t)}</span></div>}
@@ -70,7 +71,7 @@ export function ProjectTimeline({s,id}:{s:State;id:string}) {
         <div className="project-current-position"><Badge>{p.status}</Badge><strong>{usesContractBundle(p)?projectPosition(p).replace('PP Sah','Paket PP, BA KH & SPK Sah'):projectPosition(p)}</strong>{(p.workflowVersion??1)>=2&&<span>{p.approvals?.length??0}/{approvalRoles(p,true).length} approval PP</span>}</div>
         {p.headApprovalReopen && <Notice tone="warning">Koreksi approval Head · {stamp(p.headApprovalReopen.at)}: {p.headApprovalReopen.reason} Keputusan Head sebelum koreksi disimpan sebagai riwayat. {p.status !== 'Sah' && 'Proses dokumen turunan ditahan sampai PP Sah kembali.'}</Notice>}
         <ProjectFlowOverview s={s} p={p} documents={{deals,spks}}/>
-        {(p.workflowVersion??1)>=2?<ApprovalTrack s={s} document={p} project/>:<p className="muted">PP menggunakan alur historis. Persetujuan yang tidak tercatat tidak dibuat otomatis.</p>}
+        {(p.workflowVersion??1)>=2?<><ApprovalTrack s={s} document={p} project/><ApprovalResetHistory document={p}/></>:<p className="muted">PP menggunakan alur historis. Persetujuan yang tidak tercatat tidak dibuat otomatis.</p>}
         <details><summary>Riwayat keputusan PP ({p.approvalHistory?.length??0})</summary><DecisionHistory s={s} rows={p.approvalHistory??[]}/></details>
         <h3 className="project-timeline-section">BA KH &amp; SPK</h3>{deals.length?<Table headers={['BA KH','Mandor','Status BA KH','SPK / Status']}>{deals.map(d=><tr key={d.id}><td><Link to={'/spk/ba-kh/'+d.id}>{d.no}</Link></td><td>{d.mandor}</td><td><Badge>{d.status}</Badge></td><td>{spks.filter(v=>v.dealId===d.id).map(v=><div key={v.id}><Link to={'/spk/'+v.id}>{v.no}</Link> <Badge>{v.status}</Badge></div>)}{!spks.some(v=>v.dealId===d.id)&&'SPK belum dibuat'}</td></tr>)}</Table>:<p className="muted">BA KH dan SPK belum dibuat.</p>}
         <h3 className="project-timeline-section">Pengajuan pembayaran</h3>{terms.length?terms.map(t=><PaymentTimeline key={t.id} s={s} t={t}/>):<p className="muted">Belum ada pengajuan pembayaran pada PP ini.</p>}

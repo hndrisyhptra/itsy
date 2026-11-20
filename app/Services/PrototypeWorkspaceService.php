@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\PrototypeWorkspace;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -80,14 +81,38 @@ class PrototypeWorkspaceService
             $access = app(AuthenticatedWorkspace::class);
             $before = $access->bind(app(RelationalWorkflowStore::class)->read($row));
             $access->authorize($before, $input['command'], $input['args']);
+            $isReset = in_array($input['command'], ['resetProjectApproval', 'resetPaymentApproval'], true);
+            $resetHash = $isReset ? hash('sha256', json_encode(Arr::sortRecursive(['command' => $input['command'], 'args' => array_slice($input['args'], 0, 3)]), JSON_THROW_ON_ERROR)) : null;
             $replay = DB::table('prototype_audits')->where('workspace_id', $row->id)->where('request_id', $input['request_id'])->first();
             if ($replay) {
                 abort_unless($replay->actor_user_id === auth()->id() && $replay->command === $input['command'], 409, 'ID permintaan sudah digunakan.');
+
+                if ($isReset) {
+                    $documents = $before[$input['command'] === 'resetProjectApproval' ? 'projects' : 'terms'];
+                    $document = collect($documents)->firstWhere('id', $input['args'][0] ?? '');
+                    $marker = collect($document['approvalResets'] ?? [])->firstWhere('requestId', $input['request_id']);
+                    abort_unless($marker && hash_equals($marker['payloadHash'] ?? '', $resetHash) && $marker['actorUserId'] === $before['actorUserId'] && $marker['role'] === $before['role'], 409, 'UUID pembatalan telah dipakai untuk isi atau akun lain.');
+                }
 
                 return ($includePayload ? $this->payload($row) : []) + ['replayed' => true];
             }
             if ($row->revision !== $input['revision']) {
                 throw new HttpResponseException(response()->json($this->payload($row) + ['message' => 'Data berubah di tab lain. Muat ulang data terbaru; perubahan tidak ditimpa.'], 409));
+            }
+            if ($isReset) {
+                $projectReset = $input['command'] === 'resetProjectApproval';
+                $document = collect($before[$projectReset ? 'projects' : 'terms'])->firstWhere('id', $input['args'][0] ?? '');
+                abort_unless($document, 404);
+                $resetPlan = ApprovalReset::plan($before, $document, $projectReset);
+                abort_unless($resetPlan['own'], 403, 'Hanya pemilik persetujuan aktif yang dapat membatalkannya.');
+                abort_if($resetPlan['reason'] !== '', 422, $resetPlan['reason']);
+                abort_if(DB::table('upload_tasks')->where('workspace_id', $row->id)->whereIn('document_id', $resetPlan['documentIds'])->whereIn('status', ['queued', 'processing'])->exists(), 422, 'Tunggu upload terkait selesai sebelum membatalkan persetujuan.');
+                if (! $projectReset) {
+                    $termSql = app(RelationalWorkflowStore::class)->id($row->id, 'terms', $document['id']);
+                    abort_if(DB::table('apm_settlements')->where('term_id', $termSql)->exists(), 422, 'Realisasi pembayaran sudah tersimpan; pembatalan ditahan.');
+                    abort_if(DB::table('finance_private_files')->where('workspace_id', $row->id)->where('term_id', $termSql)->where('kind', 'transfer-proof')->exists(), 422, 'Bukti transfer sudah tersimpan; pembatalan ditahan.');
+                }
+                $input['args'] = [...array_slice($input['args'], 0, 3), ['requestId' => $input['request_id'], 'payloadHash' => $resetHash]];
             }
             if ($input['command'] === 'routeLegacyFinance') {
                 $ids = array_column($input['args'][0], 'id');

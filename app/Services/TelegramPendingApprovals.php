@@ -69,7 +69,7 @@ class TelegramPendingApprovals
             ->leftJoin('telegram_finance_pics as pic', fn ($j) => $j->on('pic.branch_id', '=', 'pp.branch_id')->on('pic.work_unit_id', '=', 'pp.work_unit_id'))
             ->whereColumn('t.workspace_id', 'pp.workspace_id')->where('t.status', 'APPROVED')->where('pp.status', 'APPROVED')->where(fn ($q) => $q->where('t.document_data->paymentFlow', 'kasbon-v1')->where('t.document_data->financePayment->status', 'Kasbon Terbit')->orWhere('t.document_data->paymentFlow', 'partial-payment-v1')->orWhereNull('t.document_data->paymentFlow'));
         $q->when($userId, fn ($q) => $q->where(fn ($q) => $q->where('pic.user_id', $userId)->orWhere('t.document_data->legacySettlementReview->userId', 'db-user-'.$userId)));
-        $q->select(['t.id_payment_term', 't.source_id', 't.document_data->kasbon->id as kasbon_id', 't.document_data->legacySettlementReview as review', 't.document_data->financePayment->decision as finance_decision', 't.document_data->paid as paid', 't.document_data->paymentFlow as flow', 't.document_data->paymentRequest as payment_request', 't.document_data->scan as scan', 't.document_data->workflowVersion as version', 'pp.branch_id', 'w.name as unit', 'pic.user_id as finance_id'])
+        $q->select(['t.id_payment_term', 't.source_id', 't.document_data->kasbon->id as kasbon_id', 't.document_data->legacySettlementReview as review', 't.document_data->financePayment->decision as finance_decision', 't.document_data->paid as paid', 't.document_data->paymentFlow as flow', 't.document_data->paymentRequest as payment_request', 't.document_data->scan as scan', 't.document_data->workflowVersion as version', 't.document_data->approvalResetVersion as reset_version', 'pp.branch_id', 'w.name as unit', 'pic.user_id as finance_id'])
             ->orderBy('t.id_payment_term')->chunkById(300, function ($rows) use ($callback, $userId) {
                 $candidates = [];
                 foreach ($rows as $r) {
@@ -118,7 +118,7 @@ class TelegramPendingApprovals
                 foreach ($candidates as [$r, $id, $role]) {
                     $a = $contexts[$id] ?? null;
                     if ($a && $a['code'] === $role && in_array($r->branch_id, $a['branchIds']) && in_array($r->unit, $a['workUnits'])) {
-                        $callback(['key' => hash('sha256', $r->id_payment_term.'|'.$r->kasbon_id.'|'.$id.'|'.$role), 'user_id' => (int) $id, 'kind' => 'payment', 'target_id' => $r->source_id]);
+                        $callback(['key' => hash('sha256', $r->id_payment_term.'|'.$r->kasbon_id.'|'.$id.'|'.$role.($r->reset_version ? '|reset:'.$r->reset_version : '')), 'user_id' => (int) $id, 'kind' => 'payment', 'target_id' => $r->source_id]);
                     }
                 }
             }, 't.id_payment_term', 'id_payment_term');

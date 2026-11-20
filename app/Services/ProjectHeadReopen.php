@@ -14,10 +14,19 @@ final class ProjectHeadReopen
     {
         $history = $project ? ($document['approvalHistory'] ?? $document['approvals'] ?? []) : ($document['history'] ?? $document['approvals'] ?? []);
         $reopen = $project ? ($document['headApprovalReopen'] ?? null) : null;
+        $resets = [];
+        foreach ($document['approvalResets'] ?? [] as $reset) {
+            if ($reset['mode'] === 'workflow') {
+                $resets[$reset['historyOffset']][] = $reset;
+            }
+        }
         $cycles = [[]];
         for ($offset = 0; $offset <= count($history); $offset++) {
             if ($reopen && $offset === $reopen['historyOffset']) {
                 $cycles[] = $reopen['carriedApprovals'];
+            }
+            foreach ($resets[$offset] ?? [] as $reset) {
+                $cycles[] = $reset['carriedApprovals'];
             }
             if ($offset === count($history)) {
                 break;
@@ -62,7 +71,7 @@ final class ProjectHeadReopen
             'saveSpk', 'saveSpkFinance' => $deal($input['dealId'] ?? ''),
             '_recordPayeeFile', '_setPayeeVersion', 'createTerm', 'createSettlementTerm' => $spk($input),
             'attestBarp', 'saveTerm', 'submitFinanceTerm' => $term($input['id'] ?? ''),
-            'prepareBapp', 'decide', 'adoptFinancePayment', '_submitSettlementKasbon', '_issueKasbon', '_attachTransferProof', 'decideFinancePayment', 'requestPartialPayment', 'verifyPartialPayment', 'payPartialPayment', 'recordApm', 'settleFinancePayment', 'updatePaymentApm', 'setKasbonPrintSigner', 'decideLegacySettlementReview', 'recordPayment', 'verifyTermScan', '_attachTermScan', '_attachTermWorkEvidence', 'removeTermWorkEvidence' => $term($input),
+            'resetPaymentApproval', 'prepareBapp', 'decide', 'adoptFinancePayment', '_submitSettlementKasbon', '_issueKasbon', '_attachTransferProof', 'decideFinancePayment', 'requestPartialPayment', 'verifyPartialPayment', 'payPartialPayment', 'recordApm', 'settleFinancePayment', 'updatePaymentApm', 'setKasbonPrintSigner', 'decideLegacySettlementReview', 'recordPayment', 'verifyTermScan', '_attachTermScan', '_attachTermWorkEvidence', 'removeTermWorkEvidence' => $term($input),
             'attestBapp', 'releaseVolume', 'createContinuation' => $term($lookup('bapps', $input)['termId'] ?? ''),
             default => '',
         };

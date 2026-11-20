@@ -124,11 +124,12 @@ test('account submit/Enter is cancelled safely; YA preserves native validation a
 
 test('mutation and file entry points explicitly require confirmation; existing final dialogs use YA/TIDAK', () => {
   const cases: Record<string, string[]> = {
+    'approval-actions.tsx': ['resetProjectApproval(', 'resetPaymentApproval(', 'decideProject(', 'decide(', 'decideFinancePayment(', 'decideLegacySettlementReview('],
     'projects.tsx': ['save();', "save(true)"],
-    'workflow-ui.tsx': ['decideProject(', 'setNumberFormat(', 'assignPaymentApprovers(', 'assignProjectApprovers('],
+    'workflow-ui.tsx': [ 'setNumberFormat(', 'assignPaymentApprovers(', 'assignProjectApprovers('],
     'partial-payment-panel.tsx': ['requestPartialPayment(', 'verifyPartialPayment(', 'payPartialPayment('],
     'payment-evidence.tsx': ['verifyTermScan(', 'uploadTermScan(', 'recordApm('],
-    'payments.tsx': ['save()', 'save(true)', 'createSettlementTerm(', 'recordApm(', 'recordPayment(', 'decide(', 'releaseVolume(', 'createContinuation('],
+    'payments.tsx': ['save()', 'save(true)', 'createSettlementTerm(', 'recordApm(', 'recordPayment(', 'releaseVolume(', 'createContinuation('],
     'contracts.tsx': ["save('save')", 'save(confirm)', 'createSettlementTerm(', 'submitProjectBundle('],
     'master-import.tsx': ['commit()', 'inspect()'],
     'term-work-evidence.tsx': ['removeTermWorkEvidence('],
@@ -136,7 +137,7 @@ test('mutation and file entry points explicitly require confirmation; existing f
     'upload-tasks.tsx': ['resumeUpload(', 'onUse(task)'],
     'legacy-finance-routing-ui.tsx': ['routeLegacyFinance(', 'decideLegacySettlementReview('],
     'kasbon-preview.tsx': ['download()', 'window.print()'],
-    'finance-private-ui.tsx': ['uploadPrivateDocument(', 'savePrivateDocument(', 'decideFinancePayment(', 'settleFinancePayment(', 'updatePaymentApm(', 'setKasbonPrintSigner(', 'submit()'],
+    'finance-private-ui.tsx': ['uploadPrivateDocument(', 'savePrivateDocument(', 'settleFinancePayment(', 'updatePaymentApm(', 'setKasbonPrintSigner(', 'submit()'],
   };
   for (const [file, calls] of Object.entries(cases)) {
     const source = readFileSync(new URL('../../resources/js/area3/' + file, import.meta.url), 'utf8');
@@ -164,7 +165,7 @@ test('mutation and file entry points explicitly require confirmation; existing f
     visit(tree);
     assert.deepEqual([...found].sort(), [...calls].sort(), file);
   }
-  for(const [file,name] of [['workflow-ui.tsx','confirmProjectDecision'],['payments.tsx','confirmDecision']]){
+  for(const [file,name] of [['approval-actions.tsx','run']]){
     const source=readFileSync(new URL('../../resources/js/area3/'+file,import.meta.url),'utf8');
     const start=source.indexOf('async function '+name+'('),end=source.indexOf('\n  return ',start);
     assert.ok(start>=0&&source.slice(start,end).includes('await waitForPersistence()'),file+': approval confirmation must await the server');
