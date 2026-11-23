@@ -1,0 +1,68 @@
+{
+  "date": "2026-11-23",
+  "feature": "Complete document package for paid Partial payments",
+  "scope": {
+    "partial": "BA PP Sah, source current, exact Sah parents, actual current approval chain complete and full canonical Finance settlement; settlement-v2 proof must match active kasbon UUID",
+    "final": "Existing approved Final availability retained; no new paid requirement",
+    "lineage": "Exact selected BAPP -> term -> SPK -> BA KH -> PP; approved same-SPK terms through selected number only",
+    "output": "Native DOCX and browser-print PDF, own saved BAPP date, active current-only kasbon and appendices, blank physical signatures",
+    "deferred": "Budgeting PID remains concept-only"
+  },
+  "verification": {
+    "frontend": {"passed": 468, "package_tests": 11, "failures": 0},
+    "php": {"filter": "package_current_kasbon_read_is_uuid_bound", "passed": 1, "assertions": 56, "database": "isolated SQLite memory", "full_suite_rerun": false, "queries": {"service": 3, "authenticated_http": 6}},
+    "build": "TypeScript and Vite passed",
+    "assets": {"manifest_references": 47, "preload_dependencies": 38, "profiles": 3, "result": "passed"},
+    "diff_check": "passed",
+    "negative_cases": ["unpaid", "proof without settlement", "underpaid", "proof bound to old kasbon", "missing current approval", "stale kasbon decision", "cancelled parent", "Draft BAPP", "changed BARP source", "paid sibling does not unlock selected unpaid term"],
+    "state_invariance": "Synthetic state, money, ledger, approvals and paid statuses unchanged by package resolution/export"
+  },
+  "browser": {
+    "environment": "Actual App in headless Chromium with synthetic boot, same-origin mocked transport/private responses and all external network blocked",
+    "cases_passed": 5,
+    "positive": ["Construction Partial 1", "Construction Partial 2", "Operation Partial 1", "Operation Partial 2"],
+    "negative": "Selected unpaid Partial 1 with paid sibling Partial 2 hides button and fetches no private kasbon",
+    "checks": ["list and detail action", "list causes no private reads", "current-only kasbon through selected stage", "403 denies export until explicit successful retry", "YA/TIDAK", "TIDAK causes zero downloads and zero print calls", "selected BAPP date", "no future term", "no document overflow"],
+    "word_downloads": 4,
+    "print_confirmed_cases": 4,
+    "pdf_files": 4,
+    "viewports": [375, 768, 1440],
+    "themes": ["light", "dark"],
+    "business_writes": 0,
+    "javascript_errors": 0,
+    "print_limit": "Confirmed window.print call was stubbed for counting; PDF output separately generated with Chromium print CSS, no system print dialog"
+  },
+  "render": {
+    "docx_zip_crc_and_xml_checks": 4,
+    "native_word_renderer": "Bundled LibreOffice headless via render_docx.py",
+    "native_rendered": {"construction_partial_1_pages": 11, "operation_partial_2_pages": 17, "total_pages": 28},
+    "browser_pdf_text_checked": {"construction_partial_1_pages": 12, "construction_partial_2_pages": 18, "operation_partial_1_pages": 12, "operation_partial_2_pages": 18, "total_pages": 60},
+    "visual_review": "All 28 native rendered pages plus Construction Partial 1 and Operation Partial 2 browser PDFs (30 pages): 58 pages visually inspected as two-page sheets",
+    "minimum_page_text_characters": {"browser": 125, "native": 289},
+    "checks": ["no empty page", "portrait/landscape sections", "own saved BAPP date", "no future kasbon", "no APPROVED stamps in physical output", "white paper at page corners on representative renders", "readable black text under dark workspace theme", "blank wet-signature areas"],
+    "pagination_limit": "Chromium and LibreOffice paginate inherited legacy PP differently; sparse existing footer page has content and is not blank; no new template/pagination redesign",
+    "artifacts": "/private/tmp/area3-partial-package-20261123"
+  },
+  "performance": {
+    "new_sql": 0,
+    "new_api": 0,
+    "new_schema_or_migration": 0,
+    "new_dependency_or_poller": 0,
+    "list": "Reuse already loaded exact lineage, no per-row private fetch; existing paged list retained",
+    "export": "Existing lazy current-only kasbon endpoint and bounded package merger retained",
+    "limit": "No server/concurrency/load benchmark"
+  },
+  "qa_corrections": [
+    "Initial Chrome launch required approved execution outside restricted environment",
+    "Inline fixture logo URL initially received HTML; fixture route corrected to serve actual local PNG, production asset code unchanged",
+    "Negative test exposed old-kasbon proof acceptance in package gate; exact active kasbon proof match added only to package eligibility",
+    "PDF review found dark page margins/grey text under dark theme; scoped package print CSS now forces white paper and black text"
+  ],
+  "deployment": {
+    "new_migration_required": false,
+    "frontend_asset_build_required": true,
+    "live_database_or_env_or_worker_or_server_mutations": false,
+    "commit_push_deploy": false
+  },
+  "limitations": ["No live its/MySQL/MariaDB or aaPanel testing", "No real user login, private records or transfer", "No desktop Microsoft Word or actual system print dialog", "Only two representative native DOCX packages rendered; all four ZIP/XML checked", "Full PHP suite not rerun because no backend changes; focused private-read regression passed", "Synthetic historical PP fixture amounts and snapshots preserved, no monetary repricing", "No Dompis changes"]
+}

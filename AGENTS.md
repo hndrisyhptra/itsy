@@ -1,5 +1,10 @@
 # it's Area 3 — Development rules
 
+## 23 November 2026 — Paid Partial complete-document packages
+
+Follow latest docs/DOCUMENT_PACKAGE.md. User enables UnduhSemua for Parsial after real full Finance settlement, in shared BA PP list/detail/timeline. Exact selected BAPP→currentterm→SPK→deal→PP; approved same-SPK terms only through selected number, current BAPP dates and source, active UUID-bound kasbon, no future/sibling/ProjectCode fallback or fake legacy documents. Keep actual assigned/current-version approvals, parent Sah, optional APM/net paid/proof binding/private/Head/Cancel guards. Final retains existing approved export availability. Shared HTML/nativeWord/print, blank wetTTD; Partial filename stage suffix, scoped white paper in dark-mode print. No workflow/money/ledger/release/closure mutation or backend/API/schema/migration/dependency/poller/newSQL. Reuse loaded list/detail parents, lazy current-only private reads; record actual tests/query/browser/WordPDF/server limits and audits.
+
+
 ## 23 November 2026 — Terminal PP package cancellation
 
 Follow docs/PROJECT_CANCELLATION.md. User authorizes Cancel by Construction AdminArea, Operation Officer1Operation, scoped Superadmin; Draft/revision/pending/Sah only before any work/payment term. Require reason/YA-TIDAK/frozen expected target/revision/actor+payload-bound UUID replay; block wrong scope/role, pending uploads, descendants/Head correction. Server-owned cancellation in PP JSON, SQL CANCELLED; close only current pending run, preserve all actual decisions/history/children/manifest/money/private/ledger without fake rejection or volume release. Cancel is terminal: no edit/resubmit/reset/child/payment mutation; reads remain authorized. Lists/timeline/approval Cancel bucket, active summary excludes Cancel; Telegram existing current-status resolver excludes it. Use loaded Map/Set/one indexed upload check, no new endpoint/poller/dependency/per-row query. CHECK-only guarded migration2026_11_23_000001 prepared, never live-applied by agent, rollback refuses saved cancellations. Record actual tests/query/browser/DDL/server/export limits and deployment instructions.

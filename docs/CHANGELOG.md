@@ -715,3 +715,10 @@ QA full381PHP/9330assertions memory lulus; sesudah penambahan assertion snapshot
 - Tombol ikon Cancel pada Aksi daftar/detail PP untuk Admin Area Konstruksi, Officer1Operation dan Superadmin sesuai penugasan. Alasan wajib dan YA/TIDAK; TIDAK tidak menulis, error tetap di dialog.
 - Berlaku Draf/revisi/pending/Sah sebelum BA RP/pembayaran. Status akhir Cancel menahan edit, submit ulang, approval/reset dan proses turunannya. Keputusan/history/BAKH/SPK/nominal/ledger tetap, tanpa fake keputusan atau volume release.
 - Status Cancel di filter/timeline/matriks approval, tidak lagi dihitung sebagai proyek aktif atau reminder approval. Perubahan CHECK-only migration baru perlu diterapkan saat deploy, termasuk pengecualian nol pada Cancel draf Header workflow3; tanpa backfill/ubahstatus massal. [Perilaku dan penerapan](PROJECT_CANCELLATION.md).
+
+
+## 23 November 2026 — Unduh semua dokumen Parsial lunas
+
+- Unduh Semua Dokumen tersedia pada BA PP Parsial yang Sah setelah Finance menandai pembayaran lunas penuh, dengan approval dan dokumen sumber lengkap. Tombol shared pada daftar, detail dan timeline; Final tetap memakai gate ekspor existing.
+- Paket berakhir pada pengajuan terpilih, menyertakan dokumen/kasbon tahap sebelumnya pada SPK sama dan tidak memuat pengajuan berikutnya. Filename Parsial memakai nomor Termin; tanggal BA PP current sesuai snapshot sendiri.
+- Word/print tetap TTD kosong. Cetak paket dari dark mode memakai kertas putih/teks hitam. Tidak perlu migration baru untuk perubahan unduhan ini; build aset terbaru. [Aturan dan QA](DOCUMENT_PACKAGE.md).

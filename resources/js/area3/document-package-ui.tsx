@@ -1,7 +1,7 @@
 import { useRef,useState,useEffect } from 'react';
 import { Files,Download,Printer } from 'lucide-react';
 import type { State,Bapp } from './domain';
-import { documentPackage,documentPackageFilename,type DocumentPackage } from './document-package';
+import { documentPackage,documentPackageFilename,documentPackageAvailable,documentPackageLineage,type DocumentPackage,type PackageLineage } from './document-package';
 import { ProjectPlanPreviewContent,Modal,Notice,Button,download,toast } from './ui';
 import { BakhDocument } from './bakh-document';
 import { BakhAppendix } from './bakh-appendix';
@@ -17,14 +17,14 @@ import { barpStageLabel } from './barp-labels';
 import { SPK_LOGO_URL } from './spk-assets';
 import { appUrl } from './laravel';
 
-export function DocumentPackageButton({s,bappId,bapp}:{s:State;bappId:string;bapp?:Bapp}){
+export function DocumentPackageButton({s,bappId,bapp,lineage}:{s:State;bappId:string;bapp?:Bapp;lineage?:PackageLineage}){
   const [open,setOpen]=useState(false);
   const selected=bapp??s.bapps.find(b=>b.id===bappId);
-  if(selected?.status!=='Sah'||s.terms.find(t=>t.id===selected.termId)?.type!=='Final')return null;
+  if(!selected||selected.id!==bappId||!documentPackageAvailable(selected,lineage??documentPackageLineage(s,selected)))return null;
   return <><Button className="icon-action" aria-label="Unduh semua dokumen PP sampai Lampiran BA PP" title="Unduh semua dokumen · Word / PDF" onClick={()=>setOpen(true)}><Download size={16}/></Button>{open&&<DocumentPackageModal s={s} bappId={bappId} onClose={()=>setOpen(false)}/>}</>;
 }
 export function DocumentPackageContents({s,c,kasbons=new Map()}:{s:State;c:DocumentPackage;kasbons?:Map<string,KasbonData>}){
-  const {project:p,deal:d,spk:v,final}=c;
+  const {project:p,deal:d,spk:v,current}=c;
   const section=(key:string,label:string,content:React.ReactNode)=><section key={key} className="document-package-part" aria-label={label}><h3 className="document-package-label">{label}</h3>{content}</section>;
   return <div className="document-package-content">
     {section('pp','Project Plan',<div data-package-pp><ProjectPlanPreviewContent s={s} p={p}/></div>)}
@@ -35,11 +35,11 @@ export function DocumentPackageContents({s,c,kasbons=new Map()}:{s:State;c:Docum
     {c.terms.map(t=><div key={t.id}>
       {section('barp','BA Rekonsiliasi Pekerjaan '+barpStageLabel(t),<BarpDocument project={p} deal={d} spk={v} term={t}/>)}
       {section('barp-appendix','Lampiran Rekonsiliasi '+barpStageLabel(t),<BarpAppendix state={s} project={p} deal={d} spk={v} term={t}/>)}
-      {t.id!==final.id&&c.completions.has(t.id)&&<>{section('bapp-stage','BA PP '+barpStageLabel(t),<BappDocument project={p} deal={d} spk={v} term={t} bapp={c.completions.get(t.id)}/>)}{section('bapp-stage-appendix','Lampiran BA PP '+barpStageLabel(t),<BappAppendix state={s} project={p} deal={d} spk={v} term={t} bapp={c.completions.get(t.id)}/>)}</>}
+      {t.id!==current.id&&c.completions.has(t.id)&&<>{section('bapp-stage','BA PP '+barpStageLabel(t),<BappDocument project={p} deal={d} spk={v} term={t} bapp={c.completions.get(t.id)}/>)}{section('bapp-stage-appendix','Lampiran BA PP '+barpStageLabel(t),<BappAppendix state={s} project={p} deal={d} spk={v} term={t} bapp={c.completions.get(t.id)}/>)}</>}
       {kasbons.has(t.id)&&section('kasbon','Form Kasbon '+barpStageLabel(t),<KasbonDocument data={kasbons.get(t.id)!} term={t} kasbonId={t.kasbon?.id}/>)}
     </div>)}
-    {section('bapp','BA Penyelesaian Pekerjaan',<BappDocument project={p} deal={d} spk={v} term={final}/>)}
-    {section('bapp-appendix','Lampiran BA PP',<BappAppendix state={s} project={p} deal={d} spk={v} term={final}/>)}
+    {section('bapp','BA Penyelesaian Pekerjaan',<BappDocument project={p} deal={d} spk={v} term={current} bapp={c.bapp}/>)}
+    {section('bapp-appendix','Lampiran BA PP',<BappAppendix state={s} project={p} deal={d} spk={v} term={current} bapp={c.bapp}/>)}
   </div>;
 }
 export function DocumentPackageModal({s,bappId,onClose}:{s:State;bappId:string;onClose:()=>void}){
@@ -66,12 +66,12 @@ export function DocumentPackageModal({s,bappId,onClose}:{s:State;bappId:string;o
       const [{captureProjectPlan,PP_DOCX_MIME},{createDocumentPackageDocx}]=await Promise.all([import('./pp-docx'),import('./document-package-docx')]);
       const logo=await fetch(SPK_LOGO_URL,{credentials:'same-origin',signal:AbortSignal.timeout(15000)});if(!logo.ok)throw new Error('Logo belum dapat dimuat. Coba kembali.');
       const bytes=createDocumentPackageDocx(state,context,captureProjectPlan(snapshot),new Uint8Array(await logo.arrayBuffer()),privateData);
-      download(documentPackageFilename(context.project.no,'docx'),new Blob([bytes],{type:PP_DOCX_MIME}));
+      download(documentPackageFilename(context.project.no,'docx',context.current),new Blob([bytes],{type:PP_DOCX_MIME}));
     }catch(e){toast(e instanceof Error?e.message:'Paket Word belum berhasil dibuat.',true);}finally{running.current=false;setBusy(false);}
   }
-  async function print(){if(!ready||!content.current||!c)return;const title=document.title;setBusy(true);try{await document.fonts.ready;await Promise.all([...content.current.querySelectorAll('img')].map(img=>img.decode()));document.title=documentPackageFilename(c.project.no,'pdf').replace(/\.pdf$/,'');window.print();}catch{toast('Gambar dokumen belum selesai dimuat. Coba cetak kembali.',true);}finally{document.title=title;setBusy(false);}}
+  async function print(){if(!ready||!content.current||!c)return;const title=document.title;setBusy(true);try{await document.fonts.ready;await Promise.all([...content.current.querySelectorAll('img')].map(img=>img.decode()));document.title=documentPackageFilename(c.project.no,'pdf',c.current).replace(/\.pdf$/,'');window.print();}catch{toast('Gambar dokumen belum selesai dimuat. Coba cetak kembali.',true);}finally{document.title=title;setBusy(false);}}
   return <Modal title="Paket Dokumen · PP sampai Lampiran BA PP" wide onClose={()=>{if(!busy)onClose();}}>
     <div className="preview-toolbar"><span><Files size={15}/> Satu berkas gabungan</span><div className="actions"><Button primary confirm="Unduh seluruh dokumen terkait sebagai satu file Word dengan ruang tanda tangan kosong?" disabled={!ready} aria-busy={busy} onClick={()=>void word()}><Download size={14}/>{busy?'Menyiapkan…':'Unduh Semua · Word (.docx)'}</Button><Button confirm="Cetak seluruh paket menjadi satu PDF dengan ruang tanda tangan kosong?" disabled={!ready} onClick={()=>void print()}><Printer size={14}/> Cetak / Simpan PDF</Button></div></div>
-    {invalid?<Notice tone="warning">{invalid}</Notice>:c&&<><div className="document-package-info"><strong>{c.project.no}</strong><span>{c.project.name} · {c.spk.no}</span><p>PP → BA KH & lampiran → SPK & lampiran → BARP, lampiran & kasbon setiap pembayaran → BA PP & lampiran.</p><span>Kasbon aktif setiap pembayaran disertakan otomatis sesuai akses akun.{c.terms.some(t=>!t.kasbon)&&' Pembayaran historis yang belum memiliki kasbon tidak dibuatkan berkas baru.'}</span><small>Foto KTP, buku tabungan, eviden, scan TTD dan bukti transfer tetap pada berkas privat masing-masing.</small></div>{loading&&<Notice>Memuat kasbon tersimpan…</Notice>}{error&&<Notice tone="error">{error} <Button disabled={loading} onClick={()=>setRetry(n=>n+1)}>Coba Lagi</Button></Notice>}<div ref={content}><DocumentPackageContents s={s} c={c} kasbons={includeKasbon&&loadedIdentity===identity?kasbons:undefined}/></div></>}
+    {invalid?<Notice tone="warning">{invalid}</Notice>:c&&<><div className="document-package-info"><strong>{c.project.no}</strong><span>{c.project.name} · {c.spk.no}{c.current.type==='Parsial'?` · Hingga Termin ${c.current.number}`:''}</span><p>PP → BA KH & lampiran → SPK & lampiran → BARP, lampiran & kasbon setiap pembayaran → BA PP & lampiran.</p><span>Kasbon aktif setiap pembayaran disertakan otomatis sesuai akses akun.{c.terms.some(t=>!t.kasbon)&&' Pembayaran historis yang belum memiliki kasbon tidak dibuatkan berkas baru.'}</span><small>Foto KTP, buku tabungan, eviden, scan TTD dan bukti transfer tetap pada berkas privat masing-masing.</small></div>{loading&&<Notice>Memuat kasbon tersimpan…</Notice>}{error&&<Notice tone="error">{error} <Button disabled={loading} onClick={()=>setRetry(n=>n+1)}>Coba Lagi</Button></Notice>}<div ref={content}><DocumentPackageContents s={s} c={c} kasbons={includeKasbon&&loadedIdentity===identity?kasbons:undefined}/></div></>}
   </Modal>;
 }

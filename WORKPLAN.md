@@ -1029,3 +1029,8 @@ Pembacaan workspace runtime tidak memuat arsip state; lookup PP berubah dibatch,
 ## 23 November 2026 — Cancel paket PP
 
 Selesai implementasi tombol Cancel paket PP sesuai peran/unit, guard sebelum work/payment, status terminal/audit, proyeksi run current dan tampilan status. Migration2026_11_23_000001 disiapkan beserta build; belum diterapkan ke data aktif/server. [Kontrak/penerapan](docs/PROJECT_CANCELLATION.md), [QA](docs/qa/project-cancellation-20261123.json).
+
+
+## 23 November 2026 — Unduh semua dokumen Parsial lunas
+
+Selesai perbaikan paket dokumen Parsial lunas: gate/lineage/current source/filename/print, pengujian dan audit. Tidak ada backend/migration/data aktif yang diubah. Konsep Budgeting PID belum dieksekusi. [Panduan](docs/DOCUMENT_PACKAGE.md), [QA](docs/qa/partial-package-paid-20261123.json).

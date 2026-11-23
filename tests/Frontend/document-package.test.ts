@@ -21,7 +21,7 @@ const setup=()=>{const s=seed('E'),b=s.bapps[0];b.status='Sah';return {s,c:docum
 test('package follows exact BAPP → Final → SPK → BA KH → PP; only approved same-SPK stages and no mutations',()=>{
  const {s,c}=setup(),before=JSON.stringify(s);
  s.projects.push({...c.project,id:'unrelated',no:'DO-NOT-EXPORT',projectCode:c.project.projectCode});
- s.terms.push({...c.final,id:'other-spk',spkId:'other',number:1},{...c.final,id:'rejected',status:'Ditolak',number:1});
+ s.terms.push({...c.current,id:'other-spk',spkId:'other',number:1},{...c.current,id:'rejected',status:'Ditolak',number:1});
  const result=documentPackage(s,c.bapp.id);
  assert.equal(result.project.id,c.project.id);assert(!result.terms.some(t=>['other-spk','rejected'].includes(t.id)));
  assert.deepEqual(result.terms.map(t=>t.number),[1,2]);
@@ -63,8 +63,8 @@ test('merge rejects malformed/unbounded/external packages and filenames cannot e
 });
 
 test('all three approved payments include their own saved kasbon; no additional withholding or recipient substitution',()=>{
- const {s,c}=setup(),third={...structuredClone(c.final),id:'third-final',number:3};
- c.final.type='Parsial';s.terms.push(third);c.bapp.termId=third.id;
+ const {s,c}=setup(),third={...structuredClone(c.current),id:'third-current',number:3};
+ c.current.type='Parsial';s.terms.push(third);c.bapp.termId=third.id;
  const context=documentPackage(s,c.bapp.id),kasbons=new Map<string,KasbonData>();
  context.project.branch='MATARAM';
  for(const t of context.terms)t.barp={...historicalBarp(context.deal,context.spk),date:'2026-11-16',place:'OLD CITY'};
@@ -104,4 +104,30 @@ test('complete package includes an actual Partial BAPP and appendix for its exac
  const context=documentPackage(s,c.bapp.id),html=renderToStaticMarkup(createElement(DocumentPackageContents,{s,c:context}));assert.equal((html.match(/class="document-package-part"/g)??[]).length,13);
  const xml=docxParts(createDocumentPackageDocx(s,context,[{kind:'paragraph',runs:[{text:'PROJECT PLAN'}]}],logo))['word/document.xml'];assert.equal((xml.match(/<w:sectPr\b/g)??[]).length,13);
  s.bapps[1].status='Draft';assert.throws(()=>documentPackage(s,c.bapp.id),/BA PP tiap pengajuan/);
+});
+
+test('paid Partial stages export exact selected lineage through that stage, with current BAPP date and net kasbon unchanged',async()=>{
+ const {paidPackageFixture}=await import('./helpers/paid-package-fixture');
+ for(const number of [1,2] as const)for(const operation of [false,true]){
+  const {s,t,b,kasbons}=paidPackageFixture(number,operation),before=JSON.stringify(s),context=documentPackage(s,b.id);
+  assert.equal(context.current.id,t.id);assert.deepEqual(context.terms.map(t=>t.number),number===1?[1]:[1,2]);
+  const action=renderToStaticMarkup(createElement(DocumentPackageButton,{s,bappId:b.id}));assert.match(action,/Unduh semua dokumen/);
+  const html=renderToStaticMarkup(createElement(DocumentPackageContents,{s,c:context,kasbons}));assert.match(html,/23 November 2026/);assert.match(html,/PAYMENT-STAGE-1/);if(number===1)assert.doesNotMatch(html,/PAYMENT-STAGE-2/);
+  const parts=docxParts(createDocumentPackageDocx(s,context,[{kind:'paragraph',runs:[{text:'PROJECT PLAN QA'}]}],logo,kasbons)),xml=parts['word/document.xml'];
+  assert.equal((xml.match(/<w:sectPr\b/g)??[]).length,5+5*number);assert.match(xml,/23 November 2026/);assert.match(xml,/ACCOUNT-STAGE-1/);if(number===1)assert.doesNotMatch(xml,/ACCOUNT-STAGE-2|PAYMENT-STAGE-2/);
+  assert.doesNotMatch(xml,/APPROVED|DRAF —|PPh|2,5%/);assert.equal(JSON.stringify(s),before);
+  assert.match(documentPackageFilename(context.project.no,'docx',t),new RegExp('_Termin-'+number+'\\.docx$'));
+ }
+});
+
+test('Partial download stays hidden for unpaid, proof-only, partial paid, stale proof/UUID, revoked approval or invalid parents',async()=>{
+ const {paidPackageFixture}=await import('./helpers/paid-package-fixture');
+ const edits=[(f:ReturnType<typeof paidPackageFixture>)=>{f.t.financePayment!.status='Diverifikasi';delete f.t.financePayment!.settledAt;},(f:ReturnType<typeof paidPackageFixture>)=>{f.t.paid=0;},(f:ReturnType<typeof paidPackageFixture>)=>{f.t.paid--;},(f:ReturnType<typeof paidPackageFixture>)=>{f.t.transferProof!.kasbonId='stale';},(f:ReturnType<typeof paidPackageFixture>)=>{f.t.approvals.pop();},(f:ReturnType<typeof paidPackageFixture>)=>{f.t.approvals[0].kasbonId='stale';},(f:ReturnType<typeof paidPackageFixture>)=>{f.p.status='Cancel';},(f:ReturnType<typeof paidPackageFixture>)=>{f.b.status='Draft';},(f:ReturnType<typeof paidPackageFixture>)=>{f.t.barp!.date='2026-11-24';}];
+ for(const [index,edit] of edits.entries()){const f=paidPackageFixture();edit(f);assert.equal(renderToStaticMarkup(createElement(DocumentPackageButton,{s:f.s,bappId:f.b.id})), '','negative case '+index);assert.throws(()=>documentPackage(f.s,f.b.id));}
+});
+
+test('a settled sibling cannot unlock an unpaid selected Partial; Final remains available under existing approval rules',async()=>{
+ const {paidPackageFixture}=await import('./helpers/paid-package-fixture');const {s,t,b}=paidPackageFixture();t.paid=0;
+ assert.equal(renderToStaticMarkup(createElement(DocumentPackageButton,{s,bappId:b.id})), '');assert.throws(()=>documentPackage(s,b.id),/Finance.*lunas/);
+ const legacy=setup();legacy.c.current.apmStatus='Belum Terbit';legacy.c.current.paid=0;assert.equal(documentPackage(legacy.s,legacy.c.bapp.id).current.type,'Final');
 });

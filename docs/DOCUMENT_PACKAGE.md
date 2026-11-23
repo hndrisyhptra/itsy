@@ -1,5 +1,16 @@
 # Paket dokumen PP sampai Lampiran BA PP — 16 November 2026
 
+## 23 November 2026 — Paket Parsial setelah Finance menandai lunas
+
+Permintaan terbaru membuka Unduh Semua pada termin Parsial yang sudah dilunasi Finance, menggantikan batas Final-only untuk kasus ini. Tombol shared tersedia di Aksi daftar BA PP, detail dan timeline. BA PP harus Sah sesuai sumber BA RP, parent PP/BA KH/SPK Sah, status pembayaran Disetujui dan semua keputusan aktual lengkap dengan assignee/UUID kasbon aktif. Parsial juga wajib canonical settlement, nilai terbayar penuh sesuai `paymentDue` dan bukti transfer terikat kasbon aktif pada settlement-v2. Upload bukti saja, approval saja, pembayaran sebagian, APM teks saja, history yang dicabut atau paid sibling tidak membuka tombol. APM tetap opsional pada pelunasan berbukti transfer. Final mempertahankan gate ekspor existing: parent dan BA PP Sah serta approval lengkap; tidak menambahkan kewajiban lunas baru pada Final.
+
+Resolver kini memakai **current** untuk pengajuan yang dipilih: exact BA PP → term → SPK → BA KH → PP, tanpa fallback ke Final/SPK lain/Project code. Paket Parsial1 berakhir pada BA PP/lampiran pengajuan1; Parsial2 mencakup pengajuan sebelumnya yang approved pada SPK sama dan berakhir pada BA PP/lampiran2. Hanya nomor sampai current, maksimal3term. Kasbon versi aktif tiap pengajuan disertakan; dokumen legacy tanpa kasbon/BA PP sebelumnya tidak dibuatkan snapshot baru. Dokumen yang diwajibkan marker baru tetap harus lengkap/current. Nomor dan tanggal BA PP current diteruskan ke renderer HTML seperti Word, sehingga tanggal tersimpan BA PP tidak tertukar dengan tanggal BA RP.
+
+Nama berkas Parsial memakai suffix **_Termin-1 / _Termin-2**; nama Final existing tetap. Word dan PDF menggunakan susunan dokumen yang sama serta TTD basah kosong. Gaya print scoped paket memaksa kertas putih/teks hitam saat workspace dark mode; tema layar dan print dokumen individual tidak diubah. Ekspor tetap meminta YA/TIDAK, busy guard dan UUID identity-bound lazy kasbon read. Tidak menandai PP selesai, tidak melepaskan volume, tidak membuat PP lanjutan atau mengubah status/nominal/ledger/private data.
+
+Gate list/detail memakai relasi loaded yang sudah tersedia dari readmodel, tanpa membangun seluruh paket/decrypt/fetch privat perbaris. Resolver lengkap baru saat modal/export, current-only GET tetap service3/HTTP6query pada fixture. Tidak ada API/schema/migration/dependency/poller/query baru, perubahan PHP/SQL atau its aktif/env/worker/server/Dompis. Build aset terbaru dan refresh halaman saat deploy; migration fitur sebelumnya tetap mengikuti panduannya sendiri. Actual QA dan batas: [partial-package-paid-20261123.json](qa/partial-package-paid-20261123.json).
+
+
 ## Penggunaan dan isi
 
 Pada menu **BA PP**, baris berstatus **Sah** memiliki ikon **Unduh semua dokumen · Word / PDF** pada kolom Aksi. Ikon yang sama tersedia di detail BA PP dan bagian BA PP pada timeline. Membuka ikon menampilkan preview seluruh paket; unduh dan cetak meminta konfirmasi YA/TIDAK.

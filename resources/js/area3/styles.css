@@ -389,3 +389,6 @@ body{color:var(--text);background:var(--bg)}[data-theme=dark] .metric-label,[dat
 
 /* Cancel package dialog: keep actions legible in both existing themes. */
 .project-cancel-form .field{margin:16px 0}.project-cancel-form .btn{background:var(--surface);color:var(--text);border:1px solid var(--border)}.project-cancel-form .btn.danger{color:var(--danger);border-color:var(--danger)}[data-theme=dark] .project-cancel-form .btn.danger{color:#ffb4b4;border-color:#84585f;background:#332731}
+
+/* Combined physical documents keep white paper even when the workspace uses dark mode. */
+@media print{html:has(.document-package-content),body:has(.document-package-content){background:#fff!important;color-scheme:light!important}.document-package-content{--muted:#000;--text:#000;--surface:#fff;--bg:#fff}.document-package-content,.document-package-content *{color:#000!important}}
