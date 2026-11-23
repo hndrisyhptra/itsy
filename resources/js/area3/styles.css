@@ -386,3 +386,6 @@ body{color:var(--text);background:var(--bg)}[data-theme=dark] .metric-label,[dat
 
 [data-theme=dark] .approval-decision-card .btn.danger{color:#ffb4b4;border-color:#84585f;background:#332731}
 [data-theme=dark] .approval-decision-card .btn.danger:hover:not(:disabled){background:#452c38}
+
+/* Cancel package dialog: keep actions legible in both existing themes. */
+.project-cancel-form .field{margin:16px 0}.project-cancel-form .btn{background:var(--surface);color:var(--text);border:1px solid var(--border)}.project-cancel-form .btn.danger{color:var(--danger);border-color:var(--danger)}[data-theme=dark] .project-cancel-form .btn.danger{color:#ffb4b4;border-color:#84585f;background:#332731}

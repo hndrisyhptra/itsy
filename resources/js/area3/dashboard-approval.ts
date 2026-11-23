@@ -6,7 +6,7 @@ import { paymentDue } from './kasbon-settlement';
 import { legacyReviewApproved } from './legacy-settlement-review';
 import { paymentLabel } from './payment-labels';
 
-export type ApprovalBucket='draft'|'revision'|'approved'|'settlement'|'paid'|'other'|`role:${Role}`;
+export type ApprovalBucket='cancelled'|'draft'|'revision'|'approved'|'settlement'|'paid'|'other'|`role:${Role}`;
 export type ApprovalKind='project'|'payment';
 export interface ApprovalColumn {key:ApprovalBucket;label:string}
 export interface ApprovalRow {id:string;projectId:string;no:string;code:string;name:string;branchId:string;branch:string;regionId:string;bucket:ApprovalBucket;position:string;assignee:string;since:string;payment?:string;route:string;timeline:string}
@@ -66,11 +66,12 @@ export function dashboardApprovalData(s:State,branch='',unit='Konstruksi'):{proj
     const b=branchMeta.get(normalize(p.branch))!,r=regionIndexes.get(matrix)!.get(b.regionId)!;
     const row:ApprovalRow={id:doc.id,projectId:p.id,no:p.no,code:p.projectCode,name:p.name,branchId:b.id,branch:p.branch,regionId:r.id,bucket,position,assignee:name,since,payment:matrix.kind==='payment'?paymentLabel(doc as Term):undefined,route:matrix.kind==='project'?`/project-plan/${p.id}`:`/termin/${doc.id}`,timeline:`/project-plan/${p.id}/timeline`};
     for(const g of [matrix.total,r,branches.get(matrix)!.get(b.id)!]){g.rows.push(row);g.counts[bucket]=(g.counts[bucket]??0)+1;}
-    if(!matrix.columns.some(c=>c.key===bucket))matrix.columns.splice(matrix.columns.length-(matrix.kind==='project'?2:3),0,{key:bucket,label:bucket.startsWith('role:')?bucket.slice(5)+' · Alur lama':'Periksa Status'});
+    if(!matrix.columns.some(c=>c.key===bucket))matrix.columns.splice(matrix.columns.length-(matrix.kind==='project'?2:3),0,{key:bucket,label:bucket==='cancelled'?'Cancel':bucket.startsWith('role:')?bucket.slice(5)+' · Alur lama':'Periksa Status'});
   };
   for(const p of plans.values()){
     const waiting=current(p,true);
-    if(p.status==='Sah')add(project,p,p,'approved','Disetujui','',waiting.since);
+    if(p.status==='Cancel')add(project,p,p,'cancelled','Cancel','',p.cancellation?.at??'');
+    else if(p.status==='Sah')add(project,p,p,'approved','Disetujui','',waiting.since);
     else if(isRevision(p.status))add(project,p,p,'revision','Revisi','Admin',latest([...(p.approvals??[]),...(p.approvalHistory??[])].filter(a=>a.decision!=='Setujui').map(a=>date(a.at))));
     else if(p.status==='Draft')add(project,p,p,'draft','Draf','Admin',date(p.created));
     else if(waiting.role)add(project,p,p,roleKey(waiting.role),'Menunggu '+waiting.role,assignee(p,waiting.role),waiting.since);

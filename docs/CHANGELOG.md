@@ -708,3 +708,10 @@ QA full381PHP/9330assertions memory lulus; sesudah penambahan assertion snapshot
 - Perbaikan pengesahan BA PP saat pembayaran tujuh tahap masih Dikembalikan meskipun BA RP sudah Sah. BA PP yang sama dapat diperiksa/disahkan ulang; tidak membuat tagihan/dokumen ganda.
 - Tombol **Periksa & Sahkan Ulang BA PP**, petunjuk sesuai kondisi dan status kasbon revisi memperjelas BA RP → BA PP → perbaiki kasbon → ajukan ulang dari tahap pertama Konstruksi/Operation.
 - Keputusan/history SQL dan pembayaran lama tetap; genuine current-kasbon/role/scope/paid/source/revision guards dipertahankan. Tanpa migration/backfill/live mutation. [Alur dan QA](WORK_DOCUMENTS_FLOW.md).
+
+
+## 23 November 2026 — Cancel paket PP
+
+- Tombol ikon Cancel pada Aksi daftar/detail PP untuk Admin Area Konstruksi, Officer1Operation dan Superadmin sesuai penugasan. Alasan wajib dan YA/TIDAK; TIDAK tidak menulis, error tetap di dialog.
+- Berlaku Draf/revisi/pending/Sah sebelum BA RP/pembayaran. Status akhir Cancel menahan edit, submit ulang, approval/reset dan proses turunannya. Keputusan/history/BAKH/SPK/nominal/ledger tetap, tanpa fake keputusan atau volume release.
+- Status Cancel di filter/timeline/matriks approval, tidak lagi dihitung sebagai proyek aktif atau reminder approval. Perubahan CHECK-only migration baru perlu diterapkan saat deploy, termasuk pengecualian nol pada Cancel draf Header workflow3; tanpa backfill/ubahstatus massal. [Perilaku dan penerapan](PROJECT_CANCELLATION.md).

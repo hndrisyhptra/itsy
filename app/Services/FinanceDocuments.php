@@ -42,6 +42,7 @@ class FinanceDocuments
         $r = $q->first(['s.id_spk', 'p.status as pp_status', 'p.document_data->contractBundle as bundle_data', ...($details ? ['s.document_data as spk_data', 'c.document_data as deal_data', 'p.document_data as pp_data'] : []), ...($term ? ['t.id_payment_term', 't.document_data as term_data'] : [])]);
         abort_unless($r, 404, ($term ? 'Pengajuan pembayaran' : 'SPK').' tidak ditemukan atau berada di luar Branch penugasan akun.');
 
+        abort_if($write && $r->pp_status === 'CANCELLED', 422, ProjectCancellation::MESSAGE);
         if ($approvalView && ! in_array($account['role'], ['Admin Konstruksi', 'Admin Operation', 'Superadmin', 'Finance'], true)) {
             $t = json_decode($r->term_data, true, 512, JSON_THROW_ON_ERROR);
             abort_unless(((PrototypeDomain::usesSettlementPayment($t) && ($t['approverUserIds'][$account['role']] ?? '') === $account['id']) || ($account['role'] === 'Mgr Finance & Settlement' && ($t['legacySettlementReview']['userId'] ?? '') === $account['id'])) && ! in_array($t['status'], ['Draft', 'Ditolak', 'Dikembalikan'], true), 403, 'Kasbon hanya dapat direview oleh approver pengajuan yang ditugaskan.');

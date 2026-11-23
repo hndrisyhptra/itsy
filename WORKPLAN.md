@@ -1024,3 +1024,8 @@ Memperbaiki tombol lanjut yang terhenti pada BA RP legacy terkunci. Admin kini d
 ## 19 November 2026 — Optimasi workspace, BOQ dan App shell
 
 Pembacaan workspace runtime tidak memuat arsip state; lookup PP berubah dibatch, BOQ/jadwal/biaya/tim/anggaran ditulis dalam batch dengan preflight identitas komponen dan rollback. Audit/receipt berbagi hash identik percommand. Inbox/search App memakai memo state/query, hasil6PP-first dan Map exactdeal. Nominal, zero/nullable, snapshot/source/history/paid/Branch/unit/approval/private/ledger dan lock tetap; tanpa migration/indeks/API/poller/cacheakses baru atau livewrite. Full-write20PP1330→353query; PP500BOQ/1000komponen59query; completePPHTTP98→75 danbudgetupdate84→55 pada fixture isolated. Batas load/server/bootstrap/Word serta hasil lengkap: [PERFORMANCE_OPTIMIZATION](docs/PERFORMANCE_OPTIMIZATION.md), [QA](docs/qa/performance-optimization-20261119.json).
+
+
+## 23 November 2026 — Cancel paket PP
+
+Selesai implementasi tombol Cancel paket PP sesuai peran/unit, guard sebelum work/payment, status terminal/audit, proyeksi run current dan tampilan status. Migration2026_11_23_000001 disiapkan beserta build; belum diterapkan ke data aktif/server. [Kontrak/penerapan](docs/PROJECT_CANCELLATION.md), [QA](docs/qa/project-cancellation-20261123.json).

@@ -13,7 +13,7 @@ export function dashboardBranches(s: State): string[] {
 
 /** Read-only summary of Laravel's authorized saved state. No workflow or account mutations. */
 export function dashboardSummary(s: State, branch = '') {
-  const projects = s.projects.filter(p => !branch || p.branch === branch);
+  const projects = s.projects.filter(p => p.status!=='Cancel'&&(!branch || p.branch === branch));
   const projectIds = new Set(projects.map(p => p.id));
   const deals = new Map(s.deals.filter(d => projectIds.has(d.projectId)).map(d => [d.id, d]));
   const spks = s.spks.filter(v => v.status === 'Sah' && deals.has(v.dealId));

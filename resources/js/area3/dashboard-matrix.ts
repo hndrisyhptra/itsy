@@ -21,6 +21,7 @@ export function dashboardMatrix(s:State,branch=''):DashboardMatrixData {
   const plans=new Map<string,{project:Project;deals:Deal[];requested:number;paid:number;closed:boolean}>();
   const codes=new Map<string,{closed:boolean}>();
   for(const p of s.projects){
+    if(p.status==='Cancel')continue;
     plans.set(p.id,{project:p,deals:[],requested:0,paid:0,closed:false});
     const code=normalized(p.projectCode);if(code)codes.set(code,{closed:true});
     const key=normalized(p.branch);

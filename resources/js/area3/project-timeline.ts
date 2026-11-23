@@ -37,6 +37,7 @@ export function projectTimeline(s:State,id:string) {
 }
 
 export function projectPosition(p:Project):string {
+  if(p.status==='Cancel') return 'Paket Cancel · proses approval dihentikan';
   if(p.status==='Sah') return (p.workflowVersion??1)<2?'PP Sah · alur historis':'PP Sah · seluruh approval selesai';
   if(p.status==='Diajukan') return 'Menunggu approval '+(nextApprovalRole(p,true)??'—');
   if(p.status==='Dikembalikan') return 'Dikembalikan · menunggu perbaikan '+workUnitAdmin(p);

@@ -1,5 +1,7 @@
 # it's Area 3 — Construction Workspace
 
+**23 November 2026 — Cancel paket PP:** tombol untuk Admin Area Konstruksi, Officer1Operation dan Superadmin dalam scope akun, sebelum ada BA RP/pembayaran. Cancel terminal menghentikan approval tanpa menghapus dokumen/keputusan/ledger; alasan dan audit tetap. **Migration CHECK baru wajib saat deploy** serta build aset terbaru. [Perilaku, pengamanan dan penerapan](docs/PROJECT_CANCELLATION.md).
+
 **20 November 2026 — Revisi Operation:** editor PP yang dikembalikan memakai lima approver Operation dan mempertahankan unit/identitas PP tersimpan meskipun cache form lama berbeda. Pengajuan ulang historis menyimpan asal siklus tanpa mengubah keputusan lama. Timeline memisahkan unit pada ID Project yang sama. Tidak ada migration baru. [Perilaku, data lama dan pengujian](docs/OPERATION_REVISION_TIMELINE.md).
 
 **20 November 2026 — Approval:** kartu keputusan PP/pembayaran terpisah, Tolak diganti Kembalikan untuk Revisi; approver dapat membatalkan persetujuannya sendiri dengan alasan dan konfirmasi, selama belum ada proses lanjutan/keuangan yang mengunci. Riwayat tetap, tahap sebelumnya dipertahankan. Tanpa migration baru. [Aturan, optimasi dan penerapan](docs/APPROVAL_SELF_RESET.md).

@@ -9,9 +9,11 @@ use App\Services\FinancePaymentCatalog;
 use App\Services\KasbonSettlement;
 use App\Services\NegotiationProjectCatalog;
 use App\Services\OperationProjectRevision;
+use App\Services\ProjectCancellation;
 use App\Services\PrototypeDomain;
 use App\Services\PrototypeWorkspaceService;
 use App\Services\RelationalWorkflowStore;
+use App\Services\TelegramPendingApprovals;
 use App\Services\UploadQueue;
 use App\Services\WorkUnitAccess;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -193,6 +195,165 @@ class BundleSettlementTest extends TestCase
         }
         $this->assertCount(0, DB::getQueryLog());
         DB::disableQueryLog();
+    }
+
+    public static function cancellablePackages(): array
+    {
+        $cases = [];
+        foreach ([false, true] as $operation) {
+            foreach (['Draft', 'Dikembalikan', 'Ditolak', 'Diajukan', 'Sah'] as $status) {
+                $cases[($operation ? 'Operation' : 'Construction').'-'.$status] = [$operation, $status, false];
+            }
+            $cases[($operation ? 'Operation' : 'Construction').'-Superadmin'] = [$operation, 'Diajukan', true];
+        }
+
+        return $cases;
+    }
+
+    #[DataProvider('cancellablePackages')]
+    public function test_cancel_package_is_terminal_preserves_history_children_money_and_ledger(bool $operation, string $status, bool $superadmin): void
+    {
+        [$p, $d, $v] = $this->package($operation);
+        $roles = $operation ? WorkUnitAccess::OPS_APPROVERS : PrototypeDomain::APPROVERS_V3;
+        if ($status !== 'Draft') {
+            $this->api('submitProjectBundle', [$p['id']])->assertOk();
+            $this->asRole($roles[0]);
+            $this->api('decideProject', [$p['id'], $status === 'Dikembalikan' ? 'Kembalikan' : ($status === 'Ditolak' ? 'Tolak' : 'Setujui'), 'QA history'])->assertOk();
+            if ($status === 'Sah') {
+                foreach (array_slice($roles, 1) as $role) {
+                    $this->asRole($role);
+                    $this->api('decideProject', [$p['id'], 'Setujui', 'QA history'])->assertOk();
+                }
+            }
+        }
+        $this->asRole($superadmin ? 'Superadmin' : ($operation ? 'Officer 1 Operation' : 'Admin Area'));
+        $before = $this->state();
+        $pp = collect($before['projects'])->firstWhere('id', $p['id']);
+        $expected = ProjectCancellation::plan($before, $pp)['expected'];
+        $snapshot = fn ($table, $key) => DB::table($table)->orderBy($key)->get()->toJson();
+        $decisions = $snapshot('approval_decisions', 'id_approval_decision');
+        $steps = $snapshot('approval_steps', 'id_approval_step');
+        $ledger = $snapshot('volume_balances', 'boq_component_id');
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $requestId = (string) Str::uuid();
+        $body = ['command' => 'cancelProject', 'args' => [$p['id'], $expected, 'Pekerjaan dibatalkan QA'], 'revision' => PrototypeWorkspace::first()->revision, 'request_id' => $requestId];
+        $this->postJson('/api/prototype/commands', $body)->assertOk();
+        $count = count(DB::getQueryLog());
+        DB::disableQueryLog();
+        $this->assertLessThanOrEqual(80, $count);
+        fwrite(STDERR, "\nCancel ".($operation ? 'Operation' : 'Construction')." {$status}: {$count} HTTP queries.\n");
+        $after = $this->state();
+        $cancelled = collect($after['projects'])->firstWhere('id', $p['id']);
+        $this->assertSame('Cancel', $cancelled['status']);
+        $this->assertSame($status, $cancelled['cancellation']['previousStatus']);
+        $this->assertSame($pp['approvals'], $cancelled['approvals']);
+        $this->assertSame($pp['approvalHistory'], $cancelled['approvalHistory']);
+        $this->assertSame($before['deals'], $after['deals']);
+        $this->assertSame($before['spks'], $after['spks']);
+        $this->assertSame($pp['budget'], $cancelled['budget']);
+        $this->assertSame($decisions, $snapshot('approval_decisions', 'id_approval_decision'));
+        $this->assertSame($steps, $snapshot('approval_steps', 'id_approval_step'));
+        $this->assertSame($ledger, $snapshot('volume_balances', 'boq_component_id'));
+        $this->assertDatabaseHas('project_plans', ['source_id' => $p['id'], 'status' => 'CANCELLED']);
+        if ($status === 'Diajukan') {
+            $this->assertDatabaseHas('approval_runs', ['status' => 'CANCELLED']);
+        }
+        $targets = [];
+        app(TelegramPendingApprovals::class)->each(function ($target) use (&$targets) {
+            $targets[] = $target;
+        });
+        $this->assertFalse(collect($targets)->contains('target_id', $p['id']));
+        $revision = PrototypeWorkspace::first()->revision;
+        $this->postJson('/api/prototype/commands', $body)->assertOk()->assertJsonPath('replayed', true);
+        $this->assertSame($revision, PrototypeWorkspace::first()->revision);
+        $body['args'][2] = 'Changed UUID payload';
+        $this->postJson('/api/prototype/commands', $body)->assertConflict();
+        $this->api('cancelProject', [$p['id'], $expected, 'Again'])->assertUnprocessable();
+        $this->api('decideProject', [$p['id'], 'Setujui', ''])->assertUnprocessable();
+        $this->api('resetProjectApproval', [$p['id'], [], 'Reset'])->assertUnprocessable();
+        $this->asRole($operation ? 'Admin Operation' : 'Admin Konstruksi');
+        $this->api('saveProjectBundle', [$cancelled, false])->assertUnprocessable();
+        $this->api('submitProjectBundle', [$p['id']])->assertUnprocessable();
+        $this->api('saveDeal', [$d, 'save'])->assertUnprocessable();
+        $this->api('saveSpk', [$v, 'save'])->assertUnprocessable();
+        $this->api('createTerm', [$v['id']])->assertUnprocessable();
+        $this->assertSame($revision, PrototypeWorkspace::first()->revision);
+        // Full projection cannot revive a pending run or overwrite prior decisions.
+        app(RelationalWorkflowStore::class)->write(PrototypeWorkspace::first(), $after);
+        $this->assertSame($decisions, $snapshot('approval_decisions', 'id_approval_decision'));
+    }
+
+    public function test_header_only_zero_budget_draft_can_cancel_without_fabricating_boq_or_approval(): void
+    {
+        $this->withoutVite();
+        $this->seedWorkflow('B');
+        $this->asRole('Admin Konstruksi');
+        $p = app(PrototypeWorkspaceService::class)->scenario('B')['projects'][0];
+        $p['id'] = $p['rootId'] = 'header-only-cancel-qa';
+        $p['unit'] = 'Konstruksi';
+        $p['branch'] = 'PEKALONGAN';
+        $p['boq'] = $p['schedule'] = $p['approverUserIds'] = [];
+        $p['budget'] = 0;
+        unset($p['planBudget'], $p['riskLevel'], $p['signatureRows']);
+        $this->api('saveProjectBundle', [$p, false])->assertOk();
+        $this->asRole('Admin Area');
+        $s = $this->state();
+        $p = collect($s['projects'])->firstWhere('id', $p['id']);
+        $this->api('cancelProject', [$p['id'], ProjectCancellation::plan($s, $p)['expected'], 'Cancel header-only draft'])->assertOk();
+        $this->assertDatabaseHas('project_plans', ['source_id' => $p['id'], 'status' => 'CANCELLED', 'budget' => 0]);
+        $saved = collect($this->state()['projects'])->firstWhere('id', $p['id']);
+        $this->assertSame([], $saved['boq']);
+        $this->assertSame([], $saved['approvals']);
+        $this->assertSame([], $saved['approvalHistory']);
+    }
+
+    public function test_existing_work_document_blocks_http_cancellation_without_mutating_paid_history(): void
+    {
+        $this->withoutVite();
+        $this->seedWorkflow('E');
+        $this->asRole('Admin Area');
+        $state = $this->state();
+        $term = $state['terms'][0];
+        $spk = collect($state['spks'])->firstWhere('id', $term['spkId']);
+        $deal = collect($state['deals'])->firstWhere('id', $spk['dealId']);
+        $pp = collect($state['projects'])->firstWhere('id', $deal['projectId']);
+        $revision = PrototypeWorkspace::first()->revision;
+        $this->api('cancelProject', [$pp['id'], ProjectCancellation::plan($state, $pp)['expected'], 'Not allowed'])->assertUnprocessable()->assertJsonPath('message', 'Paket sudah memiliki BA RP/pengajuan pembayaran dan tidak dapat di-Cancel.');
+        $this->assertSame($revision, PrototypeWorkspace::first()->revision);
+        $this->assertSame($state, $this->state());
+    }
+
+    public function test_cancel_keeps_role_scope_stale_request_pending_upload_and_work_document_guards(): void
+    {
+        [$p, $d, $v] = $this->package();
+        foreach (['Admin Konstruksi', 'PM Konstruksi', 'Mgr Project Support', 'Finance', 'Officer 1 Operation'] as $role) {
+            $this->asRole($role);
+            $this->api('cancelProject', [$p['id'], [], 'Unauthorized'])->assertForbidden();
+        }
+        $this->asRole('Admin Area');
+        $state = $this->state();
+        $pp = collect($state['projects'])->firstWhere('id', $p['id']);
+        $plan = ProjectCancellation::plan($state, $pp);
+        $revision = PrototypeWorkspace::first()->revision;
+        $this->api('cancelProject', [$p['id'], $plan['expected'], ''])->assertUnprocessable();
+        $bad = $plan['expected'];
+        $bad['status'] = 'Sah';
+        $this->api('cancelProject', [$p['id'], $bad, 'Stale'])->assertConflict();
+        $this->assertSame($revision, PrototypeWorkspace::first()->revision);
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $work = $state;
+        $work['terms'][] = ['id' => 'exact-work', 'spkId' => $v['id']];
+        $this->assertNotSame('', ProjectCancellation::plan($work, $pp)['reason']);
+        $this->assertCount(0, DB::getQueryLog());
+        DB::disableQueryLog();
+        // A genuinely pending private upload, not a fake paid status, blocks cancellation.
+        $this->asRole('Admin Konstruksi');
+        $upload = $this->post('/api/finance/uploads/mandor-ktp/'.$v['id'], ['file' => UploadedFile::fake()->image('qa-ktp.png'), 'request_id' => (string) Str::uuid(), 'revision' => PrototypeWorkspace::first()->revision], ['Accept' => 'application/json'])->assertAccepted()->json('task.id');
+        $this->asRole('Admin Area');
+        $this->api('cancelProject', [$p['id'], $plan['expected'], 'Wait uploads'])->assertUnprocessable();
+        $this->assertDatabaseHas('upload_tasks', ['id_upload_task' => $upload, 'status' => 'queued']);
     }
 
     public static function returnedWorkUnits(): array

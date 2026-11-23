@@ -4,6 +4,7 @@ import { paymentStartAction } from './payment-selection';
 import { seed } from './seed';
 import { boot, appUrl, workspaceUrl } from './laravel';
 import { type Command, setCommandRecorder } from './commands';
+import {assertCancellationCommand} from './project-cancellation';
 import { assertHeadReopenCommand } from './head-reopen';
 import type { MasterEntity, MasterCatalog } from './master-data';
 import { enqueueUpload, uploadTask, waitUpload, UploadTaskFailedError, type UploadKind } from './upload-queue';
@@ -78,7 +79,7 @@ async function commit(command: Command, resultId?: string, scan?: { termId: stri
     persistenceError = `${message} Perubahan belum dikonfirmasi; data terakhir yang berhasil dimuat ditampilkan kembali. Draft formulir tetap tersedia.`;
     // Keep PP editor input mounted on a failed save; its explicit save handler shows the error.
     // Decision cards await persistence and show their own errors; keep their note and exact target mounted.
-    const localApprovalError=['decideProject','decide','decideFinancePayment','decideLegacySettlementReview','resetProjectApproval','resetPaymentApproval'].includes(command.command);
+    const localApprovalError=['cancelProject','decideProject','decide','decideFinancePayment','decideLegacySettlementReview','resetProjectApproval','resetPaymentApproval'].includes(command.command);
     if(scan?.kind!=='work-evidence'&&command.command!=='saveProject'&&!localApprovalError)window.dispatchEvent(new CustomEvent('area3:server-error',{detail:persistenceError}));
     throw new Error(persistenceError);
   } finally { clearTimeout(timeout); persistencePending=false; emit(); }
@@ -180,7 +181,7 @@ export function mutate<T>(fn: (draft: State) => T): T {
   if (persistencePending) throw new Error('Tunggu konfirmasi transaksi Laravel sebelumnya.');
   const next = structuredClone(state);
   let command: Command | undefined;
-  setCommandRecorder(value => { if (command) throw new Error('Satu transaksi hanya boleh menjalankan satu perintah.'); assertHeadReopenCommand(next,value.command,value.args); command=value; });
+  setCommandRecorder(value => { if (command) throw new Error('Satu transaksi hanya boleh menjalankan satu perintah.'); assertHeadReopenCommand(next,value.command,value.args); assertCancellationCommand(next,value.command,value.args); command=value; });
   let result: T;
   try { result=fn(next); } finally { setCommandRecorder(); }
   if (!command && next.role !== state.role) command={command:'role',args:[next.role]};

@@ -160,7 +160,7 @@ class AuthenticatedWorkspace
             'saveProject', 'saveProjectBundle' => $input,
             'submitProjectBundle' => $project($input),
             'adoptApprovalOrder' => ($input === 'projects' ? $project($args[1] ?? '') : ($input === 'terms' ? $term($args[1] ?? '') : null)),
-            'resetProjectApproval', 'decideProject', 'assignProjectApprovers', 'assignPaymentApprovers', 'reviewBoq', 'finalizeBoq' => $project($input),
+            'cancelProject', 'resetProjectApproval', 'decideProject', 'assignProjectApprovers', 'assignPaymentApprovers', 'reviewBoq', 'finalizeBoq' => $project($input),
             'saveDeal' => $project($input['projectId'] ?? ''),
             '_recordPayeeFile', '_setPayeeVersion' => $spk($input),
             'saveSpkFinance', 'saveSpk' => $deal($input['dealId'] ?? ''),
@@ -172,6 +172,7 @@ class AuthenticatedWorkspace
             default => null,
         };
         abort_unless($p && in_array($p['branch'] ?? '', $account['branches'], true) && WorkUnitAccess::permits($account, $p), 403, 'Dokumen berada di luar Branch penugasan Anda.');
+        abort_if($command !== 'cancelProject' && ($p['status'] ?? '') === 'Cancel', 422, ProjectCancellation::MESSAGE);
         // Existing identities cannot be moved between documents/branches by changing a form payload.
         $collection = ['saveProject' => 'projects', 'saveProjectBundle' => 'projects', 'saveDeal' => 'deals', 'saveSpk' => 'spks', 'saveSpkFinance' => 'spks', 'saveTerm' => 'terms', 'submitFinanceTerm' => 'terms'][$command] ?? null;
         if ($collection && ($old = collect($state[$collection])->firstWhere('id', $input['id'] ?? ''))) {

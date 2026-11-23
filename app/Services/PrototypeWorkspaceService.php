@@ -81,12 +81,19 @@ class PrototypeWorkspaceService
             $access = app(AuthenticatedWorkspace::class);
             $before = $access->bind(app(RelationalWorkflowStore::class)->read($row));
             $access->authorize($before, $input['command'], $input['args']);
+            $isCancel = $input['command'] === 'cancelProject';
             $isReset = in_array($input['command'], ['resetProjectApproval', 'resetPaymentApproval'], true);
+            $cancelHash = $isCancel ? hash('sha256', json_encode(Arr::sortRecursive(array_slice($input['args'], 0, 3)), JSON_THROW_ON_ERROR)) : null;
             $resetHash = $isReset ? hash('sha256', json_encode(Arr::sortRecursive(['command' => $input['command'], 'args' => array_slice($input['args'], 0, 3)]), JSON_THROW_ON_ERROR)) : null;
             $replay = DB::table('prototype_audits')->where('workspace_id', $row->id)->where('request_id', $input['request_id'])->first();
             if ($replay) {
                 abort_unless($replay->actor_user_id === auth()->id() && $replay->command === $input['command'], 409, 'ID permintaan sudah digunakan.');
 
+                if ($isCancel) {
+                    $document = collect($before['projects'])->firstWhere('id', $input['args'][0] ?? '');
+                    $marker = $document['cancellation'] ?? [];
+                    abort_unless(($marker['requestId'] ?? '') === $input['request_id'] && hash_equals($marker['payloadHash'] ?? '', $cancelHash) && ($marker['actorUserId'] ?? '') === $before['actorUserId'] && ($marker['role'] ?? '') === $before['role'], 409, 'UUID Cancel sudah digunakan untuk isi atau akun lain.');
+                }
                 if ($isReset) {
                     $documents = $before[$input['command'] === 'resetProjectApproval' ? 'projects' : 'terms'];
                     $document = collect($documents)->firstWhere('id', $input['args'][0] ?? '');
@@ -98,6 +105,15 @@ class PrototypeWorkspaceService
             }
             if ($row->revision !== $input['revision']) {
                 throw new HttpResponseException(response()->json($this->payload($row) + ['message' => 'Data berubah di tab lain. Muat ulang data terbaru; perubahan tidak ditimpa.'], 409));
+            }
+            if ($isCancel) {
+                $document = collect($before['projects'])->firstWhere('id', $input['args'][0] ?? '');
+                abort_unless($document, 404);
+                $plan = ProjectCancellation::plan($before, $document);
+                abort_unless($plan['own'], 403, 'Akun tidak berwenang Cancel paket unit ini.');
+                abort_if($plan['reason'] !== '', 422, $plan['reason']);
+                abort_if(DB::table('upload_tasks')->where('workspace_id', $row->id)->whereIn('document_id', $plan['documentIds'])->whereIn('status', ['queued', 'processing'])->exists(), 422, 'Tunggu seluruh upload paket selesai sebelum Cancel.');
+                $input['args'] = [...array_slice($input['args'], 0, 3), ['requestId' => $input['request_id'], 'payloadHash' => $cancelHash]];
             }
             if ($isReset) {
                 $projectReset = $input['command'] === 'resetProjectApproval';

@@ -27,10 +27,12 @@ class PrototypeDomain
     {
         $this->state = $state;
         ProjectHeadReopen::assertCommandAllowed($state, $command, $args);
+        ProjectCancellation::assertCommandAllowed($state, $command, $args);
         $result = match ($command) {
             'saveProject' => ($state['schema'] ?? 1) >= 2 ? $this->saveProjectV2($this->object($args[0] ?? null), (bool) ($args[1] ?? false)) : $this->saveProject($this->object($args[0] ?? null), (bool) ($args[1] ?? false)),
             'saveProjectBundle' => $this->saveProjectBundle($this->object($args[0] ?? null), (bool) ($args[1] ?? false)),
             'submitProjectBundle' => $this->submitProjectBundle($args[0] ?? '', $args[1] ?? null),
+            'cancelProject' => $this->cancelProject($args[0] ?? '', $this->object($args[1] ?? null), $args[2] ?? '', $args[3] ?? []),
             'resetProjectApproval' => $this->resetApproval($args[0] ?? '', $this->object($args[1] ?? null), $args[2] ?? '', true, $args[3] ?? []),
             'resetPaymentApproval' => $this->resetApproval($args[0] ?? '', $this->object($args[1] ?? null), $args[2] ?? '', false, $args[3] ?? []),
             'decideProject' => $this->decideProject($args[0] ?? '', $args[1] ?? '', $args[2] ?? ''),
@@ -86,6 +88,15 @@ class PrototypeDomain
         $this->state['lastSaved'] = now()->toISOString();
 
         return ['state' => $this->state, 'result' => $result];
+    }
+
+    private function cancelProject(string $id, array $expected, string $reason, array $context): null
+    {
+        $p = ProjectCancellation::apply($this->state, $this->record('projects', $id), $expected, $reason, $context);
+        $this->put('projects', $p);
+        $this->log('Paket PP Cancel', $p['no'].' · '.$this->state['role'].' · '.$p['cancellation']['reason'], '/project-plan/'.$id);
+
+        return null;
     }
 
     private function fail(string $message): never

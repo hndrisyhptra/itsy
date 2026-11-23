@@ -26,6 +26,7 @@ export function PaymentFlowOverview({t,bapp}:{t:Term;bapp?:Bapp}){return <div cl
 export function ProjectFlowOverview({s,p,documents}:{s:State;p:Project;documents?:{deals:Deal[];spks:Spk[]}}){
   const deals=documents?.deals??s.deals.filter(d=>d.projectId===p.id),ids=new Set(deals.map(d=>d.id)),spks=documents?.spks??s.spks.filter(v=>ids.has(v.dealId)),bundle=usesContractBundle(p);
   const submitted=p.status==='Diajukan'||p.status==='Sah',done=p.status==='Sah',revisionRoles=approvalRoles({...p,approvalScheme:projectApprovalScheme(p)},true);
+  if(p.status==='Cancel')return <FlowStrip steps={[{label:'Paket Cancel',detail:'Approval dan proses dokumen turunan dihentikan',done:false}]} label="Paket PP Cancel"/>;
   const steps:FlowStep[]=bundle?[
     {label:'Draf PP',detail:'Header, BOQ dan perencanaan',done:submitted||!!p.boq.length},
     {label:'BA KH & SPK',detail:`${deals.length} BA KH · ${spks.length} SPK`,done:!!deals.length&&!!spks.length,current:!submitted},

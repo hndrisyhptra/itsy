@@ -1,5 +1,10 @@
 # it's Area 3 — Development rules
 
+## 23 November 2026 — Terminal PP package cancellation
+
+Follow docs/PROJECT_CANCELLATION.md. User authorizes Cancel by Construction AdminArea, Operation Officer1Operation, scoped Superadmin; Draft/revision/pending/Sah only before any work/payment term. Require reason/YA-TIDAK/frozen expected target/revision/actor+payload-bound UUID replay; block wrong scope/role, pending uploads, descendants/Head correction. Server-owned cancellation in PP JSON, SQL CANCELLED; close only current pending run, preserve all actual decisions/history/children/manifest/money/private/ledger without fake rejection or volume release. Cancel is terminal: no edit/resubmit/reset/child/payment mutation; reads remain authorized. Lists/timeline/approval Cancel bucket, active summary excludes Cancel; Telegram existing current-status resolver excludes it. Use loaded Map/Set/one indexed upload check, no new endpoint/poller/dependency/per-row query. CHECK-only guarded migration2026_11_23_000001 prepared, never live-applied by agent, rollback refuses saved cancellations. Record actual tests/query/browser/DDL/server/export limits and deployment instructions.
+
+
 ## 20 November 2026 — Work documents after a genuine Finance return
 
 Follow latest docs/WORK_DOCUMENTS_FLOW.md. Returned current-kasbon settlement-v2 workflow3 may prepare/re-attest exact-term BA PP after source-current BA RP, only actual current UUID return, no active decisions/paid/settlement. Existing BA PP is reused, changed-source attestations archived, no forced Draft/status/history/SQL decision rewrite. New kasbon explicit reissue restarts seven from first unit role; historical Finance-v1 review is not converted. UI distinguishes create/re-attest/ready; returned old kasbon is not a completed step. Keep Admin/Branch/unit/Region/Head/revision/receipt/private/whole-volume/money/ledger/pending evidence/parent/source/date guards and blank physical signatures. Loaded graph0newSQL/API/schema/migration/poller/live mutation; record actual isolated tests/query/browser/Word and server limits.

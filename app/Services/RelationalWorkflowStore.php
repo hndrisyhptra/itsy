@@ -52,7 +52,7 @@ class RelationalWorkflowStore
     {
         return match ($status) {
             'Sah', 'Disetujui' => 'APPROVED', 'Diajukan' => 'SUBMITTED',
-            'Dikembalikan' => 'RETURNED', 'Ditolak' => 'REJECTED', default => 'DRAFT',
+            'Dikembalikan' => 'RETURNED', 'Ditolak' => 'REJECTED', 'Cancel' => 'CANCELLED', default => 'DRAFT',
         };
     }
 
@@ -558,6 +558,20 @@ class RelationalWorkflowStore
     {
         if (($document['workflowVersion'] ?? 1) < 2) {
             return; // Legacy identity-less decisions remain verbatim in the document record.
+        }
+        if ($project && $document['status'] === 'Cancel') {
+            $cancel = $document['cancellation'];
+            if (! $previous) {
+                $original = $document;
+                $original['status'] = $cancel['previousStatus'];
+                $this->approvals($workspace, $original, true);
+            }
+            if ($cancel['previousStatus'] === 'Diajukan') {
+                $run = $this->id($workspace->id, 'approval-run', 'PP|'.$document['id'].'|'.($cancel['sourceCycleNo'] - 1));
+                DB::table('approval_runs')->where('id_approval_run', $run)->update(['status' => 'CANCELLED']);
+            }
+
+            return;
         }
         $cycles = ProjectHeadReopen::cycles($document, $project);
         // A self-reset or explicit unit-flow revision starts a cycle; older cycles are persisted under

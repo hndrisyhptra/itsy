@@ -1,0 +1,232 @@
+{
+  "date": "2026-11-23",
+  "feature": "Terminal Cancel paket PP before any BA RP/payment",
+  "user_authority": {
+    "Construction": "Admin Area",
+    "Operation": "Officer 1 Operation",
+    "both": "Superadmin",
+    "scope": "Actual active SQL account Branch/unit/Region; not a new assignee requirement",
+    "statuses": [
+      "Draft",
+      "Dikembalikan",
+      "Ditolak",
+      "Diajukan",
+      "Sah"
+    ],
+    "block": "Any linked work/payment term, PP descendants, pending upload, pending Head correction; no reopening Cancel."
+  },
+  "persistence": {
+    "pp_sql": "CANCELLED",
+    "pp_json": "Cancel",
+    "marker": "Server-owned cancellation actor/name/role/time/reason/previousStatus/sourceCycleNo/requestId/payloadHash in existing document_data",
+    "run": "Only active Diajukan run becomes CANCELLED; all older runs/steps/decisions preserved. Full projection cannot revive current run.",
+    "unchanged": [
+      "money/budget/BOQ",
+      "BA KH and SPK snapshots/status/manifest",
+      "actual history/approvals/SQL decisions and step rows",
+      "private profile/files",
+      "volume balances and accepted/reserved/committed/available"
+    ],
+    "receipt": "Existing transaction/workspace lock/revision/actor+role+payload-bound UUID replay/audit; local dialog error keeps reason and route."
+  },
+  "php": {
+    "passed": true,
+    "tests": 440,
+    "assertions": 12904,
+    "runtime_seconds": 89.14,
+    "database": "Fail-closed SQLite :memory:, full suite alone",
+    "new_cases": 18,
+    "coverage": [
+      "Construction and Operation x Draft/return/rejection/pending/Sah plus Superadmin both",
+      "Terminal guards: edits/resubmit/approve/reset/child save/createTerm; real original SQL decisions/steps unchanged, balances and money unchanged; full projection preservation",
+      "Same receipt replay no write; changed payload conflict; reason/snapshot/role/unit negatives",
+      "Pending private upload blocks cancellation; real existing work document blocks HTTP; loaded helper zero SQL",
+      "Header-only zero BOQ/budget cancel without fabricated approvals/values",
+      "MySQL/MariaDB exact DDL mocked; SQLite budget CHECK rejects zero approved/legacy or negative values; rollback refuses saved cancellation",
+      "Actual current Telegram resolver excludes canceled target; no Telegram HTTP messages sent"
+    ]
+  },
+  "frontend": {
+    "passed": true,
+    "tests": 465,
+    "new_cases": 12,
+    "coverage": [
+      "Both units x five statuses terminal and history/child/money preservation",
+      "Role, scope, inactive actor, downstream, stale fingerprint and reason guards",
+      "Read-only mutation guard feedback; status/filter/detail/timeline/contract label",
+      "Cancelled approval bucket; absent active dashboard summary/matrix"
+    ]
+  },
+  "performance": {
+    "planner_helper_sql": 0,
+    "cancel_http_fixture": {
+      "Construction": {
+        "Draft": 43,
+        "Dikembalikan": 43,
+        "Ditolak": 43,
+        "Diajukan": 44,
+        "Sah": 43
+      },
+      "Operation": {
+        "Draft": 42,
+        "Dikembalikan": 42,
+        "Ditolak": 42,
+        "Diajukan": 43,
+        "Sah": 42
+      },
+      "Superadmin": 44
+    },
+    "pending_upload_lookups_per_cancel": 1,
+    "pending_run_updates": 1,
+    "additional_row_actor_queries": 0,
+    "existing_500BOQ_1000components_write_queries": 59,
+    "list": "Loaded Map/Set once per state; eight rows existing; dialog lazy; no PII fetch/endpoint/new polling.",
+    "limits": "Isolated fixture query counts, not MySQL/load/parallel user benchmark."
+  },
+  "browser": {
+    "passed": true,
+    "cases": [
+      {
+        "kind": "construction",
+        "authorized_button": true,
+        "cancel_writes": 0,
+        "post_count": 2,
+        "expected_command": "cancelProject",
+        "conflict_note_preserved": true,
+        "history_unchanged": true,
+        "children_unchanged": true,
+        "status": "Cancel",
+        "viewports": [
+          375,
+          768,
+          1440
+        ],
+        "themes": [
+          "light",
+          "dark"
+        ],
+        "js_errors": 0
+      },
+      {
+        "kind": "operation",
+        "authorized_button": true,
+        "cancel_writes": 0,
+        "post_count": 1,
+        "expected_command": "cancelProject",
+        "conflict_note_preserved": false,
+        "history_unchanged": true,
+        "children_unchanged": true,
+        "status": "Cancel",
+        "viewports": [
+          375,
+          768,
+          1440
+        ],
+        "themes": [
+          "light",
+          "dark"
+        ],
+        "js_errors": 0
+      },
+      {
+        "kind": "super-construction",
+        "authorized_button": true,
+        "cancel_writes": 0,
+        "post_count": 1,
+        "expected_command": "cancelProject",
+        "conflict_note_preserved": false,
+        "history_unchanged": true,
+        "children_unchanged": true,
+        "status": "Cancel",
+        "viewports": [
+          375,
+          768,
+          1440
+        ],
+        "themes": [
+          "light",
+          "dark"
+        ],
+        "js_errors": 0
+      },
+      {
+        "kind": "super-operation",
+        "authorized_button": true,
+        "cancel_writes": 0,
+        "post_count": 1,
+        "expected_command": "cancelProject",
+        "conflict_note_preserved": false,
+        "history_unchanged": true,
+        "children_unchanged": true,
+        "status": "Cancel",
+        "viewports": [
+          375,
+          768,
+          1440
+        ],
+        "themes": [
+          "light",
+          "dark"
+        ],
+        "js_errors": 0
+      },
+      {
+        "kind": "forbidden-construction",
+        "authorized_button": false,
+        "writes": 0,
+        "js_errors": 0
+      },
+      {
+        "kind": "forbidden-operation",
+        "authorized_button": false,
+        "writes": 0,
+        "js_errors": 0
+      }
+    ],
+    "surface": "Actual React App/Chrome, synthetic boot/state/transport/private metadata; all external networks blocked.",
+    "checks": [
+      "Authorized icon only for Admin Area/Officer1Operation/Superadmin; PM/AdminOperation negative controls",
+      "Reason empty disabled; TIDAK zero POST; YA one success; 409 unchanged state/route/reason followed by explicit retry only",
+      "Exact PP target and history/BAKH/SPK unchanged; Cancel removes action, timeline audit/stop visible",
+      "375/768/1440 light/dark dialog no document overflow, zero JS errors"
+    ],
+    "inspected_screenshots": [
+      "Operation dialog desktop dark after transition",
+      "Construction Cancel timeline desktop dark"
+    ],
+    "harness": "Initial Chrome sandbox launch failed and was rerun with permission. Field label locator made tolerant of textarea value in label; final screenshots wait200ms for CSS transition.",
+    "product_fix_found": "Cancel added to local error handling to prevent global Dashboard navigation on server rejection; reason stays mounted. Scoped dialog button colors preserve theme contrast.",
+    "artifacts": "/private/tmp/area3-project-cancel-20261123"
+  },
+  "build": {
+    "typescript_vite": true,
+    "pint_dirty": true,
+    "diff_check": true,
+    "manifest_references": 47,
+    "preload_dependencies": 38,
+    "root_subfolder_cdn_profiles": 3
+  },
+  "migration": {
+    "name": "2026_11_23_000001_allow_cancelled_project_packages",
+    "checks": [
+      "project_plans.pp_status",
+      "project_plans.pp_budget_positive",
+      "approval_runs.approval_run_status"
+    ],
+    "data_update_statements": 0,
+    "tables_columns_added": 0,
+    "zero_budget": "Only workflow3 DRAFT/CANCELLED; submitted/approved/historical zero and negative budget remain blocked.",
+    "tested": "SQLite memory migration cycle/rollback plus SQL CHECK execution; MySQL/MariaDB syntax mocked, actual server DDL not run.",
+    "agent_live_applied": false
+  },
+  "limits": [
+    "No live account/API/its/server/aaPanel/Dompis/APP_KEY/.env/worker writes, no commit/push/deploy.",
+    "No actual MySQL/MariaDB DDL, server concurrent requests, load benchmark, external Telegram or real bank transfer.",
+    "Document templates/models unchanged; full existing Word/print tests pass; no fresh Word/PDF visual render or physical print."
+  ],
+  "qa_corrections": [
+    "Initial full suite failed only existing hard-coded migration count72 after new migration; updated to73, final full suite passed.",
+    "Final migration review included Header-only zero-budget cancellation and third CHECK; new regression and final440-test suite passed."
+  ],
+  "deployment": "Operator pull, migrate --force using site PHP84, npm run build/check:assets, reload page and project upload worker only as needed; no status backfill or data reset."
+}

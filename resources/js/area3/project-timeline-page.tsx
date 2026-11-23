@@ -24,7 +24,7 @@ export function ApprovalTrack({s,document,project=false}:{s:State;document:Proje
   return <ol className="project-approval-track" aria-label={project?'Tahap approval PP':'Tahap approval pembayaran'}>{roles.map((role,i)=>{
     const decision=currentFlowApproval(document,role,project),current=role===waiting;
     const name=decision?.actorName??s.users.find(u=>u.id===(decision?.userId??selectedApprover(document,role)))?.name;
-    const status=decision?'Disetujui':current?'Menunggu approval':document.status==='Draft'?'Belum diajukan':['Ditolak','Dikembalikan'].includes(document.status)?'Alur berhenti':'Belum giliran';
+    const status=decision?'Disetujui':current?'Menunggu approval':document.status==='Draft'?'Belum diajukan':['Cancel','Ditolak','Dikembalikan'].includes(document.status)?'Alur berhenti':'Belum giliran';
     return <li key={role} className={decision?'done':current?'waiting':'pending'}><span className="project-stage-mark" aria-hidden="true">{decision?<Check size={14}/>:current?<Clock3 size={14}/>:i+1}</span><div><strong>{role}</strong><span>{name??(!project&&role==='Finance'&&usesSettlementPayment(document as Term)?'Finance sesuai Branch':(document.workflowVersion??1)<2?'Nama tidak tercatat':'Belum dipilih')}</span><b>{status}</b>{decision&&<small>{stamp(decision.at)}</small>}</div></li>;
   })}</ol>;
 }
@@ -71,7 +71,7 @@ export function ProjectTimeline({s,id}:{s:State;id:string}) {
       const terms=[...relatedTerms].sort((a,b)=>a.spkId.localeCompare(b.spkId)||a.number-b.number);
       return <Card key={p.id} title={p.no} subtitle={p.name+' · '+p.branch} className={'project-timeline-card '+(p.id===id?'selected':'')} action={<Link className="btn" to={'/project-plan/'+p.id}>Detail PP <ArrowUpRight size={14}/></Link>}>
         <div className="project-current-position"><Badge>{p.status}</Badge><strong>{usesContractBundle(p)?projectPosition(p).replace('PP Sah','Paket PP, BA KH & SPK Sah'):projectPosition(p)}</strong>{(p.workflowVersion??1)>=2&&<span>{p.approvals?.length??0}/{approvalRoles(p,true).length} approval PP</span>}</div>
-        {p.headApprovalReopen && <Notice tone="warning">Koreksi approval Head · {stamp(p.headApprovalReopen.at)}: {p.headApprovalReopen.reason} Keputusan Head sebelum koreksi disimpan sebagai riwayat. {p.status !== 'Sah' && 'Proses dokumen turunan ditahan sampai PP Sah kembali.'}</Notice>}
+        {p.cancellation&&<Notice tone="error">Paket Cancel oleh {p.cancellation.actorName} ({p.cancellation.role}) · {stamp(p.cancellation.at)}. Alasan: {p.cancellation.reason}</Notice>}{p.headApprovalReopen && <Notice tone="warning">Koreksi approval Head · {stamp(p.headApprovalReopen.at)}: {p.headApprovalReopen.reason} Keputusan Head sebelum koreksi disimpan sebagai riwayat. {p.status !== 'Sah' && 'Proses dokumen turunan ditahan sampai PP Sah kembali.'}</Notice>}
         <ProjectFlowOverview s={s} p={p} documents={{deals,spks}}/>
         {(p.workflowVersion??1)>=2?<><ApprovalTrack s={s} document={p} project/><ApprovalResetHistory document={p}/></>:<p className="muted">PP menggunakan alur historis. Persetujuan yang tidak tercatat tidak dibuat otomatis.</p>}
         <details><summary>Riwayat keputusan PP ({p.approvalHistory?.length??0})</summary><DecisionHistory s={s} rows={p.approvalHistory??[]}/></details>
