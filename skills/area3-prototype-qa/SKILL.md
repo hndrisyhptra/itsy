@@ -3,6 +3,11 @@ name: area3-prototype-qa
 description: Test the its Area 3 interactive prototype through the linked business scenarios, permissions, persistence, financial/volume invariants, documents and responsive layouts.
 ---
 
+## 24 November 2026 — PP save response loss and committed confirmation
+
+Follow docs/PP_DRAFTS_PREVIEW.md timeout correction. Test dropped/aborted/504/unreadable success, one POST+atmostone recovery GET, 60s draft/20s others, original UUID+command+exacttarget+expected/resultrevision/current authorized state, no-receipt/wrong-proof/existence-only not success, preserve input/no globalerror for both aliases, duplicateblock/TIDAK0write. HTTP receipt ownactor/workspace/type/command/currentBranch/unit/unknown/validation/no businesswrites, metadata-ahead race reload runtime only. Newroot skips only two workspace-wide movement scans; preserve existing balances/audits, 26BOQ66→64queries, recovery18vs17. Browser actual-App synthetic slow/lost/unknown/validation, no liveDB/server/physicalMySQL/export claim; log actual failed fixture assertions and sequential fake-storage test limits.
+
+
 ## 24 November 2026 — New Draft creation across unrelated workspace changes
 
 Follow latest docs/PP_DRAFTS_PREVIEW.md concurrency correction. User confirms newPP only. Current workspace lock+authorization permits older-revision creation only absent schema3 root Draft saveProject/saveProjectBundle(false), rootId=id/no parent/source/allocations. Preserve current catalog/BOQ source/numbering/PID/unit/Branch, actual receipt originalexpected/resultrevision, UUID actor/payload replay and full atomic ledger/audit. Existing/colliding ID/futureversion/submit/approval/continuation/othercommands remain strict; no autoPOSTretry/client state replacement. Normalize validated revision integerstrings at HTTP boundary. Loadedgraphscan0newSQL/API/schema/poller/dependency/livewrite. Verify queued26BOQ Construction/Operation+bothaliases66queryHTTP, currentprices/unique numbers/otherrecord preservation, scope/replay/rollback. Actual final506PHP/14768assertions,81XAMPPfocused/1093,479frontend; physicalMySQL/server/OPcache/browser/export unverified, no migration/build-specific requirement.

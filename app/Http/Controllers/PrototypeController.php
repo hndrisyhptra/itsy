@@ -6,6 +6,7 @@ use App\Models\PrototypeWorkspace;
 use App\Services\PrototypeWorkspaceService;
 use App\Support\Area3MigrationTarget;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class PrototypeController extends Controller
@@ -26,7 +27,29 @@ class PrototypeController extends Controller
 
     public function state(Request $request, PrototypeWorkspaceService $service)
     {
-        return response()->json($service->payload($service->workspace($request)));
+        $input = $request->validate(['request_id' => ['sometimes', 'required', 'uuid'],
+            'project_id' => ['required_with:request_id', 'string', 'regex:/^[a-zA-Z0-9-]{3,100}$/D']]);
+        $workspace = $service->workspace($request);
+        $receipt = null;
+        if (isset($input['request_id'])) {
+            // This SELECT observes only committed receipts; it never repeats a command.
+            $receipt = DB::table('command_receipts')->where('request_uuid', $input['request_id'])
+                ->where('actor_user_id', $request->user()->getKey())->where('aggregate_type', 'WORKSPACE')->where('aggregate_id', $workspace->id)
+                ->whereIn('command_name', ['saveProject', 'saveProjectBundle'])
+                ->first(['request_uuid', 'command_name', 'expected_revision', 'resulting_revision']);
+            // The save may have committed between workspace lookup and receipt lookup.
+            if ($receipt && (int) $receipt->resulting_revision > $workspace->revision) {
+                $workspace = PrototypeWorkspace::runtimeQuery()->findOrFail($workspace->id);
+            }
+        }
+        $payload = $service->payload($workspace);
+        if (isset($input['request_id'])) {
+            $visible = collect($payload['state']['projects'])->contains('id', $input['project_id']);
+            $payload['confirmation'] = $receipt && $visible ? ['requestId' => $receipt->request_uuid, 'projectId' => $input['project_id'], 'command' => $receipt->command_name,
+                'expectedRevision' => (int) $receipt->expected_revision, 'resultingRevision' => (int) $receipt->resulting_revision] : null;
+        }
+
+        return response()->json($payload);
     }
 
     public function revision()

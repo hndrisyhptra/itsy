@@ -1,5 +1,9 @@
 # Catatan perubahan it's Area 3
 
+## 24 November 2026 — Hilangkan error palsu setelah draf berhasil tersimpan
+
+Simpan draf menunggu60detik, kemudian satu pemeriksaan receipt request asli bila respons terlambat/hilang. Jika benar sudah commit oleh akun tersebut dan PP masih dalam scope, tampil sukses/state canonical tanpa kirim ulang. Jika belum pasti, isian tetap tersedia. Tombol menampilkan Menyimpan draf dan status menunggu; kedua alias save tetap berada di editor saat error. NewrootDraft mengurangi dua pembacaan ledger seluruh workspace tanpa mengubah saldo/audit proses lain. Build aset terbaru wajib, tanpa migration/worker baru. [Penerapan](PP_DRAFTS_PREVIEW.md).
+
 ## 24 November 2026 — Simpan draf PP baru tidak berbenturan dengan aktivitas lain
 
 PP baru setelah Header+BOQ dapat dibuat meski revision global berubah akibat aktivitas lain, menggunakan seluruh state/penomoran/validasi server terkunci. Hanya root Draft yang belum ada; semua edit/submission/approval/continuation tetap dilindungi konflik revision. Controller menormalkan integerstring revision tervalidasi untuk mencegah konflik tipe palsu. Tanpa migration/data rewrite/worker baru/build aset khusus. Error server belum diinspeksi langsung; HTTP queue lokal mereproduksi jalur konflik dan menguji perbaikan. [Panduan](PP_DRAFTS_PREVIEW.md).

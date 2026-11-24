@@ -42,7 +42,13 @@ test('PP draft/submission use same-origin subfolder endpoints despite old HTTP b
       assert.equal(calls.filter(c => c.options.method === 'POST').length, 1);
       assert.equal(calls.filter(c => c.options.method !== 'POST').length, 1);
       assert.equal(calls[0].url, base+'/api/prototype/commands');
-      assert.equal(calls[1].url, base+'/api/prototype/state');
+      const recovery=new URL(calls[1].url,'https://public.example.test');
+      assert.equal(recovery.pathname, base+'/api/prototype/state');
+      if(failure==='network'||failure==='timeout'){
+        assert.equal(recovery.searchParams.get('request_id'),JSON.parse(calls[0].options.body as string).request_id);
+        assert.equal(recovery.searchParams.get('project_id'),p.id);
+      }else assert.equal(recovery.search,'');
+      assert.equal(calls[1].options.cache,'no-store');
       assert.equal(calls[0].options.credentials, 'same-origin');
       assert.equal((calls[0].options.headers as Record<string,string>)['X-CSRF-TOKEN'], 'qa-token');
       assert.match(JSON.parse(calls[0].options.body as string).request_id, /^[0-9a-f-]{36}$/);

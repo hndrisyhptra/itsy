@@ -1,5 +1,29 @@
 # Draft PP, cap preview dan penghapusan batas BOP — 5 November 2026
 
+## 24 November 2026 — Draf sudah tersimpan tetapi respons terlampau lama
+
+Pengguna melaporkan timeout saat Simpan Draft, lalu PP terlihat tersimpan setelah Muat Ulang Data. Kode sebelumnya menghentikan request setelah20detik, membaca state selama5detik dan tetap selalu melempar error meskipun transaksi sudah selesai. Abort browser tidak membatalkan transaksi PHP/MySQL yang sudah berjalan. Penyebab latency server persis belum diprofiling; laporan pengguna dan reproduksi transport mendukung respons terlambat/hilang, bukan bukti PP tidak disimpan.
+
+Koreksi berlaku untuk `saveProject`/`saveProjectBundle` dengan submitfalse: batas respons **60detik**. Selama proses tombol **Menyimpan draf…** dan status menunggu konfirmasi tampil; duplikasi klik tetap diblokir. Command lain/scan tetap memakai20detik. Setelah timeout/network/5xx atau respons sukses tidak dapat dibaca, aplikasi melakukan **satu GET state** maksimal30detik dengan `request_id` asli dan `project_id` yang sedang disimpan, credentials same-origin dan cache no-store. Tidak mengulang POST, membuat UUID baru otomatis, atau menambah poller.
+
+Endpoint state existing membaca metadata `command_receipts` yang sudah commit, melalui unique request_uuid + actual actor + workspace aggregate + command PP-save. Konfirmasi hanya diberikan bila target PP ada dalam state yang saat ini diizinkan Branch/unit akun. Tidak mengembalikan hash audit, actor identity, PII baru atau receipt pengguna lain. Bila receipt sudah lebih baru daripada workspace saat awal GET, metadata runtime diambil ulang sebelum membangun satu payload (tanpa archive). GET biasa tanpa parameter tidak mendapat query receipt/field konfirmasi tambahan. Proof memakai nonce request asli; browser juga mencocokkan command, exact PP, expected_revision, resulting_revision positif dalam rentang state dan keberadaan target pada state authorized. **Keberadaan PP saja tidak dianggap bukti simpan input terbaru**.
+
+Jika terbukti tersimpan, promise penyimpanan awal selesai sebagai sukses memakai state canonical, cache draf baru dibersihkan lalu navigasi normal. Jika receipt tidak ada/berbeda, state terlalu lama, akses berubah, atau pembacaan gagal, hasil tetap belum pasti dan input tidak dihapus. Error untuk kedua alias PP kini tetap di editor, tidak mengirim navigasi error global. Validasi4xx tetap error nyata, bukan dikonversi menjadi sukses. Satu pemeriksaan terbatas ini tidak menjamin transaksi yang belum selesai saat diperiksa dapat dikonfirmasi; aplikasi tetap jujur pada kondisi tidak pasti.
+
+Optimasi backend: root Draft yang benar-benar baru belum mempunyai saldo komponen sebelumnya. `PrototypeWorkspaceService` tidak lagi membaca seluruh volume_balances workspace sebelum/sesudah command hanya untuk menghitung perpindahan saldo lama yang tidak mungkin ada. Proyeksi SQL/canonical balance source existing tetap berjalan, saldo BOQ baru tetap dibuat, dan audit transisi untuk edit/submission/approval/payment/release/continuation tetap. Tidak ada release/approval/paid/reservation rekaan atau perubahan data lama. Empat queued26BOQ fixture turun **66→64HTTPquery**; state biasa17/konfirmasi18query pada fixture, hanya satu indexed receipt SELECT tambahan saat recovery. Ini bukan ukuran waktu aaPanel/MySQL produksi.
+
+### Penerapan kode timeout terbaru
+
+Setelah source terbaru di-push/pull ke server, jalankan dari `/www/wwwroot/itsy`:
+
+```bash
+runuser -u www -- /www/server/php/84/bin/php artisan optimize:clear
+npm run build
+npm run check:assets
+```
+
+Build dapat dilakukan di lingkungan build/deploy yang biasa digunakan lalu seluruh aset hasil build diterapkan bersama manifest-nya. Muat ulang halaman browser setelah deployment. Tidak ada migration baru, ENV/queue setting atau worker baru/restart khusus koreksi ini. Bila OPcache PHP situs tidak memeriksa perubahan file, operator muat ulang PHP situs melalui aaPanel. Agen belum push/deploy atau mengubah activeits/server/env/worker/Dompis. Tidak mengubah status/revision SQL atau mengirim ulang draf secara otomatis. [QA dan batas](qa/pp-save-confirmation-20261124.json). Bagian sebelumnya berikut merupakan riwayat koreksi konflik409; instruksi “tidak perlu build” di bagian itu hanya berlaku untuk koreksi PHP terdahulu.
+
 ## 24 November 2026 — Konflik revisi pada PP baru setelah upload BOQ
 
 Pengguna mengonfirmasi error di server hanya pada PP baru: Header lengkap + upload BOQ lalu Simpan Draft ditolak409 “Data berubah di tab lain”, meskipun refresh. Diagnosis kode menemukan revision global untuk satu workspace bersama: aktivitas dokumen/settings pengguna lain selama form terbuka mengubah angka tersebut. BOQ queue sendiri tidak menaikkan revision; proses upload yang lama memperbesar kesempatan terjadi aktivitas lain. Reproduksi HTTP lokal berhasil: real queued workbook26baris selesai pada revision0, akun lain menyimpan perubahan revision1, lalu PP baru memakai revision0 ditolak. Ini bukti bug lokal; tidak membaca request/log/database server sehingga penyebab persis insiden server belum dikonfirmasi.

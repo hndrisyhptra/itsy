@@ -1,5 +1,7 @@
 # it's Area 3 — Construction Workspace
 
+**24 November 2026 — Draf tersimpan tetapi respons terlambat:** waktu tunggu simpan draf60detik, ditambah satu pemeriksaan bukti transaksi bila respons terputus. Jika request yang sama terbukti sudah tersimpan, aplikasi menampilkan sukses tanpa mengirim ulang; jika belum pasti, form tetap tersedia. Dua pembacaan ledger seluruh workspace yang tidak diperlukan pada PP baru dihilangkan. **Build aset terbaru diperlukan**, tanpa migration baru. [Perilaku dan langkah server](docs/PP_DRAFTS_PREVIEW.md).
+
 **24 November 2026 — Simpan draf PP baru setelah upload:** pembuatan draf baru tidak lagi ditolak hanya karena revisi workspace berubah akibat aktivitas lain. Server tetap memakai nomor, master dan validasi terkini dalam satu transaksi; edit dokumen existing tetap dilindungi konflik versi. Tidak ada migration baru/build aset khusus koreksi PHP ini. [Detail dan penerapan](docs/PP_DRAFTS_PREVIEW.md).
 
 **24 November 2026 — Budgeting PID tahap 3:** sisa budget dan empat batas pengajuan aktif untuk **PP baru saja**; seluruh PP lama termasuk draf dikecualikan. Draf belum memakai budget, pengajuan ulang mengganti alokasi sendiri, Cancel melepas alokasi sesuai guard, dan paid tetap terpakai. Master/referensi menampilkan Excel, pemakaian aplikasi dan sisa. Jalankan migration baru `000003`, build dan check aset; tidak ada backfill atau worker baru. Catatan tahap 1/2 berikut bersifat historis. [Kontrak, penerapan dan batas](docs/BUDGETING_PID.md).

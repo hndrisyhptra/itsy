@@ -1,5 +1,11 @@
 # Arsitektur aplikasi it's Area 3
 
+## 24 November 2026 — Konfirmasi receipt setelah respons simpan PP hilang
+
+`store.commit` memberi PP draft60s, satu recovery GET30s existing state dengan original requestUUID+target; command lain20s. Indexed read committed receipt difilter actual actor/workspace/PPcommand, target harus visible menurut scope terkini. Client memverifikasi original UUID/command/PP/expected+resultrevision dan authorized canonical state, tidak hanya PP exists. Receipt yang lebih baru daripada metadata awal menyebabkan satu runtime metadata reload sebelum payload, tanpa archive. Sukses recovery menyelesaikan promise awal; unknown/4xx tetap error/input, tanpa POSTretry/UUIDbaru/poller. Kedua alias savePP tidak mengirim globalerror navigation. UI status pending/disabled tetap satu action/YA-TIDAK.
+
+NewrootDraft melewati dua audit-movement SELECT seluruh workspace karena tidak ada saldo root sebelumnya. Domain/RelationalWorkflowStore/proyeksi saldo BOQ baru/PID/receipts/atomicity existing tidak berubah; semua noncreate path tetap scan/audit existing. Actual26BOQ64vs66query, recovery18vs17HTTP (+1indexreceipt) pada fixture. No new endpoint/schema/migration/index/dependency, no paid/history/private mutation. [Kontrak/deploy aset](PP_DRAFTS_PREVIEW.md), [QA/batas](qa/pp-save-confirmation-20261124.json).
+
 ## 24 November 2026 — Penambahan draf baru pada workspace bersama
 
 Strict global revision membuat pembuatan PP baru berbenturan dengan perubahan pengguna lain selama input/upload BOQ. Di bawah workspace rowlock/authorization existing, exception terbatas hanya absent schema3 root Draft saveProject/saveProjectBundle(false), tanpa parent/source/allocations dan hanya revision lama. Tidak dapat menimpa exact existing ID atau melewati approval/revision/continuation/futureversion. Domain tetap current numbering/catalog/manifest/Branch/unit/PID, SQL+budgetledger+audit+receipt tetap satu transaksi. Validated revision string dinormalisasi int pada controller. O(n) existing graph IDcheck,0newSQL/API/schema/poller/dependency; response/error/editor dan template tidak berubah. Actual query fixture66HTTP untuk26BOQ pada kedua unit/alias. Expectedrevision asli tetap receipt, retry actor/payload terikat. [Kontrak/penerapan](PP_DRAFTS_PREVIEW.md), [audit dan batas server](qa/pp-draft-concurrency-20261124.json).

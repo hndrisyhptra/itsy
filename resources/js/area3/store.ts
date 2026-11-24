@@ -9,6 +9,7 @@ import { assertHeadReopenCommand } from './head-reopen';
 import type { MasterEntity, MasterCatalog } from './master-data';
 import { enqueueUpload, uploadTask, waitUpload, UploadTaskFailedError, type UploadKind } from './upload-queue';
 import { postUpload, type UploadProgressHandler } from './upload-progress';
+import {confirmsProjectSave,isProjectDraftSave,isWorkspacePayload,PP_DRAFT_RESPONSE_MS} from './pp-save-confirmation';
 const listeners = new Set<() => void>();
 const DRAFT_PREFIX = 'area3-laravel-draft-' + (boot?.account ? boot.account.id + '-' : '');
 let state: State = structuredClone(boot?.state ?? seed());
@@ -46,31 +47,46 @@ async function commit(command: Command, resultId?: string, scan?: { termId: stri
   if (!boot) return;
   persistencePending = true; persistenceError = ''; emit();
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 20000);
+  const draftSave=!scan&&isProjectDraftSave(command),expectedRevision=revision,requestId=crypto.randomUUID();
+  const timeout = setTimeout(() => controller.abort(), draftSave?PP_DRAFT_RESPONSE_MS:20000);
+  let uncertain=true;
   try {
-    const requestId = crypto.randomUUID();
     const form = new FormData();
     if (scan) { form.set('file', scan.file); form.set('revision', String(revision)); form.set('request_id', requestId); }
     const response = scan
       ? await postUpload(appUrl('/api/prototype/payments/' + scan.termId + (scan.kind ? '/work-evidence' : '/scan')),form,{'Accept':'application/json','X-CSRF-TOKEN':csrf},scan.onProgress,controller.signal,20000)
       : await fetch(workspaceUrl('commands'),{method:'POST',credentials:'same-origin',signal:controller.signal,headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':csrf},body:JSON.stringify({...command,revision,request_id:requestId,result_id:resultId??null})});
     if (response.status === 401 || response.status === 419) { if (boot.accountUrls) window.location.assign(boot.accountUrls.login); }
+    uncertain=response.status>=500||response.ok;
     let data;
     try { data = await response.json(); } catch { throw new Error(`Server mengembalikan respons yang tidak dapat dibaca (HTTP ${response.status}). Periksa konfigurasi situs atau log server.`); }
     if (!response.ok) {
-      if (data.state) { confirmed = data.state; revision = data.revision; csrf = data.csrf ?? csrf; }
+      if (isWorkspacePayload(data)&&data.revision>=revision) { confirmed = data.state; revision = data.revision; csrf = data.csrf ?? csrf; }
       const errors: string[] = Object.values(data.errors ?? {}).flat() as string[];
       throw new Error(errors.join('\n') || data.message || (response.status === 419 ? 'Sesi berakhir. Muat ulang halaman.' : 'Laravel menolak transaksi.'));
     }
+    if(!isWorkspacePayload(data))throw new Error('Server belum memberikan data konfirmasi yang valid.');
     confirmed = data.state; state = structuredClone(confirmed); revision = data.revision; csrf = data.csrf ?? csrf;
     scan?.onProgress?.({phase:'completed',percent:100,message:'Scan tersimpan; verifikasi Finance mengikuti alur dokumen.'});
   } catch (error) {
+    clearTimeout(timeout);
     try {
-      const response = await fetch(workspaceUrl('state'), {headers:{Accept:'application/json'},credentials:'same-origin',signal:AbortSignal.timeout(5000)});
-      if (response.ok) { const data = await response.json(); confirmed=data.state; revision=data.revision; csrf=data.csrf ?? csrf; }
+      const recoverDraft=draftSave&&uncertain;
+      const url=workspaceUrl('state')+(recoverDraft?'?'+new URLSearchParams({request_id:requestId,project_id:(command.args[0] as {id:string}).id}):'');
+      const response = await fetch(url, {headers:{Accept:'application/json'},credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(recoverDraft?30000:5000)});
+      if (response.ok) {
+        const data = await response.json();
+        if(isWorkspacePayload(data)&&data.revision>=revision){
+          confirmed=data.state;revision=data.revision;csrf=data.csrf??csrf;
+          if(recoverDraft&&confirmsProjectSave(data,command,requestId,expectedRevision)){
+            state=structuredClone(confirmed);return;
+          }
+        }
+      }
     } catch { /* Preserve the last confirmed state. Draft forms are kept locally. */ }
     state = structuredClone(confirmed);
-    const list = command.command === 'saveProject' ? 'daftar Project Plan' : 'daftar dokumen';
+    const projectSave=['saveProject','saveProjectBundle'].includes(command.command);
+    const list = projectSave ? 'daftar Project Plan' : 'daftar dokumen';
     const message = error instanceof TypeError && /fetch|network|load failed/i.test(error.message)
       ? `Koneksi ke server tidak berhasil menerima respons. Status penyimpanan belum dapat dipastikan; periksa ${list} sebelum mengirim ulang.`
       : error instanceof Error && error.name === 'AbortError'
@@ -80,7 +96,7 @@ async function commit(command: Command, resultId?: string, scan?: { termId: stri
     // Keep PP editor input mounted on a failed save; its explicit save handler shows the error.
     // Decision cards await persistence and show their own errors; keep their note and exact target mounted.
     const localApprovalError=['cancelProject','decideProject','decide','decideFinancePayment','decideLegacySettlementReview','resetProjectApproval','resetPaymentApproval'].includes(command.command);
-    if(scan?.kind!=='work-evidence'&&command.command!=='saveProject'&&!localApprovalError)window.dispatchEvent(new CustomEvent('area3:server-error',{detail:persistenceError}));
+    if(scan?.kind!=='work-evidence'&&!projectSave&&!localApprovalError)window.dispatchEvent(new CustomEvent('area3:server-error',{detail:persistenceError}));
     throw new Error(persistenceError);
   } finally { clearTimeout(timeout); persistencePending=false; emit(); }
 }

@@ -221,10 +221,12 @@ class PrototypeWorkspaceService
             }
             $state = app(PrototypeDomain::class)->execute($before, $domainCommand, $input['args'], $input['result_id'] ?? null)['state'];
             $budgetPlan = app(BudgetPidAllocation::class)->plan($row, $before, $state, $input, $budgetPayloadHash);
+            $newRootDraft = $domainCommand === 'saveProjectBundle' && ! collect($before['projects'])->contains('id', $input['args'][0]['id']);
             $balanceQuery = fn () => DB::table('volume_balances')->join('boq_components as c', 'c.id_boq_component', '=', 'volume_balances.boq_component_id')
                 ->join('boq_lines as b', 'b.id_boq', '=', 'c.boq_line_id')->join('project_plans as p', 'p.id_pp', '=', 'b.root_pp_id')
                 ->where('p.workspace_id', $row->id)->select('volume_balances.*');
-            $balances = $balanceQuery()->get()->keyBy('boq_component_id');
+            // New roots have no previous component balances and cannot move old stock.
+            $balances = $newRootDraft ? collect() : $balanceQuery()->get()->keyBy('boq_component_id');
             $row->revision++;
             app(RelationalWorkflowStore::class)->write($row, $state, $before);
             app(BudgetPidAllocation::class)->persist($budgetPlan, $row->revision);
@@ -246,7 +248,7 @@ class PrototypeWorkspaceService
                 'before_sha256' => $beforeHash,
                 'after_sha256' => $afterHash, 'created_at' => now(),
             ]);
-            foreach ($balanceQuery()->get() as $balance) {
+            foreach ($newRootDraft ? [] : $balanceQuery()->get() as $balance) {
                 $old = $balances->get($balance->boq_component_id);
                 // Opening stock/draft BOQ quantity changes are recorded by the receipt,
                 // not presented as transfers between the four ledger buckets.

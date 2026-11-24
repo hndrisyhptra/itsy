@@ -1,0 +1,189 @@
+{
+  "date": "2026-11-24",
+  "feature": "PP Draft timeout and committed-request confirmation",
+  "user_report": "Save Draft times out but PP is present after reloading data",
+  "confirmed_local_cause": "Client abort20s and catch always throws even when authoritative GET contains saved data; existence does not identify the submitted transaction",
+  "changes": {
+    "draft_response_ms": 60000,
+    "other_command_response_ms": 20000,
+    "uncertain_recovery": {
+      "count": 1,
+      "response_ms": 30000,
+      "method": "GET",
+      "endpoint": "Existing /api/prototype/state",
+      "parameters": [
+        "request_id",
+        "project_id"
+      ],
+      "cache": "no-store",
+      "automatic_post_retry": false
+    },
+    "server_confirmation": "Committed command_receipts unique UUID/current actor/workspace WORKSPACE/PP-save commands; proof emitted only for currently visible target; metadata reloaded before payload only if receipt newer than initial workspace",
+    "client_confirmation": "Exact original UUID+command+PP+expected revision, safe committed resulting revision within authorized state; target existence alone never succeeds",
+    "failure": "Unknown/invalid receipt/validation stays error and input retained for both PP-save aliases",
+    "ui": "Menyimpan draf… disabled button and waiting notice",
+    "optimization": "Only new root Draft skips two workspace-wide before/after movement scans; scoped balance source/projection and all noncreate audit paths retained"
+  },
+  "preserved": [
+    "Original transaction/revision/actor+UUID receipts",
+    "Branch/unit/Region/current access",
+    "KHS/BOQ/private source validation",
+    "PID and physical ledger",
+    "Actual approval/history/paid/settlement",
+    "No SQL status reset/backfill/fake success or approval"
+  ],
+  "verification": {
+    "full_php": {
+      "tests": 513,
+      "assertions": 14893,
+      "php": "8.5.10",
+      "database": "isolated SQLite :memory:",
+      "seconds": 66.444,
+      "peak_mb": 136.5,
+      "memory_limit": "process-only512M"
+    },
+    "xampp_focused": {
+      "tests": 17,
+      "assertions": 276,
+      "php": "8.2.4",
+      "seconds": 2.81,
+      "database": "isolated SQLite :memory:"
+    },
+    "frontend": {
+      "passed": 481,
+      "failed": 0
+    },
+    "build": "TypeScript/Vite passed",
+    "pint": "passed three changed PHP files",
+    "assets": {
+      "manifest_references": 49,
+      "preloads": 40,
+      "deployment_profiles": 3
+    },
+    "diff_check": "passed",
+    "http_new_cases": [
+      "Own receipt/current canonical state/no business writes",
+      "Unknown UUID/other actor/nonPP command null",
+      "Other workspace/aggregate type null",
+      "Current Branch lost/validation protected",
+      "Saved edit own receipt and one PP",
+      "Receipt newer than initial workspace: runtime metadata reloaded before state",
+      "Newroot retains old balances/movements without workspacewide scans"
+    ],
+    "frontend_cases": [
+      "Network loss after commit",
+      "Abort with mocked60s timer",
+      "504 after commit",
+      "Direct success",
+      "ExistingPP withoutreceipt is not success",
+      "Wrong UUID/command/PP/expected/resultrevision/state rejected",
+      "Both save aliases stay mounted",
+      "No duplicate POST/cache only cleared after success"
+    ],
+    "browser": {
+      "kind": "Actual App, intercepted synthetic transport, external network blocked",
+      "cases": [
+        "slow1.4s",
+        "lost",
+        "unconfirmed",
+        "validation"
+      ],
+      "post_count_each": 1,
+      "recovery_reads_each": [
+        0,
+        1,
+        1,
+        1
+      ],
+      "TIDAK_writes": 0,
+      "js_errors": 0,
+      "pending_widths": [
+        375,
+        768,
+        1440
+      ],
+      "root_overflow": false,
+      "screenshots_viewed": [
+        "pending.png",
+        "confirmed.png"
+      ],
+      "results": [
+        {
+          "mode": "slow",
+          "writes": 1,
+          "reads": 0,
+          "js_errors": 0,
+          "success": true,
+          "input_preserved": false
+        },
+        {
+          "mode": "lost",
+          "writes": 1,
+          "reads": 1,
+          "js_errors": 0,
+          "success": true,
+          "input_preserved": false
+        },
+        {
+          "mode": "unconfirmed",
+          "writes": 1,
+          "reads": 1,
+          "js_errors": 0,
+          "success": false,
+          "input_preserved": true
+        },
+        {
+          "mode": "validation",
+          "writes": 1,
+          "reads": 1,
+          "js_errors": 0,
+          "success": false,
+          "input_preserved": true
+        }
+      ]
+    },
+    "qa_corrections": [
+      "Scoped balance read is required: narrowed test assertion to whole-workspace movement scans",
+      "Concurrent PHP suites collided in shared fake disk; sequential reruns passed, no production workaround",
+      "Browser harness strict locator matched both banner and toast; corrected harness only"
+    ]
+  },
+  "query_measurements": {
+    "normal_state_http": 17,
+    "confirmation_http": 18,
+    "new_root_queued26boq_before": 66,
+    "new_root_queued26boq_after": 64,
+    "receipt_selects": 1,
+    "extra_queries_on_normal_get": 0,
+    "rare_metadata_race_extra": 1,
+    "existing_500boq_1000components_write": 59,
+    "runtime_archive_bytes_excluded": 524304,
+    "scope": "Fixture measurements, not production latency or universal bottleneck guarantee"
+  },
+  "limits": [
+    "Actual aaPanel request/log/OPcache/latency not inspected",
+    "No physical MySQL/MariaDB lock/concurrency/load verification",
+    "Actual60s timeout covered by mocked timer, browser uses1.4s and dropped responses",
+    "One GET may still be uncertain if command is not committed/readable yet",
+    "No Word/PDF rerender, generators unchanged",
+    "No liveits/env/server/worker/Dompis/migration/import/business data writes",
+    "No dependency/schema/endpoint/index/poller added",
+    "No commit/push/deployment"
+  ],
+  "deploy": [
+    "Push/pull source normally",
+    "From /www/wwwroot/itsy run runuser -u www -- /www/server/php/84/bin/php artisan optimize:clear",
+    "npm run build (or deploy all build assets and matching manifest from normal build environment)",
+    "npm run check:assets",
+    "Reload browser; refresh site PHP service only if stale OPcache requires operator action",
+    "No migration or special upload-worker restart for this correction"
+  ],
+  "local_evidence": [
+    "/private/tmp/area3-pp-save-confirmation-before.log",
+    "/private/tmp/area3-pp-save-confirmation-php-focused-final.log",
+    "/private/tmp/area3-pp-save-confirmation-full-final.log",
+    "/private/tmp/area3-pp-save-confirmation-frontend.log",
+    "/private/tmp/area3-pp-save-confirmation-build-final.log",
+    "/private/tmp/area3-pp-save-confirmation-20261124/browser-results.json"
+  ]
+}

@@ -1,5 +1,9 @@
 # Optimasi query dan respons aplikasi
 
+## 24 November 2026 — Simpan draf dan respons terlambat
+
+NewrootDraft tidak memiliki saldo lama untuk dipindah; dua SELECT movement seluruhworkspace sebelum/sesudah save dihilangkan khusus absentroot. Pembacaan scoped existing balances untuk membangun state/proyeksi tetap wajib. Empat real queued26BOQ Construction/Operation×duaalias66→64HTTPquery; existing edits/approval/continuation audit scans tetap. Recovery hanya satu GET state bila respons tidak pasti, +1uniqueUUIDreceipt SELECT (18vs17HTTPfixture),0extraquery normalGET; rare metadata-race menambah1lightweightSELECT sebelum satu payload. Tidak menggandakan write/loopretry/poller, tidak menambah schema/index/dependency. TimeoutPP60s/recovery30s tidak membuktikan server lebih cepat; graph/bootstrap/hash/lock dan infrastruktur masih perlu profiling fisik. [Kontrak/deploy](PP_DRAFTS_PREVIEW.md), [audit](qa/pp-save-confirmation-20261124.json).
+
 ## 24 November 2026 — Draf baru dan konflik global revision
 
 Pengecualian absent-root-Draft memakai full projectgraph yang sudah dimuat pada transaksi command; satu scan ID tanpa SQL tambahan. Tidak preflight GET/retryPOST/refreshpoller dan tidak melemahkan conflict check dokumen existing. Empat real queued26BOQ HTTP fixture Construction/Operation × saveProject/saveProjectBundle mencatat66query per save, budget80; bukan perbarisquery atau pengukuran server. Fullsuite506tes mempertahankan500BOQ/1000components59query serta archive524304bytes excluded/3runtimeSELECT. Konkurensi fisik MySQL/OPcache/server belum diuji. [Aturan](PP_DRAFTS_PREVIEW.md), [audit](qa/pp-draft-concurrency-20261124.json).

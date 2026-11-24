@@ -3,6 +3,11 @@ name: area3-volume-ledger
 description: Implement and reconcile its Area 3 BOQ component volume reservations, commitments, accepted actuals, authorized release and continuation allocation without double use.
 ---
 
+## 24 November 2026 — PP save response loss and committed confirmation
+
+Follow docs/PP_DRAFTS_PREVIEW.md timeout/performance correction. Genuine new root Draft has no prior component balance; skip ONLY two workspace-wide before/after movement audit scans. Normal RelationalWorkflowStore scoped balance reads and BOQ balance projection remain. No skip for existing edit/submission/approval/payment/release/continuation and no fake movement/paid/history/PID mutation. Test old balances/movements identical, new BOQ available projection intact,26BOQ64vs66HTTP; no physicalDB/concurrency claim or schema/livewrite.
+
+
 ## 24 November 2026 — PID money ledger beside the original physical ledger
 
 Follow latest docs/BUDGETING_PID.md. New-only PID allocations are separate from original physical committed/accepted/released quantities. releaseVolume keeps all existing Final/current BAPP/full actual approvals/Branch/unit/Head/paid/source gates; only cumulative genuine released Owner M/J snapshot amounts reduce new PP budget. BOP/accepted/paid stay consumed, duplicate release never recredits. Continuation keeps exact root PID/unit/Branch and reserves only on own formal submit. Legacy parent stays unmarked, new child tracked. Never invent physical release for budget cancel or replace old snapshots. Current ledger reads bounded500 under shared control, no extra volume SQL/API/backfill/live write; record full actual settlement-release-continuation evidence.
