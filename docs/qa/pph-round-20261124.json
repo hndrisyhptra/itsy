@@ -1,0 +1,25 @@
+{
+  "date": "2026-11-24",
+  "formula": "ROUND(Material + MandorJasa * 0.975, 0)",
+  "rounding": "Half-up once on final net, never tax-first or per-row",
+  "policy": {"new_or_allowed_reissue": "mandor-service-pph25-round-v2", "already_issued": "mandor-service-pph25-v1 truncation retained", "no_policy": "historic gross due retained"},
+  "implementation": ["PHP BCMath and TS BigInt quote parity", "frozen new net in private snapshot and summary", "due/matches/notice support both policies", "same net in HTML/Word/terbilang/transfer"],
+  "preservation": ["Material not taxed", "gross and approved_amount unchanged", "pending/approved/paid issued kasbon not repriced", "price/input truncation unchanged", "approval/Branch/unit/Region/UUID/revision/receipt/private/source/proof/optionalAPM/paid/ledger guards retained", "uncommitted Budgeting PID stage1 retained, no further budget integration"],
+  "verification": {
+    "full_php": {"passed": 452, "assertions": 13967, "seconds": 103.37, "database": "isolated SQLite memory"},
+    "full_frontend": {"passed": 473, "failures": 0},
+    "focused_php": {"passed": 78, "assertions": 3259, "note": "Before final integration test"},
+    "focused_new_php": {"passed": 4, "assertions": 220},
+    "shared_vectors": {"new_round": 10, "legacy_truncate": 6, "coverage": ["zero", "material only", "service only", "mixed", "below half", "exact half", "above half", "tax-first differs", "one rupiah service", "large integer"]},
+    "historical_validation": "Old net36 remains valid/due36 while new quote37; unknown policy and changed-policy/net mismatches rejected; source object unchanged",
+    "http_round_up": {"material": 31450, "service": 21250, "gross": 52700, "unrounded_net": 52168.75, "new_net": 52169, "old_net": 52168, "checks": ["private snapshot amount", "server-owned policyv2", "Finance approval/proof", "TandaiLunas empty optionalAPM", "SQL settlement52169, approved_amount52700", "next term after settlement"], "settlement_http_queries": 41},
+    "pure_quote_queries": 0,
+    "html_and_word_xml": "New295001 and old295000 plus matching terbilang, no paper PPh row/gross substitution",
+    "build": "TypeScript/Vite passed; test-only incomplete Term cast replaced with complete synthetic term",
+    "assets": {"manifest_references": 48, "preload_dependencies": 39, "profiles": 3},
+    "pint": "passed",
+    "diff_check": "passed"
+  },
+  "deployment": {"pph_migration": false, "build_assets": true, "restart_only_area3_upload_worker": true, "reason": "Old loaded worker cannot recognize new policy", "budgeting_migration": "Separate stage1 migration still required for Budgeting feature"},
+  "not_performed": ["live its/data/server writes", "repricing/backfill", "new browser visual session", "Word/PDF visual rerender or physical print (generator/layout unchanged, HTML/XML values checked)", "MySQL/aaPanel/real accounts/concurrency/bank transfer verification", "ENV/APP_KEY/worker/Dompis mutations", "commit/push/deploy"]
+}

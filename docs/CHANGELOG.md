@@ -1,5 +1,16 @@
 # Catatan perubahan it's Area 3
 
+## 24 November 2026 — ROUND setelah PPh Jasa Mandor
+
+Net kasbon baru/terbit ulang = ROUND(Material + Jasa Mandor ×97,5%,0), half-up sekali pada total akhir. Material dan bruto tetap. Due/validasi/notice mendukung v1 historis dan v2 baru; kasbon terbit/pending/approved/paid tidak direprice otomatis. Preview/Word/terbilang memakai net tersimpan. Tanpa migration PPh; build dan restart upload worker Area3 oleh operator. [Panduan](KASBON_PPH_PAYMENT_LIST.md).
+
+## 24 November 2026 — Master Budgeting PID tahap1
+
+- Menu khusus Finance/Superadmin: impor Excel dengan pilihan unit, pratinjau20baris, pencarian/rincian dan riwayat batch/before-after.
+- Available mengikuti Release−Tot.cst.cm−Act.costs; defisit/selisih induk-rincian dipertahankan sebagai warning. Title menghubungkan PID dan kategori, bukan urutan baris.
+- PID unik global/unit tetap, file20MB/60.000baris/10.000PID, update atomik/ID tetap/HMAC preview/UUID replay. Optimasi batch SQL dan buffer tulis; tidak memuat graph workflow.
+- Migration lima tabel master baru diperlukan; belum diterapkan ke its aktif/server oleh agen. PP/approval/paid/ledger lama tidak diubah. Integrasi validasi/reservasi PP masih tahap berikutnya. [Panduan](BUDGETING_PID.md).
+
 ## 16 November 2026 — Paket dokumen lengkap, timeline terbaru dan List Payment putih
 
 Pengguna meminta satu Word/PDF dari PP sampai Lampiran BA PP, dan mengonfirmasi kasbon setiap pembayaran ikut. Ikon pada Aksi BA PP hanya muncul setelah Sah; tersedia pula di detail/timeline. Preview menggabungkan PP, BA KH/lampiran, SPK/lampiran, BARP/lampiran/kasbon aktif tiap pembayaran lalu BA PP/lampiran, lewat exact UUID lineage. Native Word memakai generator asli dengan section portrait/landscape, style/numbering/media terisolasi dan header kosong untuk mencegah logo diwariskan. Print menyimpan satu PDF nonblank; cap/status sel TTD tidak ikut hasil unduhan/cetak. Unggahan privat tetap terpisah. Kasbon hilang/akses gagal/versi berubah menahan ekspor; histori tanpa kasbon tidak dibuatkan snapshot baru.

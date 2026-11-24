@@ -1,5 +1,17 @@
 # Kasbon bersih dan List Payment — 16 November 2026
 
+## 24 November 2026 — ROUND pada hasil akhir setelah PPh
+
+Pengguna mengubah khusus pembulatan hasil bersih kasbon/transfer: **ROUND(Material + Jasa Mandor × 97,5%, 0)**. Pembulatan satu kali di hasil akhir ke rupiah terdekat, pecahan tepat0,5 naik; bukan ROUND potongan pajak dahulu, bukan pembulatan tiap item. Material tidak dikenai2,5%, bruto BOQ/BARP/approved_amount tidak berubah. Contoh31450Material+21250Jasa menghasilkan52168,75→**52169**; contoh17Material+20Jasa menghasilkan36,5→37 (membulatkan pajak dahulu akan keliru menjadi36).
+
+Kasbon baru/penerbitan ulang yang diizinkan memakai server-owned `mandor-service-pph25-round-v2`; PHP BCMath menambahkan0,5 pada nilai akhir sebelum konversi bulat, TS memakai pembilang BigInt+setengah pembagi untuk hasil identik tanpa drift perkalian floating-point. Kalkulasi tetap satu lintasan saved agreement×actuals dan0SQL. Rincian form, snapshot terenkripsi, summary.amount, preview/Word/terbilang, `paymentDue`, proof dan settlement memakai net baru yang sama. Ringkasan UI menjelaskan ROUND; berkas kasbon tetap net-only tanpa baris potongan.
+
+`mandor-service-pph25-v1` tetap didukung untuk kasbon yang sudah terbit: due/matches/notice memakai policy dan nominal tersimpan, termasuk yang pending/approved/paid. Tidak ada GET repricing, SQL backfill, perubahan uang/riwayat/bukti/approval maupun selisih pelunasan otomatis. Kasbon tanpa policy tetap aturan historis. Policy tidak dikenal/quote salah ditolak saat validasi; data quote dari klien tidak menjadi sumber. Ingin menerapkan ROUND pada dokumen terbit harus melalui pengembalian/perbaikan/penerbitan ulang normal, dengan UUID/approval baru sesuai workflow, bukan edit nominal langsung.
+
+Perubahan ini **tidak mengganti pemotongan pecahan untuk harga/input rupiah lain**. Scope/Branch/unit/Region, sumber BARP/BAPP, revisi/receipt, kasbon aktif,7approval, net/proof/APMopsional/paid, volume dan ledger tetap. Tidak ada schema/migration/API/dependency/poller/query tambahan. Uji pure PHP/TS mencakup10vector baru dan6v1 historis; HTTP membuktikan kasbon terenkripsi dan Finance TandaiLunas52169 tanpaAPM sambil gross52700 tetap, next term tetap dapat dibuat setelah settlement.
+
+Deploy: build aset (`npm run build`, `npm run check:assets`), **restart hanya worker upload Area3** agar worker lama mengenali policyv2 pada bukti transfer, misalnya `supervisorctl restart area3-uploads` sesuai nama program server. Di lokal hentikan worker Area3 lama dan mulai ulang dengan perintah proyek yang sudah digunakan. Tidak ada migration khusus perubahan ROUND; migration Budgeting PID terpisah tetap mengikuti tahap1. Agen tidak mengubah worker/server/ENV/APP_KEY/its aktif. [Bukti dan batas aktual](qa/pph-round-20261124.json), [QA](LARAVEL_QA.md).
+
 ## 17 November 2026 — Keterangan PPh dan label pembayaran Final satu kali
 
 Pengguna meminta keterangan selisih bruto dan transfer pada **Kasbon Admin & Review Pembayaran Finance** serta penghapusan label Termin untuk pembayaran pertama langsung Final. Ketentuan ini menggantikan larangan keterangan potongan **pada UI pengajuan/review saja**; isi formulir kasbon yang menjadi berkas preview/Word/cetak tetap nilai bersih tanpa baris potongan seperti sebelumnya.

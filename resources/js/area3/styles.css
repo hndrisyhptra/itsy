@@ -391,4 +391,7 @@ body{color:var(--text);background:var(--bg)}[data-theme=dark] .metric-label,[dat
 .project-cancel-form .field{margin:16px 0}.project-cancel-form .btn{background:var(--surface);color:var(--text);border:1px solid var(--border)}.project-cancel-form .btn.danger{color:var(--danger);border-color:var(--danger)}[data-theme=dark] .project-cancel-form .btn.danger{color:#ffb4b4;border-color:#84585f;background:#332731}
 
 /* Combined physical documents keep white paper even when the workspace uses dark mode. */
+.budget-pid-filters{display:flex;gap:16px;align-items:end;flex-wrap:wrap}.budget-pid-filters form{display:flex;gap:8px;align-items:end;flex:1;min-width:220px}.budget-pid-filters form .field{flex:1}.budget-pid-table table{font-size:12px}.budget-pid-table th,.budget-pid-table td{border:1px solid var(--border);padding:9px}.budget-pid-table td:nth-child(2){min-width:190px;max-width:340px;overflow-wrap:anywhere}.budget-pid-table td:first-child{overflow-wrap:anywhere}.budget-pid-table .error-text{font-size:11px;max-width:320px}.budget-pid-table .numeric{white-space:nowrap}
 @media print{html:has(.document-package-content),body:has(.document-package-content){background:#fff!important;color-scheme:light!important}.document-package-content{--muted:#000;--text:#000;--surface:#fff;--bg:#fff}.document-package-content,.document-package-content *{color:#000!important}}
+
+.budget-pid-pagination{display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap;padding:16px}.budget-pid-pagination span{font-size:12px;color:var(--muted)}

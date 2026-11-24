@@ -1,5 +1,9 @@
 # Arsitektur aplikasi it's Area 3
 
+## 24 November 2026 — ROUND hasil bersih PPh
+
+`KasbonSettlement::quote`/`kasbonQuote` default server-owned policy `mandor-service-pph25-round-v2`: BCMath/BigInt membulatkan sekali pada Material+97,5%Jasa. `matches` memilih algoritme dari policy tersimpan, `due`/notice mengenali v1/v2; truncation v1 dan no-policy gross historis tidak diubah. FinanceDocuments existing membekukan net baru pada encrypted snapshot/summary; HTML/Word/terbilang dan Finance settlement memakai amount tersebut. Bruto, moneyPolicy harga/input, approval/ledger/UUID/Branch/unit/Region/private/source/paid guards tetap. Satu lintasan0SQL, tanpa query/schema/API/dependency/poller tambahan. Build/restart hanya upload worker oleh operator. [Aturan/bukti/batas](KASBON_PPH_PAYMENT_LIST.md).
+
 ## 16 November 2026 — Paket dokumen lengkap, timeline terbaru dan List Payment putih
 
 Pengguna meminta satu Word/PDF dari PP sampai Lampiran BA PP, dan mengonfirmasi kasbon setiap pembayaran ikut. Ikon pada Aksi BA PP hanya muncul setelah Sah; tersedia pula di detail/timeline. Preview menggabungkan PP, BA KH/lampiran, SPK/lampiran, BARP/lampiran/kasbon aktif tiap pembayaran lalu BA PP/lampiran, lewat exact UUID lineage. Native Word memakai generator asli dengan section portrait/landscape, style/numbering/media terisolasi dan header kosong untuk mencegah logo diwariskan. Print menyimpan satu PDF nonblank; cap/status sel TTD tidak ikut hasil unduhan/cetak. Unggahan privat tetap terpisah. Kasbon hilang/akses gagal/versi berubah menahan ekspor; histori tanpa kasbon tidak dibuatkan snapshot baru.
@@ -677,3 +681,9 @@ UI membangun Map/Set sekali per state, delapan baris daftar existing, modal alas
 ## 23 November 2026 — Unduh semua dokumen Parsial lunas
 
 Resolver `document-package.ts` mengikat exact selected current term, bukan Final saja. Gate Parsial memakai actual approval/current kasbon, canonical full settlement/net paymentDue dan current proof; Final tetap existing. List/detail meneruskan loaded lineage untuk menghindari graph build/private fetch perrow. Modal/Word membatasi same-SPK approved terms sampai nomor current dan meneruskan BA PP selected ke renderer. Suffix filename Partial membedakan tahap. Scoped print membenahi white paper/dark text tanpa mengubah preview theme. Seluruh nominal/history/status/ledger, snapshot privat dan release/continuation/closure tidak dimutasi. Existing current-only read3service/6HTTPqueries;0newSQL/API/migration/dependency/poller. [Perilaku, QA dan batas](DOCUMENT_PACKAGE.md).
+
+## 24 November 2026 — Master Budgeting PID tahap1
+
+`BudgetPidWorkbook` membaca OOXML row-wise sesuai Level02/04, hubungan Title, nilai bulat/cached numeric dan batas ZIP/sel/PID; source angka asli menjadi signed available. `BudgetPidMaster` berdiri terpisah dari workflow: singleton control/version, actor SQL aktif, HMAC preview dan request UUID batch sebagai receipt. Lima tabel baru menyimpan PID unik global/unit, enam kategori, batch dan before/after; tidak membaca/mengubah PP, workspace archive, ledger, kasbon atau paid. Impor tidak menghapus PID yang absen, tidak memindah unit, tidak mengubah ID existing, dan atomik bila SQL gagal.
+
+Lookup500PID, buffer100PID/600item, item upsert50/audit100; list20+1SQL/item batch tanpa perrowquery; unit+PID dan unit+versi terindeks. API lazy Finance/Superadmin saja, unit account tetap, master administratif bukan tambahan cakupan Branch dokumen. React memuat daftar/riwayat berskop dan menahan response tab/unit/filter/batch lama; preview20DOM dari metadata terbatasi, upload progres byte, YA/TIDAK, UUID tetap untuk retry hasil belum pasti. Migration hanya tabel baru, its/memory guarded, rollback menolak data berisi. PP lookup/validasi BOQ/BOP, alokasi lokal, cancel/revisi/legacy dan concurrency budget belum dihubungkan. [Kontrak/tahap lanjutan/penerapan](BUDGETING_PID.md), [bukti](qa/budgeting-pid-stage1-20261124.json).

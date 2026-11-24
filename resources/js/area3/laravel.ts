@@ -1,5 +1,5 @@
 import type { State } from './domain';
-export interface LaravelBoot { account?: {username?:string; id:string; name:string; email:string; role:State['role']; branches:string[]}; accountUrls?: {logout:string; manage:string; login:string}; state: State; revision: number; csrf: string; basePath: string; scenarios: Record<string, State>; urls: {state:string; commands:string; csv:string; backup:string} }
+export interface LaravelBoot { account?: {workUnits?:string[];username?:string; id:string; name:string; email:string; role:State['role']; branches:string[]}; accountUrls?: {logout:string; manage:string; login:string}; state: State; revision: number; csrf: string; basePath: string; scenarios: Record<string, State>; urls: {state:string; commands:string; csv:string; backup:string} }
 declare global { interface Window { __AREA3__?: LaravelBoot } }
 export const boot = typeof window === 'undefined' ? undefined : window.__AREA3__;
 export const basePath = boot?.basePath ?? '';

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BudgetPidController;
 use App\Http\Controllers\FinanceDocumentController;
 use App\Http\Controllers\FinancePaymentCatalogController;
 use App\Http\Controllers\MasterDesignatorController;
@@ -54,6 +55,8 @@ Route::middleware(PrivatePrototype::class)->group(function () {
         Route::get('/api/prototype/payment-selection/projects', [PaymentProjectController::class, 'projects'])->middleware('throttle:120,1');
         Route::get('/api/prototype/payment-selection/projects/{project}/orders', [PaymentProjectController::class, 'orders'])->whereUuid('project')->middleware('throttle:120,1');
         Route::get('/api/masters', [MasterDesignatorController::class, 'index']);
+        Route::get('/api/budgeting-pid', [BudgetPidController::class, 'index'])->middleware('throttle:120,1');
+        Route::post('/api/budgeting-pid/import', [BudgetPidController::class, 'import'])->middleware('throttle:10,1');
         Route::get('/api/masters/{entity}/template', [MasterDesignatorController::class, 'template'])->where('entity', 'designator|khs')->middleware('throttle:20,1');
         Route::post('/api/masters/{entity}/import', [MasterDesignatorController::class, 'import'])->where('entity', 'designator|khs')->middleware('throttle:20,1');
         Route::post('/api/uploads/boq', [UploadQueueController::class, 'store'])->middleware('throttle:prototype-scans');
@@ -74,7 +77,7 @@ Route::middleware(PrivatePrototype::class)->group(function () {
         Route::get('/', fn () => redirect()->route('prototype.dashboard'));
         Route::get('/dashboard', [PrototypeController::class, 'show'])->name('prototype.dashboard');
         Route::get('/{module}/{path?}', [PrototypeController::class, 'show'])
-            ->where('module', 'project-plan|boq|ba-kh|spk|ba-rp|termin|inbox|ba-pp|master-designator|master-khs|laporan|pengaturan')
+            ->where('module', 'project-plan|boq|ba-kh|spk|ba-rp|termin|inbox|ba-pp|master-designator|master-khs|budgeting-pid|laporan|pengaturan')
             ->where('path', '[a-zA-Z0-9/-]+');
     });
 });

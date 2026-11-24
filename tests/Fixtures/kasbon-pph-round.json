@@ -1,0 +1,12 @@
+[
+  {"id":"material-unchanged","material":100000,"service":0,"gross":100000,"net":100000,"withheld":0},
+  {"id":"mixed-exact","material":100000,"service":200000,"gross":300000,"net":295000,"withheld":5000},
+  {"id":"round-up","material":100000,"service":200001,"gross":300001,"net":295001,"withheld":5000},
+  {"id":"small-service","material":1000,"service":1,"gross":1001,"net":1001,"withheld":0},
+  {"id":"half-final-not-tax","material":17,"service":20,"gross":37,"net":37,"withheld":0},
+  {"id":"below-half","material":7,"service":21,"gross":28,"net":27,"withheld":1},
+  {"id":"above-half","material":7,"service":19,"gross":26,"net":26,"withheld":0},
+  {"id":"half-service","material":0,"service":60,"gross":60,"net":59,"withheld":1},
+  {"id":"large-exact","material":999999999999,"service":1,"gross":1000000000000,"net":1000000000000,"withheld":0},
+  {"id":"zero","material":0,"service":0,"gross":0,"net":0,"withheld":0}
+]

@@ -1,5 +1,9 @@
 # Laravel conversion checklist
 
+## 24 November 2026 — PPh ROUND sebelum lanjut Budgeting PID
+
+Selesai: quote baru half-up sekali pada net, v1history tetap, due/matches/notice kedua versi, vector batas/preservation/HTMLWord/HTTPkasbon+TandaiLunas/nextterm dan audit. Tanpa migration tambahan khusus PPh; operator build/restart uploadworker. Master Budgeting PID tahap1 tetap dan belum dilanjutkan ke lookup/ledger; perubahan belum di-commit tetap dipertahankan. [Aturan](docs/KASBON_PPH_PAYMENT_LIST.md), [bukti](docs/qa/pph-round-20261124.json).
+
 ## 16 November 2026 — Paket dokumen lengkap, timeline terbaru dan List Payment putih
 
 Pengguna meminta satu Word/PDF dari PP sampai Lampiran BA PP, dan mengonfirmasi kasbon setiap pembayaran ikut. Ikon pada Aksi BA PP hanya muncul setelah Sah; tersedia pula di detail/timeline. Preview menggabungkan PP, BA KH/lampiran, SPK/lampiran, BARP/lampiran/kasbon aktif tiap pembayaran lalu BA PP/lampiran, lewat exact UUID lineage. Native Word memakai generator asli dengan section portrait/landscape, style/numbering/media terisolasi dan header kosong untuk mencegah logo diwariskan. Print menyimpan satu PDF nonblank; cap/status sel TTD tidak ikut hasil unduhan/cetak. Unggahan privat tetap terpisah. Kasbon hilang/akses gagal/versi berubah menahan ekspor; histori tanpa kasbon tidak dibuatkan snapshot baru.
@@ -1034,3 +1038,9 @@ Selesai implementasi tombol Cancel paket PP sesuai peran/unit, guard sebelum wor
 ## 23 November 2026 — Unduh semua dokumen Parsial lunas
 
 Selesai perbaikan paket dokumen Parsial lunas: gate/lineage/current source/filename/print, pengujian dan audit. Tidak ada backend/migration/data aktif yang diubah. Konsep Budgeting PID belum dieksekusi. [Panduan](docs/DOCUMENT_PACKAGE.md), [QA](docs/qa/partial-package-paid-20261123.json).
+
+## 24 November 2026 — Budgeting PID tahap1
+
+Implementasi master/impor/riwayat selesai pada kode: Finance/Superadmin, pilihan unit, source Level02/04, preview+commit atomik, audit/replay/identitas tetap, daftar20+1 dan preview20DOM. Lima tabel migration baru belum diterapkan pada its aktif. Data workbook pengguna hanya dibaca untuk QA, bukan diimpor live. [Kontrak dan deployment](docs/BUDGETING_PID.md), [bukti](docs/qa/budgeting-pid-stage1-20261124.json).
+
+Tahap berikutnya: (2) lookup PID/nama/referensi pada Header/BOQ PP dengan pilihan unit dan unknown-PID manual warning; (3) validasi total/Material/Jasa/BOP dan ledger alokasi atomik, multiPP/mandor/revisi/cancel/paid/kelanjutan/legacy, rekonsiliasi update Excel dan concurrency. Excel saat ini tidak mencakup transaksi aplikasi; subtract alokasi lokal satu kali, paid tetap terpakai. Jangan mengaktifkan klaim budget guard sebelum tahap3 lulus pengujian. User menyetujui pengerjaan bertahap, bukan mengubah dokumen berjalan secara massal.

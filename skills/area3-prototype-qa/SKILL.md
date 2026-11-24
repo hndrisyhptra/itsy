@@ -3,6 +3,14 @@ name: area3-prototype-qa
 description: Test the its Area 3 interactive prototype through the linked business scenarios, permissions, persistence, financial/volume invariants, documents and responsive layouts.
 ---
 
+## 24 November 2026 — PPh final net ROUND
+
+Follow latest docs/KASBON_PPH_PAYMENT_LIST.md: pure PHP/TS exact half-up parity and0SQL, final-net versus tax-first boundary, large/zero/Material-only/Jasa-only, v1 due/matches unchanged, forged policy/net rejects, HTML/Word/terbilang frozen net, SQL encrypted kasbon/proof/optionalAPM settlement/new term with gross unchanged. No live repricing/migration/server/worker mutations, preserve pending/approved/paid and global truncation. Record actual HTTP queries, browser/export/server limits and operator upload-worker restart requirement; no claim visual render if only XML checked.
+
+## 24 November 2026 — Budgeting PID stage1 QA
+
+Follow docs/BUDGETING_PID.md. Test actual parser/controller/SQL in memory only: full5192PID batch, read-only preview, HMAC/unit/actor/file/version/UUID conflict/replay, stable IDs, before-after/no-op import history, missing-filePID retention, whole money/negative/discrepancy/formula cache/OOXML bounds, SQL atomic rollback, current Finance/Superadmin and restricted-unit rights/CSRF. Never import user workbook into live its. Measure bounded500read/100PID/50item writes and20+1SQL list; forbid workflow/archive reads. Browser mock includes5192metadata/20DOM, YA/TIDAK/uncertain retry same UUID/409 re-preview, old-tab response type guard, unit/filter changes, mobile/light/dark. Record actual fixture query/runtime and server/MariaDB/concurrency limits; PP budget integration and allocation are not active stage1.
+
 ## 23 November 2026 — Paid Partial complete-document packages
 
 Follow latest docs/DOCUMENT_PACKAGE.md. User enables UnduhSemua for Parsial after real full Finance settlement, in shared BA PP list/detail/timeline. Exact selected BAPP→currentterm→SPK→deal→PP; approved same-SPK terms only through selected number, current BAPP dates and source, active UUID-bound kasbon, no future/sibling/ProjectCode fallback or fake legacy documents. Keep actual assigned/current-version approvals, parent Sah, optional APM/net paid/proof binding/private/Head/Cancel guards. Final retains existing approved export availability. Shared HTML/nativeWord/print, blank wetTTD; Partial filename stage suffix, scoped white paper in dark-mode print. No workflow/money/ledger/release/closure mutation or backend/API/schema/migration/dependency/poller/newSQL. Reuse loaded list/detail parents, lazy current-only private reads; record actual tests/query/browser/WordPDF/server limits and audits.

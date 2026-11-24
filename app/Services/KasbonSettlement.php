@@ -7,10 +7,15 @@ use App\Support\WholeRupiah;
 /** User-specified withholding on saved Mandor service actuals only; not a tax-rate lookup. */
 final class KasbonSettlement
 {
-    public const POLICY = 'mandor-service-pph25-v1';
+    public const LEGACY_POLICY = 'mandor-service-pph25-v1';
 
-    public static function quote(array $deal, array $term): array
+    public const POLICY = 'mandor-service-pph25-round-v2';
+
+    public static function quote(array $deal, array $term, string $policy = self::POLICY): array
     {
+        if (! in_array($policy, [self::POLICY, self::LEGACY_POLICY], true)) {
+            throw new \InvalidArgumentException('Kebijakan perhitungan kasbon tidak dikenali.');
+        }
         $gross = $material = '0';
         foreach ($deal['rows'] as $r) {
             $a = $term['actuals'][$r['rowId']] ?? ['m' => 0, 's' => 0];
@@ -22,15 +27,16 @@ final class KasbonSettlement
             $gross = bcadd($gross, (string) $line, 2);
         }
         $service = bcsub($gross, $material, 2);
-        // Cut fractional Rupiah from the final payable, never round it upward.
-        $net = bcdiv(bcadd($material, bcmul($service, '0.975', 5), 5), '1', 0);
+        // ROUND the final payable once, half-up. Preserve v1 truncation for issued snapshots.
+        $payable = bcadd($material, bcmul($service, '0.975', 5), 5);
+        $net = bcdiv(bcadd($payable, $policy === self::POLICY ? '0.5' : '0', 5), '1', 0);
 
-        return ['policy' => self::POLICY, 'gross' => (float) $gross, 'material' => (float) $material, 'service' => (float) $service, 'withheld' => (float) bcsub($gross, $net, 2), 'net' => (float) $net];
+        return ['policy' => $policy, 'gross' => (float) $gross, 'material' => (float) $material, 'service' => (float) $service, 'withheld' => (float) bcsub($gross, $net, 2), 'net' => (float) $net];
     }
 
     public static function due(array $term, float $gross): float
     {
-        return ($term['kasbon']['settlement']['policy'] ?? '') === self::POLICY ? (float) $term['kasbon']['amount'] : $gross;
+        return in_array($term['kasbon']['settlement']['policy'] ?? '', [self::POLICY, self::LEGACY_POLICY], true) ? (float) $term['kasbon']['amount'] : $gross;
     }
 
     public static function matches(array $deal, array $term, array $summary, float $gross): bool
@@ -38,8 +44,12 @@ final class KasbonSettlement
         if (! isset($summary['settlement'])) {
             return bccomp((string) ($summary['amount'] ?? -1), (string) $gross, 2) === 0;
         }
-        $quote = self::quote($deal, $term);
-        if (($summary['settlement']['policy'] ?? '') !== self::POLICY || bccomp((string) ($summary['amount'] ?? -1), (string) $quote['net'], 2) !== 0) {
+        $policy = $summary['settlement']['policy'] ?? '';
+        if (! in_array($policy, [self::POLICY, self::LEGACY_POLICY], true)) {
+            return false;
+        }
+        $quote = self::quote($deal, $term, $policy);
+        if (bccomp((string) ($summary['amount'] ?? -1), (string) $quote['net'], 2) !== 0) {
             return false;
         }
         foreach (['gross', 'material', 'service', 'withheld', 'net'] as $key) {

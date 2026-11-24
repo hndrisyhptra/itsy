@@ -1,5 +1,9 @@
 # it's Area 3 — Construction Workspace
 
+**24 November 2026 — ROUND hasil bersih PPh:** kasbon baru/terbit ulang memakai `ROUND(Material + Jasa Mandor × 97,5%, 0)`, setengah naik sekali pada hasil akhir. Kasbon lama tetap nominal/policy tersimpan, tanpa repricing/ubah paid. Tidak ada migration khusus PPh; build aset dan restart worker upload Area3 saat deploy. [Aturan](docs/KASBON_PPH_PAYMENT_LIST.md).
+
+**24 November 2026 — Master Budgeting PID tahap1:** menu Finance/Superadmin untuk impor Excel, pemilihan unit Konstruksi/Operation, pratinjau angka/warning, daftar/rincian dan riwayat sebelum/sesudah. Maksimal20MB/10.000PID; PID unik lintas unit dan impor atomik. **Migration baru dan build aset diperlukan saat deploy.** Lookup/validasi BOQ dan reservasi budget PP belum diaktifkan; PP/data lama tidak ditulis ulang. [Panduan, tahapan dan penerapan](docs/BUDGETING_PID.md).
+
 **23 November 2026 — Cancel paket PP:** tombol untuk Admin Area Konstruksi, Officer1Operation dan Superadmin dalam scope akun, sebelum ada BA RP/pembayaran. Cancel terminal menghentikan approval tanpa menghapus dokumen/keputusan/ledger; alasan dan audit tetap. **Migration CHECK baru wajib saat deploy** serta build aset terbaru. [Perilaku, pengamanan dan penerapan](docs/PROJECT_CANCELLATION.md).
 
 **20 November 2026 — Revisi Operation:** editor PP yang dikembalikan memakai lima approver Operation dan mempertahankan unit/identitas PP tersimpan meskipun cache form lama berbeda. Pengajuan ulang historis menyimpan asal siklus tanpa mengubah keputusan lama. Timeline memisahkan unit pada ID Project yang sama. Tidak ada migration baru. [Perilaku, data lama dan pengujian](docs/OPERATION_REVISION_TIMELINE.md).

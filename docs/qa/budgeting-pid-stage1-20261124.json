@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-24",
+  "feature": "Master Budgeting PID stage 1",
+  "authorization": "Phased implementation: master/import/history first; Finance and Superadmin only; unit selected for entire workbook",
+  "implemented": ["SQL master and six source categories per PID", "global unique PID with immutable unit", "preview then confirmed atomic commit", "current account and unit checks", "HMAC actor/unit/file/version preview", "actor-bound UUID replay", "stable PID/item identities", "before/after changes and every-batch history including no-op", "paged list/search/detail", "upload byte progress and YA/TIDAK"],
+  "not_yet_implemented": ["PP lookup/autofill", "PP budget blocking", "application budget allocation ledger", "revision/cancel/paid allocation handling", "legacy PP adoption and reconciliation"],
+  "future_contract": {"excel_includes_application_transactions": false, "available": "Excel available minus local allocations once", "paid": "consumption retained", "mapping": "Material=Owner Material; Non Material=Owner Jasa; Operasional=BOP; Level02 total=Owner Material+Jasa"},
+  "automated": {
+    "full_php": {"passed": 448, "assertions": 13797, "seconds": 101.34, "database": "fail-closed SQLite memory", "note": "Final new composite indexes followed by focused migration/master rerun"},
+    "final_focused_php": {"passed": 16, "assertions": 1070, "seconds": 18.89, "filters": ["BudgetPidMasterTest", "Area3MigrationTest"], "note": "Includes additional absent-PID retention, literal search and cross-unit history regression after full suite"},
+    "full_frontend": {"passed": 471, "failures": 0, "new_budget_tests": 3},
+    "build": "TypeScript and Vite passed after final UI changes",
+    "assets": {"manifest_references": 48, "preload_dependencies": 39, "profiles": 3, "result": "passed"},
+    "pint": "passed for changed PHP files",
+    "diff_check": "passed"
+  },
+  "sql_fixture": {
+    "pids": 5192,
+    "source_data_rows": 31152,
+    "stored_item_rows": 31152,
+    "change_rows": 5192,
+    "preview_http_queries": 26,
+    "commit_http_queries": 757,
+    "list_http_queries": 4,
+    "page_size": 20,
+    "lookahead": 1,
+    "lookup_ids_per_chunk": 500,
+    "write_buffer_pids": 100,
+    "item_upsert_batch": 50,
+    "workflow_archive_queries": 0,
+    "limits": "Synthetic SQLite measurements, no production throughput or concurrency guarantee"
+  },
+  "supplied_workbook": {
+    "path": "/Users/hendrisyahputra/Downloads/master-PID.xlsx",
+    "sha256": "b129b8b61093ad7b46886d3ad5cbfd2d7f221c694a423431117be3e0bf607896",
+    "pids_read": 5192,
+    "warning_pids": 4,
+    "negative_total_pids": 3,
+    "parent_child_discrepancy_pids": 1,
+    "standalone_read_seconds": 7.2481,
+    "standalone_peak_mib": 68.2305,
+    "live_import": false,
+    "file_modified": false,
+    "limits": "Standalone parser measurement while other local tests ran; excludes application request/write memory and is not a server benchmark"
+  },
+  "browser": {
+    "environment": "Actual App/Chromium with synthetic boot, same-origin mocked transport and blocked external network",
+    "cases": ["Finance Konstruksi with 5xx uncertain then same-UUID explicit retry", "Finance restricted to Operation", "Superadmin with409 conflict and new preview/UUID", "Admin Konstruksi denied with no master API fetch or write button"],
+    "passed": 4,
+    "preview_metadata_pids": 5192,
+    "preview_dom_rows": 20,
+    "viewport_widths": [375, 768, 1440],
+    "themes": ["light", "dark"],
+    "checks": ["list and snapshot detail", "preview next/previous page", "byte progress/server confirmation", "TIDAK0preview and0commit", "uncertain file/unit locked", "exact same UUID retry", "409 invalidates preview", "history batch then before/after", "no page overflow on list/modal", "no JS errors after correction"],
+    "screenshots_reviewed": ["finance-list.png", "operation-finance-preview.png", "superadmin-history.png"],
+    "artifacts": "/private/tmp/area3-budget-pid-20261124",
+    "limitations": "No real login, live API/database upload, actual account or aaPanel"
+  },
+  "corrections": [
+    "Supplied names contain Unicode word joiner and literal <>; preserve these as safely escaped text rather than rejecting valid names",
+    "Malformed truncated XML produced empty DOM source; guard now returns422 instead of500",
+    "Browser found stale import-list rows rendered as change rows during batch transition; response key now binds unit/filter/page/tab/batch before rendering",
+    "Write buffers bounded to100PID rather than building all item SQL arrays",
+    "Chrome required approved launch; screenshot capture waits for existing theme transitions",
+    "Existing migration test count advanced73to74 for one additive migration"
+  ],
+  "migration": {"name": "2026_11_24_000001_create_budgeting_pid_master", "new_tables": 5, "target": "its MySQL/MariaDB or isolated memory testing", "rollback": "refuses saved import/history", "live_applied_by_agent": false},
+  "preservation": ["existing PP/contracts/payments/approvals/volume rows and workspace archive compared unchanged", "no absent PID deletion", "no unit move", "no repricing or status changes"],
+  "not_performed": ["live its writes", "server/MariaDB or aaPanel verification", "real concurrent import/load test", "ENV/APP_KEY/worker/cron changes", "dependency changes", "Word/PDF rerender (generators unchanged)", "Dompis edits", "commit/push/deploy"]
+}

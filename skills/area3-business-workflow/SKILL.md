@@ -3,6 +3,14 @@ name: area3-business-workflow
 description: Implement its Area 3 Project Plan, BOQ, mandor contracting, assigned two-stage approvals, scan verification and full APM settlement, APM gating, BA PP and continuation state transitions.
 ---
 
+## 24 November 2026 — Final net PPh ROUND correction
+
+Follow latest docs/KASBON_PPH_PAYMENT_LIST.md. New/allowed reissued kasbon policy mandor-service-pph25-round-v2 rounds Material+0.975MandorJasa once half-up at final net. Exact BCMath/BigInt; preserve gross, Material and input-price money policies. Existing v1 issued/pending/approved/paid remains truncation with frozen due/matches/notice; no automatic repricing/backfill. Keep actual approval/source/UUID/private/proof/optionalAPM/paid/ledger/unit/Branch guards, no new SQL/schema/API. Record real tests and limitations; operator restarts only Area3 upload worker to recognize v2.
+
+## 24 November 2026 — Budgeting PID stage1 boundary
+
+Follow docs/BUDGETING_PID.md. Finance/Superadmin-only SQL master/import/history, unit selected for entire file and checked against current account; global PID immutable unit. Level02/04 Title linkage, Release−commit−actual, signed deficits/discrepancies preserved as warnings, excluded categories audit-only. Five new guarded tables; atomic HMAC/version/actor+file+unit UUID replay, batched reads/writes, no live import or workflow graph mutation. Current stage does not validate/reserve PP budgets. Future ledger must subtract application allocations because Excel explicitly excludes them; retain paid consumption, no double subtract/release or retroactive historical repricing. See docs for bounds/QA/deploy. Existing workflow permissions, Branch/Region/unit/receipts/paid/private/ledger remain.
+
 ## 23 November 2026 — Paid Partial complete-document packages
 
 Follow latest docs/DOCUMENT_PACKAGE.md. User enables UnduhSemua for Parsial after real full Finance settlement, in shared BA PP list/detail/timeline. Exact selected BAPP→currentterm→SPK→deal→PP; approved same-SPK terms only through selected number, current BAPP dates and source, active UUID-bound kasbon, no future/sibling/ProjectCode fallback or fake legacy documents. Keep actual assigned/current-version approvals, parent Sah, optional APM/net paid/proof binding/private/Head/Cancel guards. Final retains existing approved export availability. Shared HTML/nativeWord/print, blank wetTTD; Partial filename stage suffix, scoped white paper in dark-mode print. No workflow/money/ledger/release/closure mutation or backend/API/schema/migration/dependency/poller/newSQL. Reuse loaded list/detail parents, lazy current-only private reads; record actual tests/query/browser/WordPDF/server limits and audits.

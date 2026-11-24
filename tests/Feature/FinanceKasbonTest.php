@@ -93,7 +93,7 @@ class FinanceKasbonTest extends TestCase
         $this->getJson($path)->assertOk()->assertJsonPath('profile.nik', '0011223344556677')->assertJsonPath('profile.accountNumber', '0001234567')->assertJsonPath('profile.bank', 'Bank QA');
     }
 
-    private function setupTerm(bool $final = false, int $approvals = 5, bool $compatibilitySubmit = false): array
+    private function setupTerm(bool $final = false, int $approvals = 5, bool $compatibilitySubmit = false, int $quantity = 1): array
     {
         $this->withoutVite();
         Storage::fake('local');
@@ -105,7 +105,7 @@ class FinanceKasbonTest extends TestCase
         $t = $this->getJson('/api/prototype/state')->json('state.terms.0');
         $t = $this->historicalKasbonFixture($t['id']);
         $t['type'] = $final ? 'Final' : 'Parsial';
-        $t['actuals'] = [$s['deals'][0]['rows'][0]['rowId'] => ['m' => 1, 's' => 1]];
+        $t['actuals'] = [$s['deals'][0]['rows'][0]['rowId'] => ['m' => $quantity, 's' => $quantity]];
         $t['barp']['place'] = 'Tempat uji';
         $t['barp']['date'] = $spk['start'];
         $t['kasbon'] = ['id' => (string) Str::uuid(), 'amount' => 1];
@@ -496,7 +496,7 @@ class FinanceKasbonTest extends TestCase
             $domain = app(PrototypeDomain::class)->load($this->getJson('/api/prototype/state')->json('state'));
             $this->assertGreaterThan($paid['paid'], $domain->termTotal($paid), 'Mandor service withholding does not change the gross bill.');
             $this->assertEquals($paid['paid'], $domain->paymentDue($paid));
-            $this->assertSame('mandor-service-pph25-v1', $paid['kasbon']['settlement']['policy']);
+            $this->assertSame(KasbonSettlement::POLICY, $paid['kasbon']['settlement']['policy']);
             $this->assertSame('Dibayar', $paid['financePayment']['status']);
             $this->assertSame('NOK', $paid['financePayment']['documentsAtPayment']);
             $this->assertEquals($paid['kasbon']['amount'], $paid['paid']);
@@ -521,6 +521,36 @@ class FinanceKasbonTest extends TestCase
             $this->assertCount(1, $this->term($t['id'])['paymentHistory']);
             $this->assertSame($archive, PrototypeWorkspace::first()->getRawOriginal('state'));
         }
+    }
+
+    public function test_round_up_net_is_frozen_in_private_kasbon_and_finance_settlement_without_changing_gross(): void
+    {
+        $t = $this->setupTerm(quantity: 2);
+        $this->payee($t['spkId']);
+        $t = $this->issue($t);
+        $this->assertSame(KasbonSettlement::POLICY, $t['kasbon']['settlement']['policy']);
+        $this->assertEquals(52700, $t['kasbon']['settlement']['gross']);
+        $this->assertEquals(31450, $t['kasbon']['settlement']['material']);
+        $this->assertEquals(21250, $t['kasbon']['settlement']['service']);
+        $this->assertEquals(52169, $t['kasbon']['amount'], 'ROUND(31450 + 21250 * 0.975, 0), previously52168.');
+        $this->getJson('/api/finance/terms/'.$t['id'].'/kasbon')->assertOk()->assertJsonPath('documents.0.data.amount', 52169);
+        $this->api('decideFinancePayment', [$t['id'], 'Setujui', ''])->assertOk();
+        $this->upload('transfer-proof', $t['id']);
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $this->api('settleFinancePayment', [$t['id'], ''])->assertOk();
+        $queries = count(DB::getQueryLog());
+        DB::disableQueryLog();
+        DB::flushQueryLog();
+        $this->assertLessThanOrEqual(45, $queries);
+        fwrite(STDOUT, "\nRounded PPh optional APM settlement: {$queries} HTTP queries.\n");
+        $paid = $this->term($t['id']);
+        $this->assertEquals(52169, $paid['paid']);
+        $this->assertSame('Dibayar', $paid['financePayment']['status']);
+        $this->assertDatabaseHas('apm_settlements', ['amount' => 52169, 'apm_no' => null]);
+        $this->assertDatabaseHas('payment_terms', ['approved_amount' => 52700]);
+        $this->asRole('Admin Konstruksi');
+        $this->api('createTerm', [$t['spkId']])->assertOk();
     }
 
     public function test_new_term_defaults_to_finance_flow_and_generic_save_cannot_restore_legacy_payment_authority(): void
