@@ -3,6 +3,11 @@ name: area3-business-workflow
 description: Implement its Area 3 Project Plan, BOQ, mandor contracting, assigned two-stage approvals, scan verification and full APM settlement, APM gating, BA PP and continuation state transitions.
 ---
 
+## 24 November 2026 — New Draft creation across unrelated workspace changes
+
+Follow latest docs/PP_DRAFTS_PREVIEW.md concurrency correction. User confirms newPP only. Current workspace lock+authorization permits older-revision creation only absent schema3 root Draft saveProject/saveProjectBundle(false), rootId=id/no parent/source/allocations. Preserve current catalog/BOQ source/numbering/PID/unit/Branch, actual receipt originalexpected/resultrevision, UUID actor/payload replay and full atomic ledger/audit. Existing/colliding ID/futureversion/submit/approval/continuation/othercommands remain strict; no autoPOSTretry/client state replacement. Normalize validated revision integerstrings at HTTP boundary. Loadedgraphscan0newSQL/API/schema/poller/dependency/livewrite. Verify queued26BOQ Construction/Operation+bothaliases66queryHTTP, currentprices/unique numbers/otherrecord preservation, scope/replay/rollback. Actual final506PHP/14768assertions,81XAMPPfocused/1093,479frontend; physicalMySQL/server/OPcache/browser/export unverified, no migration/build-specific requirement.
+
+
 ## 24 November 2026 — Budgeting PID stage3, new PP only
 
 Follow latest docs/BUDGETING_PID.md. User excludes every existing PP including v3 Draft; no adoption/backfill. Server marks genuine new PP/continuation only. Draft0/formal four canonical Owner/BOP caps/returnhold/resubmitreplace/cancelguarded/paidretained; real cumulative unused-volume release credits Owner M/J only, continuation same root identity. Unknown/unmapped manual submissions retain actual ledger; unit conflicts and reserved Branch conflicts guarded. Preserve all approval/private/source/date/revision/receipt/physical volume rules. Migration000003 prepared, no active its write. Stage2 advisory-only wording below is historical.

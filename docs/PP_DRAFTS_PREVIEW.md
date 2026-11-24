@@ -1,5 +1,25 @@
 # Draft PP, cap preview dan penghapusan batas BOP — 5 November 2026
 
+## 24 November 2026 — Konflik revisi pada PP baru setelah upload BOQ
+
+Pengguna mengonfirmasi error di server hanya pada PP baru: Header lengkap + upload BOQ lalu Simpan Draft ditolak409 “Data berubah di tab lain”, meskipun refresh. Diagnosis kode menemukan revision global untuk satu workspace bersama: aktivitas dokumen/settings pengguna lain selama form terbuka mengubah angka tersebut. BOQ queue sendiri tidak menaikkan revision; proses upload yang lama memperbesar kesempatan terjadi aktivitas lain. Reproduksi HTTP lokal berhasil: real queued workbook26baris selesai pada revision0, akun lain menyimpan perubahan revision1, lalu PP baru memakai revision0 ditolak. Ini bukti bug lokal; tidak membaca request/log/database server sehingga penyebab persis insiden server belum dikonfirmasi.
+
+Koreksi `PrototypeWorkspaceService::canCreateDraftAtCurrentRevision` hanya mengizinkan penambahan root Draft v3 yang **ID-nya belum ada dalam full graph terkunci**: command saveProject/saveProjectBundle, submitfalse, rootId=id, parent/sourceBapp/allocations kosong, dan revision permintaan lebih lama (bukan masa depan). Semua authorization sudah diperiksa sebelum pengecualian; domain tetap membangun PP dari data server terkini, memberi nomor dari counter terkunci, membaca ulang manifest BOQ/KHS, memeriksa PID/unit/Branch dan menyimpan audit/receipt/ledger atomik. Tidak mengganti state server dengan state browser, tidak merge input ke PP existing, tidak retry POST otomatis, dan tidak menyetujui paket. Input Header+BOQ milik Admin tetap dipakai sebagaimana save normal.
+
+Existing/colliding PP ID, edit/revisi, pengajuan/approval/pembayaran, continuation dan command lain tetap memerlukan revision sama. Future revision tetap409. Retry UUID sama tetap satu perubahan; actor/payload guard budget existing menolak replay berbeda. Receipt mempertahankan expected_revision asli dan resulting_revision nyata, sehingga loncatan akibat aktivitas lain tetap dapat diaudit. Laravel menerima integer string tanpa mengubah tipe PHP; controller sekarang mengubah revision yang sudah tervalidasi menjadi int sebelum strict comparison. String angka dengan nilai sama tidak lagi menghasilkan konflik palsu; nilai berbeda tetap409. Ini koreksi tipe input, bukan melemahkan revision guard.
+
+Performa: pengecekan ID menggunakan graph yang sudah dimuat untuk command, tanpa SELECT/API/schema/index/dependency/poller baru. Empat fixture queued26BOQ (Construction/Operation × dua alias command) masing-masing66queryHTTP; bukan tambahan66query untuk guard, bukan benchmark server. Semua harga BOQ hasil upload dan nomor diambil dari current source, tidak dari harga/previewNo yang dikirim klien. UI/Word/print/approval template tidak berubah.
+
+### Penerapan perbaikan
+
+Setelah kode di-push dan di-pull ke server, dari `/www/wwwroot/itsy` jalankan dengan PHP situs84:
+
+```bash
+runuser -u www -- /www/server/php/84/bin/php artisan optimize:clear
+```
+
+Lalu muat ulang halaman dan coba simpan PP baru. Tidak ada migration baru, build aset atau restart upload worker khusus koreksi ini. Bila PHP-FPM memakai OPcache yang tidak memeriksa perubahan file, muat ulang layanan PHP situs melalui aaPanel agar kode PHP terbaru digunakan. Tidak menjalankan restart/config/cache/server writes melalui agen. Jangan mengubah revision/status SQL atau menghapus BOQ/draf untuk melewati konflik. Bila setelah penerapan masih409 pada PP baru, periksa command/revision dan exact ID collision dari request/respons tersanitasi, bukan mengirim isi BOQ/PII/token. PP lama/budget/paid/history tidak dibackfill. [Bukti pengujian dan batas](qa/pp-draft-concurrency-20261124.json).
+
 ## Pembaruan 13 November 2026 — Word PP dan PDF tidak kosong
 
 Preview PP menyediakan native editable DOCX dari seluruh isi yang ditampilkan, dengan konfirmasi dan kolom TTD kosong. CSS cetak kini menjaga ancestor modal dokumen agar preview di editor/main-shell/nested review tidak ikut tersembunyi. PP-only A4 portrait, approval/status/tanggal/penyimpanan tetap. [Perilaku dan verifikasi Word/PDF](PP_WORD_PRINT.md).

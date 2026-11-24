@@ -74,6 +74,21 @@ class PrototypeWorkspaceService
         return ['state' => app(AuthenticatedWorkspace::class)->visible($state ?? app(RelationalWorkflowStore::class)->read($workspace, $account['branchIds'], $account['workUnits'], $account), $state === null), 'revision' => $workspace->revision, 'csrf' => csrf_token()];
     }
 
+    /** Only an absent root Draft can be added to the current locked workspace. */
+    private function canCreateDraftAtCurrentRevision(array $before, array $input, int $currentRevision): bool
+    {
+        if (($before['schema'] ?? 1) < 3 || $input['revision'] >= $currentRevision
+            || ! in_array($input['command'], ['saveProject', 'saveProjectBundle'], true)
+            || ($input['args'][1] ?? false) !== false) {
+            return false;
+        }
+        $p = $input['args'][0] ?? null;
+
+        return is_array($p) && is_string($p['id'] ?? null) && $p['id'] === ($p['rootId'] ?? null)
+            && empty($p['parentId']) && empty($p['sourceBapp']) && empty($p['allocations'])
+            && ! collect($before['projects'])->contains('id', $p['id']);
+    }
+
     public function command(PrototypeWorkspace $workspace, array $input, bool $includePayload = true): array
     {
         return DB::transaction(function () use ($workspace, $input, $includePayload) {
@@ -104,7 +119,10 @@ class PrototypeWorkspaceService
 
                 return ($includePayload ? $this->payload($row) : []) + ['replayed' => true];
             }
-            if ($row->revision !== $input['revision']) {
+            // Creating a genuinely new Draft cannot overwrite an existing document.
+            // All numbering, catalog, BOQ, scope and PID guards still run on $before
+            // under this lock. Existing edits/approvals retain strict revision checks.
+            if ($row->revision !== $input['revision'] && ! $this->canCreateDraftAtCurrentRevision($before, $input, $row->revision)) {
                 throw new HttpResponseException(response()->json($this->payload($row) + ['message' => 'Data berubah di tab lain. Muat ulang data terbaru; perubahan tidak ditimpa.'], 409));
             }
             $budgetPayloadHash = BudgetPidAllocation::hash($input);

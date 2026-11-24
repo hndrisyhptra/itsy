@@ -79,6 +79,8 @@ class PrototypeController extends Controller
         };
         $rules = array_merge($rules, $nested);
         Validator::make($input, $rules)->validate();
+        // Laravel validates integer strings without changing their PHP type.
+        $input['revision'] = (int) $input['revision'];
 
         return response()->json($service->command($service->workspace($request), $input));
     }

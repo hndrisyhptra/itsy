@@ -1,0 +1,98 @@
+{
+  "date": "2026-11-24",
+  "feature": "New PP Draft creation after queued BOQ despite unrelated shared-workspace changes",
+  "user_confirmation": "Server error occurs only for new PP, not reported for existing Draft edits",
+  "local_reproduction": {
+    "before": "Real queued26BOQ at revision0; other actor updates numbering to revision1; new PP creation at revision0 returned409",
+    "additional": "Validated numeric revision string with same value produced false strict-type conflict",
+    "server_incident_root_cause_confirmed": false
+  },
+  "change": {
+    "service": "PrototypeWorkspaceService::canCreateDraftAtCurrentRevision",
+    "allowed": "Only absent schema3 root Draft, saveProject/saveProjectBundle(false), older revision, exact rootId=id, no parent/sourceBapp/allocations, under existing current lock and authorization",
+    "strict_guards_retained": [
+      "Existing/colliding IDs",
+      "Future revision",
+      "Submit/approval/payment commands",
+      "Continuations",
+      "Role/unit/Branch",
+      "Current KHS and private BOQ manifest",
+      "Number assignment",
+      "Budget policy and source",
+      "Receipt UUID/actor/payload replay",
+      "Atomic workflow/ledger/audit rollback"
+    ],
+    "controller": "Normalize already-validated revision to int; no numeric-value mismatch bypass",
+    "receipt": "Original expected revision retained; actual resulting revision recorded",
+    "automatic_post_retry": false
+  },
+  "qa": {
+    "full": {
+      "tests": 506,
+      "assertions": 14768,
+      "php": "8.5.10",
+      "database": "SQLite :memory:",
+      "seconds": 67.312,
+      "peak_mb": 136.5,
+      "process_memory_limit": "512M"
+    },
+    "xampp_focused": {
+      "tests": 81,
+      "assertions": 1093,
+      "php": "8.2.4",
+      "seconds": 13.87
+    },
+    "new_cases": 10,
+    "frontend": {
+      "passed": 479,
+      "failed": 0
+    },
+    "pint": "passed, three changed PHP files",
+    "diff_check": "passed",
+    "cases": [
+      "Real queued/private26BOQ, two units and both command aliases",
+      "Current canonical upload price and current number format",
+      "Other record/settings/archive preserved",
+      "Same old revision two distinct PP IDs get unique numbers",
+      "Draft PID allocation zero",
+      "Receipt expected0/result2 and identical UUID replay once",
+      "Changed-payload replay409",
+      "Existing ID stale edit409 with no SQL overwrite",
+      "Future revision/submission/continuation shape409",
+      "Role/unit/Branch403",
+      "Invalid header422 with rollback"
+    ],
+    "test_fixture_correction": "One initial assertion expected nonexistent activity_name SQL column; switched to canonical document_data.name"
+  },
+  "performance": {
+    "new_sql_queries": 0,
+    "read": "Scan already-loaded full projects under current workspace lock",
+    "four_queued_26boq_save_queries_each": 66,
+    "test_budget": 80,
+    "existing_500boq_1000components": 59,
+    "archive_bytes_excluded_from_three_runtime_selects": 524304,
+    "not_a_server_load_test": true
+  },
+  "limits": [
+    "No server request/log/DB/OPcache inspection",
+    "No live its migration/import/business/env/worker/server/Dompis mutation",
+    "No physical MySQL concurrency/DDL/load verification",
+    "No browser/Word/PDF visual rerun: PHP-only correction, unchanged UI/generators",
+    "No new endpoint/schema/migration/index/dependency/poller",
+    "No commit/push/deployment"
+  ],
+  "deployment": [
+    "After push/pull latest code: from /www/wwwroot/itsy run runuser -u www -- /www/server/php/84/bin/php artisan optimize:clear",
+    "Reload page and save new PP",
+    "If PHP-FPM OPcache timestamps disabled, reload site PHP service via aaPanel",
+    "No new migration/build/upload-worker restart specifically for this correction",
+    "Do not edit SQL revision/status or delete source BOQ/Draft to bypass conflicts"
+  ],
+  "evidence_local_only": [
+    "/private/tmp/area3-pp-draft-concurrency-before.log",
+    "/private/tmp/area3-pp-draft-concurrency-after.log",
+    "/private/tmp/area3-pp-draft-concurrency-focused.log",
+    "/private/tmp/area3-pp-draft-concurrency-full.log",
+    "/private/tmp/area3-pp-draft-concurrency-frontend.log"
+  ]
+}

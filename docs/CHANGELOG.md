@@ -1,5 +1,9 @@
 # Catatan perubahan it's Area 3
 
+## 24 November 2026 — Simpan draf PP baru tidak berbenturan dengan aktivitas lain
+
+PP baru setelah Header+BOQ dapat dibuat meski revision global berubah akibat aktivitas lain, menggunakan seluruh state/penomoran/validasi server terkunci. Hanya root Draft yang belum ada; semua edit/submission/approval/continuation tetap dilindungi konflik revision. Controller menormalkan integerstring revision tervalidasi untuk mencegah konflik tipe palsu. Tanpa migration/data rewrite/worker baru/build aset khusus. Error server belum diinspeksi langsung; HTTP queue lokal mereproduksi jalur konflik dan menguji perbaikan. [Panduan](PP_DRAFTS_PREVIEW.md).
+
 ## 24 November 2026 — Budgeting PID tahap 3, PP baru saja
 
 Master/referensi kini menampilkan pemakaian aplikasi dan sisa Total BOQ Owner, Material, Jasa dan BOP. Paket PP baru ditahan jika salah satu kebutuhan melebihi sisa; draf berlebih tetap dapat disimpan. Revisi tidak membebaskan alokasi sebelum pengajuan pengganti sukses, Cancel mengikuti guard existing, pembayaran lunas tetap terpakai dan pelepasan volume sah mengkreditkan sisa Owner M/J sekali. PP lanjutan baru ikut budget; PP lama seluruh status termasuk draf tetap dikecualikan. Unknown/unmapped manual masih sementara diperbolehkan namun komitmen dicatat. Migration000003 ledger+audit disiapkan; database aktif/server tidak dimigrasi agen. [Panduan](BUDGETING_PID.md), [QA](qa/budgeting-pid-stage3-20261124.json).

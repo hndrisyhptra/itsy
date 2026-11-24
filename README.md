@@ -1,5 +1,7 @@
 # it's Area 3 — Construction Workspace
 
+**24 November 2026 — Simpan draf PP baru setelah upload:** pembuatan draf baru tidak lagi ditolak hanya karena revisi workspace berubah akibat aktivitas lain. Server tetap memakai nomor, master dan validasi terkini dalam satu transaksi; edit dokumen existing tetap dilindungi konflik versi. Tidak ada migration baru/build aset khusus koreksi PHP ini. [Detail dan penerapan](docs/PP_DRAFTS_PREVIEW.md).
+
 **24 November 2026 — Budgeting PID tahap 3:** sisa budget dan empat batas pengajuan aktif untuk **PP baru saja**; seluruh PP lama termasuk draf dikecualikan. Draf belum memakai budget, pengajuan ulang mengganti alokasi sendiri, Cancel melepas alokasi sesuai guard, dan paid tetap terpakai. Master/referensi menampilkan Excel, pemakaian aplikasi dan sisa. Jalankan migration baru `000003`, build dan check aset; tidak ada backfill atau worker baru. Catatan tahap 1/2 berikut bersifat historis. [Kontrak, penerapan dan batas](docs/BUDGETING_PID.md).
 
 **24 November 2026 — Koreksi timestamp PID lokal:** default `current_timestamp()` pada tabel lama dikenali; tabel baru memakai default eksplisit tanpa auto-update. Tanggal sumber tidak bergeser saat pemetaan Branch/impor ulang. Di workspace lokal jalankan ulang `php artisan migrate`; tidak menghapus data atau memerlukan migration baru. [Detail dan batas](docs/BUDGETING_PID.md).

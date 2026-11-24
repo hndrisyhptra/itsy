@@ -1,5 +1,9 @@
 # Arsitektur aplikasi it's Area 3
 
+## 24 November 2026 — Penambahan draf baru pada workspace bersama
+
+Strict global revision membuat pembuatan PP baru berbenturan dengan perubahan pengguna lain selama input/upload BOQ. Di bawah workspace rowlock/authorization existing, exception terbatas hanya absent schema3 root Draft saveProject/saveProjectBundle(false), tanpa parent/source/allocations dan hanya revision lama. Tidak dapat menimpa exact existing ID atau melewati approval/revision/continuation/futureversion. Domain tetap current numbering/catalog/manifest/Branch/unit/PID, SQL+budgetledger+audit+receipt tetap satu transaksi. Validated revision string dinormalisasi int pada controller. O(n) existing graph IDcheck,0newSQL/API/schema/poller/dependency; response/error/editor dan template tidak berubah. Actual query fixture66HTTP untuk26BOQ pada kedua unit/alias. Expectedrevision asli tetap receipt, retry actor/payload terikat. [Kontrak/penerapan](PP_DRAFTS_PREVIEW.md), [audit dan batas server](qa/pp-draft-concurrency-20261124.json).
+
 ## 24 November 2026 — Ledger Budgeting PID tahap 3 untuk PP baru
 
 `BudgetPidAllocation` terintegrasi setelah validasi domain dan sebelum persist SQL dalam transaksi workspace existing. Server menandai hanya PP v3 yang benar-benar baru; semua PP existing termasuk draf tetap tanpa policy. Satu baris allocation per SQL PP dan audit UUID/actor/payload menyimpan source revision/before/after. PP FK ditulis sebelum ledger. Global master control menyatukan kapasitas/import/mapping; ledger/item memakai current locking reads agar snapshot REPEATABLE READ sebelum menunggu lock tidak meloloskan kapasitas stale. Write scan maksimal500 ledger rows/halaman; GET memakai agregasi indexed. Formal canonical OwnerM/OwnerJ/M+J/BOP diuji sendiri, draft0, returnhold, resubmitreplace, cancelguarded, paidretained, cumulative genuine unused-volume release hanya M/J; BOP tidak dikreditkan.

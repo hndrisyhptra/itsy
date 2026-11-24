@@ -1,5 +1,9 @@
 # Optimasi query dan respons aplikasi
 
+## 24 November 2026 — Draf baru dan konflik global revision
+
+Pengecualian absent-root-Draft memakai full projectgraph yang sudah dimuat pada transaksi command; satu scan ID tanpa SQL tambahan. Tidak preflight GET/retryPOST/refreshpoller dan tidak melemahkan conflict check dokumen existing. Empat real queued26BOQ HTTP fixture Construction/Operation × saveProject/saveProjectBundle mencatat66query per save, budget80; bukan perbarisquery atau pengukuran server. Fullsuite506tes mempertahankan500BOQ/1000components59query serta archive524304bytes excluded/3runtimeSELECT. Konkurensi fisik MySQL/OPcache/server belum diuji. [Aturan](PP_DRAFTS_PREVIEW.md), [audit](qa/pp-draft-concurrency-20261124.json).
+
 ## 24 November 2026 — Biaya terukur ledger Budgeting PID tahap 3
 
 Budget read tidak membangun graph PP/BOQ historis/arsip/private. List20+1 menambah satu grouped query usage dengan join berkolasi DB; reference memakai indexed SUM, exactownPP satu metadata lookup. Writecapacity memakai current FOR UPDATE maksimal500moneyrows/page setelah sharedcontrol lock untuk menghindari REPEATABLE READ snapshot lama; tidak SUM nonlocking setelah menunggu. Impor menambah satu batched identitycheck/500PID, mapping satu batched reservedBranch check. Planner earlyreturn unrelated approval/payment tanpa query tambahan, sementara budgetcommand retry menambah satu auditread. Singleton menserialkan import/mapping/allocation: konsistensi diprioritaskan dan throughput fisik belum diukur.

@@ -3,6 +3,11 @@ name: area3-prototype-qa
 description: Test the its Area 3 interactive prototype through the linked business scenarios, permissions, persistence, financial/volume invariants, documents and responsive layouts.
 ---
 
+## 24 November 2026 — New Draft creation across unrelated workspace changes
+
+Follow latest docs/PP_DRAFTS_PREVIEW.md concurrency correction. User confirms newPP only. Current workspace lock+authorization permits older-revision creation only absent schema3 root Draft saveProject/saveProjectBundle(false), rootId=id/no parent/source/allocations. Preserve current catalog/BOQ source/numbering/PID/unit/Branch, actual receipt originalexpected/resultrevision, UUID actor/payload replay and full atomic ledger/audit. Existing/colliding ID/futureversion/submit/approval/continuation/othercommands remain strict; no autoPOSTretry/client state replacement. Normalize validated revision integerstrings at HTTP boundary. Loadedgraphscan0newSQL/API/schema/poller/dependency/livewrite. Verify queued26BOQ Construction/Operation+bothaliases66queryHTTP, currentprices/unique numbers/otherrecord preservation, scope/replay/rollback. Actual final506PHP/14768assertions,81XAMPPfocused/1093,479frontend; physicalMySQL/server/OPcache/browser/export unverified, no migration/build-specific requirement.
+
+
 ## 24 November 2026 — PID stage3 allocation QA
 
 Follow latest docs/BUDGETING_PID.md and qa/budgeting-pid-stage3-20261124.json. Verify all four independent cap/equality/rollback, canonical forged-total rejection, sourcePP scope/exclusion, actor+payload UUID, returnhold/resubmitreplace/cancelreuse, old v3 Draft exemption, Operation and crossunit, crossBranch zero drafts vs reserved submission/mapping conflicts, unknown later import deficit. Actual full work+seven payment approvals/proof/optionalAPM settlement must retain consumption; genuine unused-volume release and continuation credit once. SQLite tests and PDO-free MySQL current-lock grammar are distinct from physical concurrency/DDL; do not claim live server/WordPDF exports. Record query counts actual reference6/own7/mapping10012/list6/import5192preview37commit768/formal67, 500BOQ59. Final496PHP/14617assertions,479frontend,60XAMPPfocused/1720, six actual-App mocked browser scenarios; no active its/env/server writes.
