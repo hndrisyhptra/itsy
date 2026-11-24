@@ -61,9 +61,21 @@ class BudgetPidMaster
             $more = $rows->count() > 20;
             $rows = $rows->take(20);
             $items = DB::table('budget_pid_items')->whereIn('budget_pid_id', $rows->pluck('id_budget_pid'))->get()->groupBy('budget_pid_id');
-            $result = $rows->map(function ($r) use ($items) {
+            $usage = DB::table('budget_pid_allocations as a')->join('budget_pids as p', 'p.pid', '=', 'a.pid_code')
+                ->whereIn('p.id_budget_pid', $rows->pluck('id_budget_pid'))->where('a.unit', $unit)->whereIn('a.branch_id', $account['branchIds'])->where('a.status', 'reserved')
+                ->groupBy('p.id_budget_pid', 'a.branch_id')->selectRaw('p.id_budget_pid, a.branch_id, SUM(a.material) as material, SUM(a.service) as service, SUM(a.bop) as bop')->get()->keyBy(fn ($r) => $r->id_budget_pid.'|'.$r->branch_id);
+            $result = $rows->map(function ($r) use ($items, $usage) {
                 $r->items = $this->items($items->get($r->id_budget_pid, collect()));
                 $r->warnings = $this->warnings(['items' => $r->items]);
+                $u = $usage->get($r->id_budget_pid.'|'.$r->branch_id);
+                $r->application_used = $r->remaining = [];
+                foreach (BudgetPidAllocation::CATEGORIES as $category => $column) {
+                    $r->application_used[$category] = BudgetPidAllocation::integer($u->$column ?? 0);
+                }
+                $r->application_used['TOTAL'] = BudgetPidAllocation::integer(bcadd((string) $r->application_used['Material'], (string) $r->application_used['Non Material'], 0));
+                foreach ($r->application_used as $category => $value) {
+                    $r->remaining[$category] = $r->items[$category]['available'] - $value;
+                }
 
                 return $r;
             })->values()->all();
@@ -133,6 +145,8 @@ class BudgetPidMaster
             $existing = [];
             $existingItems = [];
             foreach (array_chunk(array_keys($records), 500) as $codes) {
+                abort_if(DB::table('budget_pid_allocations')->whereIn('pid_code', $codes)->where('status', '<>', 'cancelled')->where('unit', '<>', $input['unit'])
+                    ->lockForUpdate()->first(['id_budget_allocation']) !== null, 422, 'File memuat PID yang dipakai PP baru pada unit kerja lain.');
                 $batch = DB::table('budget_pids')->whereIn('pid', $codes)->get();
                 foreach ($batch as $p) {
                     abort_unless($p->unit === $input['unit'], 422, "PID {$p->pid} sudah terdaftar pada unit {$p->unit}; tidak dapat dipindah unit.");
@@ -186,7 +200,9 @@ class BudgetPidMaster
                     $changes[] = ['id_budget_change' => (string) Str::uuid(), 'import_id' => $id, 'budget_pid_id' => $c['id'], 'action' => $c['action'],
                         'before_data' => $c['before'] ? json_encode($c['before'], JSON_THROW_ON_ERROR) : null, 'after_data' => json_encode($c['after'], JSON_THROW_ON_ERROR)];
                 }
-                DB::table('budget_pids')->upsert($pids, ['pid'], ['name', 'last_import_id', 'updated_at']);
+                // Incoming created_at already holds the original saved timestamp for existing PID.
+                // Assign it explicitly to suppress legacy implicit ON UPDATE timestamp behavior.
+                DB::table('budget_pids')->upsert($pids, ['pid'], ['name', 'last_import_id', 'created_at', 'updated_at']);
                 foreach (array_chunk($items, 50) as $batch) {
                     DB::table('budget_pid_items')->upsert($batch, ['budget_pid_id', 'category'], ['source_title', 'source_row', 'release', 'commitment', 'actual', 'available']);
                 }

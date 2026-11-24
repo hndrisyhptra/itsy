@@ -12,7 +12,7 @@ export function projectEditorValue(raw:Project,existing?:Project):Project {
   unit:existing.unit==='Operation'?'Operation':'Konstruksi',status:existing.status,workflowVersion:existing.workflowVersion,
   approvals:existing.approvals,approvalHistory:existing.approvalHistory,approvalResets:existing.approvalResets,
   contractBundle:existing.contractBundle,headApprovalReopen:existing.headApprovalReopen,operationApprovalRevision:existing.operationApprovalRevision,
-  preparedBy:existing.preparedBy,signatureUsers:existing.signatureUsers,
+  preparedBy:existing.preparedBy,signatureUsers:existing.signatureUsers,budgetPidPolicy:existing.budgetPidPolicy,
  }:{} )};
  return {...p,approvalScheme:projectApprovalScheme(existing??p)};
 }

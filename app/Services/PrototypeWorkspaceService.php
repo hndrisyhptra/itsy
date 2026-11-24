@@ -88,6 +88,7 @@ class PrototypeWorkspaceService
             $replay = DB::table('prototype_audits')->where('workspace_id', $row->id)->where('request_id', $input['request_id'])->first();
             if ($replay) {
                 abort_unless($replay->actor_user_id === auth()->id() && $replay->command === $input['command'], 409, 'ID permintaan sudah digunakan.');
+                app(BudgetPidAllocation::class)->replay($input, (int) auth()->id());
 
                 if ($isCancel) {
                     $document = collect($before['projects'])->firstWhere('id', $input['args'][0] ?? '');
@@ -106,6 +107,7 @@ class PrototypeWorkspaceService
             if ($row->revision !== $input['revision']) {
                 throw new HttpResponseException(response()->json($this->payload($row) + ['message' => 'Data berubah di tab lain. Muat ulang data terbaru; perubahan tidak ditimpa.'], 409));
             }
+            $budgetPayloadHash = BudgetPidAllocation::hash($input);
             if ($isCancel) {
                 $document = collect($before['projects'])->firstWhere('id', $input['args'][0] ?? '');
                 abort_unless($document, 404);
@@ -148,6 +150,7 @@ class PrototypeWorkspaceService
                 // Never trust client provenance, comparison prices or an arbitrary file path.
                 unset($input['args'][0]['_boqImport']);
                 $saved = collect($before['projects'])->firstWhere('id', $input['args'][0]['id'] ?? '');
+                $input['args'][0] = BudgetPidAllocation::pin($input['args'][0], $saved);
                 if (($before['schema'] ?? 1) >= 3 && (! $saved || (($saved['workflowVersion'] ?? 1) >= 3 && in_array($saved['status'], ['Draft', 'Dikembalikan', 'Ditolak'], true)))) {
                     $input['args'][0] = app(BudgetPidReference::class)->prepare($input['args'][0], $saved, $before['branches']);
                 } else {
@@ -199,12 +202,14 @@ class PrototypeWorkspaceService
                 $domainCommand = 'createSettlementTerm';
             }
             $state = app(PrototypeDomain::class)->execute($before, $domainCommand, $input['args'], $input['result_id'] ?? null)['state'];
+            $budgetPlan = app(BudgetPidAllocation::class)->plan($row, $before, $state, $input, $budgetPayloadHash);
             $balanceQuery = fn () => DB::table('volume_balances')->join('boq_components as c', 'c.id_boq_component', '=', 'volume_balances.boq_component_id')
                 ->join('boq_lines as b', 'b.id_boq', '=', 'c.boq_line_id')->join('project_plans as p', 'p.id_pp', '=', 'b.root_pp_id')
                 ->where('p.workspace_id', $row->id)->select('volume_balances.*');
             $balances = $balanceQuery()->get()->keyBy('boq_component_id');
             $row->revision++;
             app(RelationalWorkflowStore::class)->write($row, $state, $before);
+            app(BudgetPidAllocation::class)->persist($budgetPlan, $row->revision);
             $row->save();
             $beforeHash = hash('sha256', json_encode($before, JSON_THROW_ON_ERROR));
             $afterHash = hash('sha256', json_encode($state, JSON_THROW_ON_ERROR));

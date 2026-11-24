@@ -49,6 +49,8 @@ class BudgetPidBranch
             abort_unless($version === (int) $input['version'], 409, 'Master berubah; muat ulang daftar lalu periksa pemetaan.');
             $rows = DB::table('budget_pids')->whereIn('id_budget_pid', $ids)->orderBy('pid')->lockForUpdate()->get(['id_budget_pid', 'pid', 'unit', 'branch_id']);
             abort_unless($rows->count() === count($ids), 422, 'PID terpilih tidak lengkap.');
+            abort_if(DB::table('budget_pid_allocations')->whereIn('pid_code', $rows->pluck('pid'))->where('unit', $input['unit'])->where('status', 'reserved')
+                ->where('branch_id', '<>', (int) $input['branch_id'])->lockForUpdate()->first(['id_budget_allocation']) !== null, 422, 'PID telah dipakai PP baru pada Branch lain. Periksa pemetaan sebelum menyimpan.');
             $before = $after = $moving = [];
             foreach ($rows as $r) {
                 abort_unless($r->unit === $input['unit'] && ($r->branch_id === null || in_array((int) $r->branch_id, $account['branchIds'], true)), 403, 'PID di luar unit atau Branch penugasan.');
@@ -66,7 +68,13 @@ class BudgetPidBranch
                     ->whereIn('p.project_code', $moving)->where('w.code', $input['unit'] === 'Operation' ? 'OPERATION' : 'KONSTRUKSI')->select('pp.id_pp')->lockForUpdate()->first() !== null, 422, 'PID sudah digunakan PP. Pemindahan Branch ditahan agar relasi dokumen lama tetap aman.');
             }
             if ($after) {
-                DB::table('budget_pids')->whereIn('id_budget_pid', array_column($after, 'id_budget_pid'))->update(['branch_id' => (int) $input['branch_id']]);
+                // Legacy TIMESTAMP definitions may carry implicit ON UPDATE CURRENT_TIMESTAMP.
+                // Explicit self-assignment preserves source dates without another read or a clock rewrite.
+                DB::table('budget_pids')->whereIn('id_budget_pid', array_column($after, 'id_budget_pid'))->update([
+                    'branch_id' => (int) $input['branch_id'],
+                    'created_at' => DB::raw('created_at'),
+                    'updated_at' => DB::raw('updated_at'),
+                ]);
             }
             DB::table('budget_pid_branch_changes')->insert(['id_budget_branch_change' => $input['request_id'], 'actor_user_id' => $actorId, 'unit' => $input['unit'], 'branch_id' => (int) $input['branch_id'], 'version' => $version + 1,
                 'payload_hash' => $hash, 'before_data' => json_encode($before, JSON_THROW_ON_ERROR), 'after_data' => json_encode($after, JSON_THROW_ON_ERROR), 'created_at' => now()]);

@@ -1,5 +1,11 @@
 # it's Area 3 — Construction Workspace
 
+**24 November 2026 — Budgeting PID tahap 3:** sisa budget dan empat batas pengajuan aktif untuk **PP baru saja**; seluruh PP lama termasuk draf dikecualikan. Draf belum memakai budget, pengajuan ulang mengganti alokasi sendiri, Cancel melepas alokasi sesuai guard, dan paid tetap terpakai. Master/referensi menampilkan Excel, pemakaian aplikasi dan sisa. Jalankan migration baru `000003`, build dan check aset; tidak ada backfill atau worker baru. Catatan tahap 1/2 berikut bersifat historis. [Kontrak, penerapan dan batas](docs/BUDGETING_PID.md).
+
+**24 November 2026 — Koreksi timestamp PID lokal:** default `current_timestamp()` pada tabel lama dikenali; tabel baru memakai default eksplisit tanpa auto-update. Tanggal sumber tidak bergeser saat pemetaan Branch/impor ulang. Di workspace lokal jalankan ulang `php artisan migrate`; tidak menghapus data atau memerlukan migration baru. [Detail dan batas](docs/BUDGETING_PID.md).
+
+**24 November 2026 — Koreksi retry migration PID:** bila tabel `budget_pid_controls` sudah ada tetapi migration masih pending, kode terbaru melanjutkan struktur yang kompatibel tanpa menghapus data/reset versi. Setelah backup/pull, jalankan ulang `php artisan migrate --force`; struktur berbeda dihentikan untuk diperiksa. Tidak perlu `migrate:fresh` atau catatan migration manual. [Pemulihan dan batas](docs/BUDGETING_PID.md).
+
 **24 November 2026 — Budgeting PID tahap 2:** PP baru mencari PID dan mengisi Nama Kegiatan dengan referensi Total/Material/Jasa/BOP sesuai unit/Branch. Finance/Superadmin memetakan Branch secara eksplisit melalui pilihan beberapa baris; kode Rxxx tidak ditebak. PP lama tidak otomatis diganti namanya. **Migration pemetaan baru dan build aset diperlukan. Reservasi/sisa lintas PP dan blokir over-budget belum aktif (tahap 3).** [Penggunaan, cakupan dan penerapan](docs/BUDGETING_PID.md).
 
 **24 November 2026 — ROUND hasil bersih PPh:** kasbon baru/terbit ulang memakai `ROUND(Material + Jasa Mandor × 97,5%, 0)`, setengah naik sekali pada hasil akhir. Kasbon lama tetap nominal/policy tersimpan, tanpa repricing/ubah paid. Tidak ada migration khusus PPh; build aset dan restart worker upload Area3 saat deploy. [Aturan](docs/KASBON_PPH_PAYMENT_LIST.md).

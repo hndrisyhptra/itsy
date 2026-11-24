@@ -19,11 +19,14 @@ class BudgetPidReference
             && in_array($branch, $account['branches'] ?? [], true), 403, 'Referensi PID hanya tersedia untuk Admin pada unit dan Branch penugasan.');
     }
 
-    public function lookup(array $account, string $pid, string $unit, string $branch): array
+    public function lookup(array $account, string $pid, string $unit, string $branch, ?string $ppSource = null): array
     {
         $this->authorize($account, $unit, $branch);
         $pid = self::code($pid);
         $scope = ['pid' => $pid, 'unit' => $unit, 'branch' => $branch];
+        if ($ppSource !== null) {
+            $scope['pp_id'] = $ppSource;
+        }
         $master = DB::table('budget_pids')->where('pid', $pid)->first(['id_budget_pid', 'pid', 'unit', 'branch_id', 'name', 'last_import_id', 'updated_at']);
         if (! $master) {
             return $scope + ['status' => 'not_found'];
@@ -39,6 +42,17 @@ class BudgetPidReference
         if ((int) $master->branch_id !== (int) $branchId) {
             return $scope + ['status' => 'branch_conflict'];
         }
+        $own = null;
+        if ($ppSource !== null) {
+            // Resolve the exact editor PP in the authenticated workspace; never trust an SQL ID from clients.
+            $own = DB::table('project_plans as p')->join('work_units as w', 'w.id_work_unit', '=', 'p.work_unit_id')
+                ->where('p.workspace_id', DB::table('prototype_workspaces')->select('id')->where('owner_key', hash('sha256', 'area3-authenticated-workflow-v1')))
+                ->where('p.source_id', $ppSource)->whereIn('p.branch_id', $account['branchIds'])
+                ->where('w.code', $unit === 'Operation' ? 'OPERATION' : 'KONSTRUKSI')->value('p.id_pp');
+            abort_unless($own, 403, 'PP referensi tidak sesuai akses unit dan Branch.');
+        }
+        $allocator = app(BudgetPidAllocation::class);
+        $allocator->identity($pid, $unit, (int) $branchId, $own);
         $items = DB::table('budget_pid_items')->where('budget_pid_id', $master->id_budget_pid)
             ->whereIn('category', ['TOTAL', 'Material', 'Non Material', 'Operasional'])->get(['category', 'available']);
         abort_unless($items->count() === 4, 503, 'Rincian budgeting PID belum lengkap. Hubungi Finance untuk memeriksa master.');
@@ -46,9 +60,14 @@ class BudgetPidReference
         foreach ($items as $item) {
             $available[$item->category] = (int) $item->available;
         }
+        $usage = $allocator->usage($pid, $unit, (int) $branchId, $own);
+        $remaining = [];
+        foreach ($available as $key => $value) {
+            $remaining[$key] = $value - $usage[$key];
+        }
 
         return $scope + ['status' => 'found', 'name' => $master->name, 'import_id' => $master->last_import_id,
-            'updated_at' => $master->updated_at, 'available' => $available];
+            'updated_at' => $master->updated_at, 'available' => $available, 'application_used' => $usage, 'remaining' => $remaining, 'new_pp_only' => true];
     }
 
     /** Explicit editable saves only; old documents without selection incur no lookup or adoption. */

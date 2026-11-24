@@ -1,5 +1,105 @@
 # Master Budgeting PID — 24 November 2026
 
+## Tahap 3 — Alokasi dan batas budget PP baru (status terkini)
+
+**Tahap 3 selesai di kode.** Referensi empat komponen sekarang menampilkan Available Excel, Alokasi PP Lain, Sisa untuk PP Ini, Nilai PP Ini dan Sisa Setelah PP Ini. Master Finance menampilkan sisa setiap komponen beserta angka Excel dan pemakaian aplikasi. Editor SPK menampilkan pemeriksaan budget sebelum Ajukan Paket untuk PP baru yang masuk kebijakan ini. Bagian tahap 1/2 di bawah tetap sebagai catatan historis; pernyataan “batas/reservasi belum aktif” pada bagian lama telah digantikan bagian ini.
+
+**Keputusan pengguna terbaru: berlaku hanya untuk PP baru.** Semua PP yang sudah ada sebelum pembaruan, termasuk draf v3, revisi, menunggu approval, Sah dan paid, tidak diadopsi, dikurangi dari budget, atau ditahan dengan batas baru. Penandanya `budgetPidPolicy=pid-budget-v1`, dibuat server hanya ketika benar-benar menciptakan PP v3 baru. Tanggal Header yang dipilih Admin tidak menentukan keanggotaan kebijakan; backdate bukan pengecualian. Mengirim/menghapus marker dari klien tidak dapat mengubah kebijakan PP tersimpan. PP lanjutan yang baru dibuat sesudah pembaruan ikut kebijakan, walaupun induknya PP lama; induk/approval/pembayaran historis tetap.
+
+Karena Excel belum mencakup transaksi aplikasi dan PP lama sengaja dikecualikan, **angka sisa ini merupakan plafon untuk PP baru dalam kebijakan, bukan rekonstruksi seluruh pemakaian historis PID**. Tidak ada migrasi saldo awal atau backfill PP lama. Rumus setiap batas:
+
+`sisa untuk PP ini = available Excel − alokasi aktif PP baru lainnya`
+
+| Batas | Kebutuhan PP saat pengajuan |
+|---|---|
+| TOTAL Level 02 | Material + Jasa BOQ TA–Owner |
+| Material Level 04 | Total Material BOQ TA–Owner |
+| Non Material Level 04 | Total Jasa BOQ TA–Owner |
+| Operasional Level 04 | Total BOP PP |
+
+BOP diuji sebagai batas sendiri dan tidak ditambahkan lagi ke Total BOQ Owner. Header/COGS/Mandor/Non Stock/PPh/net transfer bukan pengganti nilai Owner untuk plafon ini. Tenaga Kerja/Depresiasi tetap audit-only. Nilai kebutuhan disusun ulang oleh domain dari sumber BOQ dan rencana resmi; total/marker/harga pembanding klien bukan otoritas. Nilai sama dengan sisa diperbolehkan; kebutuhan melampaui salah satu batas menolak **seluruh pengajuan** dengan nama komponen, kebutuhan dan sisa. Nomor, status, manifest, approval, audit, volume dan revisi kembali seperti sebelum percobaan gagal.
+
+### Siklus alokasi
+
+- **Draf baru:** baris identitas/audit dibuat dengan nominal nol, tanpa mengambil budget. Draf berlebih tetap bisa disimpan untuk diperbaiki. Budget habis menahan pengajuan formal, bukan memaksa kehilangan draf.
+- **Ajukan Paket PP + BA KH + SPK:** setelah validasi domain, batas diperiksa ulang dan alokasi dicatat atomik bersama submission, revision dan receipt. Standalone v3 baru yang memang memakai jalur kompatibel juga memakai guard yang sama; tidak ada bypass lewat nama command lain.
+- **Dikembalikan/Revisi/reset persetujuan:** alokasi lama tetap ditahan. Menyimpan draf revisi tidak membebaskan budget. Pengajuan ulang mengganti alokasi sendiri dengan kebutuhan baru, bukan menambahkannya dua kali. Jika ID/Branch berubah pada revisi yang diizinkan, alokasi lama baru berpindah saat pengajuan baru benar-benar sukses.
+- **Cancel:** hanya sesudah guard Cancel existing (Admin Area Konstruksi, Officer 1 Operation, scoped Superadmin; belum ada BA RP/pembayaran), alokasi menjadi nol/cancelled dengan audit. Tidak memberi tombol bebas-budget tersendiri atau melepas volume secara fiktif.
+- **Approval/transfer/Tandai Lunas:** tidak menghapus alokasi. Konsumsi paid tetap terpakai, dan nominal kasbon/APM/bukti transfer maupun tujuh keputusan tidak diubah.
+- **Pelepasan volume yang sah:** aturan BA PP Sah + Final/full actual approvals existing tetap. Hanya nilai Owner M/J dari volume sisa yang benar-benar dilepas, pada harga snapshot BOQ, yang mengurangi alokasi. Bagian accepted/paid tetap, BOP tidak otomatis dikreditkan. Pelepasan berulang memakai akumulasi yang sama, tidak mengkreditkan ulang.
+- **PP lanjutan:** sumber PP/root/BA PP dan volume yang dilepas tetap wajib. Draf lanjutan belum mengambil budget; pengajuannya mereservasi nilai Owner subalokasi serta BOP-nya. Kredit pada induk dan beban lanjutan tidak dihitung ganda. PID, unit dan Branch lanjutan mengikuti sumber; tidak dapat dipindah ke budget PID lain.
+
+PID belum terdaftar atau belum dipetakan tetap boleh manual sampai pengajuan sesuai izin sementara pengguna. **Alokasi PP baru tersebut tetap dicatat**, dengan master FK nullable dan identitas PID/unit/Branch. Saat master kemudian diimpor/dipetakan, pemakaian itu langsung terbaca tanpa menulis ulang PP atau pembayaran. Impor berkala tidak menghapus ledger; plafon yang turun di bawah konsumsi dapat menghasilkan sisa negatif dan menahan pengajuan baru, sementara paket berjalan tetap memakai snapshot/keputusan tersimpan.
+
+Satu PID pada PP baru tidak boleh bercampur unit. Sebelum master terpetakan, draf manual pada Branch berbeda tetap mengikuti akses lama; tetapi pengajuan baru tidak boleh menyeberang Branch bila PID sudah mempunyai alokasi aktif di Branch lain. Pemetaan Finance ditolak bila mengabaikan alokasi aktif di Branch lain; draf nol tidak dianggap pemakaian. Rekonsiliasi ID/Branch diperlukan sebelum pemetaan yang bertentangan; sistem tidak memilih Branch dari Rxxx atau memindah paid history. Impor unit yang bertentangan dengan identitas PP baru aktif ditolak. Seluruh hak role/unit/Branch/Region, actual assignee, source UUID, private file, pending-upload, Head correction, calendar, harga, volume dan settlement existing tetap.
+
+### Penyimpanan, akses dan konkurensi
+
+Migration **`2026_11_24_000003_create_budget_pid_allocations`** menambah dua tabel; tidak mengubah baris PP atau struktur uang lama:
+
+| Tabel | PK khusus | Fungsi |
+|---|---|---|
+| budget_pid_allocations | id_budget_allocation | Satu baris unik per SQL pp_id; PID/unit/Branch, master opsional, status draft/reserved/cancelled, nominal M/J/BOP/planned, source hash/revision dan timestamps |
+| budget_pid_allocation_changes | id_budget_allocation_change | Audit before/after, action, actual actor, UUID request dan hash payload; request+allocation unik |
+
+Nominal BIGINT nonpecahan, tidak ada konversi nilai lama. FK PP/Branch/master/actor melindungi hubungan. Index `budget_pid_usage_scope` pada PID/unit/Branch/status mendukung agregasi. Kedua tabel dibuat dengan recovery schema helper yang sama dan default timestamp eksplisit; rollback menolak sesudah ada alokasi/riwayat, termasuk draf, agar policy PP tidak tertinggal tanpa ledger.
+
+```mermaid
+erDiagram
+    project_plans ||--o| budget_pid_allocations : allocation_for_new_PP
+    branches ||--o{ budget_pid_allocations : scopes
+    budget_pids o|--o{ budget_pid_allocations : optional_master
+    budget_pid_allocations ||--o{ budget_pid_allocation_changes : audited_by_request
+    users ||--o{ budget_pid_allocation_changes : acts
+```
+
+Perintah memakai transaksi dan lock workspace existing, lalu singleton master control yang sama dengan impor/pemetaan. Setelah menunggu lock, ledger identitas/kapasitas dan item plafon dibaca dengan **current locking reads**; tidak memakai SUM dari snapshot REPEATABLE READ lama. Kapasitas untuk write diproses maksimal500 baris ledger per halaman, bukan seluruh graph BOQ/arsip. Ini desain penguncian; bukan hasil uji konkurensi fisik MariaDB. Lock global sengaja menserialkan perubahan budget lintas PID saat impor/pemetaan; bukan klaim throughput tanpa bottleneck.
+
+Domain guards selesai sebelum alokasi direncanakan; PP SQL ditulis sebelum ledger FK baru, lalu ledger/event/receipt diselesaikan dalam transaksi yang sama. Trigger kegagalan audit pada fixture membuktikan rollback termasuk data workflow. Retry request yang sudah berefek tidak menambah alokasi; actor dan payload diikat hash, termasuk result_id. Request baru untuk pengajuan ulang tetap merekam event walaupun nominal sama.
+
+GET referensi memakai endpoint existing dengan opsional `pp_id` berisi **source UUID PP yang sedang diedit**, bukan SQL UUID. Server memeriksa exact PP pada workspace autentikasi + actual Branch/unit sebelum mengecualikan alokasinya. Response terikat PID/unit/Branch/pp_id; stale/aborted responses tidak mengisi form lain. Tidak ada first/sibling/Project-code fallback. Read bersifat advisory dan tidak mereservasi; submit selalu memeriksa ulang.
+
+Master list menggunakan satu grouped query tambahan untuk maksimal20 PID, mempertahankan kolasi database pada join PID. Tidak membaca PP lama, arsip, profil Mandor atau berkas privat untuk menghitung budget. Tidak ada endpoint write/role/approval/poller/dependency baru. Pemeriksaan budget di SPK hanya untuk PP bertanda kebijakan; dokumen/Word/PDF tetap memakai template dan angka existing tanpa tabel referensi tambahan.
+
+### Penerapan tahap 3
+
+Backup database terlebih dahulu. Untuk workspace lokal yang sudah menerima kode, jalankan `php artisan migrate`, `npm run build`, `npm run check:assets`, lalu muat ulang halaman. Untuk server setelah kode tersedia/pull: `php artisan migrate --force` dan build/check aset. Pastikan Finance sudah mengimpor unit dan memetakan Branch. Tidak memakai fresh/seed/reset/rollback tabel berisi atau backfill PP lama. Tidak ada worker baru/restart khusus fitur budget ini. Agen belum menjalankan migration pada its aktif/lokal/server, mengimpor workbook live, atau push/deploy. [QA terbaru](LARAVEL_QA.md), [audit tahap 3](qa/budgeting-pid-stage3-20261124.json).
+
+Kebijakan PP lama atau rekonsiliasi Excel yang kelak sudah mencakup transaksi aplikasi memerlukan keputusan dan implementasi terpisah; tidak diaktifkan diam-diam. Word/PDF visual, akun nyata, DDL/konkurensi/load MySQL/MariaDB dan aaPanel belum diuji pada tahap ini.
+
+## Koreksi default TIMESTAMP lokal — 24 November 2026
+
+Pengguna mengonfirmasi error berikut terjadi **di lokal**, dengan hasil `SHOW COLUMNS` untuk `budget_pid_imports.created_at`: `timestamp NOT NULL`, Default `current_timestamp()`, Extra `on update current_timestamp()`. Jadi pemeriksaan default versi awal terlalu ketat terhadap perilaku TIMESTAMP bawaan, bukan bukti nominal/data master berubah. Nilai server/aaPanel belum diperiksa.
+
+Kedua migration PID kini memakai `DEFAULT CURRENT_TIMESTAMP` **secara eksplisit** pada timestamp tabel baru, tanpa `ON UPDATE`; ini menghindari default implisit pada kolom pertama serta zero-default kolom berikutnya. Untuk tabel lama, helper menerima hanya variasi `CURRENT_TIMESTAMP`, `CURRENT_TIMESTAMP()`, `CURRENT_TIMESTAMP(0)` pada created_at/updated_at MySQL/MariaDB dan default zero-date historis hanya pada updated_at. Variasi zero-date tersebut diterima sebagai metadata; isi tanggal lama tidak diperbaiki/dikonversi. Default literal arbitrer, tipe/nullability/key berbeda dan default kolom lain tetap ditolak. Tabel lama tanpa default juga tetap kompatibel. Tidak menjalankan ALTER timestamp pada tabel yang sudah ada atau mengubah setting database global.
+
+Semua insert/import PID memasok tanggal aplikasi secara eksplisit. Karena tabel lama dapat mempunyai `ON UPDATE CURRENT_TIMESTAMP`, update Branch menetapkan `created_at=created_at, updated_at=updated_at` agar tanggal sumber tidak bergeser. Upsert impor menyertakan created_at lama pada daftar update; updated_at tetap waktu perubahan impor yang nyata. Tidak menambah lookup/query, tidak mengarang tanggal baru untuk data historis, tidak mengubah audit/UUID/budget/approval/workflow/ledger.
+
+Rujukan perilaku database: [MariaDB TIMESTAMP](https://mariadb.com/docs/server/reference/data-types/date-and-time-data-types/timestamp), [MySQL automatic timestamp initialization/update](https://dev.mysql.com/doc/refman/8.4/en/timestamp-initialization.html). DefaultCURRENT dapat berasal dari pengaturan implicit timestamp; nilai variabel lokal belum dibaca sehingga penyebab setting tersebut merupakan inferensi. ON UPDATE sendiri dikonfirmasi oleh pengguna.
+
+**Di lokal yang memakai workspace ini:** kode perbaikan sudah ada; jalankan ulang `php artisan migrate`. Untuk server yang kelak menerima kode ini, backup/push/pull lalu `php artisan migrate --force` sesuai panduan penerapan. Tidak perlu migration baru, fresh/drop/seed/manual receipt, build frontend atau restart worker khusus koreksi ini. Agen tidak mengeksekusi migration pada its aktif. [Audit pengujian/batas](qa/budgeting-pid-timestamp-20261124.json).
+
+## Koreksi migration terputus — 24 November 2026
+
+Error `Table 'budget_pid_controls' already exists` membuktikan tabel tersebut sudah ada sementara migration000001 masih pending. Penyebab awal dapat berupa DDL MySQL yang sempat berhasil sebagian sebelum error berikutnya, atau tabel dipulihkan tanpa catatan migration. Log ini sendiri belum membuktikan error awal/struktur server. Versi awal migration belum mendukung retry pada kondisi tersebut; kedua migration PID kini menggunakan `BudgetPidMigrationSchema` untuk melanjutkan struktur yang kompatibel.
+
+Sebelum perubahan, seluruh struktur PID yang sudah ada diperiksa terhadap definisi migration: kolom/tipe/nullability/default, primary key, indeks, relasi dan InnoDB. Tipe FK akun/Branch eksternal diperiksa sebelum DDL; tipe identitas tabel pengguna tidak diubah otomatis. Missing secondary/unique index dan FK yang belum selesai dipasang dapat dilengkapi; key/kolom yang berbeda menghentikan proses dengan nama objek yang bermasalah. Kegagalan penambahan FK karena data orphan tidak diabaikan. Tabel/kolom lama tidak dihapus atau dikonversi agar tampak cocok.
+
+Tabel lengkap yang kompatibel dipertahankan, termasuk UUID, nilai, versi control, riwayat impor dan pemetaan. Control kosong hanya diinisialisasi `id_budget_control=1, version=0` bila seluruh master/audit kosong; adanya riwayat tanpa control menahan migration, bukan menciptakan versi baru. Tahap2 dapat melanjutkan `branch_id` yang sudah terbentuk tetapi audit/FK/indeksnya belum ada. Runner Laravel mencatat migration selesai setelah seluruh `up()` berhasil; aplikasi tidak menulis catatan migration secara manual. Tidak ada nomor migration baru.
+
+**Langkah operator setelah backup:** ambil kode perbaikan, lalu dari folder aplikasi jalankan `php artisan migrate --force`. Laravel melanjutkan migration yang pending; yang sudah tercatat selesai tidak dijalankan ulang. Jangan memakai `migrate:fresh`, menghapus tabel, atau memasukkan baris migrations secara manual untuk melewati pemeriksaan. Tidak perlu build frontend/restart worker khusus koreksi PHP migration ini; kebutuhan aset tahap2 tetap berlaku bila belum dibangun.
+
+Jika berhenti karena struktur tidak cocok, simpan error baru dan periksa output baca-saja `SHOW CREATE TABLE` pada tabel yang disebut serta catatan `migrations`. Contoh diagnosis:
+
+```sql
+SHOW CREATE TABLE budget_pid_controls;
+SHOW TABLES LIKE 'budget%';
+SELECT migration, batch FROM migrations
+WHERE migration LIKE '2026_11_24_00000%' ORDER BY migration;
+```
+
+Tidak meminta token/password atau snapshot data bisnis. Jangan mengubah tipe `users.id_user` atau menonaktifkan FK tanpa audit relasi menyeluruh. Pemulihan ini tidak menjamin semua schema impor kustom dapat diadopsi; struktur berbeda perlu diperiksa. DDL MySQL tidak menjadi transaksi atomik oleh koreksi ini: bagian yang selesai dapat tetap ada bila langkah berikutnya gagal, tetapi retry mengenalinya dan tidak mereset data. Pengujian memory dan mock metadata/grammar bukan pengujian DDL fisik pada MariaDB/server pengguna. [Audit koreksi](qa/budgeting-pid-migration-recovery-20261124.json).
+
 ## Tahap 2 — Referensi PP dan pemetaan Branch eksplisit
 
 **Status terbaru:** tahap 1 dan 2 selesai di kode. PP baru dapat mencari PID, mengisi Nama Kegiatan dari master dan menampilkan empat referensi available cost. **Reservasi, sisa setelah PP lain dan blokir over-budget belum aktif; dikerjakan pada tahap 3.** Bagian tahap 1 di bawah merupakan catatan historis, bukan status integrasi terkini.

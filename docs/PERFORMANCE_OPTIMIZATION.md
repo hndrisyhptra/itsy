@@ -1,5 +1,11 @@
 # Optimasi query dan respons aplikasi
 
+## 24 November 2026 — Biaya terukur ledger Budgeting PID tahap 3
+
+Budget read tidak membangun graph PP/BOQ historis/arsip/private. List20+1 menambah satu grouped query usage dengan join berkolasi DB; reference memakai indexed SUM, exactownPP satu metadata lookup. Writecapacity memakai current FOR UPDATE maksimal500moneyrows/page setelah sharedcontrol lock untuk menghindari REPEATABLE READ snapshot lama; tidak SUM nonlocking setelah menunggu. Impor menambah satu batched identitycheck/500PID, mapping satu batched reservedBranch check. Planner earlyreturn unrelated approval/payment tanpa query tambahan, sementara budgetcommand retry menambah satu auditread. Singleton menserialkan import/mapping/allocation: konsistensi diprioritaskan dan throughput fisik belum diukur.
+
+Fixture authenticatedHTTP: reference6/own7, mapping10012, list6, import5192preview37/commit768, formal2BOQpackage67. Existing500BOQ/1000componentswrite59; archive524304bytes tidak terambil di3runtimeSELECT. 501allocation current-read diuji2pagequery; physical MySQLrace/deadlock/load belum diuji. UI lazy/scoped350msabort dan20DOM tetap, tanpa dependency/poller/masterboot baru. [Kontrak](BUDGETING_PID.md), [audit aktual](qa/budgeting-pid-stage3-20261124.json).
+
 ## 19 November 2026
 
 Permintaan: mengurangi beban query/script agar aplikasi lebih lancar tanpa mengubah data, tampilan, nominal, hak akses atau alur bisnis. Optimasi dikerjakan pada kode lokal; tidak menjalankan migration, mengubah `.env`, menyentuh its aktif, worker hidup, server aaPanel atau proyek Dompis.

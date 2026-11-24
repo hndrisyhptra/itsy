@@ -3,6 +3,11 @@ name: area3-design-system
 description: Build or revise the its Area 3 interface with its specific enterprise design tokens, responsive shell, tables, and accessible interaction states. Do not apply its brand to Dompis Prov.
 ---
 
+## 24 November 2026 — Budgeting PID capacity UI, stage3
+
+Follow latest docs/BUDGETING_PID.md. Six-column scoped reference shows Excel/other allocations/remaining/currentPP/after; allow negative remainder visually and draft save. Explain old PP exempt and paid retained, distinguish Owner from Header COGS. Exact sourcePP+PID/unit/Branch response key, debounce350ms/abort, no stale autofill; old names adopt explicitly only. Show readonly budget check before Ajukan Paket on editable tracked SPK, no name-adoption button there. Master list currentpage20 uses remaining with Excel+used annotation; unbound Branch remains Excelreference. Import preview still Available, not fake remaining. Existing light-dark/responsive table, no gradient/dependency/poller/localStorage/new private read; browser transport mocks are not live server/export evidence.
+
+
 ## 24 November 2026 — Budgeting PID reference UI
 
 Follow latest docs/BUDGETING_PID.md. Header/BOQ/Anggaran show scoped four-cost advisory reference outside printable PP, not HeaderCOGS or ledger availability. New matched root fills readonly master name; existing name changes only explicit adoption; unknown/unmapped manual, conflicts no values. Debounce350ms/abort/exactscope protects changed PID/unit/Branch; retain original Header date Input and Operation roles. Duplicate warning in existing single confirmation, no double prompt. Finance mapping currentpage20/API100, explicit Branch unrelated to prefix, audit history, YA-TIDAK/currentversion/uncertain UUIDretry. Use existing responsive grid/table and light-dark tokens, no new poller/dependency/localStorage/master bootgraph; record actual synthetic browser and unchanged export limits.

@@ -1,5 +1,17 @@
 # Catatan perubahan it's Area 3
 
+## 24 November 2026 — Budgeting PID tahap 3, PP baru saja
+
+Master/referensi kini menampilkan pemakaian aplikasi dan sisa Total BOQ Owner, Material, Jasa dan BOP. Paket PP baru ditahan jika salah satu kebutuhan melebihi sisa; draf berlebih tetap dapat disimpan. Revisi tidak membebaskan alokasi sebelum pengajuan pengganti sukses, Cancel mengikuti guard existing, pembayaran lunas tetap terpakai dan pelepasan volume sah mengkreditkan sisa Owner M/J sekali. PP lanjutan baru ikut budget; PP lama seluruh status termasuk draf tetap dikecualikan. Unknown/unmapped manual masih sementara diperbolehkan namun komitmen dicatat. Migration000003 ledger+audit disiapkan; database aktif/server tidak dimigrasi agen. [Panduan](BUDGETING_PID.md), [QA](qa/budgeting-pid-stage3-20261124.json).
+
+## 24 November 2026 — Koreksi default timestamp PID lokal
+
+Metadata lokal current_timestamp()/ONUPDATE dikonfirmasi. Pemeriksaan retry menerima variasi default TIMESTAMP bawaan yang terbatas, dan fresh migration membuat default eksplisit. Pemetaan Branch mempertahankan kedua tanggal sumber; impor ulang mempertahankan tanggal pertama dan mencatat updated_at perubahan nyata. Tidak mengubah nilai/tanggal historis lewat migration, global database setting atau data workflow. Jalankan ulang migrate di lokal; tanpa migration baru/frontendbuild/workerrestart. [Panduan](BUDGETING_PID.md).
+
+## 24 November 2026 — Perbaikan retry migration Budgeting PID
+
+Migration000001/000002 dapat melanjutkan tabel/kolom/FK/indeks yang terbentuk sebagian setelah kegagalan, dengan pemeriksaan kompatibilitas sebelum perubahan. Tabel lengkap, versi dan data master/audit/pemetaan dipertahankan; struktur tidak sesuai ditahan untuk diagnosis. Tidak menghapus tabel, mereset budget, mengubah tipe akun atau menandai migration manual. Pull perbaikan lalu migrate ulang oleh operator; tidak ada migration baru/ubah UI/worker. [Panduan](BUDGETING_PID.md).
+
 ## 24 November 2026 — Budgeting PID tahap 2
 
 Pemetaan Branch Finance/Superadmin melalui pilihan baris dan riwayat audit, tanpa inferensi kode Rxxx. Import berkala mempertahankan pemetaan. Header PP baru mencari PID dan mengisi Nama Kegiatan; Total/Material/Jasa/BOP menjadi referensi, PID tidak terdaftar dapat manual. PP lama memerlukan adopsi nama eksplisit; Branch/unit lain tidak mengungkap data. Respons pencarian lama ditahan, YA/TIDAK dan UUID/revision/server guards tetap. Migration nullable Branch/audit baru dan build aset diperlukan. Reservasi/sisa PP lain serta blokir over-budget ditunda ke tahap3; tidak mengubah data aktif/history/paid. [Panduan](BUDGETING_PID.md), [QA](qa/budgeting-pid-stage2-20261124.json).

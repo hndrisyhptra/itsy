@@ -1,0 +1,27 @@
+{
+  "date": "2026-11-24",
+  "feature": "Compatible local PID TIMESTAMP defaults and preserved source dates",
+  "confirmed_by_user": {"location": "local", "table": "budget_pid_imports", "field": "created_at", "type": "timestamp", "nullable": false, "default": "current_timestamp()", "extra": "on update current_timestamp()"},
+  "not_confirmed": ["explicit_defaults_for_timestamp variable", "full local schema", "aaPanel schema or server behavior"],
+  "changes": [
+    "narrow date-column default matching for CURRENT_TIMESTAMP spellings and updated_at legacy zero default",
+    "arbitrary/defaults of other columns still rejected",
+    "fresh original migrations use explicit current timestamp default without ON UPDATE",
+    "Branch bulk update self-assigns both source timestamp fields",
+    "import upsert explicitly retains original created_at and updates updated_at for real import changes"
+  ],
+  "preservation": {"existing_timestamp_alter": false, "row_date_backfill": false, "version_reset": false, "new_migration": false, "global_database_setting_change": false, "new_runtime_queries": 0, "workflow_money_approval_ledger_change": false},
+  "verification": {
+    "full_final": {"tests": 478, "assertions": 14245, "php": "8.5.10", "database": "SQLite memory", "seconds": 61.718, "peak_mb": 136.5, "process_memory_limit": "512M"},
+    "focused_final": {"tests": 42, "assertions": 1348, "php": "XAMPP 8.2.4", "database": "SQLite memory", "seconds": 22.05},
+    "mysql_metadata_grammar_tests": 13,
+    "fresh_actual_migration_grammar": "both original up callbacks; three timestamp CREATEs explicitly default CURRENT_TIMESTAMP without ON UPDATE or zero date",
+    "http_source_date_regression": "2020 created_at/updated_at preserved on mapping; original created_at retained and updated_at advances on changed import; actual UPDATE/upsert SQL inspected",
+    "query_fixture": {"pid_reference_http": 4, "mapping_100_http": 11, "master_list_http": 5, "preview_5192_http": 26, "commit_5192_http": 757, "save_500_boq": 59},
+    "pint": "passed",
+    "diff_check": "passed"
+  },
+  "sources": ["https://mariadb.com/docs/server/reference/data-types/date-and-time-data-types/timestamp", "https://dev.mysql.com/doc/refman/8.4/en/timestamp-initialization.html"],
+  "limitations": ["Metadata mocks/real grammar and SQLite tests do not exercise a physical MySQL/MariaDB engine", "No live local its or aaPanel migration/data writes", "No frontend/build/browser/Word/PDF rerun because unchanged", "No concurrency/load benchmark", "No env/APP_KEY/worker/Dompis/commit/push/deploy mutation"],
+  "local_operator_command": "php artisan migrate"
+}

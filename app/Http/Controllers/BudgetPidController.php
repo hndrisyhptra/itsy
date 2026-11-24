@@ -13,9 +13,9 @@ class BudgetPidController extends Controller
 {
     public function reference(Request $request, BudgetPidReference $reference)
     {
-        $input = $request->validate(['pid' => 'required|string|max:100', 'unit' => ['required', Rule::in(['Konstruksi', 'Operation'])], 'branch' => 'required|string|max:100']);
+        $input = $request->validate(['pid' => 'required|string|max:100', 'unit' => ['required', Rule::in(['Konstruksi', 'Operation'])], 'branch' => 'required|string|max:100', 'pp_id' => 'sometimes|string|max:100']);
 
-        return response()->json($reference->lookup($request->attributes->get('area3.account'), $input['pid'], $input['unit'], $input['branch']))->header('Cache-Control', 'private, no-store');
+        return response()->json($reference->lookup($request->attributes->get('area3.account'), $input['pid'], $input['unit'], $input['branch'], $input['pp_id'] ?? null))->header('Cache-Control', 'private, no-store');
     }
 
     public function branch(Request $request, BudgetPidBranch $branch, BudgetPidMaster $master)

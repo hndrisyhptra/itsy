@@ -1,5 +1,17 @@
 # Laravel conversion checklist
 
+## 24 November 2026 — Tahap 3 Budgeting PID selesai di kode
+
+User mengonfirmasi **PP baru saja**; existing v3 Draft juga tidak diadopsi. Ledger SQL+audit, empat cap formal, exact own-allocation replacement, cancel/paid/release/continuation dan UI sisa tersedia. Migration000003 belum diterapkan pada its aktif. Final PHP496/14617, frontend479, XAMPPfocused60/1720, build/assets dan enam skenario actual-App synthetic transport lulus. Physical MySQL concurrency/DDL, server, live workbook dan Word/PDF visual belum diuji ulang. [Kontrak/penerapan](docs/BUDGETING_PID.md), [audit](docs/qa/budgeting-pid-stage3-20261124.json). Bagian tahap3-belum-aktif di bawah merupakan riwayat sebelum pengerjaan ini.
+
+## 24 November 2026 — Koreksi lanjutan default timestamp PID lokal
+
+Terkonfirmasi Defaultcurrent_timestamp()/ExtraONUPDATE pada created_at lokal. Koreksi helper default terarah, fresh timestamps eksplisit, self-assign tanggal mapping dan created_at lama di upsert, tanpa extraquery/historyrewrite. Metadata/actualBlueprintGrammar/HTTPsource-date tests ditambahkan; activeits/localmigration tidak dijalankan agen. Operator lokal migrate ulang. Budgeting tahap3 tetap belum aktif. [Detail](docs/BUDGETING_PID.md), [audit](docs/qa/budgeting-pid-timestamp-20261124.json).
+
+## 24 November 2026 — Perbaikan sebelum melanjutkan Budgeting tahap 3
+
+User melaporkan stage1 pending dengan tabel controls sudah ada. Existing dua migration diperbaiki agar memeriksa schema lalu melanjutkan partial DDL kompatibel, tanpa hapus/reset data. Recovery tested memory/mocked MySQL-MariaDB; tidak live migration/server atau perubahan runtime. Operator backup/pull/migrate ulang; error struktur baru memerlukan SHOW CREATE TABLE, bukan fresh/manual migration receipt. Tahap3 tetap belum dikerjakan. [Panduan](docs/BUDGETING_PID.md), [audit](docs/qa/budgeting-pid-migration-recovery-20261124.json).
+
 ## 24 November 2026 — Budgeting PID tahap 2 selesai di kode
 
 Selesai: explicit Branch bulk mapping/audit/scoping, import mempertahankan mapping, exact PID lookup/autofill PP baru dan adopsi nama PP editable lama, empat referensi biaya, duplicate warning, stale-response/source-version protection dan migration baru000002. Full456PHP/477frontend dan final focused22PHP lulus; actual-App browser4kasus dengan transport sintetis. Tidak live-applied/deploy; operator migrate/build dan Finance perlu memetakan Branch. **Berikutnya tahap3:** ledger/alokasi atomik, sisa/batas tiapkomponen, revisi/Cancel/paid/kelanjutan/legacy dan concurrencyMySQL. Referensi tahap2 belum membatasi over-budget. [Kontrak/tahapan](docs/BUDGETING_PID.md), [audit](docs/qa/budgeting-pid-stage2-20261124.json).

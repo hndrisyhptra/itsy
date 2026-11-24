@@ -5,7 +5,7 @@ export type BudgetUnit='Konstruksi'|'Operation';
 export type BudgetCategory='TOTAL'|'Material'|'Non Material'|'Operasional'|'Tenaga Kerja'|'Depresiasi';
 export interface BudgetItem {source_title:string;source_row:number;release:number;commitment:number;actual:number;available:number}
 export interface BudgetSnapshot {name:string;unit:BudgetUnit;items:Record<BudgetCategory,BudgetItem>}
-export interface BudgetRow extends BudgetSnapshot {id_budget_pid:string;pid:string;warnings:string[];updated_at:string;branch_id?:number|null;branch?:string|null}
+export interface BudgetRow extends BudgetSnapshot {id_budget_pid:string;pid:string;warnings:string[];updated_at:string;branch_id?:number|null;branch?:string|null;application_used?:Record<'TOTAL'|'Material'|'Non Material'|'Operasional',number>;remaining?:Record<'TOTAL'|'Material'|'Non Material'|'Operasional',number>}
 export interface BudgetSummary {created:number;updated:number;unchanged:number;warnings:number;pids:number}
 export interface BudgetPreviewRow {pid:string;name:string;row:number;action:'created'|'updated'|'unchanged';available:Record<'TOTAL'|'Material'|'Non Material'|'Operasional',number>;warnings:string[]}
 export interface BudgetPreview {version:number;preview_hash:string;sha256:string;unit:BudgetUnit;summary:BudgetSummary;rows:BudgetPreviewRow[]}

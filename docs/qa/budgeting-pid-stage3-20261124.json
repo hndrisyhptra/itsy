@@ -1,0 +1,135 @@
+{
+  "date": "2026-11-24",
+  "feature": "Budgeting PID stage 3: allocation and four caps for genuinely new PP only",
+  "user_decisions": {
+    "existing_pp": "Excluded, including preexisting v3 drafts; no backfill or adoption",
+    "excel_excludes_application_transactions": true,
+    "branch": "Explicit mapping only; PID prefix is not authority",
+    "unknown_unmapped_pid": "Temporary manual submission allowed; commitment still recorded"
+  },
+  "policy": "pid-budget-v1",
+  "invariants": [
+    "Canonical Owner material/service and their sum; BOP independently capped",
+    "Draft zero; formal reserve; return/reset hold; resubmit replaces own allocation",
+    "Cancel requires original cancellation authorization/descendant guards",
+    "Paid consumption retained; only genuine authorized cumulative unused Owner volume releases credit M/J, never BOP",
+    "New continuations tracked even from legacy parent; same root PID/unit/Branch",
+    "Actor/payload UUID replay and before-after audit; transactional workflow+ledger rollback",
+    "Current locking ledger reads after singleton control, pages of at most 500 rows; not stale snapshot SUM",
+    "All original work/payment approvals/private/revision/date/volume guards retained"
+  ],
+  "schema": {
+    "migration": "2026_11_24_000003_create_budget_pid_allocations",
+    "tables": {
+      "budget_pid_allocations": "id_budget_allocation",
+      "budget_pid_allocation_changes": "id_budget_allocation_change"
+    },
+    "rollback": "Refuses any saved allocation/audit, including draft",
+    "live_applied": false
+  },
+  "verification": {
+    "php_full": {
+      "passed": 496,
+      "assertions": 14617,
+      "php": "8.5.10",
+      "database": "isolated SQLite memory",
+      "seconds": 67.039,
+      "peak_mb": 136.5,
+      "memory_limit": "process-only 512M"
+    },
+    "xampp_focused": {
+      "passed": 60,
+      "assertions": 1720,
+      "php": "8.2.4",
+      "seconds": 26.4,
+      "database": "isolated SQLite memory"
+    },
+    "frontend": {
+      "passed": 479,
+      "failed": 0
+    },
+    "typescript_vite": "passed",
+    "assets": {
+      "manifest_references": 49,
+      "preload_dependencies": 40,
+      "deployment_profiles": 3
+    },
+    "mysql_grammar": {
+      "mode": "PDO-free recording connection, not physical server",
+      "ledger_rows": 501,
+      "capacity_queries": 2,
+      "identity_queries": 1,
+      "current_locking": true
+    },
+    "actual_fixture_flow": "5 package decisions -> BARP -> BAPP -> kasbon -> 7 payment decisions -> private proof -> full Finance settlement optional APM -> paid allocation retained -> release unused OwnerJ -> new continuation draft0",
+    "browser": {
+      "cases": [
+        "construction",
+        "operation",
+        "existing_legacy",
+        "tracked",
+        "spk",
+        "finance_mapping"
+      ],
+      "transport": "Actual App, synthetic intercepted API, external network blocked",
+      "header_widths": [
+        375,
+        768,
+        1440
+      ],
+      "header_themes": [
+        "light",
+        "dark"
+      ],
+      "js_errors": 0,
+      "root_overflow": false,
+      "mapping": "R501 deliberately mapped to SEMARANG, not inferred",
+      "writes": "Explicit synthetic writes only, no live database",
+      "viewed_screenshots": [
+        "tracked-reference.png",
+        "spk-budget.png",
+        "mapping-history.png"
+      ]
+    },
+    "corrections_during_qa": [
+      "Full-suite cross-Branch unknown/unmapped Draft regression fixed in production guard; reserved formal/mapping conflicts remain blocked, original regression tests retained",
+      "Synthetic private payee response fixed to include files array; synthetic SPK canonical totals populated; no private production workaround"
+    ]
+  },
+  "query_measurements": {
+    "reference_http": 6,
+    "own_source_pp_reference_http": 7,
+    "mapping_100_http": 12,
+    "master_list_http": 6,
+    "import_5192_preview_http": 37,
+    "import_5192_commit_http": 768,
+    "formal_two_boq_package_http": 67,
+    "existing_500_boq_1000_components_write": 59,
+    "archive_bytes_excluded_from_3_runtime_selects": 524304,
+    "notes": "Fixture counts, not universal; global control serializes budget/import/mapping; bounded page500 is not a maximum total ledger size"
+  },
+  "limits": [
+    "No live its migration/import/business data changes",
+    "No physical MySQL/MariaDB DDL, concurrency, deadlock or production load test",
+    "No aaPanel/server/bot/worker/env/Dompis writes",
+    "No live master workbook import; no actual private identities read",
+    "Word/PDF visual export not rerendered; generators unchanged and budget UI outside printable sources",
+    "Old PP deliberately excluded, so remaining is not reconstruction of all historical PID consumption",
+    "No push/commit/deployment performed"
+  ],
+  "deployment": [
+    "Backup database",
+    "After code available: php artisan migrate (server: --force)",
+    "npm run build",
+    "npm run check:assets",
+    "Reload page; Finance imports by unit and explicitly maps Branch",
+    "No new worker or special worker restart required for PID feature; never fresh/seed/reset/manual migrations receipt"
+  ],
+  "evidence_files_local_only": [
+    "/private/tmp/area3-budget-pid-stage3-full-final.log",
+    "/private/tmp/area3-budget-pid-stage3-xampp.log",
+    "/private/tmp/area3-budget-pid-stage3-frontend-final.log",
+    "/private/tmp/area3-budget-pid-stage3-build-final.log",
+    "/private/tmp/area3-budget-pid-stage3-20261124/browser-results.json"
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "date": "2026-11-24",
+  "feature": "Resume compatible interrupted Budgeting PID stage1/stage2 migrations",
+  "reported_error": "SQLSTATE42S01/1050 budget_pid_controls already exists while stage1 pending",
+  "initial_server_failure_verified": false,
+  "implementation": {
+    "existing_migrations_updated": ["2026_11_24_000001_create_budgeting_pid_master", "2026_11_24_000002_map_budget_pid_branches"],
+    "helper": "app/Support/BudgetPidMigrationSchema.php",
+    "behavior": ["preflight existing columns/types/null/default/PK/FK/InnoDB", "check external FK types before DDL", "create only missing tables or extension columns", "restore missing secondary/unique indexes and foreign keys", "reject incompatible schema without dropping/resetting it", "preserve current control version and all saved data", "seed control only for completely empty master/history", "Laravel records successful completion normally"],
+    "new_migration": false,
+    "manual_migration_receipt": false,
+    "mysql_ddl_atomic": false,
+    "runtime_query_or_ui_change": false
+  },
+  "verification": {
+    "full": {"tests": 470, "assertions": 14087, "php": "8.5.10", "database": "SQLite memory", "seconds": 60.315, "peak_mb": 134.5, "cli_memory_limit": "512M", "note": "Before final test-only expansion of snapshots; final implementation unchanged"},
+    "final_focused": {"tests": 34, "assertions": 1298, "php": "XAMPP 8.2.4", "seconds": 21.43, "database": "SQLite memory"},
+    "new_tests": {"integration": 7, "mysql_mariadb_metadata_grammar_mock": 5, "assertions": 160},
+    "preserved_snapshot_tables": ["budget_pid_controls", "budget_pid_imports", "budget_pids", "budget_pid_items", "budget_pid_changes", "budget_pid_branch_changes", "prototype_workspaces", "project_plans", "contracts", "contract_documents", "payment_terms", "apm_settlements", "approval_runs", "approval_steps", "approval_decisions", "volume_balances", "volume_movements", "volume_releases"],
+    "recovery_cases": ["controls-only partial DDL and version27 preservation", "empty control seed inserted once", "populated complete tables with missing migration records", "missing FK/index stage1 and stage2", "existing branch column with missing audit/constraints", "incompatible column rejected without new tables", "history without control refuses reset"],
+    "mysql_mock_cases": ["generated ALTER FK/index with no row writes", "MariaDB JSON alias and SQLNULL/default metadata", "unsigned/display-width FK compatibility", "signed imported user FK rejected", "cross-database FK rejected", "MyISAM rejected"],
+    "runtime_query_regression": {"pid_reference_http": 4, "mapping_100_http": 11, "master_list_http": 5, "preview_5192_http": 26, "commit_5192_http": 757, "save_500_boq": 59},
+    "pint": "passed",
+    "diff_check": "passed",
+    "initial_full_run": "default CLI128MB exhausted in existing upload/finfo test; rerun with process-only512MB passed, no php.ini/config changes"
+  },
+  "limitations": ["No live its/MySQL/MariaDB physical migration or aaPanel diagnosis", "No concurrency/load test", "Invalid custom schemas, orphan FK data or DDL permission failures require operator inspection", "No new frontend/build/browser/Word/PDF run because unchanged", "No ENV/APP_KEY/worker/Dompis/commit/push/deploy mutation"],
+  "operator_after_backup_and_code_update": "php artisan migrate --force",
+  "avoid": ["migrate:fresh", "dropping existing PID tables", "manual insertion of migration receipts", "automatic changes to users key types", "disabling foreign keys to bypass errors"]
+}

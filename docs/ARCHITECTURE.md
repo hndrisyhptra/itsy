@@ -1,5 +1,23 @@
 # Arsitektur aplikasi it's Area 3
 
+## 24 November 2026 — Ledger Budgeting PID tahap 3 untuk PP baru
+
+`BudgetPidAllocation` terintegrasi setelah validasi domain dan sebelum persist SQL dalam transaksi workspace existing. Server menandai hanya PP v3 yang benar-benar baru; semua PP existing termasuk draf tetap tanpa policy. Satu baris allocation per SQL PP dan audit UUID/actor/payload menyimpan source revision/before/after. PP FK ditulis sebelum ledger. Global master control menyatukan kapasitas/import/mapping; ledger/item memakai current locking reads agar snapshot REPEATABLE READ sebelum menunggu lock tidak meloloskan kapasitas stale. Write scan maksimal500 ledger rows/halaman; GET memakai agregasi indexed. Formal canonical OwnerM/OwnerJ/M+J/BOP diuji sendiri, draft0, returnhold, resubmitreplace, cancelguarded, paidretained, cumulative genuine unused-volume release hanya M/J; BOP tidak dikreditkan.
+
+Existing reference menerima source `pp_id` opsional yang diikat workspace/Branch/unit; satu exact PP dikecualikan dari used. UI350ms/abort/scopekey mempertahankan source dan menampilkan remaining, termasuk SPK tracked sebelum Ajukan Paket. Master20+1 menambah satu grouped allocation query; import500-ID batches menjaga identitas unit/ledger. Tidak memuat arsip/PII/oldPP untuk budget. Dua tabel named-PK migration000003, tanpa backfill atau perubahan template/uang historis. [Kontrak lengkap/diagram/penerapan](BUDGETING_PID.md), [bukti dan batas](qa/budgeting-pid-stage3-20261124.json).
+
+## 24 November 2026 — Default timestamp PID implisit lokal
+
+Pengguna menunjukkan metadata created_at lokal dengan defaultcurrent_timestamp()/ONUPDATEcurrent_timestamp(). `BudgetPidMigrationSchema::defaultMatches` kini membedakan default normal/variasi ekspresi currenttimestamp pada datecols, menerima zero-date default historis hanyaupdated_at dan tetap menolak literal arbitrer/kolom lain. Fresh Blueprint000001/000002 memakai useCurrent eksplisit tanpa ONUPDATE, menghindari perilaku default timestamp lama. Existing defaults/dates tidak di-ALTER/backfill.
+
+`BudgetPidBranch` self-assigns created_at/updated_at dalam bulkUPDATE agar ONUPDATE historis tidak mengganti tanggal sumber. `BudgetPidMaster` memasukkan created_at lama dalam kolom upsert-update; updated_at memakai waktu perubahan nyata. Query/buffer/lock/version/actor/replay/Branch/unit dan angka tetap; tidak ada query tambahan. Ini perubahan terarah SQL tanggal, bukan pengabaian seluruh schema guard. Tidak ada UI/API/schema migration baru/dependency/poller atau penerapan activeits. [Kontrak/batas](BUDGETING_PID.md), [audit](qa/budgeting-pid-timestamp-20261124.json).
+
+## 24 November 2026 — Migration PID dapat dilanjutkan setelah DDL terputus
+
+Kedua migration PID existing menggunakan `BudgetPidMigrationSchema`: definisi Blueprint asli dipakai untuk memeriksa metadata dan menyelesaikan hanya tabel/kolom tambahan/indeks/FK yang belum ada. Preflight seluruh objek existing dan tipe FK eksternal dilakukan sebelum DDL; struktur berbeda/InnoDB tidak sesuai ditolak, tanpa coercion/drop/reset. Singletoncontrol dipertahankan; inisialisasi0 hanya bila master/audit kosong. Metadata MySQL integer display-width, signedness, MariaDB JSON-longtext/SQLNULL-default dan cross-schema FK ditangani eksplisit. Bukan perubahan engine/tipe akun atau bypass FK.
+
+Tabel lengkap tanpa migration receipt dapat diterima bila kompatibel; Laravel mencatat selesai setelah semua langkah sukses. MySQL DDL tetap nonatomik, retry mengakui bagian yang telah selesai. Rollback penolakan data terisi tetap. Tidak ada query runtime/perubahan API/UI/workflow/uang/ledger, dependency, poller atau migration baru. Agen tidak mengeksekusi pada its aktif/server. [Aturan/operator](BUDGETING_PID.md), [bukti dan batas](qa/budgeting-pid-migration-recovery-20261124.json).
+
 ## 24 November 2026 — Referensi PID dan Branch eksplisit (tahap 2)
 
 `BudgetPidBranch` mengelola pemetaan bulk berwenang, memakai lock/version `budget_pid_controls` bersama impor, UUID actor/payload-bound dan audit `budget_pid_branch_changes`. `budget_pids.branch_id` nullable FK/index; tidak ada prefix inference atau backfill. Listing/detail/import membatasi Branch; ringkasan batch hanya metadata unit. Pemetaan lama yang hendak dipindah mengecek satu query join PP/unit; dipakai berarti ditolak. Impor tetap mempertahankan Branch dan identitas sumber. Migration its-only000002 disiapkan, tidak live-applied.

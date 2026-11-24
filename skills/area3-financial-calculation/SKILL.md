@@ -3,6 +3,11 @@ name: area3-financial-calculation
 description: Implement and verify official KHS component prices, agreed BA KH/SPK snapshots, actual term amounts, outstanding payment and consolidated budgets for its Area 3.
 ---
 
+## 24 November 2026 — PID budget allocation for new PP only
+
+Follow docs/BUDGETING_PID.md stage3. Canonical OwnerM, OwnerJ, TOTAL=M+J, BOP are separate caps against Excel minus other active tracked PP allocations. Never use Header COGS/Mandor/net tax as Owner budget. Old PP including Draft exempt; server policy pinned. Draft0, revisionholds, formal replaces own, cancel guarded, paid remains consumed. Genuine released unused volume credits snapshot OwnerM/J once, never accepted/paid/BOP. Exact integer BCMath, safe bounds, atomic current locking reads and actor/payload UUID events. No historical reprice/adoption or live migration; document actual tests/physical server limitations.
+
+
 ## 16 November 2026 — Tandai Lunas dengan APM opsional
 
 Follow docs/PAYMENT_SETTLEMENT_OPTIONAL_APM.md, superseding mandatory APM number for kasbon-v1/kasbon-settlement-v2 settlement only. Finance explicitly settles after all applicable approvals, current-version private proof, verified scan when present, canonical net and no pending proof upload; APM optional. Server-only settledAt/settledBy and frozen proof/kasbon binding plus shared settlementRecorded govern next-term/inbox/timeline/matrix/list; do not fabricate an APM or mark absent number Valid. Finance may add/correct unique validated APM after full settlement, audit before/after/actor/time without changing original paid/history/SQL settlement amount/date/identity. Legacy pre-kasbon gates remain. Migration2026_11_16_000001 allows nullable unique apm_no only for kasbon+proof, restores SQLite triggers and refuses rollback with nulls; not applied live by agent. Keep Branch/revision/UUID/Head-lock/private file guards, no double settlement/backfill/live write. Query fixture39 per settle/edit, list4; record actual QA/deploy limits.

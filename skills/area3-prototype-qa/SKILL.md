@@ -3,6 +3,19 @@ name: area3-prototype-qa
 description: Test the its Area 3 interactive prototype through the linked business scenarios, permissions, persistence, financial/volume invariants, documents and responsive layouts.
 ---
 
+## 24 November 2026 — PID stage3 allocation QA
+
+Follow latest docs/BUDGETING_PID.md and qa/budgeting-pid-stage3-20261124.json. Verify all four independent cap/equality/rollback, canonical forged-total rejection, sourcePP scope/exclusion, actor+payload UUID, returnhold/resubmitreplace/cancelreuse, old v3 Draft exemption, Operation and crossunit, crossBranch zero drafts vs reserved submission/mapping conflicts, unknown later import deficit. Actual full work+seven payment approvals/proof/optionalAPM settlement must retain consumption; genuine unused-volume release and continuation credit once. SQLite tests and PDO-free MySQL current-lock grammar are distinct from physical concurrency/DDL; do not claim live server/WordPDF exports. Record query counts actual reference6/own7/mapping10012/list6/import5192preview37commit768/formal67, 500BOQ59. Final496PHP/14617assertions,479frontend,60XAMPPfocused/1720, six actual-App mocked browser scenarios; no active its/env/server writes.
+
+
+## 24 November 2026 — Local PID TIMESTAMP metadata compatibility
+
+Follow latest docs/BUDGETING_PID.md. User confirms localcreated_at defaultcurrent_timestamp()/ONUPDATE. Test bounded MySQL/MariaDBcurrenttimestamp spelling/zero precision and updated_at zero-default compatibility, rejection of arbitrary literal/non-date default, actual original migration MySqlGrammar defaultCURRENT withoutONUPDATE/zero. Actual HTTPmapping/import tests preserve oldsourcecreated_at, bothdates on mapping, real updated_at on changedimport, and SQL explicitly binds/selfassigns timestamps to suppress old auto-update. No dateALTER/backfill/globalsetting/liveits/schema writes or newmigration. Verify memoryretry/PK/FK/refusal and exact querycounts; distinguish metadata mocks from real DB automatic behavior, unchanged UI/export need not rerun.
+
+## 24 November 2026 — Interrupted PID migration recovery QA
+
+Follow latest docs/BUDGETING_PID.md. Test fresh plus existing-only-control/emptyseed/complete-unrecorded/persistedmaster+mapping+workflowparity/missingindex-FK/partialbranch-column/missingcontrolwithhistory/incompatibleschema/rollback. Validate MySQL unsigned FK/displaywidth/realgrammar and MariaDBJSONalias/SQLNULL with mockedmetadata; reject crossdatabaseFK/MyISAM without writes. No live/schema migration or manual migration receipts; preserve controlversion/UUID/data and existing down refusal. No runtime query/UI/API changes. Record actual full/focused PHP version/memorylimit and distinguish memory/mock from physical MySQL/aaPanelDDL; browser/export need not rerun when renderers unchanged.
+
 ## 24 November 2026 — Budgeting PID stage2 QA
 
 Follow latest docs/BUDGETING_PID.md. Test explicit Branch mapping unrelated to Rxxx, restricted Finance unit/Branch/list/import, atomic bulk100/audit/version/actor-bound UUID replay, import-retained mapping, rollback refusal and used-PID remap rejection. Exact Admin reference must hide wrong-unit/Branch/unmapped name/amount; new canonical save/transient stripping/stale source409, existing no-auto-adoption and changed-PID check. Browser actual App synthetic transport:350ms stale/abort, unit/Branch/unknown/manual/duplicate YA-TIDAK, existing explicit adoption, mapping history,375/768/1440 light-dark. Measure4HTTP reference/11mapping100/5list; new/adopt/changed saves two indexed source reads only; unchanged legacy zero. Distinguish full456baseline from finalfocused22 after last tests/fix. No live its/migration/server/worker/PII writes, no claim MySQL concurrency/WordPDF render when not tested; stage3 budget ledger not active.

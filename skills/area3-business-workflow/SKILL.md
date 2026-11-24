@@ -3,6 +3,11 @@ name: area3-business-workflow
 description: Implement its Area 3 Project Plan, BOQ, mandor contracting, assigned two-stage approvals, scan verification and full APM settlement, APM gating, BA PP and continuation state transitions.
 ---
 
+## 24 November 2026 — Budgeting PID stage3, new PP only
+
+Follow latest docs/BUDGETING_PID.md. User excludes every existing PP including v3 Draft; no adoption/backfill. Server marks genuine new PP/continuation only. Draft0/formal four canonical Owner/BOP caps/returnhold/resubmitreplace/cancelguarded/paidretained; real cumulative unused-volume release credits Owner M/J only, continuation same root identity. Unknown/unmapped manual submissions retain actual ledger; unit conflicts and reserved Branch conflicts guarded. Preserve all approval/private/source/date/revision/receipt/physical volume rules. Migration000003 prepared, no active its write. Stage2 advisory-only wording below is historical.
+
+
 ## 24 November 2026 — Budgeting PID stage2 boundary
 
 Follow latest docs/BUDGETING_PID.md. Rxxx does not identify Branch: explicit nullable Branch mapping by Finance/Superadmin only, unit/active Branch guards, shared import-control version/locks, actor+payload UUID receipt and before-after audit. Import preserves mapping; used mapped PID cannot move Branch. Scoped Admin reference has no cross-scope name/amount; new editable root/changed PID/explicit adoption canonicalizes name under two current locking reads and checks transient source UUID, strips annotation. Existing unchanged/locked/continuation preserve source/history; unknown/unmapped manual allowed temporarily. Four advisory costs only; no budget reservation/sisa/over-budget enforcement until stage3 ledger, paid consumption must remain. Migration000002 prepared/no live apply. Keep all workspace/revision/receipt/approval/financial/private/Branch/unit guards; document actual tests/query/server limits.

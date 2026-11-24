@@ -1,6 +1,7 @@
 <?php
 
 use App\Support\Area3MigrationTarget;
+use App\Support\BudgetPidMigrationSchema;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -11,12 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Area3MigrationTarget::assertAllowed();
-        Schema::table('budget_pids', function (Blueprint $t) {
-            $t->unsignedBigInteger('branch_id')->nullable();
-            $t->foreign('branch_id')->references('id_branch')->on('branches')->restrictOnDelete();
-            $t->index(['unit', 'branch_id', 'pid']);
-        });
-        Schema::create('budget_pid_branch_changes', function (Blueprint $t) {
+        BudgetPidMigrationSchema::ensure(['budget_pid_branch_changes' => function (Blueprint $t) {
             $t->engine = 'InnoDB';
             $t->charset = 'utf8mb4';
             $t->collation = 'utf8mb4_unicode_ci';
@@ -30,9 +26,13 @@ return new class extends Migration
             $t->char('payload_hash', 64);
             $t->json('before_data');
             $t->json('after_data');
-            $t->timestamp('created_at');
+            $t->timestamp('created_at')->useCurrent();
             $t->index(['unit', 'branch_id', 'version']);
-        });
+        }], ['budget_pids' => function (Blueprint $t) {
+            $t->unsignedBigInteger('branch_id')->nullable();
+            $t->foreign('branch_id')->references('id_branch')->on('branches')->restrictOnDelete();
+            $t->index(['unit', 'branch_id', 'pid']);
+        }]);
     }
 
     public function down(): void

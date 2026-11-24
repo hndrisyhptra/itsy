@@ -3,6 +3,11 @@ name: area3-volume-ledger
 description: Implement and reconcile its Area 3 BOQ component volume reservations, commitments, accepted actuals, authorized release and continuation allocation without double use.
 ---
 
+## 24 November 2026 — PID money ledger beside the original physical ledger
+
+Follow latest docs/BUDGETING_PID.md. New-only PID allocations are separate from original physical committed/accepted/released quantities. releaseVolume keeps all existing Final/current BAPP/full actual approvals/Branch/unit/Head/paid/source gates; only cumulative genuine released Owner M/J snapshot amounts reduce new PP budget. BOP/accepted/paid stay consumed, duplicate release never recredits. Continuation keeps exact root PID/unit/Branch and reserves only on own formal submit. Legacy parent stays unmarked, new child tracked. Never invent physical release for budget cancel or replace old snapshots. Current ledger reads bounded500 under shared control, no extra volume SQL/API/backfill/live write; record full actual settlement-release-continuation evidence.
+
+
 ## 18 November 2026 — Saved BARP before payment approvals
 
 Follow docs/BAPP_BEFORE_PAYMENT.md and latest user authority: new/explicitly adopted Final completion allows Admin BAPP attestation from saved complete BARP before any approval; source-bound BAPP must precede kasbon/payment. Changes invalidate current attestation into history, no financial/ledger acceptance from BAPP. Keep seven approvals, scope/private/UUID/revision/Head and release/full-package complete-approval gates; legacy/paid untouched. No migration, pure0SQL; verify 0approval attestation, change/re-attest, legacyexplicit, unit403, proof/lunas, blank Word/nonblankprint and document actual query/render/server limits.
