@@ -3,6 +3,10 @@ name: area3-business-workflow
 description: Implement its Area 3 Project Plan, BOQ, mandor contracting, assigned two-stage approvals, scan verification and full APM settlement, APM gating, BA PP and continuation state transitions.
 ---
 
+## 24 November 2026 — Budgeting PID stage2 boundary
+
+Follow latest docs/BUDGETING_PID.md. Rxxx does not identify Branch: explicit nullable Branch mapping by Finance/Superadmin only, unit/active Branch guards, shared import-control version/locks, actor+payload UUID receipt and before-after audit. Import preserves mapping; used mapped PID cannot move Branch. Scoped Admin reference has no cross-scope name/amount; new editable root/changed PID/explicit adoption canonicalizes name under two current locking reads and checks transient source UUID, strips annotation. Existing unchanged/locked/continuation preserve source/history; unknown/unmapped manual allowed temporarily. Four advisory costs only; no budget reservation/sisa/over-budget enforcement until stage3 ledger, paid consumption must remain. Migration000002 prepared/no live apply. Keep all workspace/revision/receipt/approval/financial/private/Branch/unit guards; document actual tests/query/server limits.
+
 ## 24 November 2026 — Final net PPh ROUND correction
 
 Follow latest docs/KASBON_PPH_PAYMENT_LIST.md. New/allowed reissued kasbon policy mandor-service-pph25-round-v2 rounds Material+0.975MandorJasa once half-up at final net. Exact BCMath/BigInt; preserve gross, Material and input-price money policies. Existing v1 issued/pending/approved/paid remains truncation with frozen due/matches/notice; no automatic repricing/backfill. Keep actual approval/source/UUID/private/proof/optionalAPM/paid/ledger/unit/Branch guards, no new SQL/schema/API. Record real tests and limitations; operator restarts only Area3 upload worker to recognize v2.

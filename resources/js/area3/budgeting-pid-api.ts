@@ -5,19 +5,25 @@ export type BudgetUnit='Konstruksi'|'Operation';
 export type BudgetCategory='TOTAL'|'Material'|'Non Material'|'Operasional'|'Tenaga Kerja'|'Depresiasi';
 export interface BudgetItem {source_title:string;source_row:number;release:number;commitment:number;actual:number;available:number}
 export interface BudgetSnapshot {name:string;unit:BudgetUnit;items:Record<BudgetCategory,BudgetItem>}
-export interface BudgetRow extends BudgetSnapshot {id_budget_pid:string;pid:string;warnings:string[];updated_at:string}
+export interface BudgetRow extends BudgetSnapshot {id_budget_pid:string;pid:string;warnings:string[];updated_at:string;branch_id?:number|null;branch?:string|null}
 export interface BudgetSummary {created:number;updated:number;unchanged:number;warnings:number;pids:number}
 export interface BudgetPreviewRow {pid:string;name:string;row:number;action:'created'|'updated'|'unchanged';available:Record<'TOTAL'|'Material'|'Non Material'|'Operasional',number>;warnings:string[]}
 export interface BudgetPreview {version:number;preview_hash:string;sha256:string;unit:BudgetUnit;summary:BudgetSummary;rows:BudgetPreviewRow[]}
 export interface BudgetImport {id_budget_import:string;unit:BudgetUnit;filename:string;created_at:string;actor_name:string;version:number;summary:BudgetSummary}
 export interface BudgetChange {id_budget_change:string;pid:string;action:string;before_data:BudgetSnapshot|null;after_data:BudgetSnapshot}
-export interface BudgetPage<T> {rows:T[];page:number;has_more:boolean;unit:BudgetUnit;units:BudgetUnit[]}
+export interface BudgetPage<T> {rows:T[];page:number;has_more:boolean;unit:BudgetUnit;units:BudgetUnit[];version?:number;branches?:{id_branch:number;name:string}[]}
 export class BudgetRequestError extends Error {constructor(message:string,public status:number,public uncertain=false){super(message);}}
 async function read<T>(response:Response):Promise<T>{
   let data:any;
   try{data=await response.json();}catch{throw new BudgetRequestError('Respons server belum dapat dibaca.',response.status,true);}
   if(!response.ok){const details=data.errors?Object.values(data.errors).flat().join('\n'):data.message;throw new BudgetRequestError(details||'Permintaan belum berhasil.',response.status,response.status>=500);}
   return data;
+}
+export interface BudgetBranchLog {id_budget_branch_change:string;actor_name:string;branch:string;created_at:string;version:number;before_data:{pid:string;branch_id:number|null}[];after_data:{pid:string;branch_id:number}[]}
+export async function loadBudgetBranchLog(unit:BudgetUnit,page:number,signal?:AbortSignal):Promise<{rows:BudgetBranchLog[];has_more:boolean}>{return read(await fetch(appUrl('/api/budgeting-pid/branch?')+new URLSearchParams({unit,page:String(page)}),{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'},signal}));}
+export async function mapBudgetBranches(input:{unit:BudgetUnit;ids:string[];branch_id:number;version:number;request_id:string}):Promise<{version:number;mapped:number;replayed?:boolean}>{
+ try{return await read(await fetch(appUrl('/api/budgeting-pid/branch'),{method:'POST',credentials:'same-origin',headers:{Accept:'application/json','Content-Type':'application/json','X-CSRF-TOKEN':boot?.csrf??''},body:JSON.stringify(input),signal:AbortSignal.timeout(60000)}));}
+ catch(e){if(e instanceof BudgetRequestError)throw e;throw new BudgetRequestError(e instanceof Error?e.message:'Hasil pemetaan belum pasti.',0,true);}
 }
 export async function loadBudget<T>(unit:BudgetUnit,q:string,page:number,history:boolean,importId:string,signal?:AbortSignal):Promise<BudgetPage<T>>{
   const query=new URLSearchParams({unit,q,page:String(page),history:history?'1':'0'});if(importId)query.set('import_id',importId);

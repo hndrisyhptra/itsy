@@ -1,5 +1,9 @@
 # Catatan perubahan it's Area 3
 
+## 24 November 2026 — Budgeting PID tahap 2
+
+Pemetaan Branch Finance/Superadmin melalui pilihan baris dan riwayat audit, tanpa inferensi kode Rxxx. Import berkala mempertahankan pemetaan. Header PP baru mencari PID dan mengisi Nama Kegiatan; Total/Material/Jasa/BOP menjadi referensi, PID tidak terdaftar dapat manual. PP lama memerlukan adopsi nama eksplisit; Branch/unit lain tidak mengungkap data. Respons pencarian lama ditahan, YA/TIDAK dan UUID/revision/server guards tetap. Migration nullable Branch/audit baru dan build aset diperlukan. Reservasi/sisa PP lain serta blokir over-budget ditunda ke tahap3; tidak mengubah data aktif/history/paid. [Panduan](BUDGETING_PID.md), [QA](qa/budgeting-pid-stage2-20261124.json).
+
 ## 24 November 2026 — ROUND setelah PPh Jasa Mandor
 
 Net kasbon baru/terbit ulang = ROUND(Material + Jasa Mandor ×97,5%,0), half-up sekali pada total akhir. Material dan bruto tetap. Due/validasi/notice mendukung v1 historis dan v2 baru; kasbon terbit/pending/approved/paid tidak direprice otomatis. Preview/Word/terbilang memakai net tersimpan. Tanpa migration PPh; build dan restart upload worker Area3 oleh operator. [Panduan](KASBON_PPH_PAYMENT_LIST.md).

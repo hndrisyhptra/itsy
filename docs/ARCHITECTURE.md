@@ -1,5 +1,13 @@
 # Arsitektur aplikasi it's Area 3
 
+## 24 November 2026 — Referensi PID dan Branch eksplisit (tahap 2)
+
+`BudgetPidBranch` mengelola pemetaan bulk berwenang, memakai lock/version `budget_pid_controls` bersama impor, UUID actor/payload-bound dan audit `budget_pid_branch_changes`. `budget_pids.branch_id` nullable FK/index; tidak ada prefix inference atau backfill. Listing/detail/import membatasi Branch; ringkasan batch hanya metadata unit. Pemetaan lama yang hendak dipindah mengecek satu query join PP/unit; dipakai berarti ditolak. Impor tetap mempertahankan Branch dan identitas sumber. Migration its-only000002 disiapkan, tidak live-applied.
+
+`BudgetPidReference` memisahkan GET exact scoped reference (3service/4HTTP query) dari canonical name pada explicit save. Root baru/perubahan PID/adopsi mengambil dua indexed current locking reads control+PID, memeriksa unit/Branch/importUUID lalu membuang annotation pilihan. Unchanged PP tanpa adopsi tidak membaca sumber baru; frozen/continuation tetap. Tidak menyalin nominal ke PP, mengubah approval/ledger atau menghitung reservasi. Master list5HTTP; mapping100PID11HTTP, tidak query perbaris. GET advisory tidak menjanjikan snapshot serializable; save memeriksa sumber ulang. Konkurensi nyata MySQL belum diuji.
+
+React hook350ms/AbortController/key PID-unit-Branch melindungi autofill dan four-component reference. Existing name memerlukan adopsi YA; duplicate warning hanya scoped loaded state. Header date memakai input lama. Mapping UI20/API100, retry UUID sama untuk hasil tidak pasti,409 meminta reload; tanpa poller/dependency/localStorage/master boot graph. Word/print tidak diubah. Tahap3 ledger/batas lintasPP belum aktif. [Kontrak/deploy](BUDGETING_PID.md), [bukti/batas](qa/budgeting-pid-stage2-20261124.json).
+
 ## 24 November 2026 — ROUND hasil bersih PPh
 
 `KasbonSettlement::quote`/`kasbonQuote` default server-owned policy `mandor-service-pph25-round-v2`: BCMath/BigInt membulatkan sekali pada Material+97,5%Jasa. `matches` memilih algoritme dari policy tersimpan, `due`/notice mengenali v1/v2; truncation v1 dan no-policy gross historis tidak diubah. FinanceDocuments existing membekukan net baru pada encrypted snapshot/summary; HTML/Word/terbilang dan Finance settlement memakai amount tersebut. Bruto, moneyPolicy harga/input, approval/ledger/UUID/Branch/unit/Region/private/source/paid guards tetap. Satu lintasan0SQL, tanpa query/schema/API/dependency/poller tambahan. Build/restart hanya upload worker oleh operator. [Aturan/bukti/batas](KASBON_PPH_PAYMENT_LIST.md).

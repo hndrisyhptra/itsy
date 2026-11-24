@@ -69,6 +69,7 @@ export function canApproveProject(s: State, p: Project) { const role = projectAp
 export function canApproveTerm(s: State, t: Term) { const role = t.status === 'Diajukan' ? nextApprovalRole(t) : undefined; return !!role && role === s.role && ((t.workflowVersion ?? 1) < 2 || ((s.actorUserId === selectedApprover(t,role)||t.paymentFlow==='kasbon-settlement-v2'&&role==='Finance'&&!t.approverUserIds?.Finance) && s.users.some(u => u.id === s.actorUserId && u.active && u.role === role))); }
 export function saveProjectV2(s: State, input: Project, submit: boolean, submittingBundle=false) {
   requireAdmin(s); const p = structuredClone(input), old = s.projects.find(x => x.id === p.id);
+  delete p.budgetPidSelection;
   if(submit&&old?.contractBundle&&!submittingBundle)throw new Error('Lengkapi BA KH dan SPK lalu ajukan paket dari SPK.');
   if (old && !canReviseSubmission(old)) throw new Error('PP terkunci pada status ini.');
   const version = (old?.workflowVersion ?? 1) >= 2 ? old!.workflowVersion! : s.schema >= 3 ? 3 : 2;

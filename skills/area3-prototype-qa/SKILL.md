@@ -3,6 +3,10 @@ name: area3-prototype-qa
 description: Test the its Area 3 interactive prototype through the linked business scenarios, permissions, persistence, financial/volume invariants, documents and responsive layouts.
 ---
 
+## 24 November 2026 — Budgeting PID stage2 QA
+
+Follow latest docs/BUDGETING_PID.md. Test explicit Branch mapping unrelated to Rxxx, restricted Finance unit/Branch/list/import, atomic bulk100/audit/version/actor-bound UUID replay, import-retained mapping, rollback refusal and used-PID remap rejection. Exact Admin reference must hide wrong-unit/Branch/unmapped name/amount; new canonical save/transient stripping/stale source409, existing no-auto-adoption and changed-PID check. Browser actual App synthetic transport:350ms stale/abort, unit/Branch/unknown/manual/duplicate YA-TIDAK, existing explicit adoption, mapping history,375/768/1440 light-dark. Measure4HTTP reference/11mapping100/5list; new/adopt/changed saves two indexed source reads only; unchanged legacy zero. Distinguish full456baseline from finalfocused22 after last tests/fix. No live its/migration/server/worker/PII writes, no claim MySQL concurrency/WordPDF render when not tested; stage3 budget ledger not active.
+
 ## 24 November 2026 — PPh final net ROUND
 
 Follow latest docs/KASBON_PPH_PAYMENT_LIST.md: pure PHP/TS exact half-up parity and0SQL, final-net versus tax-first boundary, large/zero/Material-only/Jasa-only, v1 due/matches unchanged, forged policy/net rejects, HTML/Word/terbilang frozen net, SQL encrypted kasbon/proof/optionalAPM settlement/new term with gross unchanged. No live repricing/migration/server/worker mutations, preserve pending/approved/paid and global truncation. Record actual HTTP queries, browser/export/server limits and operator upload-worker restart requirement; no claim visual render if only XML checked.

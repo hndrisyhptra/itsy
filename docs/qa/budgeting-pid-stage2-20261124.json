@@ -1,0 +1,49 @@
+{
+  "date": "2026-11-24",
+  "feature": "Budgeting PID stage 2: scoped PP references and explicit Branch mapping",
+  "user_clarification": "Rxxx within PID does not reliably identify Branch; explicit mapping required",
+  "status": "implemented_in_workspace_not_deployed",
+  "scope": {
+    "mapping": "Finance/Superadmin active unit and Branch, UI page20/API100, shared master version and actor-payload-bound UUID receipt, before-after audit",
+    "reference": "Admin Construction/Operation/Superadmin exact authorized PID-unit-Branch, four available costs, new-name autofill and existing-name explicit adoption",
+    "preservation": "No live backfill or history/paid/approval/ledger repricing; imports retain mapping; unchanged PP/continuation/frozen snapshots retain saved source",
+    "not_implemented": ["budget allocation ledger", "remaining after other application PPs", "over-budget submit blocking", "legacy budget adoption/reservation"]
+  },
+  "migration": {
+    "file": "2026_11_24_000002_map_budget_pid_branches.php",
+    "adds": ["budget_pids.branch_id nullable FK and unit-Branch-PID index", "budget_pid_branch_changes named UUID primary key and audit"],
+    "prefix_inference": false,
+    "live_applied": false,
+    "rollback": "refuses saved mappings/history"
+  },
+  "verification": {
+    "php_full_before_final_two_tests_and_changed_pid_guard": {"passed": 456, "assertions": 14022, "seconds": 108.22, "database": "SQLite memory"},
+    "php_final_focused": {"passed": 22, "assertions": 1138, "seconds": 19.23},
+    "frontend_final_full": {"passed": 477, "failed": 0},
+    "typescript_vite": "passed",
+    "pint": "passed",
+    "diff_check": "passed",
+    "assets": {"manifest_references": 48, "preloads": 39, "profiles": 3},
+    "query_fixture": {"reference_service": 3, "reference_http": 4, "mapping_100_http": 11, "master_list_http": 5, "import_5192_preview_http": 26, "import_5192_commit_http": 757, "explicit_source_save_additional_indexed_reads": 2, "unchanged_existing_save_additional_source_reads": 0, "existing_500_boq_write": 59},
+    "browser": {
+      "surface": "actual App/Chrome, synthetic boot/state and intercepted same-origin transport; external requests blocked",
+      "cases_passed": ["Construction new PP", "Operation new PP", "existing PP explicit adoption", "Finance explicit Branch mapping/history"],
+      "checks": ["PID debounce and aborted/stale response protection", "unit and Branch conflict without values", "unknown/unmapped manual name", "original Header date input", "duplicate single confirmation", "TIDAK no write and YA one write", "R501 PID explicitly mapped to SEMARANG", "mapping modal mobile widths"],
+      "viewports": [375, 768, 1440],
+      "themes": ["light", "dark"],
+      "javascript_errors": 0,
+      "page_overflow": false,
+      "screenshots_visually_inspected": 4
+    }
+  },
+  "limitations": [
+    "No live its/server/aaPanel account, schema migration or import executed",
+    "No MySQL/MariaDB concurrency, lock/deadlock or throughput benchmark",
+    "Read-only reference is advisory; save rechecks current master identity, not allocation capacity",
+    "Word/PDF visual exports not rerun; renderers unchanged and reference is outside document model",
+    "Full PHP suite not repeated after final two tests and changed-PID guard; focused suite passed",
+    "No ENV/APP_KEY/worker/Dompis/commit/push/deploy changes"
+  ],
+  "deployment": ["backup database", "pull code", "php artisan migrate --force", "npm run build", "npm run check:assets", "Finance/Superadmin explicitly map PID Branches"],
+  "stage2_worker_restart_required": false
+}

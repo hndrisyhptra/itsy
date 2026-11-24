@@ -86,10 +86,13 @@ class BudgetPidMasterTest extends TestCase
         $this->assertDatabaseCount('budget_pid_items', 6);
         $this->send($bytes, 'Konstruksi', $preview, $uuid)->assertOk()->assertJsonPath('replayed', true);
         $this->assertDatabaseCount('budget_pid_imports', 1);
+        $branch = (int) DB::table('branches')->value('id_branch');
+        $this->postJson('/api/budgeting-pid/branch', ['unit' => 'Konstruksi', 'ids' => [$before->id_budget_pid], 'branch_id' => $branch, 'version' => 1, 'request_id' => (string) Str::uuid()])->assertOk();
         $changed = $this->workbook(release: 1200000);
         $p = $this->send($changed)->assertOk()->assertJsonPath('summary.updated', 1)->json();
         $this->send($changed, 'Konstruksi', $p)->assertOk();
         $this->assertSame($before->id_budget_pid, DB::table('budget_pids')->value('id_budget_pid'));
+        $this->assertEquals($branch, DB::table('budget_pids')->value('branch_id'), 'Reimport must retain the explicit mapping.');
         $this->assertSame($ids, DB::table('budget_pid_items')->orderBy('category')->pluck('id_budget_item')->all());
         $this->assertDatabaseCount('budget_pid_changes', 2);
         $change = DB::table('budget_pid_changes')->where('action', 'updated')->first();

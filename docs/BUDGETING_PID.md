@@ -1,5 +1,38 @@
 # Master Budgeting PID — 24 November 2026
 
+## Tahap 2 — Referensi PP dan pemetaan Branch eksplisit
+
+**Status terbaru:** tahap 1 dan 2 selesai di kode. PP baru dapat mencari PID, mengisi Nama Kegiatan dari master dan menampilkan empat referensi available cost. **Reservasi, sisa setelah PP lain dan blokir over-budget belum aktif; dikerjakan pada tahap 3.** Bagian tahap 1 di bawah merupakan catatan historis, bukan status integrasi terkini.
+
+Pengguna mengonfirmasi kode Rxxx pada PID **tidak selalu menunjukkan Branch**. Karena itu tidak ada pemetaan berdasarkan prefix. Finance/Superadmin membuka Master Budgeting PID, memilih baris (maksimal 20 pada halaman), lalu **Atur Branch → Branch tujuan → Simpan → YA**. Pilihan Branch mengikuti penugasan aktif akun; unit mengikuti tab. API menerima maksimal 100 UUID per perintah. PID yang belum dipetakan tetap tampil sebagai belum dipetakan, tanpa nama/angka referensi pada form Admin. Pengisian manual sementara tetap diperbolehkan.
+
+Pemetaan menyimpan audit sebelum/sesudah, actor, waktu, unit, Branch, versi dan UUID permintaan. Riwayat Pemetaan memiliki pagination 20+1. Satu kegagalan membatalkan seluruh pilihan. Versi master dipakai bersama impor sehingga perubahan serentak memerlukan muat ulang. Retry eksplisit atas hasil tidak pasti mempertahankan UUID; actor/payload berbeda tidak dapat memakainya. Pemetaan awal tidak mengubah PP historis. Pemindahan PID yang sudah dipetakan ke Branch lain ditolak bila ada PP pada unit tersebut dengan kode Project yang sama, termasuk PP lama. Impor Excel berikutnya mempertahankan Branch, identitas item dan audit pemetaan; impor yang menyentuh PID terpetakan di luar Branch akun ditolak seluruhnya.
+
+Daftar master dan rincian perubahan impor dibatasi ke PID belum dipetakan atau Branch penugasan aktif. Ringkasan batch impor tetap mengikuti unit dan berisi metadata file/jumlah, tanpa nominal; detail PID/nominal mengikuti Branch. Finance/Superadmin tetap satu-satunya pengelola; endpoint referensi PP hanya untuk Admin Konstruksi/Admin Operation/Superadmin pada unit dan Branch yang diizinkan. Tidak memberikan penugasan baru melalui pemetaan.
+
+Pada **Header PP**, isi ID Project dan pilih unit/Branch. Pencarian exact PID (trim dan kapitalisasi hanya untuk lookup) berjalan setelah jeda 350 ms. Nama PP baru otomatis mengikuti master yang cocok; respons lama dibatalkan/diabaikan bila PID/unit/Branch berubah. Referensi juga tampil di BOQ Plan dan Anggaran & Margin:
+
+| Referensi Excel | Dibandingkan dengan |
+|---|---|
+| TOTAL Level 02 | Total Material + Jasa BOQ TA–Owner |
+| Material Level 04 | Material BOQ TA–Owner |
+| Non Material Level 04 | Jasa BOQ TA–Owner |
+| Operasional Level 04 | BOP PP |
+
+Selisih pada tabel adalah **available Excel dikurangi nilai PP ini**, belum sisa setelah seluruh alokasi aplikasi. Header Total Anggaran/COGS tidak diganti dengan Total BOQ Owner. Tenaga Kerja/Depresiasi tetap audit-only. Tidak ditemukan/tidak dipetakan tidak dianggap budget nol; nama manual diperbolehkan dan pengajuan tetap melewati validasi workflow biasa. PID pada unit/Branch lain menahan simpan tanpa mengungkap nama atau nominalnya. Gagal membaca referensi menampilkan retry; server tetap memeriksa identitas pada simpan baru.
+
+PP lama dengan PID tetap mempertahankan nama tersimpan sampai Admin secara eksplisit memilih **Gunakan Nama Master → YA** pada PP yang masih dapat diedit. Perubahan PID pada PP editable juga diperiksa seperti sumber baru. PP Sah/menunggu approval dan PP lanjutan tidak diadopsi otomatis. Referensi tidak mengubah nilai, approval, ledger, jadwal, berkas, arsip, atau identitas bisnis kode Project tersimpan. Peringatan PID pernah dipakai menghitung PP unit sama dari data yang memang boleh dilihat akun; konfirmasi draf/pengajuan mengingatkan mandor berbeda, bukan membuktikan mandor sudah berbeda.
+
+Simpan PP baru/adopsi/perubahan PID mengambil lock control master lalu baris PID dengan current locking read di dalam transaksi workspace yang sudah ada. Nama canonical diambil server; pilihan frontend mengikat PID/unit/Branch/import UUID dan ditolak 409 bila sumber berubah. Annotation pilihan bersifat sementara, dihapus dari state tersimpan; angka master tidak masuk snapshot PP pada tahap ini. PP lama dengan PID tetap tanpa adopsi tidak menambah query sumber. Lock ini mengoordinasikan identitas dengan impor/pemetaan, **belum merupakan ledger atau jaminan kapasitas budget**.
+
+API baru: GET `/api/budgeting-pid/reference?pid=...&unit=...&branch=...` (60/menit), GET/POST `/api/budgeting-pid/branch` (30/menit), di bawah sesi aktif/CSRF dan respons private no-store. POST memakai `ids`, `unit`, `branch_id`, `version`, `request_id`. Tidak memuat katalog master pada boot/localStorage, tidak menambah poller/dependency; UI menggunakan pembatalan request dan key scope yang sama.
+
+Migration **`2026_11_24_000002_map_budget_pid_branches`** menambah `budget_pids.branch_id` nullable, FK ke `branches.id_branch`, indeks unit/Branch/PID dan tabel audit `budget_pid_branch_changes` dengan PK unik bernama `id_budget_branch_change`. Tidak mengisi Branch otomatis. Rollback menolak data/riwayat terisi. Belum diterapkan agen pada its aktif/server.
+
+Penerapan tahap 2: backup database, pull kode, jalankan `php artisan migrate --force`, `npm run build`, `npm run check:assets`, lalu muat ulang. Finance/Superadmin perlu melakukan pemetaan setelah migrasi. Tidak ada ENV/APP_KEY/seed/import/backfill atau worker baru; restart worker tidak diperlukan khusus tahap 2 (restart upload worker untuk pembaruan PPh sebelumnya adalah kebutuhan terpisah). Uji akun/Branch pada server sebelum melanjutkan tahap 3. [QA terbaru](LARAVEL_QA.md), [audit tahap 2](qa/budgeting-pid-stage2-20261124.json).
+
+Tahap 3 masih harus mengimplementasikan ledger atomik lintas PP, batas Total/Material/Jasa/BOP, reservasi/revisi/Cancel/paid, kelanjutan dan perlakuan PP lama serta uji konkurensi. Excel belum mencakup transaksi aplikasi: konsumsi paid tetap terpakai dan tidak boleh dikurangi dua kali. Jangan menganggap referensi tahap 2 sebagai validasi over-budget yang sudah aktif.
+
 ## Tahapan dan keputusan pengguna
 
 Tahap 1 mengimplementasikan master SQL, impor Excel, pemilihan unit, pratinjau, daftar/rincian dan riwayat perubahan. **Belum menghubungkan PP ke master, memblokir BOQ, mereservasi budget atau menghitung sisa setelah transaksi aplikasi.** Halaman menyebutkan batas tahap ini. Dokumen/approval/paid/ledger lama tidak diadopsi atau ditulis ulang.

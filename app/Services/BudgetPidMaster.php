@@ -36,7 +36,8 @@ class BudgetPidMaster
 
             return ['rows' => $result, 'page' => $page, 'has_more' => $more, 'unit' => $unit, 'units' => $account['workUnits']];
         }
-        $query = DB::table('budget_pids as p')->where('p.unit', $unit);
+        $query = DB::table('budget_pids as p')->where('p.unit', $unit)
+            ->where(fn ($q) => $q->whereNull('p.branch_id')->orWhereIn('p.branch_id', $account['branchIds']));
         if ($q !== '') {
             $like = '%'.str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $q).'%';
             $query->where(fn ($b) => $b->whereRaw("p.pid LIKE ? ESCAPE '!'", [$like])->orWhereRaw("p.name LIKE ? ESCAPE '!'", [$like]));
@@ -56,7 +57,7 @@ class BudgetPidMaster
                 return $r;
             })->values()->all();
         } else {
-            $rows = $query->orderBy('p.pid')->offset(($page - 1) * 20)->limit(21)->get(['p.*']);
+            $rows = $query->leftJoin('branches as b', 'b.id_branch', '=', 'p.branch_id')->orderBy('p.pid')->offset(($page - 1) * 20)->limit(21)->get(['p.*', 'b.name as branch']);
             $more = $rows->count() > 20;
             $rows = $rows->take(20);
             $items = DB::table('budget_pid_items')->whereIn('budget_pid_id', $rows->pluck('id_budget_pid'))->get()->groupBy('budget_pid_id');
@@ -70,7 +71,7 @@ class BudgetPidMaster
 
         return ['rows' => $result, 'page' => $page, 'has_more' => $more, 'unit' => $unit,
             'version' => (int) DB::table('budget_pid_controls')->where('id_budget_control', 1)->value('version'),
-            'units' => $account['workUnits']];
+            'units' => $account['workUnits'], 'branches' => app(BudgetPidBranch::class)->options($account)];
     }
 
     private function items($rows): array
@@ -135,6 +136,7 @@ class BudgetPidMaster
                 $batch = DB::table('budget_pids')->whereIn('pid', $codes)->get();
                 foreach ($batch as $p) {
                     abort_unless($p->unit === $input['unit'], 422, "PID {$p->pid} sudah terdaftar pada unit {$p->unit}; tidak dapat dipindah unit.");
+                    abort_unless($p->branch_id === null || in_array((int) $p->branch_id, $account['branchIds'], true), 403, 'File memuat PID di luar Branch penugasan.');
                     $existing[$p->pid] = $p;
                 }
                 foreach (DB::table('budget_pid_items')->whereIn('budget_pid_id', $batch->pluck('id_budget_pid'))->get()->groupBy('budget_pid_id') as $id => $rows) {

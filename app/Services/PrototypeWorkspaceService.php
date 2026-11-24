@@ -147,6 +147,12 @@ class PrototypeWorkspaceService
             if (in_array($input['command'], ['saveProject', 'saveProjectBundle'], true)) {
                 // Never trust client provenance, comparison prices or an arbitrary file path.
                 unset($input['args'][0]['_boqImport']);
+                $saved = collect($before['projects'])->firstWhere('id', $input['args'][0]['id'] ?? '');
+                if (($before['schema'] ?? 1) >= 3 && (! $saved || (($saved['workflowVersion'] ?? 1) >= 3 && in_array($saved['status'], ['Draft', 'Dikembalikan', 'Ditolak'], true)))) {
+                    $input['args'][0] = app(BudgetPidReference::class)->prepare($input['args'][0], $saved, $before['branches']);
+                } else {
+                    unset($input['args'][0]['budgetPidSelection'], $input['args'][0]['_budgetPidReference']);
+                }
                 if (! empty($input['args'][0]['boqUpload']['id'])) {
                     $project = collect($before['projects'])->firstWhere('id', $input['args'][0]['id'] ?? '');
                     $input['args'][0]['_boqImport'] = app(BoqImportStorage::class)->read($row, $input['args'][0]['boqUpload']['id'], $project);

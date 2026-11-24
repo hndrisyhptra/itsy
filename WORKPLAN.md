@@ -1,5 +1,9 @@
 # Laravel conversion checklist
 
+## 24 November 2026 — Budgeting PID tahap 2 selesai di kode
+
+Selesai: explicit Branch bulk mapping/audit/scoping, import mempertahankan mapping, exact PID lookup/autofill PP baru dan adopsi nama PP editable lama, empat referensi biaya, duplicate warning, stale-response/source-version protection dan migration baru000002. Full456PHP/477frontend dan final focused22PHP lulus; actual-App browser4kasus dengan transport sintetis. Tidak live-applied/deploy; operator migrate/build dan Finance perlu memetakan Branch. **Berikutnya tahap3:** ledger/alokasi atomik, sisa/batas tiapkomponen, revisi/Cancel/paid/kelanjutan/legacy dan concurrencyMySQL. Referensi tahap2 belum membatasi over-budget. [Kontrak/tahapan](docs/BUDGETING_PID.md), [audit](docs/qa/budgeting-pid-stage2-20261124.json).
+
 ## 24 November 2026 — PPh ROUND sebelum lanjut Budgeting PID
 
 Selesai: quote baru half-up sekali pada net, v1history tetap, due/matches/notice kedua versi, vector batas/preservation/HTMLWord/HTTPkasbon+TandaiLunas/nextterm dan audit. Tanpa migration tambahan khusus PPh; operator build/restart uploadworker. Master Budgeting PID tahap1 tetap dan belum dilanjutkan ke lookup/ledger; perubahan belum di-commit tetap dipertahankan. [Aturan](docs/KASBON_PPH_PAYMENT_LIST.md), [bukti](docs/qa/pph-round-20261124.json).

@@ -56,6 +56,8 @@ Route::middleware(PrivatePrototype::class)->group(function () {
         Route::get('/api/prototype/payment-selection/projects/{project}/orders', [PaymentProjectController::class, 'orders'])->whereUuid('project')->middleware('throttle:120,1');
         Route::get('/api/masters', [MasterDesignatorController::class, 'index']);
         Route::get('/api/budgeting-pid', [BudgetPidController::class, 'index'])->middleware('throttle:120,1');
+        Route::get('/api/budgeting-pid/reference', [BudgetPidController::class, 'reference'])->middleware('throttle:60,1');
+        Route::match(['get', 'post'], '/api/budgeting-pid/branch', [BudgetPidController::class, 'branch'])->middleware('throttle:30,1');
         Route::post('/api/budgeting-pid/import', [BudgetPidController::class, 'import'])->middleware('throttle:10,1');
         Route::get('/api/masters/{entity}/template', [MasterDesignatorController::class, 'template'])->where('entity', 'designator|khs')->middleware('throttle:20,1');
         Route::post('/api/masters/{entity}/import', [MasterDesignatorController::class, 'import'])->where('entity', 'designator|khs')->middleware('throttle:20,1');

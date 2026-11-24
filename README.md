@@ -1,5 +1,7 @@
 # it's Area 3 — Construction Workspace
 
+**24 November 2026 — Budgeting PID tahap 2:** PP baru mencari PID dan mengisi Nama Kegiatan dengan referensi Total/Material/Jasa/BOP sesuai unit/Branch. Finance/Superadmin memetakan Branch secara eksplisit melalui pilihan beberapa baris; kode Rxxx tidak ditebak. PP lama tidak otomatis diganti namanya. **Migration pemetaan baru dan build aset diperlukan. Reservasi/sisa lintas PP dan blokir over-budget belum aktif (tahap 3).** [Penggunaan, cakupan dan penerapan](docs/BUDGETING_PID.md).
+
 **24 November 2026 — ROUND hasil bersih PPh:** kasbon baru/terbit ulang memakai `ROUND(Material + Jasa Mandor × 97,5%, 0)`, setengah naik sekali pada hasil akhir. Kasbon lama tetap nominal/policy tersimpan, tanpa repricing/ubah paid. Tidak ada migration khusus PPh; build aset dan restart worker upload Area3 saat deploy. [Aturan](docs/KASBON_PPH_PAYMENT_LIST.md).
 
 **24 November 2026 — Master Budgeting PID tahap1:** menu Finance/Superadmin untuk impor Excel, pemilihan unit Konstruksi/Operation, pratinjau angka/warning, daftar/rincian dan riwayat sebelum/sesudah. Maksimal20MB/10.000PID; PID unik lintas unit dan impor atomik. **Migration baru dan build aset diperlukan saat deploy.** Lookup/validasi BOQ dan reservasi budget PP belum diaktifkan; PP/data lama tidak ditulis ulang. [Panduan, tahapan dan penerapan](docs/BUDGETING_PID.md).
