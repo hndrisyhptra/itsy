@@ -1,5 +1,19 @@
 # BARP Pembayaran — template, form dan Word
 
+## 25 November 2026 — Harga dasar pada tabel BA RP mengikuti SPK
+
+Pengguna menandai **blok1 Harga Berdasarkan Surat Perintah Kerja** pada tabel b.Harga Borongan. Blok ini sekarang menampilkan Material, Jasa dan Total **seluruh SPK terkait**, yaitu kuantitas kontrak kesepakatan tersimpan × harga satuan kesepakatan SPK Mandor. Tidak memakai actuals pembayaran, harga Owner/KHS saat ini, SPK lain dengan PID sama atau termin sebelumnya. Label menjadi “Harga Berdasarkan Surat Perintah Kerja :”, tanpa “volume tahap” karena isinya nilai dasar SPK penuh.
+
+Blok4 **Harga Berdasarkan Rekonsiliasi**, rekap poin3, narasi/terbilang nilai pengajuan dan tagihan tetap actuals pembayaran saat ini × harga SPK yang sama. Pekerjaan Tambahan/Kurangan tidak diberi nilai rekaan; tetap perilaku existing. Contoh SPK Material1.000/Jasa400/Total1.400 dan actuals Material200/Jasa150/Total350: blok1=1.400, blok4/pengajuan=350, porsi25%. Tidak mengganti nominal kasbon/PPh/transfer/paid atau volume/approval/riwayat.
+
+`barpDocumentData` menghitung baseline M/J/Total bersamaan dengan actuals dalam loop loaded deal.rows. Baseline mengikuti **moneyPolicy kesepakatan/SPK** sehingga sama persis dengan `spkDocumentData`, termasuk cent historis, zero dan komponen tidak dipilih. Actuals tetap policy pembayaran. Flag Material/Jasa dikumpulkan sekali dalam loop; tidak menambah scan/query/source lookup. Model baru menambah contractMaterial/contractService/contractTotal dan text masing-masing, tanpa menyimpan field baru.
+
+HTML memakai contract fields hanya untuk blok1. Native Word memakai slot `SPK_MATERIAL`, `SPK_SERVICE`, `SPK_TOTAL` khusus blok1, sementara slot actuals lainnya tetap. Source builder Python turut diperbarui agar regenerate tidak mengembalikan bug. Preview/cetak/unduh Word/paket gabungan otomatis memakai koreksi yang sama. Dokumen lama yang dibuka/digenerate ulang ikut tampilan benar dari SPK tersimpannya; database/snapshot/approval dan file yang pernah diunduh tidak ditulis ulang. Gate export/current attestation/parent Sah/scope dan blankwetTTD tetap.
+
+**Verifikasi:** regresi baru gagal sebelum koreksi, lalu9focused dan490frontend lulus; full525PHP/15397assertions memory, TypeScript/Vite/assets49refs/40preload×3 dan diffcheck lulus. Dua test baru membandingkan SPK vs BARP untuk Konstruksi/Operation, partial actuals vs whole contract, sibling/prior/root/KHS absent, HTML/nativeWord block1 vs block4, dan tiga moneyPolicy/independent flags/zero. Native Word dirender2halaman melalui LibreOffice dan browser printPDF2halaman; seluruh4PNG diperiksa, baseline dan actuals benar, tidak blank/overlap. Static actual-component browser widths375/768/1440,0JSerror/0write/externalnetworkblocked; bukan login/fullApp/live server. [QA](LARAVEL_QA.md), [audit](qa/barp-spk-baseline-20261125.json).
+
+Tidak ada PHP/domain command/schema/migration/API/dependency/poller/privatefetch/newSQL atau liveits/env/worker/server/Dompis writes. Tidak ada uji aaPanel/MySQLload/Worddesktop/printfisik. Deployment perlu build/checkassets dan reload; tanpa migration/restart worker khusus koreksi tampilan ini.
+
 ## Otoritas terbaru — 16 November 2026
 
 Pembayaran langsung Final satu kali dikenali dari `term.number === 1 && term.type === 'Final'`. Khusus kondisi ini judul menjadi **BERITA ACARA REKON PEKERJAAN**, narasi/tabel/heading/toolbar/filename tidak menyebut Termin1/Tahap1. Parsial pertama dan Final nomor2/3 tetap bernomor. Ini aturan presentasi, tidak mengganti nomor dokumen/ledger, actuals atau nilai tagihan, dan tidak menyatakan progres fisik100%.

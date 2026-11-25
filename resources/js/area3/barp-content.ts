@@ -40,23 +40,31 @@ export function historicalBarp(deal:Deal,spk:Spk):BarpData {
 export function barpDocumentData(project:Project,deal:Deal,spk:Spk,term:Term){
   const round=(n:number)=>monetaryRound(n,term);
   const b=term.barp??historicalBarp(deal,spk),date=bakhDocumentDate(b.date),start=bakhDocumentDate(b.start),end=bakhDocumentDate(b.end);
-  let material=0,total=0,contract=0;
+  let material=0,total=0,contract=0,contractMaterial=0,hasMaterial=false,hasService=false;
   for(const row of deal.rows){
-    material+=moneyLine(row.m?(term.actuals[row.rowId]?.m??0):0,row.pm,0,0,term);total+=moneyLine(row.m?(term.actuals[row.rowId]?.m??0):0,row.pm,row.s?(term.actuals[row.rowId]?.s??0):0,row.ps,term);contract+=moneyLine(row.m?row.qm:0,row.pm,row.s?row.qs:0,row.ps,deal);
+    const actual=term.actuals[row.rowId];hasMaterial||=row.m;hasService||=row.s;
+    material+=moneyLine(row.m?(actual?.m??0):0,row.pm,0,0,term);
+    total+=moneyLine(row.m?(actual?.m??0):0,row.pm,row.s?(actual?.s??0):0,row.ps,term);
+    contract+=moneyLine(row.m?row.qm:0,row.pm,row.s?row.qs:0,row.ps,deal);
+    contractMaterial+=moneyLine(row.m?row.qm:0,row.pm,0,0,deal);
   }
-  material=round(material);total=round(total);contract=round(contract);
+  material=round(material);total=round(total);
+  // The SPK baseline uses its saved agreement quantities, prices and money policy.
+  contract=monetaryRound(contract,deal);contractMaterial=monetaryRound(contractMaterial,deal);
+  const contractService=monetaryRound(contract-contractMaterial,deal);
   const service=round(total-material),amount=`Rp ${number.format(total)},- (${rupiahWords(total)})`,job=filled(project.name),mandor=filled(b.mandor);
   const singleFinal=isSingleFinalBarp(term);
   return {
     title:`BERITA ACARA REKON PEKERJAAN${singleFinal?'':` - TAHAP ${term.number}`}`,job,mandor,location:filled(b.version>=2?b.job:b.location),objectLabel:b.version>=2?'PEKERJAAN':'LOKASI',sto:b.sto.trim(),homepass:b.homepass===null?'':String(b.homepass),
     opening:`Pada hari ini ${date?.weekday??'…'} tanggal ${date?.full??'…'}, telah dilakukan rekonsiliasi terhadap pelaksanaan pekerjaan ${job}, antara PT. Telkom Akses selanjutnya disebut TELKOM AKSES dengan ${mandor} selanjutnya disebut MANDOR, dengan kesepakatan sebagai berikut:`,
     price:`TELKOM AKSES dan Mandor sepakat bahwa harga borongan berdasarkan hasil rekonsiliasi proyek periode tanggal ${start?.full??'…'} sampai ${end?.full??'…'} ${singleFinal?'':`untuk tahap ${term.number} `}adalah sebesar ${amount}, dengan porsi nilai ${singleFinal?'rekonsiliasi':'tahap ini'} ${contract>0?new Intl.NumberFormat('id-ID',{maximumFractionDigits:2}).format(Math.round(total/contract*10000)/100):'0'}% dari nilai SPK. Rincian sebagai berikut:`,
-    stageScope:`Harga Berdasarkan Surat Perintah Kerja — volume${singleFinal?'':` tahap ${term.number}`} :`,
+    stageScope:'Harga Berdasarkan Surat Perintah Kerja :',
     reconHeading:`Nilai Rekonsiliasi${singleFinal?'':` Tahap ${term.number}`} untuk Pengajuan Pembayaran`,
     reconText:`TELKOM AKSES dan Mandor sepakat bahwa nilai hasil rekonsiliasi${singleFinal?'':` tahap ${term.number}`} yang diajukan untuk pembayaran adalah sebesar ${amount}. Dengan rincian sebagai berikut:`,
     placeDate:`${projectSigningPlace(project)||'…'}, ${date?.full??'…'}`,status:canPrintBarp(term)?'':canExportBarp(term)?'SALINAN REVIEW — MENUNGGU PERSETUJUAN':'DRAF — BELUM DIAJUKAN / PERLU PERBAIKAN',
     waspang:filled(b.waspang),head:filled(b.headName),headJob:b.headJob?.trim()||(isOperation(term)?'GENERAL MANAGER OPERATION':'HEAD OF PMO AREA JAWA BALI'),headNik:b.headNik?`NIK: ${b.headNik}`:'',material,service,total,
-    materialText:deal.rows.some(r=>r.m)?number.format(material):'',serviceText:deal.rows.some(r=>r.s)?number.format(service):'',totalText:number.format(total),
-    zeroMaterial:deal.rows.some(r=>r.m)?'0':'',zeroService:deal.rows.some(r=>r.s)?'0':'',
+    contractMaterial,contractService,contractTotal:contract,contractMaterialText:hasMaterial?number.format(contractMaterial):'',contractServiceText:hasService?number.format(contractService):'',contractTotalText:number.format(contract),
+    materialText:hasMaterial?number.format(material):'',serviceText:hasService?number.format(service):'',totalText:number.format(total),
+    zeroMaterial:hasMaterial?'0':'',zeroService:hasService?'0':'',
   };
 }

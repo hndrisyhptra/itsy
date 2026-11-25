@@ -7,6 +7,7 @@ import {createTerm,getTerm,saveTerm,termTotal, type Term, type Role} from '../..
 import {blankBarp,saveBarp} from '../../resources/js/area3/barp-form';
 import {barpDocumentData,canExportBarp,canPrintBarp,rupiahWords,BARP_TEXT} from '../../resources/js/area3/barp-content';
 import {createBarpDocx,barpWordFilename} from '../../resources/js/area3/barp-docx';
+import {spkDocumentData} from '../../resources/js/area3/spk-content';
 import {BARP_WORD_PARTS} from '../../resources/js/area3/barp-word-template';
 import {DocumentPreview} from '../../resources/js/area3/ui';
 import {TermEditor} from '../../resources/js/area3/payments';
@@ -113,4 +114,32 @@ test('BARP preview bypasses root/KHS lookups, matches Word values, includes admi
  delete t.barp;const historical=JSON.stringify(s),old=barpDocumentData(p,d,v,t);assert.match(old.opening,/hari ini … tanggal …/);assert.equal(old.head,'…');assert.equal(JSON.stringify(s),historical);
  s.khs=seed('D').khs;p.rootId=p.id;t.status='Draft';t.barp=blankBarp(s,t);
  const form=renderToStaticMarkup(createElement(TermEditor,{s,id:t.id}));for(const label of ['Tanggal Rekonsiliasi','STO (opsional)','Homepass (opsional)','NIK Head of PMO'])assert.ok(form.includes(label));
+});
+
+
+test('BARP SPK price section uses full exact SPK quantities while reconciliation and payment remain current actuals',()=>{
+ const {s,p,d,v,t}=fixture();approve(t);d.rows=[{...d.rows[0],m:true,s:true,qm:10,qs:8,pm:100,ps:50}];t.actuals={[d.rows[0].rowId]:{m:2,s:3}};
+ s.terms.unshift({...structuredClone(t),id:'sibling-old-term',number:1,actuals:{[d.rows[0].rowId]:{m:9,s:7}}});t.number=2;p.rootId='not-loaded';s.khs=[];
+ for(const unit of ['Konstruksi','Operation']){
+  p.unit=unit;const before=JSON.stringify(s),data=barpDocumentData(p,d,v,t),spk=spkDocumentData(p,d,v);
+  assert.equal(data.contractMaterial,1000);assert.equal(data.contractService,400);assert.equal(data.contractTotal,1400);assert.equal(data.contractTotal,spk.total);
+  assert.equal(data.material,200);assert.equal(data.service,150);assert.equal(data.total,350);assert.match(data.price,/25%/);assert.equal(data.stageScope,'Harga Berdasarkan Surat Perintah Kerja :');
+  const html=renderToStaticMarkup(createElement(DocumentPreview,{state:s,project:p,deal:d,spk:v,term:t,kind:'BA Rekonsiliasi Pekerjaan – Termin',onClose:()=>{}})),xml=docxParts(createBarpDocx(p,d,v,t))['word/document.xml'];
+  for(const out of [html,xml]){
+   const baseline=out.split('Harga Berdasarkan Surat Perintah Kerja :')[1].split('Pekerjaan Tambahan')[0];
+   assert.match(baseline,/1\.000/);assert.match(baseline,/400/);assert.match(baseline,/1\.400/);assert.doesNotMatch(baseline,/350|volume tahap/);
+   const actual=out.split('Harga Berdasarkan Rekonsiliasi')[1];assert.match(actual,/200/);assert.match(actual,/150/);assert.match(actual,/350/);
+  }
+  assert.equal(JSON.stringify(s),before);
+ }
+});
+
+test('BARP contract Material/Jasa formatting and money policy match SPK including missing, zero and historical cent values',()=>{
+ const {p,d,v,t}=fixture();
+ for(const policy of [undefined,'idr-whole-v1','idr-trunc-v1'] as const)for(const flags of [[true,true],[true,false],[false,true]] as const){
+  d.moneyPolicy=policy;t.moneyPolicy='idr-trunc-v1';d.rows=[{...d.rows[0],m:flags[0],s:flags[1],qm:3,qs:7,pm:123.45,ps:0.05}];t.actuals={[d.rows[0].rowId]:{m:0,s:1}};
+  const data=barpDocumentData(p,d,v,t),spk=spkDocumentData(p,d,v);
+  assert.equal(data.contractMaterial,spk.material);assert.equal(data.contractService,spk.service);assert.equal(data.contractTotal,spk.total);
+  assert.equal(data.contractMaterialText,spk.materialText);assert.equal(data.contractServiceText,spk.serviceText);assert.equal(data.contractTotalText,spk.totalText);
+ }
 });

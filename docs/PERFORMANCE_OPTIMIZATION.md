@@ -1,5 +1,9 @@
 # Optimasi query dan respons aplikasi
 
+## 25 November 2026 — Baseline SPK pada BA RP
+
+Contract M/J/Total dan currentactuals dihitung pada loop deal.rows yang sama; actual lookup sekali/baris dan hasMaterial/hasService sekali di loop mengganti repeated.some. Tidak memanggil SPK renderer penuh, katalog/Owner/root/sibling atau private fetch; newSQL/API/poller/schema/dependency0. Baseline moneyPolicy deal sama officialSPK, actualspolicy tetapterm. HTML/nativeWord/combinedpackage reuse samepuremodel. Full525PHP dan490frontend/assets lulus; nativeWord/browserPDF2+2halaman diperiksa. Ini bukti fixture, bukan benchmark loadserver. [Audit/batas](qa/barp-spk-baseline-20261125.json).
+
 ## 25 November 2026 — Rincian dua komponen kasbon
 
 Pembagian Jasa bersih dan Material memakai quote existing satu kali; TSBigInt/PHPBCMath O(1), metadata matching maksimal20row lama/formbaru2. Tidak ada percomponent SQL/privatefetch/endpoint/dependency/poller/bootdata baru. Issue typed tetap satu transaksi/revision/payeever/receipt dan batch signer existing; kasbon-v1 fixture44HTTPqueries dengan budget48, bukan perbandingan throughput/server. Full existing paid/private/Branch/unit/PID/volume guards diuji bersama. Preview HTML/nativeWord/paket reuse saved rows tanpa SQL. [Audit/batas](qa/kasbon-components-20261125.json).

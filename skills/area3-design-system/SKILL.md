@@ -2,6 +2,10 @@
 name: area3-design-system
 description: Build or revise the its Area 3 interface with its specific enterprise design tokens, responsive shell, tables, and accessible interaction states. Do not apply its brand to Dompis Prov.
 ---
+## 25 November 2026 — BARP price baseline is full saved SPK
+
+Follow latest docs/BARP_TEMPLATE_WORD.md. Priceblock1 only uses full exactSPK/deal qty×prices and dealmoneyPolicy M/J/Total, labelno volume-stage; block4/point3/narrative/payment remain currentactuals/termpolicy. No Owner/KHS/root/sibling/cumulative substitute or fake variationamounts. One loadedloop+flags0SQL; dedicated SPK_*Word slots and sourcebuilder, shared HTML/Word/print/package preserve geometry and blankwetTTD. Re-rendered oldpreview correction only, no SQL/snapshot/approval/paid/PID/ledger rewrite. Test fullSPKvsactual/SPKparity3policies/zero/missingflags/unit/sibling/immutable/exports and all renderedpages; document actual isolated vs server/desktop/load limits. No new API/schema/migration/dependency/poller/live/env/worker/server/Dompis writes; build/checkassets.
+
 ## 25 November 2026 — Split kasbon account components
 
 Follow latest docs/KASBON_PPH_PAYMENT_LIST.md. New form Jasa net + intact Material separate account/name/purpose rows, canonical readonlyamount/total, zero hidden/no adddelete; no new PPh rounding. Typed private rows.component validated exactset/amount/alltyped/unique under existinglock, canonical order; fully untyped historicalclient compatibility retained. Preserve issued/paid snapshots, samecomponent-only metadata reuse, all actual7decisions/scope/UUID/revision/payee/source/BAPP/proof/APM/paid/ledger/PID. Shared HTML/Word/print rowtext component label, oldtext unchanged, blankwetTTD.0newSQL/API/schema/migration/dependency/poller; test swappedamountsame-total rollback/replay/private/settlement/singlecomponents/real7, browseractualcomponentsmockAPI andWordXML/printPDF limits, no activeits/env/worker/server/Dompis writes. Build/checkassets; do not claim server or nativeWorddesktop verified.

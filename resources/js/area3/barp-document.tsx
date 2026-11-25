@@ -2,7 +2,7 @@ import type { Project,Deal,Spk,Term } from './domain';
 import { BARP_TEXT,barpDocumentData } from './barp-content';
 export function BarpDocument({project,deal,spk,term}:{project:Project;deal:Deal;spk:Spk;term:Term}){
   const v=barpDocumentData(project,deal,spk,term);
-  const categories=[['1',v.stageScope,v.materialText,v.serviceText,v.totalText],['2','Pekerjaan Tambahan :',v.zeroMaterial,v.zeroService,'0'],['3','Pekerjaan Kurangan :',v.zeroMaterial,v.zeroService,'0'],['4','Harga Berdasarkan Rekonsiliasi',v.materialText,v.serviceText,v.totalText]];
+  const categories=[['1',v.stageScope,v.contractMaterialText,v.contractServiceText,v.contractTotalText],['2','Pekerjaan Tambahan :',v.zeroMaterial,v.zeroService,'0'],['3','Pekerjaan Kurangan :',v.zeroMaterial,v.zeroService,'0'],['4','Harga Berdasarkan Rekonsiliasi',v.materialText,v.serviceText,v.totalText]];
   return <article className="document barp-document">
     <h2>{v.title}</h2>{v.status&&<p className="barp-review">{v.status}</p>}
     <dl className="barp-meta"><dt>Nama Proyek</dt><dd>{v.job}</dd><dt>Jenis Pekerjaan</dt><dd>SWAKELOLA MANDORAN</dd><dt>Nama</dt><dd>{v.mandor}</dd></dl>

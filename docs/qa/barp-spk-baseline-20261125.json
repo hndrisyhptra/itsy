@@ -1,0 +1,118 @@
+{
+  "date": "2026-11-25",
+  "feature": "BARP price block1 uses full exact SPK baseline",
+  "scope": {
+    "baseline": "Full saved SPK/deal contract quantities x saved agreed prices, deal money policy",
+    "actual": "Unchanged current term actuals x same prices, term money policy",
+    "layout": "Only baseline values and remove misleading volume-stage label; other rows/signature geometry unchanged",
+    "exports": [
+      "HTML preview",
+      "print",
+      "native DOCX",
+      "combined document package via existing generator"
+    ]
+  },
+  "invariants": [
+    "No KHS/Owner/root/sibling/cumulative fallback",
+    "No invented additional/reduced work values",
+    "Reconciliation/payment/tax/paid/approval/ledger/PID and snapshots unchanged",
+    "Same export/current attestation/parentSah/private/Branch/unit/Region/source gates",
+    "No runtime SQL/API/schema/migration/dependency/poller/privatefetch/statewrite"
+  ],
+  "verification": {
+    "regression_before": "Two new regression cases fail before correction",
+    "frontend": {
+      "passed": 490,
+      "focused_barp": 9,
+      "new_cases": 2
+    },
+    "php": {
+      "passed": 525,
+      "assertions": 15397,
+      "php": "8.2.4",
+      "db": "SQLite memory",
+      "seconds": 115.31,
+      "peak_mb": 142.5
+    },
+    "build": "TypeScript and Vite passed",
+    "assets": {
+      "manifest_references": 49,
+      "preloads": 40,
+      "profiles": 3
+    },
+    "diffcheck": "passed",
+    "unit_cases": [
+      "Full SPK1000M+400J=1400, actual200M+150J=350,25percent",
+      "HTML/nativeWord block1 vs block4 and point3",
+      "Construction/Operation, missingroot/KHS, prior/sibling term ignored",
+      "Three saved money policies/MaterialJasa flags/zero values match official SPK",
+      "Original loaded state unchanged and original gates/theme/geometry unchanged"
+    ],
+    "native_word": {
+      "generator": "createBarpDocx actual source",
+      "renderer": "bundled canonical render_docx.py with LibreOffice",
+      "pages": 2,
+      "all_png_inspected": true
+    },
+    "browser": {
+      "passed": true,
+      "static_html_actual_component": true,
+      "widths": [
+        375,
+        768,
+        1440
+      ],
+      "baseline": {
+        "material": 1000,
+        "service": 400,
+        "total": 1400
+      },
+      "reconciliation": {
+        "material": 200,
+        "service": 150,
+        "total": 350
+      },
+      "external_network_blocked": true,
+      "writes": 0,
+      "js_errors": 0
+    },
+    "browser_print": {
+      "pages": 2,
+      "all_png_inspected": true,
+      "nonblank": true
+    }
+  },
+  "performance": {
+    "extra_sql": 0,
+    "algorithm": "One existing loaded rows pass, computes actual+contract and flags without additional catalog scan",
+    "benchmark": false
+  },
+  "limits": [
+    "No fullApp authenticated browser/server/accountlive/MySQL load test",
+    "No MicrosoftWord desktop/physical print/real money transfer",
+    "No live its/env/APP_KEY/worker/server/Dompis mutation",
+    "No commit/push/deployment"
+  ],
+  "deployment": [
+    "Build latest assets after source pull",
+    "npm run build",
+    "npm run check:assets",
+    "Reload page",
+    "No new migration or feature-specific worker restart"
+  ],
+  "evidence_local_only": [
+    "/private/tmp/area3-barp-spk-20261125/barp.docx",
+    "/private/tmp/area3-barp-spk-20261125/word/barp.pdf",
+    "/private/tmp/area3-barp-spk-20261125/word/page-1.png",
+    "/private/tmp/area3-barp-spk-20261125/word/page-2.png",
+    "/private/tmp/area3-barp-spk-20261125/browser-result.json",
+    "/private/tmp/area3-barp-spk-20261125/browser-price.png",
+    "/private/tmp/area3-barp-spk-20261125/browser.pdf",
+    "/private/tmp/area3-barp-spk-20261125/browser-print-1.png",
+    "/private/tmp/area3-barp-spk-20261125/browser-print-2.png",
+    "/private/tmp/area3-barp-spk-php.log",
+    "/private/tmp/area3-barp-spk-frontend.log",
+    "/private/tmp/area3-barp-spk-build.log",
+    "/private/tmp/area3-barp-spk-assets.log"
+  ]
+}

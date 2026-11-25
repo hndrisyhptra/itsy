@@ -27,7 +27,7 @@ para(1,'{{STATUS}}');para(35,'{{PLACE_DATE}}')
 cell(13,0,1,'{{OBJECT_LABEL}}');cell(28,0,1,'{{OBJECT_LABEL}}')
 for col,text in enumerate(['1','{{LOCATION}}','{{STO}}','{{HOMEPASS}}']):cell(13,1,col,text)
 cell(23,1,1,'{{STAGE_SCOPE}}')
-for start,prefix in [(2,''),(6,'ZERO_'),(10,'ZERO_'),(14,'')]:
+for start,prefix in [(2,'SPK_'),(6,'ZERO_'),(10,'ZERO_'),(14,'')]:
     for offset,key in enumerate(['MATERIAL','SERVICE','TOTAL']):cell(23,start+offset,2,'{{'+prefix+key+'}}')
 cell(13,0,1,'{{OBJECT_LABEL}}');cell(28,0,1,'{{OBJECT_LABEL}}')
 for col,text in enumerate(['1','{{LOCATION}}','{{STO}}','{{MATERIAL}}','{{SERVICE}}','{{TOTAL}}']):cell(28,2,col,text)

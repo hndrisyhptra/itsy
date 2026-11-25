@@ -1,5 +1,9 @@
 # Catatan perubahan it's Area 3
 
+## 25 November 2026 — Koreksi nilai dasar SPK pada BA RP
+
+Blok1 Harga Berdasarkan SPK memakai total Material/Jasa kesepakatan SPK penuh; label volume tahap dihapus dari baseline. Blok rekonsiliasi dan pengajuan tetap actuals. Preview/nativeWord/print/paket konsisten; tanpa mutasi nilai database/approval/kasbon/paid/ledger. Frontend490/PHP525/build/assets lulus, Word2halaman+browserPDF2halaman diperiksa. Tanpa migration baru. [Detail](BARP_TEMPLATE_WORD.md).
+
 ## 25 November 2026 — Rincian Jasa dan Material pada pengajuan kasbon
 
 - Satu baris per komponen positif, No Akun/Nama Akun/Teks Keperluan terpisah; nominal otomatis Jasa setelah PPh dan Material utuh, footer Total Pengajuan Kasbon.

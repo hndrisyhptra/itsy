@@ -1,5 +1,9 @@
 # Arsitektur aplikasi it's Area 3
 
+## 25 November 2026 — Dasar SPK dan actuals terpisah pada model BA RP
+
+`barpDocumentData` kini memiliki contractMaterial/contractService/contractTotal (deal quantities/prices/policy) terpisah dari material/service/total (actuals/current term policy). Keduanya dihitung dalam loop yang sama; source flags sekali tanpa repeat.some. Baseline sama dengan official SPK; persentase actuals terhadap baseline memakai totalSPK. Hanya blok1 HTML dan slot SPK_* Word memakai contract values; poinrekonsiliasi/terbilang/tagihan tetap actuals. OOXML sourcebuilder diperbarui bersama template, grid/style/gates/blankwetTTD dan nativepackage tetap. Pure presentation0SQL/API/schema/migration/dependency/poller/statewrite; database/approval/payments/ledger/PID unchanged. [Kontrak](BARP_TEMPLATE_WORD.md), [audit](qa/barp-spk-baseline-20261125.json).
+
 ## 25 November 2026 — Akun terpisah pada komponen kasbon
 
 `kasbonInput(quote, previous)` membentuk satu/two typed rows Jasa net/Material utuh; BigInt-cent subtraction menjaga net−Material tanpa round pajak ulang. Account/nama/keperluan editable, amount readonly, footer net canonical. Metadata lama hanya dipakai ulang bila komponen teridentifikasi unik. `KasbonRowsEditor` memakai tabel scoped bergaris/scroll, tanpa add/delete. Numeric overload kasbonInput tetap kompatibilitas historis; form baru selalu quote.

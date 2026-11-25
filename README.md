@@ -1,5 +1,7 @@
 # it's Area 3 — Construction Workspace
 
+**25 November 2026 — Harga dasar SPK di BA RP:** blok “Harga Berdasarkan Surat Perintah Kerja” sekarang mengambil total Material/Jasa SPK penuh. Blok rekonsiliasi/pengajuan tetap volume aktual pembayaran. Preview, Word, cetak dan paket gabungan konsisten; data/approval/paid tetap. Build/check aset diperlukan, tanpa migration baru. [Aturan dan pengujian](docs/BARP_TEMPLATE_WORD.md).
+
 **25 November 2026 — Rincian kasbon:** Jasa dan Material kini memiliki baris akun/nama akun/teks keperluan masing-masing, nominal otomatis dan total. Jasa memakai nilai bersih setelah PPh, Material utuh; preview/Word/cetak mengikuti rincian tersimpan. Kasbon yang sudah terbit tetap. Build/check aset diperlukan, tanpa migration baru. [Aturan dan bukti](docs/KASBON_PPH_PAYMENT_LIST.md).
 
 **24 November 2026 — Budgeting PID tahap 4:** halaman master dirapikan: tab daftar/riwayat, filter dan tombol sejajar, tabel sisa/Excel/terpakai, rincian serta toolbar pemetaan multi-PID. Setelah impor Operation, riwayat mengikuti unit yang diimpor. Uji MariaDB10.4 terisolasi lulus untuk migrasi, pengajuan bersamaan, revisi/Cancel, pembayaran lunas tetap memakai budget, pelepasan/lanjutan dan lima approval Operation. Database aktif/server tidak disentuh. **Build/check aset diperlukan; tidak ada migration tahap4 baru.** Migration PID tahap1–3 yang belum diterapkan tetap harus dijalankan operator. [Penggunaan, bukti dan batas](docs/BUDGETING_PID.md).

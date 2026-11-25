@@ -1,5 +1,13 @@
 # Laravel rebuild QA — 2 November 2026
 
+## 25 November 2026 — Dasar SPK penuh pada tabel BA RP
+
+Full **525PHP/15397assertions**, XAMPP8.2.4 SQLite`:memory:`,115.310s/142.50MB/process512M; tidak ada PHP produksi diubah. Frontend **490passed**, focusedBARP9, TypeScript/Vite/diffcheck/assets49manifest/40preload×3 lulus. Dua regresi baru gagal sebelum edit lalu lulus: exactSPK M1000/J400/Total1400 vs currentactualM200/J150/Total350,25%/HTMLWord block1-vsblock4; Konstruksi/Operation, noKHS/root, prior sibling ignored, zero/missing flags dan moneyPolicy legacy/whole/trunc mengikuti officialSPK. Existing export gate, sourceimmutable, template geometry/theme and remainingactual values lulus.
+
+Native Word nyata dari generator tersimpan dirender melalui canonical render_docx.py/LibreOffice menjadi2halaman; seluruh2PNG diperiksa. Actual BarpDocument staticHTML di browser dengan externalnetworkblocked/noAPI/writes0,375/768/1440 tanpa overflow/JSerror, priceblock1 dan4 exact; printPDF2halaman nonblank, keduaPNG diperiksa. Tidak fake approval; fixture reviewstatus/blankwetTTD tetap. Sourcebuilder ikut diganti slotbaseline agar regeneration tidak kembali actuals. Template parts lainnya utuh melalui semantic tests; tidak regenerate seluruh reference baru atau mengubah signature/layout.
+
+Singleloadedloop mengakumulasi actual+contract dan flags;0SQL/API/schema/migration/dependency/poller/privatefetch/new runtime state. Bukan akunlive/fullAppHTTP/aaPanel/MySQL/load/Worddesktop/printfisik. Tidak migrate/import/itsaktif/env/worker/server/Dompis/commit/push/deploy. [Kontrak/penerapan](BARP_TEMPLATE_WORD.md), [audit](qa/barp-spk-baseline-20261125.json).
+
 ## 25 November 2026 — Kasbon Jasa dan Material terpisah
 
 Final **525PHPtests/15397assertions** pada XAMPP PHP8.2.4, SQLite`:memory:`,114.352s/142.50MB/process512M; frontend **488passed**, TypeScript/Vite/Pint/diffcheck dan aset49manifest/40preload×3profil lulus. Empat PHP cases baru menguji stored encrypted rows/order/independent metadata, total104337/tax1063/gross105400/paid unchanged/replay1kasbon; swapped amounts same grandtotal, duplicate/missing/mixed/invalid components dan emptyaccount422 tanpa write/revision; service-only41437 dan material-only62900 satu row. Fixture issue44HTTPquery≤48, tidak ada query baru perkomponen. Existing Partial/Final seven-decision tests sekarang mengirim typed2rows dan tetap lolos private review/queue proof/transfer/APM; old issuedv1/v2/v3 dan untyped payload compatibility tetap diuji seluruhsuite.
