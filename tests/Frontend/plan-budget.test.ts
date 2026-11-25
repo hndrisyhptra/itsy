@@ -218,3 +218,19 @@ test('budget form exposes template columns and working row actions; risk text is
   assert.equal(result.planBudgetTotals!.cogs,195.05);assert.equal(result.planBudgetTotals!.margin,91.87);assert.equal(JSON.stringify(result),before);
   assert.ok(preview.includes(`<th scope="row">Total Nilai (Rp)</th><td>:</td><td>${money(202.08).replace(/^Rp\s*/,'')}</td>`));
 });
+
+test('BOP reference percentage equals margin Operasional over Revenue in editor and printed saved PP, with zero revenue safe',()=>{
+ const {s,p}=fixture(),base=applyBudgetPlan(s,p,true,true);
+ for(const status of ['Draft','Sah'] as const)for(const printing of [false,true]){
+  const current=structuredClone(base);current.status=status;
+  // Canonical fixture: BOP30.02 / Revenue2400 = 1.25%, whereas Mandor140 would give21.44%.
+  assert.equal(current.planBudgetTotals!.bop,30.02);assert.equal(current.planBudgetTotals!.revenue,2400);
+  const before=JSON.stringify(current),html=renderToStaticMarkup(createElement(BudgetPlanSection,{s,p:current,printing,editable:status==='Draft'&&!printing}));
+  assert.match(html,/% BOP \/ Revenue <b>1,25%<\/b>/);assert.doesNotMatch(html,/% BOP \/ Total BoQ/);
+  assert.match(html,/<td>2\.5<\/td><td>Operasional<\/td><td class="numeric">[^<]+<\/td><td class="numeric">1,25%<\/td>/);
+  assert.equal(JSON.stringify(current),before);
+ }
+ const zero=structuredClone(base);zero.status='Sah';zero.planBudgetTotals={...zero.planBudgetTotals!,revenue:0,margin:null};
+ const before=JSON.stringify(zero),html=renderToStaticMarkup(createElement(BudgetPlanSection,{s,p:zero,printing:true}));
+ assert.match(html,/% BOP \/ Revenue <b>—<\/b>/);assert.match(html,/<td>2\.5<\/td><td>Operasional<\/td><td class="numeric">[^<]+<\/td><td class="numeric">—<\/td>/);assert.doesNotMatch(html,/NaN|Infinity/);assert.equal(JSON.stringify(zero),before);
+});

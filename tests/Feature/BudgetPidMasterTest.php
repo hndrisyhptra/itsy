@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Services\AccountAccess;
 use App\Services\BudgetPidWorkbook;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -293,5 +294,106 @@ class BudgetPidMasterTest extends TestCase
         }
         $this->app->instance('env', 'local');
         $this->send($bytes)->assertStatus(419);
+    }
+
+    public function test_import_maps_exact_active_branch_code_and_keeps_unknown_or_ambiguous_manual(): void
+    {
+        $codes = ['26KT03R409-0001', 'PID-NO-CODE', '26KT03R999-0003', '26KT03R409-R501-0004', '26KT03R4099-0005'];
+        $bytes = $this->workbook(5, alter: function ($xml) use ($codes) {
+            foreach ($codes as $i => $code) {
+                $xml = str_replace('26KT03R501-'.str_pad((string) ($i + 1), 4, '0', STR_PAD_LEFT), $code, $xml);
+            }
+
+            return $xml;
+        });
+        $branch = (int) DB::table('branches')->where('kode_branch', 'R409')->value('id_branch');
+        $preview = $this->send($bytes)->assertOk()->assertJsonPath('summary.auto_mapped', 1)->assertJsonPath('summary.unmapped', 4)->json();
+        $this->assertSame($branch, $preview['rows'][0]['branch_id']);
+        $this->assertSame('YOGYAKARTA', $preview['rows'][0]['branch']);
+        $this->assertDatabaseCount('budget_pids', 0);
+        $uuid = (string) Str::uuid();
+        $this->send($bytes, 'Konstruksi', $preview, $uuid)->assertOk();
+        $this->assertDatabaseHas('budget_pids', ['pid' => $codes[0], 'branch_id' => $branch]);
+        $this->assertSame(4, DB::table('budget_pids')->whereNull('branch_id')->count());
+        $audit = json_decode(DB::table('budget_pid_changes')->join('budget_pids', 'budget_pids.id_budget_pid', '=', 'budget_pid_changes.budget_pid_id')->where('pid', $codes[0])->value('after_data'), true);
+        $this->assertSame($branch, $audit['branch_id']);
+        $this->send($bytes, 'Konstruksi', $preview, $uuid)->assertOk()->assertJsonPath('replayed', true);
+        $this->assertDatabaseCount('budget_pid_imports', 1);
+        $preview = $this->send($bytes)->assertOk()->assertJsonPath('summary.unchanged', 5)->assertJsonPath('summary.auto_mapped', 0)->json();
+        $this->send($bytes, 'Konstruksi', $preview)->assertOk();
+        $this->assertDatabaseCount('budget_pid_changes', 5);
+        $operation = $this->workbook(alter: fn ($xml) => str_replace('26KT03R501-0001', '26KT03R409-9999', $xml));
+        $preview = $this->send($operation, 'Operation')->assertOk()->assertJsonPath('summary.auto_mapped', 1)->json();
+        $this->send($operation, 'Operation', $preview)->assertOk();
+        $this->assertDatabaseHas('budget_pids', ['pid' => '26KT03R409-9999', 'unit' => 'Operation', 'branch_id' => $branch]);
+    }
+
+    public function test_import_preserves_manual_mapping_and_maps_existing_unmapped_only_on_explicit_import(): void
+    {
+        $branch = DB::table('branches')->where('kode_branch', 'R501')->first();
+        DB::table('branches')->where('id_branch', $branch->id_branch)->update(['kode_branch' => 'R998']);
+        $bytes = $this->workbook();
+        $preview = $this->send($bytes)->assertOk()->assertJsonPath('summary.unmapped', 1)->json();
+        $this->send($bytes, 'Konstruksi', $preview)->assertOk();
+        $before = DB::table('budget_pids')->first();
+        DB::table('branches')->where('id_branch', $branch->id_branch)->update(['kode_branch' => 'R501']);
+        $this->getJson('/api/budgeting-pid?unit=Konstruksi')->assertOk()->assertJsonPath('rows.0.branch_id', null);
+        $preview = $this->send($bytes)->assertOk()->assertJsonPath('summary.updated', 1)->assertJsonPath('summary.auto_mapped', 1)->json();
+        $this->send($bytes, 'Konstruksi', $preview)->assertOk();
+        $this->assertDatabaseHas('budget_pids', ['id_budget_pid' => $before->id_budget_pid, 'branch_id' => $branch->id_branch, 'created_at' => $before->created_at]);
+        $change = DB::table('budget_pid_changes')->where('action', 'updated')->first();
+        $this->assertNull(json_decode($change->before_data, true)['branch_id']);
+        $this->assertSame((int) $branch->id_branch, json_decode($change->after_data, true)['branch_id']);
+        $other = (int) DB::table('branches')->where('kode_branch', 'R409')->value('id_branch');
+        $this->postJson('/api/budgeting-pid/branch', ['unit' => 'Konstruksi', 'ids' => [$before->id_budget_pid], 'branch_id' => $other, 'version' => 2, 'request_id' => (string) Str::uuid()])->assertOk();
+        $preview = $this->send($bytes)->assertOk()->assertJsonPath('summary.auto_mapped', 0)->assertJsonPath('rows.0.branch_id', $other)->json();
+        $this->send($bytes, 'Konstruksi', $preview)->assertOk();
+        $this->assertDatabaseHas('budget_pids', ['id_budget_pid' => $before->id_budget_pid, 'branch_id' => $other]);
+    }
+
+    public function test_auto_mapping_respects_scope_inactive_branch_and_reviewed_mapping_fingerprint(): void
+    {
+        $bytes = $this->workbook();
+        $preview = $this->send($bytes)->assertOk()->json();
+        $branch = DB::table('branches')->where('kode_branch', 'R501')->first();
+        DB::table('branches')->where('id_branch', $branch->id_branch)->update(['kode_branch' => 'R998']);
+        $this->send($bytes, 'Konstruksi', $preview)->assertConflict();
+        $this->assertDatabaseCount('budget_pid_imports', 0);
+        DB::table('branches')->where('id_branch', $branch->id_branch)->update(['kode_branch' => 'R501', 'is_active' => 0]);
+        $this->send($bytes)->assertOk()->assertJsonPath('rows.0.branch_id', null);
+        DB::table('branches')->where('id_branch', $branch->id_branch)->update(['is_active' => 1]);
+        $actor = $this->asRole('Finance');
+        $other = (int) DB::table('branches')->where('kode_branch', 'R409')->value('id_branch');
+        app(AccountAccess::class)->assign($actor, 'FINANCE', [$other]);
+        $this->send($bytes)->assertForbidden();
+        $this->assertDatabaseCount('budget_pid_imports', 0);
+    }
+
+    public function test_pagination_sizes_totals_filters_history_and_scope_are_applied_in_sql(): void
+    {
+        $bytes = $this->workbook(105);
+        $preview = $this->send($bytes)->assertOk()->json();
+        $id = $this->send($bytes, 'Konstruksi', $preview)->assertOk()->json('import_id');
+        DB::enableQueryLog();
+        foreach ([10, 20, 50, 100] as $size) {
+            DB::flushQueryLog();
+            $this->getJson('/api/budgeting-pid?unit=Konstruksi&per_page='.$size)->assertOk()->assertJsonCount($size, 'rows')->assertJsonPath('total', 105)->assertJsonPath('per_page', $size)->assertJsonPath('has_more', true);
+            $this->assertLessThanOrEqual(8, count(DB::getQueryLog()), 'Page size must not introduce per-PID queries.');
+        }
+        DB::disableQueryLog();
+        $this->getJson('/api/budgeting-pid?unit=Konstruksi&per_page=100&page=2')->assertOk()->assertJsonCount(5, 'rows')->assertJsonPath('total', 105)->assertJsonPath('has_more', false);
+        $this->getJson('/api/budgeting-pid?unit=Konstruksi&q=0001&per_page=10')->assertOk()->assertJsonCount(1, 'rows')->assertJsonPath('total', 1);
+        $this->getJson('/api/budgeting-pid?unit=Operation&per_page=10')->assertOk()->assertJsonPath('total', 0);
+        $this->getJson('/api/budgeting-pid?unit=Konstruksi&history=1&per_page=10')->assertOk()->assertJsonCount(1, 'rows')->assertJsonPath('total', 1);
+        $this->getJson('/api/budgeting-pid?unit=Konstruksi&history=1&import_id='.$id.'&per_page=100&page=2')->assertOk()->assertJsonCount(5, 'rows')->assertJsonPath('total', 105);
+        foreach ([0, 11, 101, 1000] as $size) {
+            $this->getJson('/api/budgeting-pid?unit=Konstruksi&per_page='.$size)->assertUnprocessable();
+            $this->getJson('/api/budgeting-pid/branch?unit=Konstruksi&per_page='.$size)->assertUnprocessable();
+        }
+        $actor = $this->asRole('Finance');
+        $other = (int) DB::table('branches')->where('kode_branch', 'R409')->value('id_branch');
+        app(AccountAccess::class)->assign($actor, 'FINANCE', [$other]);
+        $this->getJson('/api/budgeting-pid?unit=Konstruksi&per_page=100')->assertOk()->assertJsonPath('total', 0)->assertJsonCount(0, 'rows');
+        $this->getJson('/api/budgeting-pid?unit=Konstruksi&history=1&import_id='.$id.'&per_page=100')->assertOk()->assertJsonPath('total', 0);
     }
 }

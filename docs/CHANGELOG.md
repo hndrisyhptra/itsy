@@ -1,5 +1,17 @@
 # Catatan perubahan it's Area 3
 
+## 25 November 2026 — Pagination Budgeting dan pemetaan otomatis Branch
+
+Footer total+halaman serta pilihan10/20/50/100 pada daftar/riwayat/rincian/preview. Impor mengenali singleRxxx aktif dariPID→Branch; unknown/ambiguous tetapmanual, existingmappingtetap, scope/reserved conflict/HMAC/version/replay/atomicaudit terjaga. Full533PHP+493frontend/build/assets lulus, tanpa migration baru atau dataaktifwrite. Impor belum memakai queue. [Detail](BUDGETING_PID.md).
+
+## 25 November 2026 — Audit penyimpanan dan optimasi BA RP
+
+Konfirmasi respons simpan PP terputus sekarang membuktikan exact target, bukan hanya receipt aktor dan PP terlihat. Marker server-owned atomik, input palsu diabaikan, replay berubah ditolak. BA RP actuals batched: fixture500baris3038→50query, ID lama dan rollback tetap. Full528PHP/16441assertions,491frontend/build/aset/syntax lulus; MariaDB privat kecil dan browser mockAPI diuji, data aktif/server tidak disentuh. Tanpa migration baru. [Bukti dan batas](RUNTIME_SAFETY_AUDIT.md).
+
+## 25 November 2026 — Persentase Rincian BOP mengikuti Revenue
+
+Rincian BOP memakai TotalBOP÷Revenue×100%, sama dengan Operasional2.5; label diperjelas menjadi %BOP/Revenue pada form/preview/Word/cetak. Nominal, snapshot dan approval tetap, tanpa migration/query tambahan. Frontend491, focusedPHPbudget10/184assertions, build/aset lulus. [Kontrak dan batas](PP_BUDGET_TEMPLATE.md).
+
 ## 25 November 2026 — Koreksi nilai dasar SPK pada BA RP
 
 Blok1 Harga Berdasarkan SPK memakai total Material/Jasa kesepakatan SPK penuh; label volume tahap dihapus dari baseline. Blok rekonsiliasi dan pengajuan tetap actuals. Preview/nativeWord/print/paket konsisten; tanpa mutasi nilai database/approval/kasbon/paid/ledger. Frontend490/PHP525/build/assets lulus, Word2halaman+browserPDF2halaman diperiksa. Tanpa migration baru. [Detail](BARP_TEMPLATE_WORD.md).

@@ -2,6 +2,10 @@
 name: area3-business-workflow
 description: Implement its Area 3 Project Plan, BOQ, mandor contracting, assigned two-stage approvals, scan verification and full APM settlement, APM gating, BA PP and continuation state transitions.
 ---
+## 25 November 2026 — Explicit Budgeting import may infer Branch
+
+Latest user supersedes24Nov no-PID-inference only for explicitFinance/Superadmin import. SingleRxxx→activebranches.kode_branch, saved mapping wins; unknown/missing/ambiguous/inactive manual. Keep scope/currentunit/knownoutside403/reservedbranchconflict422, mapping-boundHMAC/version/UUID/atomicbeforeafter. Never rewrite PP or move allocations/paid consumption/history; no GETbackfill/schema/migration/API/poller/livewrites. Follow latest docs/BUDGETING_PID.md; import remains synchronous120s, pagination10/20/50/100/count and actual testlimits recorded.
+
 ## 25 November 2026 — BARP price baseline is full saved SPK
 
 Follow latest docs/BARP_TEMPLATE_WORD.md. Priceblock1 only uses full exactSPK/deal qty×prices and dealmoneyPolicy M/J/Total, labelno volume-stage; block4/point3/narrative/payment remain currentactuals/termpolicy. No Owner/KHS/root/sibling/cumulative substitute or fake variationamounts. One loadedloop+flags0SQL; dedicated SPK_*Word slots and sourcebuilder, shared HTML/Word/print/package preserve geometry and blankwetTTD. Re-rendered oldpreview correction only, no SQL/snapshot/approval/paid/PID/ledger rewrite. Test fullSPKvsactual/SPKparity3policies/zero/missingflags/unit/sibling/immutable/exports and all renderedpages; document actual isolated vs server/desktop/load limits. No new API/schema/migration/dependency/poller/live/env/worker/server/Dompis writes; build/checkassets.

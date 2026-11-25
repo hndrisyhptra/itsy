@@ -2,6 +2,10 @@
 name: area3-financial-calculation
 description: Implement and verify official KHS component prices, agreed BA KH/SPK snapshots, actual term amounts, outstanding payment and consolidated budgets for its Area 3.
 ---
+## 25 November 2026 — BOP ratio denominator aligned
+
+Follow latest docs/PP_BUDGET_TEMPLATE.md. IV.3BOPpercentage and margin2.5Operasional both TotalBOP/Revenue×100; label %BOP/Revenue. Same ratio helper/zero dash, saved Sah totals; never alter amount/revenuepolicy/COGS/Header/history/PID/ledger/approvals or NonStock ratio. Shared editor/preview/print/DOMWord source,0SQL/API/schema/migration/poller/dependency/livewrite. Regressioncompare Draf/Sah editor/printing/zero/nonmutation, record actual focusedPHP/frontend/build and no physicalexport/server claim. Deploy build/checkassets only.
+
 ## 25 November 2026 — BARP price baseline is full saved SPK
 
 Follow latest docs/BARP_TEMPLATE_WORD.md. Priceblock1 only uses full exactSPK/deal qty×prices and dealmoneyPolicy M/J/Total, labelno volume-stage; block4/point3/narrative/payment remain currentactuals/termpolicy. No Owner/KHS/root/sibling/cumulative substitute or fake variationamounts. One loadedloop+flags0SQL; dedicated SPK_*Word slots and sourcebuilder, shared HTML/Word/print/package preserve geometry and blankwetTTD. Re-rendered oldpreview correction only, no SQL/snapshot/approval/paid/PID/ledger rewrite. Test fullSPKvsactual/SPKparity3policies/zero/missingflags/unit/sibling/immutable/exports and all renderedpages; document actual isolated vs server/desktop/load limits. No new API/schema/migration/dependency/poller/live/env/worker/server/Dompis writes; build/checkassets.

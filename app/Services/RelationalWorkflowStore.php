@@ -274,17 +274,28 @@ class RelationalWorkflowStore
             ]);
             $oldTerm = $previousTerms[$t['id']] ?? null;
             if (! $oldTerm || $oldTerm['actuals'] !== $t['actuals']) {
-                $actualComponents = [];
+                $termId = $key('terms', $t['id']);
+                $candidates = [];
                 foreach ($t['actuals'] as $row => $values) {
                     foreach (['m', 's'] as $c) {
                         $component = $key('contract-component', $spk['dealId'].'|'.$row.'|'.$c);
-                        if (DB::table('contract_components')->where('id_contract_component', $component)->exists()) {
-                            $actualComponents[] = $component;
-                            DB::table('term_actuals')->updateOrInsert(['term_id' => $key('terms', $t['id']), 'contract_component_id' => $component], ['actual_quantity' => $values[$c] ?? 0]);
-                        }
+                        $candidates[$component] = ['term_id' => $termId, 'contract_component_id' => $component, 'actual_quantity' => $values[$c] ?? 0];
                     }
                 }
-                DB::table('term_actuals')->where('term_id', $key('terms', $t['id']))->whereNotIn('contract_component_id', $actualComponents)->delete();
+                // Exact current contract membership, batched instead of one exists query per component.
+                $actuals = [];
+                foreach (array_chunk(array_keys($candidates), 500) as $ids) {
+                    $components = DB::table('contract_components')->where('contract_id', $key('deals', $spk['dealId']))
+                        ->whereIn('id_contract_component', $ids)->pluck('id_contract_component');
+                    foreach ($components as $component) {
+                        $actuals[$component] = $candidates[$component];
+                    }
+                }
+                foreach (array_chunk(array_values($actuals), 100) as $batch) {
+                    // Composite unique key preserves existing id_term_actual and zero/legacy precision.
+                    DB::table('term_actuals')->upsert($batch, ['term_id', 'contract_component_id'], ['actual_quantity']);
+                }
+                DB::table('term_actuals')->where('term_id', $termId)->whereNotIn('contract_component_id', array_keys($actuals))->delete();
             }
             $approvalFields = ['status', 'workflowVersion', 'approvalScheme', 'approverUserIds', 'pmUserId', 'managerUserId', 'approvals', 'history', 'submitted', 'preparedBy'];
             if (! $oldTerm || Arr::only($oldTerm, $approvalFields) != Arr::only($t, $approvalFields)) {

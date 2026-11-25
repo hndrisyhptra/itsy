@@ -450,4 +450,23 @@ class BudgetPidAllocationTest extends TestCase
         }
         $this->assertSame(123, BudgetPidAllocation::integer('123.00'));
     }
+
+    public function test_import_auto_mapping_cannot_reassign_reserved_unmapped_pid_to_another_branch(): void
+    {
+        [$p] = $this->package('26KT03R409-0099');
+        $this->api('submitProjectBundle', [$p['id']])->assertOk();
+        $before = $this->state();
+        $allocation = (array) $this->allocation($p['id']);
+        try {
+            $this->master($p, [], false);
+            $this->fail('Import must refuse a conflicting auto Branch mapping.');
+        } catch (HttpException $e) {
+            $this->assertSame(422, $e->getStatusCode());
+        }
+        $this->assertDatabaseCount('budget_pid_imports', 0);
+        $this->assertDatabaseCount('budget_pids', 0);
+        $this->assertSame($allocation, (array) $this->allocation($p['id']));
+        $this->asRole('Admin Konstruksi');
+        $this->assertSame($before, $this->state());
+    }
 }

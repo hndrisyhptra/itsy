@@ -1,5 +1,23 @@
 # Laravel rebuild QA — 2 November 2026
 
+## 25 November 2026 — Budgeting pagination dan kode Branch PID
+
+Final533PHP/16573assertions, XAMPP8.2.4 SQLite`:memory:`,126.322s/142.50MB/process512M;493frontend/0failed, TypeScript/Vite/assets49refs40preload×3/scopedPint/diffcheck lulus. Lima PHP cases baru mencakupR409 exact/unknown/missing/multiple/R4099/Operation/noop/replay, existingunmapped adoption hanyaimport/auditID/timestamp/manualpreserve, inactive/outscope/HMACchangedcode409, all4sizes/105total/search/unit/Branch/changehistory/invalidsize/querybudget, conflictingreserved422 no master/ledger/PPchange. Existingimport rollback/privacy/paid/workflowguards tetap.
+
+5192PID preview49/commit780/list7HTTP (sebelumnya37/768/6), karena satu catalogread+11batchedreservationchecks serta1COUNTlist; page10–100≤8queries, no perPIDSQL. Browser actualAppmock137rows:10/20/50/100/last37/zero/filter/resetpage, history/change/branchhistory/preview, TIDAK0POST/YA1preview,375/768/1440lightdark/0JSerror/root overflow,3PNG inspected. Awal frontendassert lama mengharuskan kalimat no-code-inference, diperbarui sesuai instruksi terbaru; Chrome pertama tidak dapat start di izin dasar, run terisolasi diizinkan kemudian lulus. No production guard weakened. No actual40kfilelatency/MariaDB/aaPanel/load/WordPDFchanges/liveits/env/worker/server/Dompis writes. [Audit/batas](qa/budgeting-pid-pagination-mapping-20261125.json).
+
+## 25 November 2026 — Audit menyeluruh penyimpanan/runtime
+
+Baseline525PHP/15397assertions → final **528PHP/16441assertions** lulus; XAMPP8.2.4 SQLite`:memory:`,119.516s/142.50MB/process512M. **491frontend**, TypeScript/Vite, assets49manifest/40preload×3, Composer validate, syntax187PHP, scopedPint/diffcheck lulus. New regressions: wrong-visible-PP confirmation fails before fix; forged/missinglegacy marker/currentpayload replay;500row actuals boundedwrite/exact1000rows/998retainedIDs/latebatch rollback. Existing Branch/unit/Region/approval/private/PPh/paid/ledger/PID/queue/document tests retained.
+
+Actual small MariaDB10.4.28 isolated socket/datadir: exactactuals ID retained, trigger45000rollback JSON/details/revision/receipts, PP-specific confirmation, existing synthetic paid/private hashes unchanged; instance stopped exit0/socketPIDremoved. Memoryguard unchanged. Actual App mockedAPI browser5savecases plus1000graph/8routes/3widths/2themes,0JSerror/0large-listwrites/search6/list≤20; screenshots inspected. Initial route harness used button instead of tab for StatusApproval, corrected harness only. Full production server/concurrent load/cron/realTelegram/allWordPDF rerenders not tested. Full [audit and limits](RUNTIME_SAFETY_AUDIT.md), [structured evidence](qa/runtime-safety-audit-20261125.json).
+
+## 25 November 2026 — Persentase BOP terhadap Revenue
+
+Regresi baru sebelum edit gagal pada expected %BOP/Revenue, sesudah edit **12focused plan-budget** dan **491frontend** lulus. Test Draf/Sah×printing/editor memastikan BOP30,02/Revenue2400=1,25% persis sama dengan Operasional2.5 (bukan BOQMandor140→21,44%), Revenue0 dash/noNaN/Infinity, no source mutation. PHPbudget **10tes/184assertions**, XAMPP8.2.4 SQLite`:memory:`,0.375s/30MB; backend tidak berubah. TypeScript/Vite/assets49manifest/40preload×3/diffcheck lulus.
+
+Satu ekspresi display dan label pada sharedBudgetPlanSection berubah; noSQL/API/schema/migration/dependency/poller/statewrite/activeits/env/worker/server/Dompis/commit/push/deploy. Tidak mengulang fullPHP/browser/WordPDFvisual karena layout/generator/nominal tidak berubah; SSRprinting mencakup sumber HTML/DOMWord existing, bukan klaim renderWorddesktop/server. [Kontrak](PP_BUDGET_TEMPLATE.md), [audit](qa/bop-revenue-percentage-20261125.json).
+
 ## 25 November 2026 — Dasar SPK penuh pada tabel BA RP
 
 Full **525PHP/15397assertions**, XAMPP8.2.4 SQLite`:memory:`,115.310s/142.50MB/process512M; tidak ada PHP produksi diubah. Frontend **490passed**, focusedBARP9, TypeScript/Vite/diffcheck/assets49manifest/40preload×3 lulus. Dua regresi baru gagal sebelum edit lalu lulus: exactSPK M1000/J400/Total1400 vs currentactualM200/J150/Total350,25%/HTMLWord block1-vsblock4; Konstruksi/Operation, noKHS/root, prior sibling ignored, zero/missing flags dan moneyPolicy legacy/whole/trunc mengikuti officialSPK. Existing export gate, sourceimmutable, template geometry/theme and remainingactual values lulus.

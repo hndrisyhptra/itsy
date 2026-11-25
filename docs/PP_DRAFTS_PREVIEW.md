@@ -1,5 +1,11 @@
 # Draft PP, cap preview dan penghapusan batas BOP — 5 November 2026
 
+## 25 November 2026 — Bukti committed harus terikat ke PP yang disimpan
+
+Receipt aktor/workspace + PPvisible ternyata belum membuktikan target; regresi crossPP gagal sebelum koreksi. Explicit saveDraft kini menyimpan `draftSaveReceipt` server-owned pada exactPP JSON, satu transaksi dengan data/revisi/audit/receipt. Marker client dibuang, trusted prior marker dipertahankan, raw payload hash dihitung sekali. Recovery GET existing mengharuskan UUID/PP/aktor/perintah/expected+resultrevision sama dengan receipt committed; scope tetap diperiksa. Marker replay terkini wajib sama payload, changedbody409.0newSQL/schema/migration/API/poller, recovery18vs17queries tetap.
+
+Hanya bukti draf terakhir perPP disimpan; marker hilang/legacy atau superseded tidak otomatis dikonfirmasi saat respons tidak pasti. Form tetap tersedia, tidak retryPOST/UUIDbaru/GETwrite/backfill. Respons save normal tetap bekerja; PP historis tidak perlu diajukan ulang. Tidak menyentuh status, riwayat, nominal, persetujuan atau private/paid. Full528PHP/491frontend, real smallMariaDB + browsermock5savecases lulus; server latency belum diprofiling. [Audit dan penerapan](RUNTIME_SAFETY_AUDIT.md).
+
 ## 24 November 2026 — Draf sudah tersimpan tetapi respons terlampau lama
 
 Pengguna melaporkan timeout saat Simpan Draft, lalu PP terlihat tersimpan setelah Muat Ulang Data. Kode sebelumnya menghentikan request setelah20detik, membaca state selama5detik dan tetap selalu melempar error meskipun transaksi sudah selesai. Abort browser tidak membatalkan transaksi PHP/MySQL yang sudah berjalan. Penyebab latency server persis belum diprofiling; laporan pengguna dan reproduksi transport mendukung respons terlambat/hilang, bukan bukti PP tidak disimpan.

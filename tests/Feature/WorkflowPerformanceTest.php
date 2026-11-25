@@ -175,4 +175,90 @@ class WorkflowPerformanceTest extends TestCase
         $this->assertSame(1, DB::table('projects')->where('project_code', $copy['projectCode'])->count());
         $this->assertSame($kupang, DB::table('project_plans')->where('source_id', 'pp-other-branch')->value('branch_id'));
     }
+
+    public function test_large_barp_actuals_use_bounded_batches_keep_row_ids_and_do_not_touch_other_workflow_data(): void
+    {
+        $this->withoutVite();
+        $this->seedWorkflow('D');
+        $workspace = PrototypeWorkspace::firstOrFail();
+        $store = app(RelationalWorkflowStore::class);
+        $state = app(AuthenticatedWorkspace::class)->bind($store->read($workspace));
+        $p = $state['projects'][0];
+        $deal = $state['deals'][0];
+        $spk = $state['spks'][0];
+        $p['id'] = $p['rootId'] = 'audit-pp-actuals';
+        $p['no'] = 'AUDIT-PP-ACTUALS';
+        $p['projectCode'] = 'AUDIT-PID-ACTUALS';
+        $deal['id'] = 'audit-deal-actuals';
+        $deal['projectId'] = $p['id'];
+        $deal['no'] = 'AUDIT-BAKH-ACTUALS';
+        $spk['id'] = 'audit-spk-actuals';
+        $spk['dealId'] = $deal['id'];
+        $spk['no'] = 'AUDIT-SPK-ACTUALS';
+        $boq = $p['boq'][0];
+        $row = $deal['rows'][0];
+        $p['boq'] = $deal['rows'] = [];
+        $actuals = [];
+        for ($i = 0; $i < 500; $i++) {
+            $id = 'audit-actual-'.$i;
+            $p['boq'][] = [...$boq, 'id' => $id, 'qty' => 10, 'm' => 100, 's' => 200];
+            $deal['rows'][] = [...$row, 'rowId' => $id, 'm' => true, 's' => true, 'qm' => 10, 'qs' => 10,
+                'capM' => 100, 'capS' => 200, 'sphM' => 1, 'sphS' => 2, 'offerM' => 1, 'offerS' => 2, 'pm' => 1, 'ps' => 2];
+            $actuals[$id] = ['m' => 1, 's' => 2];
+        }
+        $state['projects'][] = $p;
+        $state['deals'][] = $deal;
+        $state['spks'][] = $spk;
+        DB::transaction(fn () => $store->write($workspace, $state));
+        $this->asRole('Admin Konstruksi');
+        $this->postJson('/api/prototype/commands', ['command' => 'createTerm', 'args' => [$spk['id']],
+            'revision' => $workspace->fresh()->revision, 'request_id' => (string) Str::uuid()])->assertOk();
+        $term = $this->getJson('/api/prototype/state')->assertOk()->json('state.terms.0');
+        $term['actuals'] = $actuals;
+        $contractBefore = DB::table('contract_components')->orderBy('id_contract_component')->get()->toJson();
+        $balancesBefore = DB::table('volume_balances')->orderBy('boq_component_id')->get()->toJson();
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $this->postJson('/api/prototype/commands', ['command' => 'saveTerm', 'args' => [$term, false],
+            'revision' => $workspace->fresh()->revision, 'request_id' => (string) Str::uuid()])->assertOk();
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+        $actualQueries = array_filter($queries, fn ($q) => str_contains($q['query'], '"term_actuals"') || str_contains($q['query'], '"contract_components"'));
+        fwrite(STDOUT, "\n500 BARP rows/1000 actuals: ".count($queries).' HTTP queries; actual component queries '.count($actualQueries).".\n");
+        $this->assertLessThanOrEqual(20, count($actualQueries), 'Actual details should be selected/written in bounded batches.');
+        $this->assertDatabaseCount('term_actuals', 1000);
+        $ids = DB::table('term_actuals')->pluck('id_term_actual', 'contract_component_id')->all();
+        $stored = collect($store->read($workspace)['terms'])->firstWhere('id', $term['id']);
+        $this->assertSame($actuals, $stored['actuals']);
+        $this->assertSame($contractBefore, DB::table('contract_components')->orderBy('id_contract_component')->get()->toJson());
+        $this->assertSame($balancesBefore, DB::table('volume_balances')->orderBy('boq_component_id')->get()->toJson());
+        $term['actuals']['audit-actual-0'] = ['m' => 0, 's' => 3];
+        unset($term['actuals']['audit-actual-499']);
+        $this->postJson('/api/prototype/commands', ['command' => 'saveTerm', 'args' => [$term, false],
+            'revision' => $workspace->fresh()->revision, 'request_id' => (string) Str::uuid()])->assertOk();
+        $this->assertDatabaseCount('term_actuals', 998);
+        foreach (DB::table('term_actuals')->get() as $actual) {
+            $this->assertSame($ids[$actual->contract_component_id], $actual->id_term_actual);
+        }
+        $this->assertEquals(0, DB::table('term_actuals')->where('contract_component_id', $store->id($workspace->id, 'contract-component', $deal['id'].'|audit-actual-0|m'))->value('actual_quantity'));
+        $this->assertDatabaseCount('approval_decisions', 0);
+        $this->assertDatabaseCount('apm_settlements', 0);
+        $beforeDetails = DB::table('term_actuals')->orderBy('id_term_actual')->get()->toJson();
+        $beforeTerm = DB::table('payment_terms')->get()->toJson();
+        $revision = $workspace->fresh()->revision;
+        $receipts = DB::table('command_receipts')->count();
+        $last = $store->id($workspace->id, 'contract-component', $deal['id'].'|audit-actual-499|s');
+        DB::statement("CREATE TRIGGER audit_actual_failure BEFORE INSERT ON term_actuals WHEN NEW.contract_component_id = '{$last}' BEGIN SELECT RAISE(ABORT, 'isolated audit rollback'); END");
+        $term['actuals']['audit-actual-0'] = ['m' => 3, 's' => 3];
+        $term['actuals']['audit-actual-499'] = ['m' => 1, 's' => 7];
+        $this->postJson('/api/prototype/commands', ['command' => 'saveTerm', 'args' => [$term, false],
+            'revision' => $revision, 'request_id' => (string) Str::uuid()])->assertServerError();
+        DB::statement('DROP TRIGGER audit_actual_failure');
+        $this->assertSame($beforeDetails, DB::table('term_actuals')->orderBy('id_term_actual')->get()->toJson());
+        $this->assertSame($beforeTerm, DB::table('payment_terms')->get()->toJson());
+        $this->assertSame($revision, $workspace->fresh()->revision);
+        $this->assertDatabaseCount('command_receipts', $receipts);
+        $this->assertSame($contractBefore, DB::table('contract_components')->orderBy('id_contract_component')->get()->toJson());
+        $this->assertSame($balancesBefore, DB::table('volume_balances')->orderBy('boq_component_id')->get()->toJson());
+    }
 }

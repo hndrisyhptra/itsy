@@ -428,3 +428,6 @@ body{color:var(--text);background:var(--bg)}[data-theme=dark] .metric-label,[dat
 
 /* Kasbon canonical components: independent account fields and one readonly total. */
 .kasbon-input-rows table{min-width:860px;font-size:12px}.kasbon-input-rows th,.kasbon-input-rows td{border:1px solid var(--border);padding:10px;vertical-align:top}.kasbon-input-rows td:first-child{width:150px;white-space:normal}.kasbon-input-rows td small{display:block;font-size:10px;margin-top:5px}.kasbon-input-rows input{width:100%;min-width:110px;font-size:12px}.kasbon-input-rows td:nth-child(4){min-width:230px}.kasbon-input-rows td.numeric{width:170px}.kasbon-input-rows td.numeric input{text-align:right;min-width:150px;background:var(--bg);font-variant-numeric:tabular-nums}.kasbon-input-total{background:var(--bg)}.kasbon-input-total th{text-align:right}.kasbon-input-total td{white-space:nowrap}
+
+/* Budgeting scoped pagination: total precedes page controls. */
+.budget-pid-pagination-info{display:flex;align-items:center;flex-wrap:wrap;gap:12px}.budget-pid-pagination-info label{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}.budget-pid-pagination-info select{width:70px;min-height:34px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text)}

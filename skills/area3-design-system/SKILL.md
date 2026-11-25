@@ -2,6 +2,14 @@
 name: area3-design-system
 description: Build or revise the its Area 3 interface with its specific enterprise design tokens, responsive shell, tables, and accessible interaction states. Do not apply its brand to Dompis Prov.
 ---
+## 25 November 2026 — Budgeting pagination footer
+
+Use shared BudgetPagination for master lists/history/preview: size10/20/50/100, Total before Halaman X/Y, disabledfirst/last/busy, responsivewrap/lightdark scopedCSS. Sourcekey includespageSize/abort, resetpage+selection; list SQLpaged, previewlocal≤100DOM. Preview Branch+auto/manualsummary uses actualserverplan, never fakeprogress/queue. Follow latest docs/BUDGETING_PID.md;533PHP493frontend/browsermock inspected, no actualserver/load/exportclaim.
+
+## 25 November 2026 — BOP ratio denominator aligned
+
+Follow latest docs/PP_BUDGET_TEMPLATE.md. IV.3BOPpercentage and margin2.5Operasional both TotalBOP/Revenue×100; label %BOP/Revenue. Same ratio helper/zero dash, saved Sah totals; never alter amount/revenuepolicy/COGS/Header/history/PID/ledger/approvals or NonStock ratio. Shared editor/preview/print/DOMWord source,0SQL/API/schema/migration/poller/dependency/livewrite. Regressioncompare Draf/Sah editor/printing/zero/nonmutation, record actual focusedPHP/frontend/build and no physicalexport/server claim. Deploy build/checkassets only.
+
 ## 25 November 2026 — BARP price baseline is full saved SPK
 
 Follow latest docs/BARP_TEMPLATE_WORD.md. Priceblock1 only uses full exactSPK/deal qty×prices and dealmoneyPolicy M/J/Total, labelno volume-stage; block4/point3/narrative/payment remain currentactuals/termpolicy. No Owner/KHS/root/sibling/cumulative substitute or fake variationamounts. One loadedloop+flags0SQL; dedicated SPK_*Word slots and sourcebuilder, shared HTML/Word/print/package preserve geometry and blankwetTTD. Re-rendered oldpreview correction only, no SQL/snapshot/approval/paid/PID/ledger rewrite. Test fullSPKvsactual/SPKparity3policies/zero/missingflags/unit/sibling/immutable/exports and all renderedpages; document actual isolated vs server/desktop/load limits. No new API/schema/migration/dependency/poller/live/env/worker/server/Dompis writes; build/checkassets.

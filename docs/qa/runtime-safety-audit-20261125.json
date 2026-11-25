@@ -1,0 +1,114 @@
+{
+  "date": "2026-11-25",
+  "scope": "Local runtime persistence, guards and performance audit; isolated synthetic data only",
+  "report": "docs/RUNTIME_SAFETY_AUDIT.md",
+  "production_changes": [
+    "Batch changed term_actuals exact-contract lookups at 500 IDs and unique-key upserts at 100 rows, updating quantity only",
+    "Persist server-owned exact-PP draft save proof atomically with canonical data and receipt; reject wrong-target confirmation and current-proof altered-payload replay",
+    "Calculate original canonical input hash once before transaction retries"
+  ],
+  "measurements": {
+    "barp_rows": 500,
+    "actual_components": 1000,
+    "http_queries_before": 3038,
+    "http_queries_after": 50,
+    "detail_queries_before": 3001,
+    "detail_queries_after": 13,
+    "retained_detail_ids_after_removing_one_row": 998,
+    "normal_get_queries": 17,
+    "confirmation_get_queries": 18,
+    "query_measurement_driver": "SQLite :memory: real authenticated HTTP fixture",
+    "server_latency_or_throughput_measured": false
+  },
+  "verification": {
+    "php_baseline": {"passed": 525, "assertions": 15397},
+    "php_final": {"passed": 528, "assertions": 16441, "seconds": 119.516, "memory_mb": 142.5, "process_limit_mb": 512, "php": "8.2.4", "database": "SQLite :memory:"},
+    "frontend": {"passed": 491, "failed": 0, "skipped": 0},
+    "typescript_vite": "passed",
+    "asset_check": {"manifest_references": 49, "preload_dependencies": 40, "profiles": 3, "passed": true},
+    "composer_validate": "passed",
+    "php_syntax": {"files": 187, "errors": 0},
+    "scoped_pint": "passed",
+    "diff_check": "passed",
+    "regressions": [
+      "Wrong visible PP receipt confirmation reproduced before fix and refused after fix",
+      "Forged client proof discarded; missing legacy proof remains unconfirmed without business writes",
+      "Same current proof replay succeeds once; altered payload same UUID returns 409 without duplicate receipt/revision",
+      "1000 actual details round-trip exactly; zero preserved; 998 existing IDs retained after row removal",
+      "Late-batch failure rolls back canonical term, details, workspace revision and receipt; contracts/balances unchanged"
+    ],
+    "isolated_mariadb": {
+      "version": "10.4.28",
+      "root": "/private/tmp/area3-pid-stage4-20261124",
+      "networking_disabled": true,
+      "root_marker_socket_datadir_guards": true,
+      "synthetic_fixture_only": true,
+      "small_actuals_identity_upsert": true,
+      "trigger_failure_rolls_back_term_details_revision_receipt": true,
+      "exact_pp_confirmation": true,
+      "other_visible_pp_unconfirmed": true,
+      "existing_synthetic_private_and_paid_hashes_unchanged": true,
+      "shutdown_exit": 0,
+      "socket_and_pid_removed": true,
+      "confirmation_transport": "Direct controller invocation; middleware separately covered in SQLite HTTP tests",
+      "large_500_row_physical_test": false
+    },
+    "browser_save": {
+      "transport": "Actual App, mocked API, external network blocked",
+      "cases_passed": ["slow response", "lost response with exact receipt", "unconfirmed", "validation 422", "wrong target"],
+      "posts_per_case": 1,
+      "recovery_gets_max": 1,
+      "automatic_post_retries": 0,
+      "input_preserved_on_failure": true,
+      "js_errors": 0
+    },
+    "browser_large_graph": {
+      "transport": "Actual App, mocked read-only APIs",
+      "records_each": {"pp": 1000, "deal": 1000, "spk": 1000, "term": 1000},
+      "bapp_fixture": "empty",
+      "routes": ["/project-plan", "/spk", "/ba-rp", "/ba-pp", "/termin", "/inbox", "/laporan", "/dashboard"],
+      "widths": [375, 768, 1440],
+      "themes": ["light", "dark"],
+      "project_dom_upper_bound": 20,
+      "screenshot_project_rows": 8,
+      "global_search_max": 6,
+      "dashboard_approval_tab": true,
+      "js_errors": 0,
+      "root_overflow": false,
+      "writes": 0,
+      "screenshots_inspected": ["large-project-list.png", "dashboard-approval.png", "save/confirmed.png"],
+      "concurrent_load_test": false
+    }
+  },
+  "compatibility": {
+    "active_database_writes": false,
+    "new_schema_or_migration": false,
+    "new_api_dependency_poller": false,
+    "financial_or_approval_policy_changes": false,
+    "historical_snapshot_backfill": false,
+    "legacy_or_superseded_save_proof": "No automatic confirmation after uncertain response; ordinary save remains supported; no historical resubmission needed",
+    "preexisting_bop_percentage_changes": "Preserved, separately documented in bop-revenue-percentage-20261125.json"
+  },
+  "not_tested": [
+    "Production aaPanel/PHP8.4/network/proxy/cache/OPcache behavior",
+    "Concurrent production throughput, all workspace-lock or contract-write bottlenecks",
+    "Real cron/Supervisor/Telegram delivery or bank transfer",
+    "Production backup and restore",
+    "Fresh physical rendering of every Word/PDF document or physical printing",
+    "Network dependency security audit"
+  ],
+  "deployment": "Deploy source and built assets, verify assets; no new migration or env/key change. Restart only Area3 upload worker if running old source. Never reset data, seed live, purge queue or restart unrelated workers.",
+  "temporary_evidence": [
+    "/private/tmp/area3-audit-20261125-php-baseline.log",
+    "/private/tmp/area3-audit-20261125-php-final.log",
+    "/private/tmp/area3-audit-20261125-frontend-final.log",
+    "/private/tmp/area3-audit-20261125-actuals-before.log",
+    "/private/tmp/area3-audit-20261125-actuals-after.log",
+    "/private/tmp/area3-audit-20261125-confirmation-before.log",
+    "/private/tmp/area3-audit-20261125-mariadb.log",
+    "/private/tmp/area3-pid-stage4-20261124/audit-storage-result.json",
+    "/private/tmp/area3-audit-20261125-mariadb-shutdown.log",
+    "/private/tmp/area3-runtime-audit-20261125/browser-result.json",
+    "/private/tmp/area3-runtime-audit-20261125/save/browser-results.json"
+  ]
+}

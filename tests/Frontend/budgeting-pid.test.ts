@@ -45,3 +45,30 @@ test('compact master table keeps exact money, scoped page selection, mapping lab
  const detail=renderToStaticMarkup(h(BudgetPidDetail,{row}));assert.match(detail,/Alokasi PP Baru/);assert.match(detail,/Sisa Budget/);assert.match(detail,/Source discrepancy/);assert.match(detail,/Pembayaran lunas tetap terpakai/);
  const unbound=renderToStaticMarkup(h(BudgetPidDetail,{row:{...row,branch_id:null,branch:null}}));assert.match(unbound,/Petakan Branch/);assert.doesNotMatch(unbound,/Alokasi PP Baru/);
 });
+
+
+test('budget pagination shows exact total before page and offers bounded sizes with safe empty/last controls',async()=>{
+ const {BudgetPagination}=await import('../../resources/js/area3/budget-pid-pagination');
+ for(const size of [10,20,50,100]){
+  const html=renderToStaticMarkup(h(BudgetPagination,{page:1,perPage:size,total:105,busy:false,onPage:()=>{},onPerPage:()=>{}}));
+  assert.match(html,/aria-label="Baris per halaman"/);assert.equal((html.match(/<option/g)||[]).length,4);
+  assert(html.indexOf('Total')<html.indexOf('Halaman'));assert.match(html,/<b>105<\/b> data/);
+  assert.match(html,new RegExp('value="'+size+'" selected=""'));
+ }
+ const html=renderToStaticMarkup(h(BudgetPagination,{page:1,perPage:20,total:0,busy:false,onPage:()=>{},onPerPage:()=>{}}));
+ assert.equal((html.match(/disabled=""/g)||[]).length,2);assert.match(html,/Total <b>0<\/b>/);
+ const mapped=renderToStaticMarkup(h(BudgetPreviewTable,{rows:[{...preview.rows[0],branch:'YOGYAKARTA',branch_id:4}]}));
+ assert.match(mapped,/YOGYAKARTA/);assert.match(mapped,/>Branch</);
+});
+
+test('budget list and mapping history send selected SQL page size with same scope and abort signal',async()=>{
+ const {loadBudgetBranchLog}=await import('../../resources/js/area3/budgeting-pid-api');
+ const previous=fetch,signal=new AbortController().signal,urls:string[]=[];
+ try{
+  globalThis.fetch=async(url,options)=>{urls.push(String(url));assert.equal(options?.signal,signal);assert.equal(options?.cache,'no-store');return Response.json({rows:[],total:0,per_page:100});};
+  await loadBudget('Operation','LOP',3,false,'',signal,100);
+  await loadBudgetBranchLog('Operation',2,signal,50);
+  assert.match(urls[0],/unit=Operation&q=LOP&page=3&history=0&per_page=100$/);
+  assert.match(urls[1],/unit=Operation&page=2&per_page=50$/);
+ }finally{globalThis.fetch=previous;}
+});

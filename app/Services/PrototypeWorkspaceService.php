@@ -91,7 +91,9 @@ class PrototypeWorkspaceService
 
     public function command(PrototypeWorkspace $workspace, array $input, bool $includePayload = true): array
     {
-        return DB::transaction(function () use ($workspace, $input, $includePayload) {
+        $budgetPayloadHash = BudgetPidAllocation::hash($input);
+
+        return DB::transaction(function () use ($workspace, $input, $includePayload, $budgetPayloadHash) {
             $row = PrototypeWorkspace::runtimeQuery()->whereKey($workspace->id)->lockForUpdate()->firstOrFail();
             $access = app(AuthenticatedWorkspace::class);
             $before = $access->bind(app(RelationalWorkflowStore::class)->read($row));
@@ -104,6 +106,15 @@ class PrototypeWorkspaceService
             if ($replay) {
                 abort_unless($replay->actor_user_id === auth()->id() && $replay->command === $input['command'], 409, 'ID permintaan sudah digunakan.');
                 app(BudgetPidAllocation::class)->replay($input, (int) auth()->id());
+                if (in_array($input['command'], ['saveProject', 'saveProjectBundle'], true) && ($input['args'][1] ?? false) === false) {
+                    $project = collect($before['projects'])->firstWhere('id', $input['args'][0]['id'] ?? '');
+                    $proof = $project['draftSaveReceipt'] ?? null;
+                    if ($proof) {
+                        abort_unless(($proof['requestId'] ?? '') === $input['request_id'] && ($proof['projectId'] ?? '') === $project['id']
+                            && ($proof['actorUserId'] ?? '') === $before['actorUserId'] && ($proof['command'] ?? '') === $input['command']
+                            && hash_equals($proof['payloadHash'] ?? '', $budgetPayloadHash), 409, 'Permintaan simpan sudah digunakan atau dokumen telah disimpan kembali. Muat ulang sebelum melanjutkan.');
+                    }
+                }
 
                 if ($isCancel) {
                     $document = collect($before['projects'])->firstWhere('id', $input['args'][0] ?? '');
@@ -125,7 +136,6 @@ class PrototypeWorkspaceService
             if ($row->revision !== $input['revision'] && ! $this->canCreateDraftAtCurrentRevision($before, $input, $row->revision)) {
                 throw new HttpResponseException(response()->json($this->payload($row) + ['message' => 'Data berubah di tab lain. Muat ulang data terbaru; perubahan tidak ditimpa.'], 409));
             }
-            $budgetPayloadHash = BudgetPidAllocation::hash($input);
             if ($isCancel) {
                 $document = collect($before['projects'])->firstWhere('id', $input['args'][0] ?? '');
                 abort_unless($document, 404);
@@ -168,6 +178,11 @@ class PrototypeWorkspaceService
                 // Never trust client provenance, comparison prices or an arbitrary file path.
                 unset($input['args'][0]['_boqImport']);
                 $saved = collect($before['projects'])->firstWhere('id', $input['args'][0]['id'] ?? '');
+                // The browser cannot supply or move a proof of a prior committed save.
+                unset($input['args'][0]['draftSaveReceipt']);
+                if (isset($saved['draftSaveReceipt'])) {
+                    $input['args'][0]['draftSaveReceipt'] = $saved['draftSaveReceipt'];
+                }
                 $input['args'][0] = BudgetPidAllocation::pin($input['args'][0], $saved);
                 if (($before['schema'] ?? 1) >= 3 && (! $saved || (($saved['workflowVersion'] ?? 1) >= 3 && in_array($saved['status'], ['Draft', 'Dikembalikan', 'Ditolak'], true)))) {
                     $input['args'][0] = app(BudgetPidReference::class)->prepare($input['args'][0], $saved, $before['branches']);
@@ -220,6 +235,17 @@ class PrototypeWorkspaceService
                 $domainCommand = 'createSettlementTerm';
             }
             $state = app(PrototypeDomain::class)->execute($before, $domainCommand, $input['args'], $input['result_id'] ?? null)['state'];
+            if (in_array($input['command'], ['saveProject', 'saveProjectBundle'], true) && ($input['args'][1] ?? false) === false) {
+                foreach ($state['projects'] as &$project) {
+                    if ($project['id'] === $input['args'][0]['id']) {
+                        $project['draftSaveReceipt'] = ['requestId' => $input['request_id'], 'projectId' => $project['id'],
+                            'actorUserId' => $before['actorUserId'], 'command' => $input['command'], 'payloadHash' => $budgetPayloadHash,
+                            'expectedRevision' => $input['revision'], 'resultingRevision' => $row->revision + 1];
+                        break;
+                    }
+                }
+                unset($project);
+            }
             $budgetPlan = app(BudgetPidAllocation::class)->plan($row, $before, $state, $input, $budgetPayloadHash);
             $newRootDraft = $domainCommand === 'saveProjectBundle' && ! collect($before['projects'])->contains('id', $input['args'][0]['id']);
             $balanceQuery = fn () => DB::table('volume_balances')->join('boq_components as c', 'c.id_boq_component', '=', 'volume_balances.boq_component_id')

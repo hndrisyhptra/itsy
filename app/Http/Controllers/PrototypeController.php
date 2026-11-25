@@ -44,8 +44,16 @@ class PrototypeController extends Controller
         }
         $payload = $service->payload($workspace);
         if (isset($input['request_id'])) {
-            $visible = collect($payload['state']['projects'])->contains('id', $input['project_id']);
-            $payload['confirmation'] = $receipt && $visible ? ['requestId' => $receipt->request_uuid, 'projectId' => $input['project_id'], 'command' => $receipt->command_name,
+            $project = collect($payload['state']['projects'])->firstWhere('id', $input['project_id']);
+            $proof = $project['draftSaveReceipt'] ?? [];
+            // A receipt and PP visibility alone do not prove that this request saved this PP.
+            $confirmed = $receipt && ($proof['requestId'] ?? '') === $receipt->request_uuid
+                && ($proof['projectId'] ?? '') === $input['project_id']
+                && ($proof['actorUserId'] ?? '') === 'db-user-'.$request->user()->getKey()
+                && ($proof['command'] ?? '') === $receipt->command_name
+                && ($proof['expectedRevision'] ?? null) === (int) $receipt->expected_revision
+                && ($proof['resultingRevision'] ?? null) === (int) $receipt->resulting_revision;
+            $payload['confirmation'] = $confirmed ? ['requestId' => $receipt->request_uuid, 'projectId' => $input['project_id'], 'command' => $receipt->command_name,
                 'expectedRevision' => (int) $receipt->expected_revision, 'resultingRevision' => (int) $receipt->resulting_revision] : null;
         }
 

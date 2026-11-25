@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
-/** Explicit mapping only: PID prefixes never confer Branch ownership or access. */
+/** Manual corrections remain explicit; automatic import mapping never grants account access. */
 class BudgetPidBranch
 {
     public function options(array $account): array
@@ -14,19 +14,21 @@ class BudgetPidBranch
             ->orderBy('name')->get(['id_branch', 'name'])->all();
     }
 
-    public function history(array $account, string $unit, int $page): array
+    public function history(array $account, string $unit, int $page, int $perPage = 20): array
     {
         app(BudgetPidMaster::class)->authorize($account, $unit);
-        $rows = DB::table('budget_pid_branch_changes as c')->join('users as u', 'u.id_user', '=', 'c.actor_user_id')
-            ->join('branches as b', 'b.id_branch', '=', 'c.branch_id')->where('c.unit', $unit)->whereIn('c.branch_id', $account['branchIds'])
-            ->orderByDesc('c.version')->offset(($page - 1) * 20)->limit(21)->get(['c.*', 'u.name as actor_name', 'b.name as branch']);
+        abort_unless(in_array($perPage, [10, 20, 50, 100], true), 422);
+        $query = DB::table('budget_pid_branch_changes as c')->join('users as u', 'u.id_user', '=', 'c.actor_user_id')
+            ->join('branches as b', 'b.id_branch', '=', 'c.branch_id')->where('c.unit', $unit)->whereIn('c.branch_id', $account['branchIds']);
+        $total = (clone $query)->count();
+        $rows = $query->orderByDesc('c.version')->offset(($page - 1) * $perPage)->limit($perPage + 1)->get(['c.*', 'u.name as actor_name', 'b.name as branch']);
 
-        return ['rows' => $rows->take(20)->map(function ($r) {
+        return ['rows' => $rows->take($perPage)->map(function ($r) {
             $r->before_data = json_decode($r->before_data, true, 512, JSON_THROW_ON_ERROR);
             $r->after_data = json_decode($r->after_data, true, 512, JSON_THROW_ON_ERROR);
 
             return $r;
-        })->values()->all(), 'page' => $page, 'has_more' => $rows->count() > 20];
+        })->values()->all(), 'page' => $page, 'has_more' => $rows->count() > $perPage, 'total' => $total, 'per_page' => $perPage];
     }
 
     public function change(int $actorId, array $input): array

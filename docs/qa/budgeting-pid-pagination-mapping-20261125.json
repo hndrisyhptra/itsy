@@ -1,0 +1,169 @@
+{
+  "date": "2026-11-25",
+  "feature": "Master Budgeting pagination and Branch mapping during explicit import",
+  "authorization": "Latest user explicitly allows PID Rxxx matching, superseding earlier manual-only assumption for future imports",
+  "pagination": {
+    "sizes": [
+      10,
+      20,
+      50,
+      100
+    ],
+    "default": 20,
+    "total": "COUNT uses same unit/Branch/search/batch filters as rows",
+    "server_lists": [
+      "PID",
+      "imports",
+      "import changes",
+      "manual mapping history"
+    ],
+    "preview": "client pagination, max100 DOM",
+    "source_key_includes_size": true,
+    "reset_page_selection": true
+  },
+  "mapping": {
+    "example": "26KT03R409-0001 -> R409 -> YOGYAKARTA",
+    "source": "active, nondeleted branches.kode_branch",
+    "match": "exact single R + three digits followed by hyphen or end, not R4099",
+    "manual": [
+      "missing",
+      "unknown",
+      "multiple codes",
+      "ambiguous catalog match",
+      "inactive branch"
+    ],
+    "existing_saved_mapping": "preserved",
+    "old_unmapped": "only adopted on explicit reviewed import",
+    "outside_current_actor_scope": "403, no import",
+    "conflicting_reserved_allocation_branch": "422, no import/ledger mutation",
+    "review_mapping_changed": "409 fresh preview required",
+    "audit": "branch_id in import before/after JSON; automatic mapping recorded in import history, manual changes in mapping history",
+    "summary": [
+      "auto_mapped",
+      "unmapped"
+    ],
+    "HMAC": "actor/unit/file/version/mapping plan",
+    "replay": "existing actor/file/unit/fingerprint UUID receipt unchanged"
+  },
+  "performance": {
+    "fixture_pids": 5192,
+    "source_data_rows": 31152,
+    "driver": "SQLite :memory: authenticated HTTP",
+    "preview_queries": 49,
+    "commit_queries": 780,
+    "list_queries": 7,
+    "previous_counts": [
+      37,
+      768,
+      6
+    ],
+    "new_query_cost": "one locking Branch catalog read + at most one reserved-conflict lookup/500PID; one scoped COUNT/list",
+    "per_page_10_to_100_query_budget": 8,
+    "per_pid_queries": false,
+    "existing_write_batches": {
+      "pids": 100,
+      "items": 50
+    }
+  },
+  "tests": {
+    "php": {
+      "passed": 533,
+      "assertions": 16573,
+      "php": "8.2.4",
+      "database": "SQLite :memory:",
+      "seconds": 126.322,
+      "memory_mb": 142.5,
+      "process_limit_mb": 512
+    },
+    "frontend_passed": 493,
+    "focused_initial_php": {
+      "passed": 37,
+      "assertions": 1457,
+      "seconds": 22.778
+    },
+    "build": "TypeScript/Vite passed",
+    "assets": {
+      "manifest_refs": 49,
+      "preload_dependencies": 40,
+      "profiles": 3
+    },
+    "scoped_pint": "passed",
+    "diff_check": "passed",
+    "cases": [
+      "exact/unknown/missing/multiple/4digit/inactive code",
+      "Construction/Operation",
+      "preview read-only",
+      "existing unmapped explicit adoption/no GET backfill",
+      "manual preserved/ID/timestamp retained/noop/replay",
+      "scope denied and HMAC plan drift",
+      "reserved conflict preserves allocation and PP",
+      "SQL sizes/total/filter/Branch/unit/history/invalid size/query bounds"
+    ]
+  },
+  "browser": {
+    "passed": true,
+    "sizes": [
+      10,
+      20,
+      50,
+      100
+    ],
+    "total": 137,
+    "page2": 37,
+    "filter_zero": true,
+    "page_size_resets": true,
+    "history": true,
+    "changes": true,
+    "mapping_history": true,
+    "preview_pagination": true,
+    "preview_mapping": true,
+    "widths": [
+      375,
+      768,
+      1440
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "js_errors": [],
+    "writes": 1,
+    "transport": "Actual App/mockAPI; no real import or server"
+  },
+  "screenshots_inspected": [
+    "pagination-1440-light.png",
+    "pagination-375-dark.png",
+    "preview-mapping.png"
+  ],
+  "verification_corrections": [
+    "Updated preexisting SSR assertion for old no-inference notice to latest requested mapping behavior",
+    "Initial browser launch unavailable under basic permissions; authorized isolated run passed"
+  ],
+  "no_changes": [
+    "active application database",
+    "server/aaPanel",
+    "env/APP_KEY",
+    "live workers",
+    "workflow histories or approvals",
+    "financial formula/private/paid/ledger",
+    "new migration/schema/endpoint/dependency/poller",
+    "git commit/push/deploy",
+    "Dompis"
+  ],
+  "limits": [
+    "Import remains synchronous; browser timeout120s unchanged; no queue implementation",
+    "No real40000row workbook latency or production concurrent-load measurement",
+    "No fresh physical MariaDB or aaPanel verification for this change",
+    "Browser actual App uses mocked APIs/synthetic data",
+    "No document generators/layout changes or fresh Word/PDF renders"
+  ],
+  "deployment": "Deploy source and built assets, run asset check; no new migration or worker for this feature; re-preview any uncommitted preview created before update",
+  "evidence": [
+    "/private/tmp/area3-pid-pagination-php-full.log",
+    "/private/tmp/area3-pid-pagination-focused.log",
+    "/private/tmp/area3-pid-pagination-frontend.log",
+    "/private/tmp/area3-pid-pagination-build.log",
+    "/private/tmp/area3-pid-pagination-assets.log",
+    "/private/tmp/area3-pid-pagination-20261125/result.json"
+  ]
+}

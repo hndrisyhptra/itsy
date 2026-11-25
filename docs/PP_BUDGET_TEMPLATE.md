@@ -1,5 +1,15 @@
 # Anggaran, margin dan penutup Project Plan
 
+## 25 November 2026 — Persentase BOP dan Operasional sama-sama terhadap Revenue
+
+Sesuai permintaan terbaru, persentase di **IV.3 Rincian Kebutuhan BOP** sekarang memakai **Total BOP ÷ Revenue ×100%**, sama dengan baris **2.5 Operasional** pada tabel Perkiraan Margin. Label berubah dari “% BOP / Total BoQ” menjadi **“% BOP / Revenue”**. Ketentuan lama pembagi BOQ Mandor untuk persentase BOP di bagian historis dokumen ini telah digantikan. Persentase Material Non Stock terhadap Total BOQ tidak termasuk perubahan ini.
+
+Kedua lokasi menggunakan `totals.bop`, `totals.revenue` dan helper persentase yang sama. Revenue tetap mengikuti kebijakan PP tersimpan: untuk kebijakan terbaru, Jasa Owner+Material Owner terpilih pada BOQ Mandor. Contoh BOP30,02/Revenue2.400=1,25% di kedua bagian; bukan21,44% dari BOQ Mandor140. Revenue0 menampilkan “—”, tanpa pembagian nol. Nominal BOP/COGS/Revenue/GrossProfit/margin/rekap/Header dan policy perhitungan uang tetap.
+
+`BudgetPlanSection` adalah sumber bersama editor, preview, cetak dan DOM Word/paketPP; pembaruan label/pembagi ini berlaku juga pada tampilan PP yang sudah Sah memakai totals tersimpan, tanpa menulis ulang SQL/snapshot/keputusan. Tidak mengadopsi policy Revenue baru pada PP historis. Tidak ada query/endpoint/schema/migration/poller/dependency/statewrite baru. Build/checkassets dan reload diperlukan saat deployment; tanpa restart worker khusus perubahan persentase.
+
+Verifikasi: regresi comparison gagal sebelum perubahan, lalu focused12 dan frontend491 lulus; PHPbudget10tes/184assertions SQLitememory, TypeScript/Vite/assets49refs/40preload×3/diffcheck lulus. Uji Draf/Sah×editor/printing, comparison langsung dengan baris Operasional, zeroRevenue dan sourceimmutable. Tidak mengulang browser/renderWordPDF atau suitePHP penuh karena hanya satu ekspresi tampilan berubah, tanpa layout/generator/backend berubah. Tidak menyentuh data aktif/server/ENV/worker/Dompis. [Audit](qa/bop-revenue-percentage-20261125.json).
+
 **20 November 2026:** volume Mandor, Non Stock dan jumlah BOP pada simpan/pengajuan editable harus bilangan bulat tanpa koma/desimal. Harga, rumus dan mode maintenance snapshot lama tetap. [Cakupan, data lama dan QA](WHOLE_VOLUME_INPUT.md).
 
 ## 17 November 2026 — Designator, tambahan/hapus Non Stock dan Total Nilai

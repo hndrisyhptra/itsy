@@ -1,5 +1,13 @@
 # Optimasi query dan respons aplikasi
 
+## 25 November 2026 — Pagination master dan batched Branch inference
+
+SQL count scoped/filter tambah1query/list, offset+limit size+1 dengan allowlist10/20/50/100; items/usage tetap satuquery masing-masing untuk halaman. KatalogBranch aktif dibaca sekali secara locking dalam transaksi impor; lookupkode in-memoryMap, reserved conflict≤1query/500PID (bukan perbaris), existingwritebuffers100PID/50items tetap.5192PIDpreview49/commit780/list7 vs37/768/6 terdahulu; page10–100≤8HTTPqueries. UImax100DOM/localpreview, sourcekey+abortsize/resetselection dan loadeddata reuse;0newpoller/dependency/API/schema. Import masih serialized/sinkron120s, belum bukti file40k dapat selesai sebelum timeout atau server bebasbottleneck. [Kontrak dan batas](BUDGETING_PID.md).
+
+## 25 November 2026 — Changed BA RP actuals dan PP confirmation
+
+Actuals membership max500ID exactcontract, detail upsert100 quantity-only; unchanged actuals skipped. Real authenticated500row/1000component fixture **3038→50HTTPqueries / 3001→13detailqueries**, existing998IDs retained after removal and latebatchfailure fullyrolledback. No schema/index/API/poller/dependency or money/ledger/approval changes. Raw canonical command hash reused across transaction retries; PP receipt marker uses existing JSON/loaded graph, confirmation remains18vs17HTTP (one indexed receipt SELECT). No perPPquery. Full528PHP/491frontend plus isolated smallMariaDB and mockedAPI1000graph browser; these do not measure aaPanel latency or productionload. Workspace graph/serialization/lock and remaining contract loops still need profiling under real load. [Evidence/bounds](RUNTIME_SAFETY_AUDIT.md).
+
 ## 25 November 2026 — Baseline SPK pada BA RP
 
 Contract M/J/Total dan currentactuals dihitung pada loop deal.rows yang sama; actual lookup sekali/baris dan hasMaterial/hasService sekali di loop mengganti repeated.some. Tidak memanggil SPK renderer penuh, katalog/Owner/root/sibling atau private fetch; newSQL/API/poller/schema/dependency0. Baseline moneyPolicy deal sama officialSPK, actualspolicy tetapterm. HTML/nativeWord/combinedpackage reuse samepuremodel. Full525PHP dan490frontend/assets lulus; nativeWord/browserPDF2+2halaman diperiksa. Ini bukti fixture, bukan benchmark loadserver. [Audit/batas](qa/barp-spk-baseline-20261125.json).

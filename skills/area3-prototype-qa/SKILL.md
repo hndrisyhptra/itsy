@@ -2,6 +2,18 @@
 name: area3-prototype-qa
 description: Test the its Area 3 interactive prototype through the linked business scenarios, permissions, persistence, financial/volume invariants, documents and responsive layouts.
 ---
+## 25 November 2026 — Budgeting pagination and automatic Branch import
+
+Follow latest docs/BUDGETING_PID.md; user now explicitly allows singleexactRxxx→activekode_branch on explicitimport only, superseding old no-inference notes. Preserve savedmanualmapping; unknown/multiple/inactive/code4digits staymanual; outside403/reservedwrongBranch422, HMACmapping drift409, replay/atomicbeforeafter/IDs/history/paidledger unchanged. SQLpage10/20/50/100+scopedfilteredtotal, abortsizekey/resetpage+selection, preview≤100DOM. Actual533PHP/493frontend/5192query49-780-7/browsermock3width2themes; no actual40k/MariaDB/serverclaim or newqueue. No schema/migration/livewrites; document actual evidence and deploybuild/checkassets.
+
+## 25 November 2026 — Runtime safety audit
+
+Follow docs/RUNTIME_SAFETY_AUDIT.md. Regress exact PP receipt binding (other visible PP must not confirm), server-owned proof/clientforgery/missinglegacy/currentUUIDpayload and unchanged readonlyGET. Actuals exactcontract lookup500/upsert100 must preserve numericIDs/zero/historicprecision/delete and rollback latebatch JSON/details/revision/receipt. Actual500row3038→50query/1000readback/998IDs, full528PHP+491frontend passed. IsolatedMariaDB small fixture private root/socket/datadir/skipnetworking guard only, shutdown afterward; PHPUnit stays memory-only. Mockedbrowser1000graph8routes and5savecases not serverload/fullrealAPI. No liveits/env/worker/server/Dompis writes or dependency/poller/schema/migration. Preserve existing money/paid/private/approval/ledger/PID guards; record evidence/limits, never assert universal safety/bottleneckfreedom.
+
+## 25 November 2026 — BOP ratio denominator aligned
+
+Follow latest docs/PP_BUDGET_TEMPLATE.md. IV.3BOPpercentage and margin2.5Operasional both TotalBOP/Revenue×100; label %BOP/Revenue. Same ratio helper/zero dash, saved Sah totals; never alter amount/revenuepolicy/COGS/Header/history/PID/ledger/approvals or NonStock ratio. Shared editor/preview/print/DOMWord source,0SQL/API/schema/migration/poller/dependency/livewrite. Regressioncompare Draf/Sah editor/printing/zero/nonmutation, record actual focusedPHP/frontend/build and no physicalexport/server claim. Deploy build/checkassets only.
+
 ## 25 November 2026 — BARP price baseline is full saved SPK
 
 Follow latest docs/BARP_TEMPLATE_WORD.md. Priceblock1 only uses full exactSPK/deal qty×prices and dealmoneyPolicy M/J/Total, labelno volume-stage; block4/point3/narrative/payment remain currentactuals/termpolicy. No Owner/KHS/root/sibling/cumulative substitute or fake variationamounts. One loadedloop+flags0SQL; dedicated SPK_*Word slots and sourcebuilder, shared HTML/Word/print/package preserve geometry and blankwetTTD. Re-rendered oldpreview correction only, no SQL/snapshot/approval/paid/PID/ledger rewrite. Test fullSPKvsactual/SPKparity3policies/zero/missingflags/unit/sibling/immutable/exports and all renderedpages; document actual isolated vs server/desktop/load limits. No new API/schema/migration/dependency/poller/live/env/worker/server/Dompis writes; build/checkassets.

@@ -3,6 +3,7 @@
 /** Explicit isolated MariaDB QA only; never uses .env database credentials/socket. */
 declare(strict_types=1);
 
+use App\Http\Controllers\PrototypeController;
 use App\Models\PrototypeWorkspace;
 use App\Models\User;
 use App\Services\AccountAccess;
@@ -19,7 +20,9 @@ use App\Services\RelationalWorkflowStore;
 use App\Services\UploadQueue;
 use App\Services\WorkUnitAccess;
 use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
@@ -222,6 +225,68 @@ function qaChildren(string $root, array $phases): array
             }
         }
     }
+}
+if ($phase === 'audit-storage') {
+    qaCheck(! is_file($qaRoot.'/audit-storage-result.json'), 'audit fixture already completed');
+    $operator = User::where('username', 'stage4-operation-0')->firstOrFail();
+    qaActor((int) $operator->getKey());
+    $state = qaState();
+    $pp = collect($state['projects'])->firstWhere('projectCode', 'QA-OPERATION-STAGE4');
+    qaCheck($pp && $pp['status'] === 'Sah', 'existing isolated Operation package approved');
+    $deal = collect($state['deals'])->firstWhere('projectId', $pp['id']);
+    $spk = collect($state['spks'])->firstWhere('dealId', $deal['id']);
+    qaCheck(! collect($state['terms'])->contains('spkId', $spk['id']), 'no preexisting audit term');
+    $privateBefore = hash('sha256', json_encode([DB::table('finance_kasbons')->orderBy('id_kasbon')->get(), DB::table('apm_settlements')->orderBy('id_apm_settlement')->get()], JSON_THROW_ON_ERROR));
+    qaCommand('createTerm', [$spk['id']]);
+    $term = collect(qaState()['terms'])->firstWhere('spkId', $spk['id']);
+    $term['actuals'] = ['qa-service' => ['m' => 0, 's' => 1]];
+    qaCommand('saveTerm', [$term, false]);
+    $sqlTerm = app(RelationalWorkflowStore::class)->id(qaWorkspace()->id, 'terms', $term['id']);
+    $actual = DB::table('term_actuals')->where('term_id', $sqlTerm)->first();
+    qaCheck($actual && (float) $actual->actual_quantity === 1.0, 'actual persisted on physical MariaDB');
+    $term['actuals']['qa-service']['s'] = 2;
+    qaCommand('saveTerm', [$term, false]);
+    $updated = DB::table('term_actuals')->where('term_id', $sqlTerm)->first();
+    qaCheck($updated->id_term_actual === $actual->id_term_actual && (float) $updated->actual_quantity === 2.0, 'MariaDB upsert preserves actual identity');
+    $revision = qaWorkspace()->revision;
+    $receiptCount = DB::table('command_receipts')->count();
+    $termBefore = DB::table('payment_terms')->where('id_payment_term', $sqlTerm)->value('document_data');
+    DB::unprepared("CREATE TRIGGER area3_qa_actual_failure BEFORE INSERT ON term_actuals FOR EACH ROW BEGIN IF NEW.term_id = '{$sqlTerm}' AND NEW.actual_quantity = 3 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'isolated audit rollback'; END IF; END");
+    $refused = false;
+    try {
+        $term['actuals']['qa-service']['s'] = 3;
+        qaCommand('saveTerm', [$term, false]);
+    } catch (QueryException $error) {
+        $refused = ($error->errorInfo[0] ?? '') === '45000';
+    } finally {
+        DB::unprepared('DROP TRIGGER area3_qa_actual_failure');
+    }
+    qaCheck($refused && qaWorkspace()->revision === $revision && DB::table('command_receipts')->count() === $receiptCount, 'failed physical write rolls back revision and receipt');
+    qaCheck($termBefore === DB::table('payment_terms')->where('id_payment_term', $sqlTerm)->value('document_data') && (float) DB::table('term_actuals')->where('term_id', $sqlTerm)->value('actual_quantity') === 2.0, 'failed physical write keeps canonical term and details');
+    $draft = app(PrototypeWorkspaceService::class)->scenario('B')['projects'][0];
+    $draft['id'] = $draft['rootId'] = 'pp-'.Str::uuid();
+    $draft['projectCode'] = 'QA-AUDIT-RECEIPT';
+    $draft['branch'] = $pp['branch'];
+    $draft['unit'] = 'Operation';
+    $draft['boq'] = [];
+    unset($draft['approverUserIds'], $draft['pmUserId'], $draft['managerUserId']);
+    $uuid = (string) Str::uuid();
+    qaCommand('saveProjectBundle', [$draft, false], null, $uuid);
+    $saved = qaProject($draft['id']);
+    qaCheck($saved['draftSaveReceipt']['requestId'] === $uuid && $saved['draftSaveReceipt']['projectId'] === $draft['id'], 'physical PP stores server-owned exact target proof');
+    $controller = app(PrototypeController::class);
+    foreach ([$draft['id'] => true, $pp['id'] => false] as $id => $expected) {
+        $request = Request::create('/api/prototype/state', 'GET', ['request_id' => $uuid, 'project_id' => $id]);
+        $request->setUserResolver(fn () => Auth::user());
+        $response = $controller->state($request, app(PrototypeWorkspaceService::class))->getData(true);
+        qaCheck(($response['confirmation'] !== null) === $expected, 'physical source-bound save confirmation');
+    }
+    $privateAfter = hash('sha256', json_encode([DB::table('finance_kasbons')->orderBy('id_kasbon')->get(), DB::table('apm_settlements')->orderBy('id_apm_settlement')->get()], JSON_THROW_ON_ERROR));
+    qaCheck($privateBefore === $privateAfter, 'existing paid/private kasbon history unchanged');
+    $result = ['phase' => 'audit-storage', 'physical_actual_upsert_identity' => true, 'actual_quantity_rollback' => true, 'canonical_term_revision_receipt_rollback' => true, 'source_bound_pp_confirmation' => true, 'different_visible_pp_unconfirmed' => true, 'existing_paid_and_private_unchanged' => true];
+    file_put_contents($qaRoot.'/audit-storage-result.json', json_encode($result, JSON_THROW_ON_ERROR));
+    echo json_encode($result, JSON_THROW_ON_ERROR).PHP_EOL;
+    exit(0);
 }
 if ($phase === 'operation') {
     qaCheck(! is_file($qaRoot.'/operation-result.json'), 'operation fixture already completed');

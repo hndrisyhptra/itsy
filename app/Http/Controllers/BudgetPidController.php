@@ -22,13 +22,13 @@ class BudgetPidController extends Controller
     {
         $account = $request->attributes->get('area3.account');
         $master->authorize($account);
-        $rules = ['unit' => ['required', Rule::in(['Konstruksi', 'Operation'])], 'page' => 'sometimes|integer|min:1|max:100000'];
+        $rules = ['unit' => ['required', Rule::in(['Konstruksi', 'Operation'])], 'page' => 'sometimes|integer|min:1|max:100000', 'per_page' => ['sometimes', 'integer', Rule::in([10, 20, 50, 100])]];
         if ($request->isMethod('post')) {
             $rules += ['ids' => 'required|array|min:1|max:100', 'ids.*' => 'required|uuid|distinct', 'branch_id' => 'required|integer|min:1', 'version' => 'required|integer|min:0', 'request_id' => 'required|uuid'];
         }
         $input = $request->validate($rules);
         if ($request->isMethod('get')) {
-            return response()->json($branch->history($account, $input['unit'], (int) ($input['page'] ?? 1)))->header('Cache-Control', 'private, no-store');
+            return response()->json($branch->history($account, $input['unit'], (int) ($input['page'] ?? 1), (int) ($input['per_page'] ?? 20)))->header('Cache-Control', 'private, no-store');
         }
 
         return response()->json($branch->change((int) $request->user()->getKey(), $input))->header('Cache-Control', 'private, no-store');
@@ -39,9 +39,9 @@ class BudgetPidController extends Controller
         $account = $request->attributes->get('area3.account');
         $master->authorize($account);
         $input = $request->validate(['unit' => ['required', Rule::in(['Konstruksi', 'Operation'])], 'q' => 'nullable|string|max:100',
-            'page' => 'sometimes|integer|min:1|max:100000', 'history' => 'sometimes|boolean', 'import_id' => 'nullable|uuid']);
+            'page' => 'sometimes|integer|min:1|max:100000', 'per_page' => ['sometimes', 'integer', Rule::in([10, 20, 50, 100])], 'history' => 'sometimes|boolean', 'import_id' => 'nullable|uuid']);
 
-        return response()->json($master->listing($account, $input['unit'], trim($input['q'] ?? ''), (int) ($input['page'] ?? 1), (bool) ($input['history'] ?? false), $input['import_id'] ?? null))->header('Cache-Control', 'private, no-store');
+        return response()->json($master->listing($account, $input['unit'], trim($input['q'] ?? ''), (int) ($input['page'] ?? 1), (bool) ($input['history'] ?? false), $input['import_id'] ?? null, (int) ($input['per_page'] ?? 20)))->header('Cache-Control', 'private, no-store');
     }
 
     public function import(Request $request, BudgetPidMaster $master, BudgetPidWorkbook $reader)

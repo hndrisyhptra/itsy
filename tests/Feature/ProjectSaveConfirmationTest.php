@@ -153,4 +153,48 @@ class ProjectSaveConfirmationTest extends TestCase
         $this->assertSame($moves, DB::table('volume_movements')->count());
         $this->assertDatabaseCount('project_plans', 2);
     }
+
+    public function test_a_receipt_for_one_visible_pp_never_confirms_a_different_visible_pp(): void
+    {
+        [$uuid, $p] = $this->save();
+        $other = $p;
+        $other['id'] = $other['rootId'] = 'pp-confirmation-other';
+        $otherUuid = (string) Str::uuid();
+        $this->postJson('/api/prototype/commands', ['request_id' => $otherUuid, 'revision' => PrototypeWorkspace::first()->revision,
+            'command' => 'saveProjectBundle', 'args' => [$other, false]])->assertOk();
+        $this->confirmation($uuid, $other['id'])->assertOk()->assertJsonPath('confirmation', null);
+        $this->confirmation($otherUuid, $p['id'])->assertOk()->assertJsonPath('confirmation', null);
+        $this->confirmation($otherUuid, $other['id'])->assertOk()->assertJsonPath('confirmation.requestId', $otherUuid);
+        $this->assertDatabaseCount('command_receipts', 2);
+    }
+
+    public function test_client_cannot_move_or_forge_draft_save_proof_and_missing_legacy_proof_is_not_confirmed(): void
+    {
+        [$uuid, $p] = $this->save();
+        $sql = DB::table('project_plans')->where('source_id', $p['id'])->first();
+        $legacy = json_decode($sql->document_data, true, 512, JSON_THROW_ON_ERROR);
+        unset($legacy['draftSaveReceipt'], $legacy['budgetPidPolicy']);
+        // Explicit in-memory pre-feature document fixture; no application read-time backfill.
+        DB::table('project_plans')->where('id_pp', $sql->id_pp)->update(['document_data' => json_encode($legacy, JSON_THROW_ON_ERROR)]);
+        $counts = [DB::table('prototype_audits')->count(), DB::table('command_receipts')->count()];
+        $this->confirmation($uuid)->assertOk()->assertJsonPath('confirmation', null);
+        $this->assertSame($counts, [DB::table('prototype_audits')->count(), DB::table('command_receipts')->count()]);
+        $legacy['draftSaveReceipt'] = ['requestId' => $uuid, 'projectId' => 'wrong-target', 'actorUserId' => 'db-user-999', 'command' => 'saveProject', 'payloadHash' => str_repeat('0', 64), 'expectedRevision' => 999, 'resultingRevision' => 999];
+        $request = (string) Str::uuid();
+        $revision = PrototypeWorkspace::first()->revision;
+        $input = ['request_id' => $request, 'revision' => $revision, 'command' => 'saveProjectBundle', 'args' => [$legacy, false]];
+        $response = $this->postJson('/api/prototype/commands', $input)->assertOk();
+        $proof = collect($response->json('state.projects'))->firstWhere('id', $p['id'])['draftSaveReceipt'];
+        $this->assertSame($request, $proof['requestId']);
+        $this->assertSame($p['id'], $proof['projectId']);
+        $this->assertSame('db-user-'.auth()->id(), $proof['actorUserId']);
+        $this->assertSame($revision + 1, $proof['resultingRevision']);
+        $this->postJson('/api/prototype/commands', $input)->assertOk()->assertJsonPath('replayed', true);
+        $this->confirmation($request)->assertOk()->assertJsonPath('confirmation.requestId', $request);
+        $this->confirmation($uuid)->assertOk()->assertJsonPath('confirmation', null);
+        $input['args'][0]['name'] = 'Wrong replay payload';
+        $this->postJson('/api/prototype/commands', $input)->assertConflict();
+        $this->assertSame($revision + 1, PrototypeWorkspace::first()->revision);
+        $this->assertDatabaseCount('command_receipts', 2);
+    }
 }

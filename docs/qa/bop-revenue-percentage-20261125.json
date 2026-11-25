@@ -1,0 +1,59 @@
+{
+  "date": "2026-11-25",
+  "feature": "Unify BOP detail and margin Operasional percentages over Revenue",
+  "formula": "Total BOP / Revenue *100",
+  "changed": "One BudgetPlanSection display expression and label",
+  "preserved": [
+    "BOP nominal and all costs/revenue/grossprofit/margin/header totals",
+    "Saved revenue/money policies and locked snapshots",
+    "NonStock percentage denominator",
+    "Approval/payment/volume/PID/ledger/private guards and data"
+  ],
+  "queries_added": 0,
+  "schema_api_migration_dependency_poller_added": false,
+  "verification": {
+    "regression_before": "New comparison failed before one-line correction",
+    "frontend_focused": 12,
+    "frontend_full": 491,
+    "php_focused": {
+      "suite": "ProjectPlanBudgetTest",
+      "tests": 10,
+      "assertions": 184,
+      "php": "8.2.4",
+      "database": "SQLite memory",
+      "seconds": 0.375,
+      "peak_mb": 30
+    },
+    "build": "TypeScript/Vite passed",
+    "assets": {
+      "manifest_refs": 49,
+      "preloads": 40,
+      "profiles": 3
+    },
+    "diffcheck": "passed",
+    "cases": [
+      "Draft/Sah x editor/printing",
+      "30.02/2400=>1.25percent same as Operasional, not30.02/140",
+      "ZeroRevenue dash/noNaN/noInfinity",
+      "Original project JSON unchanged"
+    ]
+  },
+  "limits": [
+    "No fullPHP rerun for unchanged backend",
+    "No new browser/Word/PDF render, unchanged layout/generator; SSR shared printing source only",
+    "No live database/env/worker/server/Dompis/commit/push/deploy"
+  ],
+  "deployment": [
+    "Build latest assets",
+    "npm run check:assets",
+    "Reload",
+    "No migration or worker restart specific to change"
+  ],
+  "evidence_local_only": [
+    "/private/tmp/area3-bop-revenue-focused.log",
+    "/private/tmp/area3-bop-revenue-frontend.log",
+    "/private/tmp/area3-bop-revenue-php.log",
+    "/private/tmp/area3-bop-revenue-build.log",
+    "/private/tmp/area3-bop-revenue-assets.log"
+  ]
+}

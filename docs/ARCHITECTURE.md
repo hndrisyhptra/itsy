@@ -1,5 +1,17 @@
 # Arsitektur aplikasi it's Area 3
 
+## 25 November 2026 — Master Budgeting SQL pagination dan Branch plan
+
+BudgetPidMaster/Branch listing menerima boundedperPage10/20/50/100; COUNT clone dari filtered/scoped builder sebelum offset+limit(perPage+1), item+usage tetap batch. BudgetPagination dipakai empat mode+preview, key termasuk ukuran/abort dan resetpage+selection. Import membaca satu active Branch catalog locking; regex single code lookupMap, existing mapping wins, knownoutside403, reservedwrongBranch lookup per500→422. HMAC plan mapping mengikat perubahan kode setelah preview. Branch_id masuk savedPID dan audit before/after di satu transaksi/version/receipt existing; tidak menulis workflow/ledger/private atau menambahschema/API/poller/dependency. [Kontrak/bukti/batas](BUDGETING_PID.md#25-november-2026--pagination-dan-pemetaan-branch-otomatis-saat-impor).
+
+## 25 November 2026 — Audit runtime: actuals batching dan bukti target PP
+
+Changed term_actuals uses exact-contract membership lookup500IDs and upsert100 on existing composite unique key, quantity-only update/identity retained; loaded unchanged branches skip. Full500row fixture3038→50HTTP/3001→13detail, rollback late batch covers parent/revision/receipt and existing detail. PP draftSaveReceipt stored server-owned in existing JSON in same transaction as real committed receipt; raw original payload hash computed once, client marker discarded/pinned, GET confirms exact PP/UUID/actor/command/revisions only. Current-proof replay checks payload. No markerless/superseded automatic recovery, legacy normal saves unaffected/no GET backfill.0newAPI/schema/migration/dependency/poller/livewrites. [Audit/test/deployment limits](RUNTIME_SAFETY_AUDIT.md).
+
+## 25 November 2026 — Satu pembagi persentase BOP dan Operasional
+
+Shared BudgetPlanSection mengganti satu ekspresi subtotal BOP dari `percentage(totals.bop,totals.mandor)` ke `percentage(totals.bop,totals.revenue)` dan label %BOP/Revenue. MarginTable2.5 sudah memakai Revenue; keduanya tetap shared ratioPercent/zero-safe/format. Totals cached dari renderer existing; Sah memakai frozen planBudgetTotals, tanpa perhitungan ulang nominal/Revenue policy atau statewrite. Editor/preview/print/DOMWord/paket memakai sumber yang sama.0newSQL/API/schema/migration/dependency/poller; tidak mengubah denominator NonStock. [Kontrak](PP_BUDGET_TEMPLATE.md), [audit](qa/bop-revenue-percentage-20261125.json).
+
 ## 25 November 2026 — Dasar SPK dan actuals terpisah pada model BA RP
 
 `barpDocumentData` kini memiliki contractMaterial/contractService/contractTotal (deal quantities/prices/policy) terpisah dari material/service/total (actuals/current term policy). Keduanya dihitung dalam loop yang sama; source flags sekali tanpa repeat.some. Baseline sama dengan official SPK; persentase actuals terhadap baseline memakai totalSPK. Hanya blok1 HTML dan slot SPK_* Word memakai contract values; poinrekonsiliasi/terbilang/tagihan tetap actuals. OOXML sourcebuilder diperbarui bersama template, grid/style/gates/blankwetTTD dan nativepackage tetap. Pure presentation0SQL/API/schema/migration/dependency/poller/statewrite; database/approval/payments/ledger/PID unchanged. [Kontrak](BARP_TEMPLATE_WORD.md), [audit](qa/barp-spk-baseline-20261125.json).

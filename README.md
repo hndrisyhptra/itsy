@@ -1,5 +1,11 @@
 # it's Area 3 — Construction Workspace
 
+**25 November 2026 — Master Budgeting:** pagination 10/20/50/100 baris dengan total sesuai filter; impor memetakan kode PID seperti `R409` ke Branch aktif secara otomatis. PID tanpa kode yang dikenali tetap manual; pemetaan tersimpan dipertahankan. Preview menampilkan Branch dan ringkasan pemetaan sebelum simpan. Build/check aset diperlukan, tanpa migration baru. Impor tetap sinkron; belum dipindah ke queue. [Aturan dan batas](docs/BUDGETING_PID.md).
+
+**25 November 2026 — Audit penyimpanan dan kinerja:** konfirmasi simpan kini membuktikan PP yang tepat; penyimpanan 500 baris volume BA RP turun dari 3.038 menjadi 50 query pada fixture. **528 tes PHP dan 491 tes frontend lulus**, ditambah MariaDB privat dan browser data besar. Data aktif/server tidak diubah; tanpa migration baru. [Hasil, batas dan penerapan](docs/RUNTIME_SAFETY_AUDIT.md).
+
+**25 November 2026 — Persentase BOP:** Rincian BOP dan baris2.5 Operasional kini sama-sama memakai **Total BOP ÷ Revenue ×100%**. Label menjadi “% BOP / Revenue”, termasuk preview/Word/cetak. Nominal dan data tersimpan tetap. Build/check aset diperlukan, tanpa migration. [Detail](docs/PP_BUDGET_TEMPLATE.md).
+
 **25 November 2026 — Harga dasar SPK di BA RP:** blok “Harga Berdasarkan Surat Perintah Kerja” sekarang mengambil total Material/Jasa SPK penuh. Blok rekonsiliasi/pengajuan tetap volume aktual pembayaran. Preview, Word, cetak dan paket gabungan konsisten; data/approval/paid tetap. Build/check aset diperlukan, tanpa migration baru. [Aturan dan pengujian](docs/BARP_TEMPLATE_WORD.md).
 
 **25 November 2026 — Rincian kasbon:** Jasa dan Material kini memiliki baris akun/nama akun/teks keperluan masing-masing, nominal otomatis dan total. Jasa memakai nilai bersih setelah PPh, Material utuh; preview/Word/cetak mengikuti rincian tersimpan. Kasbon yang sudah terbit tetap. Build/check aset diperlukan, tanpa migration baru. [Aturan dan bukti](docs/KASBON_PPH_PAYMENT_LIST.md).

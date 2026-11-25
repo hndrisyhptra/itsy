@@ -1,5 +1,24 @@
 # Master Budgeting PID — 24 November 2026
 
+## 25 November 2026 — Pagination dan pemetaan Branch otomatis saat impor
+
+Permintaan terbaru menggantikan aturan24November “Rxxx tidak dapat menentukan Branch” **khusus saat impor eksplisit berikutnya**. Tidak menjalankan pemetaan massal/backfill pada data aktif atau mengubah PP lama saat halaman dibaca.
+
+- PID dengan **satu kode `R` + tiga angka**, berakhir sebelum tanda `-` atau akhir PID, dicocokkan ke `branches.kode_branch` aktif/tidak terhapus. Contoh `26KT03R409-0001` → `R409` → YOGYAKARTA. Angka empat digit seperti R4099 tidak dianggap R409.
+- Kode hilang/tidak dikenal/inaktif, lebih dari satu kode, atau kode katalog ambigu tetap **Belum dipetakan/Petakan manual**. Finance/Superadmin memakai Atur Branch seperti sebelumnya.
+- Pemetaan yang **sudah tersimpan dipertahankan**, termasuk koreksi manual yang berbeda dari kode PID. PID lama yang belum dipetakan dapat dipetakan pada impor berikutnya setelah preview; tidak ada pengubahan dokumen/snapshot/alokasi PP historis.
+- Tujuan otomatis harus ada dalam Branch penugasan aktif importer; kode dikenal di luar akses menghasilkan403 tanpa impor. Jika PID belum dipetakan tetapi alokasi reserved sudah berada di Branch berbeda, seluruh impor ditolak422; rekonsiliasi manual diperlukan. Tidak memindahkan pemakaian budget atau menghapus transaksi lunas.
+
+Preview sekarang memuat kolom Branch dan ringkasan **Branch otomatis/Pemetaan manual**. Snapshot audit impor baru menambah `branch_id` pada before/after; existing snapshot lama tidak ditulis ulang. Perubahan pemetaan saja tercatat sebagai updated. Tetap satu receipt/version untuk seluruh impor, bukan memanggil satu perintah pemetaan untuk setiap PID. Riwayat Pemetaan tersendiri tetap untuk tindakan manual; perubahan otomatis dapat dilihat melalui Riwayat Impor.
+
+HMAC preview mengikat actor/unit/file/version **dan rencana pemetaan**. Perubahan kode/aktivasi Branch setelah preview mengharuskan pemeriksaan baru; preview pra-update juga perlu diperiksa kembali. UUID replay impor yang benar-benar sudah committed tetap mengembalikan receipt lama. Master-control/actor dan katalog Branch aktif dikunci urut dalam transaksi, lookup konflik reserved per500PID, upsert existing100PID/50item. Tidak ada query perPID, schema/migration/API/dependency/poller baru.
+
+Daftar PID, Riwayat Impor, Rincian Perubahan dan Riwayat Pemetaan memakai SQL pagination **10/20/50/100** baris (default20). Footer menampilkan **Total ... data** sebelum **Halaman X / Y**; total memakai COUNT dengan filter/unit/cakupan yang sama, bukan panjang halaman. Satu COUNT tambahan per daftar, detail item/pemakaian tetap batched. Ganti ukuran mereset halaman/pilihan; key respons mencakup ukuran dan request lama diabort. Preview file memakai pagination lokal yang sama, maksimum100DOM, bukan SQL paging karena metadata file sudah diterima.
+
+Uji: full533PHP/16573assertions (XAMPP8.2.4 SQLite memory,126.322s/142.50MB),493frontend, TypeScript/Vite/assets49refs/40preloads×3/Pint/diffcheck. Fixture5192PID: preview49/commit780/list7HTTPqueries; halaman10–100 tetap≤8queries. Browser actualApp/mockedAPI137PID: ukuran10/20/50/100, halaman2=37 pada size100, pencarian total0, resetpage, riwayat/rincian/pemetaan/preview, YA-TIDAK,3widths2themes/0JSerror/overflow; screenshot diperiksa. Bukan physicalMariaDB/aaPanel/productionload/latencyfile40ribu. [Audit](qa/budgeting-pid-pagination-mapping-20261125.json).
+
+**Penerapan:** source+build/checkassets, tidak ada migration baru/worker baru/perubahan ENV. Data aktif/server tidak diubah agen. Impor masih sinkron dengan timeout browser120detik; fitur ini belum mengatasi timeout besar melalui queue. Riwayat/UUID/atomicity tetap seperti penjelasan pemulihan di bawah. Semua bagian bertanggal lebih lama berikut adalah catatan historis bila bertentangan dengan aturan baru ini.
+
 ## Tahap 4 — Verifikasi MariaDB terisolasi dan perapian master
 
 **Tahap 4 selesai untuk pengujian lokal terisolasi dan UI; belum deployment/UAT akun nyata di aaPanel.** MariaDB 10.4.28 dijalankan pada datadir/socket privat baru dengan networking dimatikan, bukan database `its` aplikasi. Seluruh akun, workbook, PP, identitas Mandor dan bukti transfer merupakan fixture buatan. Tidak menyalin/mengubah data aktif, `.env`, APP_KEY aplikasi, worker, server, Dompis atau histori pengguna.

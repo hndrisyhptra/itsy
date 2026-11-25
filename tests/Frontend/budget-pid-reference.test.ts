@@ -43,7 +43,7 @@ test('mapping uses explicit IDs/Branch/version/UUID/CSRF; retry remains manual a
  await assert.rejects(()=>mapBudgetBranches(payload),e=>e instanceof BudgetRequestError&&e.uncertain);assert.equal(calls,1);
  }finally{globalThis.fetch=old;}
  const row={...p,unit:'Konstruksi' as const,branch:null,id_budget_pid:'pid-uuid',pid:p.projectCode,warnings:[],updated_at:'2026-11-24',items:{} as any};
- const html=renderToStaticMarkup(h(BudgetBranchMapping,{unit:'Konstruksi',rows:[row],version:2,branches:[{id_branch:1,name:'SURABAYA'}],onClose:()=>{},onComplete:()=>{}}));assert.match(html,/Kode Rxxx tidak digunakan/);assert.match(html,/Branch Tujuan/);assert.match(html,/data-confirm="Petakan 1 PID/);assert.match(html,/Belum dipetakan/);
+ const html=renderToStaticMarkup(h(BudgetBranchMapping,{unit:'Konstruksi',rows:[row],version:2,branches:[{id_branch:1,name:'SURABAYA'}],onClose:()=>{},onComplete:()=>{}}));assert.match(html,/Pemetaan otomatis saat impor mengikuti kode Branch/);assert.match(html,/Branch Tujuan/);assert.match(html,/data-confirm="Petakan 1 PID/);assert.match(html,/Belum dipetakan/);
 });
 
 test('PP reference pins exact saved source, accepts negative remaining and rejects missing or mismatched capacity',async()=>{
