@@ -19,6 +19,7 @@ use App\Services\WorkUnitAccess;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -393,7 +394,8 @@ class BundleSettlementTest extends TestCase
         $decisions = DB::table('approval_decisions')->orderBy('id_approval_decision')->get()->toJson();
         $balances = DB::table('volume_balances')->orderBy('boq_component_id')->get()->toJson();
         $this->asRole($admin);
-        $returned['barp']['date'] = '2026-11-25';
+        // Always change the source date, including when the suite runs on 25 November.
+        $returned['barp']['date'] = Carbon::parse($returned['barp']['date'], 'UTC')->addDay()->toDateString();
         $this->api('saveTerm', [$returned, false])->assertOk();
         $this->assertSame('Draft', $this->state()['bapps'][0]['status']);
         $this->assertFalse(PrototypeDomain::barpCurrent($this->term()));
@@ -608,7 +610,16 @@ class BundleSettlementTest extends TestCase
         $this->submitKasbon($t, $bad)->assertUnprocessable();
         $this->assertDatabaseCount('finance_kasbons', 0);
         $this->attestCurrentWorkBapp($t);
-        $this->submitKasbon($t)->assertOk();
+        $split = $this->kasbon($t);
+        $source = $this->state();
+        $order = collect($source['spks'])->firstWhere('id', $t['spkId']);
+        $quote = KasbonSettlement::quote(collect($source['deals'])->firstWhere('id', $order['dealId']), $t);
+        $split['rows'] = [];
+        foreach (KasbonSettlement::components($quote) as $component => $amount) {
+            $split['rows'][] = ['component' => $component, 'accountCode' => 'QA-'.$component, 'accountName' => 'QA '.$component, 'text' => 'Keperluan '.$component, 'amount' => $amount];
+        }
+        $this->submitKasbon($t, $split)->assertOk();
+        $this->getJson('/api/finance/terms/'.$t['id'].'/kasbon?documents_only=1')->assertOk()->assertJsonPath('documents.0.data.rows.0.component', 'service')->assertJsonPath('documents.0.data.rows.1.component', 'material');
         $t = $this->term();
         $roles = [...PrototypeDomain::APPROVERS_V3, 'Mgr Finance & Settlement', 'Finance'];
         $this->assertSame($roles, PrototypeDomain::approvalRoles($t));

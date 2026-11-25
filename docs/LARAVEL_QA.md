@@ -1,5 +1,17 @@
 # Laravel rebuild QA — 2 November 2026
 
+## 25 November 2026 — Kasbon Jasa dan Material terpisah
+
+Final **525PHPtests/15397assertions** pada XAMPP PHP8.2.4, SQLite`:memory:`,114.352s/142.50MB/process512M; frontend **488passed**, TypeScript/Vite/Pint/diffcheck dan aset49manifest/40preload×3profil lulus. Empat PHP cases baru menguji stored encrypted rows/order/independent metadata, total104337/tax1063/gross105400/paid unchanged/replay1kasbon; swapped amounts same grandtotal, duplicate/missing/mixed/invalid components dan emptyaccount422 tanpa write/revision; service-only41437 dan material-only62900 satu row. Fixture issue44HTTPquery≤48, tidak ada query baru perkomponen. Existing Partial/Final seven-decision tests sekarang mengirim typed2rows dan tetap lolos private review/queue proof/transfer/APM; old issuedv1/v2/v3 dan untyped payload compatibility tetap diuji seluruhsuite.
+
+Empat frontend tests baru memeriksa actual quote→component split (mixed/service/material/zero/tax-half), no double tax, unique prior-component metadata reuse/recomputed amounts/no mutation/no guessing combined legacy accounts; SSR independent aria labels/readonly totals/no adddelete; HTML/nativeDOCX exact accounts/purposes/escaped text/GrandTotal/net words/no PPh row/source unchanged. Tidak merender nativeWord desktop; ZIP/XML semantic tests memakai generator nyata.
+
+Browser actual KasbonSubmissionButton/form/editor dan document dengan synthetic interceptedAPI:375/768/1440 light/dark, independent akun/nama/keperluan, readonly41437/62900/footer104337, input commonfields, TIDAK0POST/YA1POST with payeeVersion1/current UUID envelope, preview2rows dan nonblank printPDF. Screenshot form desktop/bottom/mobile dark dan printPNG diperiksa, logo testasset lokal lengkap. Ini fixture komponen dengan legacy pre-issue route dan static v3 preview terpisah, bukan login akun nyata/aaPanel/fullApp HTTP; seven current approvals/persistence dibuktikan pada suite memory terpisah.
+
+Fullsuite pertama menemukan dua testreturnBAPP gagal karena fixture hardcode25Nov sama dengan tanggal otomatis saat tes dijalankan25Nov; tidak ada perubahan sumber sehingga Sah memang benar. Fixture kini memakai savedBARPdate+1hari agar sumber sungguh berubah; focused4/402 dan full525 lulus tanpa perubahan productionguard. Browser pertama assert spasiRupiah biasa vs NBSP gagal, lalu harness whitespace normalized; logo awal tercetak broken karena routePNG belum dilayani, diperbaiki hanya fixture. Tidak ada bypass guard atau pengubahan data aktif.
+
+Tidak ada schema/migration/API/newSQL/dependency/poller/activeits/env/worker/server/Dompis/commit/push/deploy. Build/checkassets untuk deployment; tanpa restart worker khusus fitur baris ini. Physical MariaDB/load, nativeWorddesktop dan real bank tidak diuji ulang. [Kontrak](KASBON_PPH_PAYMENT_LIST.md), [audit](qa/kasbon-components-20261125.json).
+
 ## 24 November 2026 — Master Budgeting PID tahap4
 
 Actual XAMPP PHP8.2.4 suite **521tests/15278assertions**, SQLite `:memory:`,114.356s/140.50MB/process512M; frontend **484passed**, TypeScript/Vite/Pint/diffcheck/assets49refs/40preloads×3 lulus. Added CLI guard test rejects repository/tmp/missing-marker before PDO/Laravel, and SSR compact list/detail mapped/unmapped/negative/warning/escaping/nonmutation test.

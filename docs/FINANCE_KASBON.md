@@ -1,5 +1,9 @@
 # Kasbon, data Mandor dan pembayaran — 11 November 2026
 
+## 25 November 2026 — Form dua komponen akun
+
+Form baru memisahkan Jasa bersih dan Material, masing-masing No Akun/Nama Akun/Teks Keperluan, nominal readonly dan satu Total Pengajuan. Komponen nol disembunyikan. Typed row divalidasi terhadap quote canonical, lalu disimpan terenkripsi pada rows existing; rekening/identitas tetap dari payeeVersion yang dipilih. PPh hanya Jasa dan rumus terbaru tidak berubah. Baris typed muncul konsisten pada preview/Word/cetak/paket, sedangkan snapshot historis tidak ditulis ulang. Payload untyped lama tetap validasi total existing untuk kompatibilitas. [Aturan terkini, validasi dan penerapan](KASBON_PPH_PAYMENT_LIST.md).
+
 ## 16 November 2026 — Tandai Lunas dengan APM opsional
 
 Finance dapat menekan Tandai Lunas setelah bukti transfer aktif selesai diunggah dan approval/review Finance lengkap, tanpa nomor APM. Upload sendiri tidak membayar otomatis. APM dapat diisi saat pelunasan atau ditambah/diedit sesudah lunas; format/keunikan dan konfirmasi YA/TIDAK tetap. Koreksi nomor menyimpan audit before/after/actor/waktu dan tidak mengubah nilai/tanggal/penerima/bukti/keputusan maupun menambah pembayaran kedua. Berlaku pada alur kasbon-v1/kasbon-settlement-v2; pra-kasbon historis tetap.

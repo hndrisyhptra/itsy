@@ -191,7 +191,7 @@ class FinanceDocuments
         $data = Validator::make(($input['data'] ?? []) + $defaults, [
             'payeeVersion' => 'required|integer|min:1', 'settlementUserId' => 'nullable|string|max:100',
             'costCenter' => 'required|string|max:100', 'wbs' => 'required|string|max:100', 'activity' => 'required|string|max:150', 'place' => 'required|string|max:100', 'date' => 'required|date_format:Y-m-d',
-            'rows' => 'required|array|min:1|max:20', 'rows.*' => 'required|array:accountCode,accountName,text,amount', 'rows.*.accountCode' => 'required|string|max:50', 'rows.*.accountName' => 'required|string|max:150', 'rows.*.text' => 'required|string|max:300', 'rows.*.amount' => ['required', 'numeric', 'gt:0', 'max:999999999999.99', 'regex:/^\d+(\.\d{1,2})?$/D'],
+            'rows' => 'required|array|min:1|max:20', 'rows.*' => 'required|array:component,accountCode,accountName,text,amount', 'rows.*.component' => 'sometimes|required|in:service,material', 'rows.*.accountCode' => 'required|string|max:50', 'rows.*.accountName' => 'required|string|max:150', 'rows.*.text' => 'required|string|max:300', 'rows.*.amount' => ['required', 'numeric', 'gt:0', 'max:999999999999.99', 'regex:/^\d+(\.\d{1,2})?$/D'],
             'evp' => 'required|string|max:150', 'businessSupport' => 'required|string|max:150',
         ])->validate();
         $hash = hash('sha256', json_encode([$id, $data], JSON_THROW_ON_ERROR));
@@ -212,6 +212,21 @@ class FinanceDocuments
             $settlementQuote = KasbonSettlement::quote($d, $t);
             $total = $settlementQuote['net'];
             abort_if($total <= 0, 422, 'Nilai bersih pengajuan kasbon harus positif.');
+            // The current form sends typed canonical components. Untyped historical clients
+            // retain the existing total-only validation; issued documents are never rewritten.
+            if (collect($data['rows'])->contains(fn ($line) => array_key_exists('component', $line))) {
+                $components = KasbonSettlement::components($settlementQuote);
+                $byComponent = [];
+                foreach ($data['rows'] as $line) {
+                    $component = $line['component'] ?? '';
+                    abort_unless(isset($components[$component]) && ! isset($byComponent[$component]), 422, 'Rincian kasbon harus memisahkan satu baris Jasa dan satu baris Material sesuai komponen tagihan.');
+                    abort_unless(bccomp((string) $line['amount'], $components[$component], 2) === 0, 422, 'Nilai '.($component === 'service' ? 'Jasa setelah potongan PPh' : 'Material').' pada kasbon harus sesuai nilai tagihan tersimpan.');
+                    $line['amount'] = $components[$component];
+                    $byComponent[$component] = $line;
+                }
+                abort_unless(count($byComponent) === count($components), 422, 'Lengkapi rincian Jasa dan Material sesuai komponen tagihan kasbon.');
+                $data['rows'] = array_map(fn ($component) => $byComponent[$component], array_keys($components));
+            }
             $sum = '0';
             foreach ($data['rows'] as &$line) {
                 if (($t['moneyPolicy'] ?? '') === WholeRupiah::POLICY) {

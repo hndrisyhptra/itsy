@@ -2,6 +2,9 @@
 name: area3-business-workflow
 description: Implement its Area 3 Project Plan, BOQ, mandor contracting, assigned two-stage approvals, scan verification and full APM settlement, APM gating, BA PP and continuation state transitions.
 ---
+## 25 November 2026 — Split kasbon account components
+
+Follow latest docs/KASBON_PPH_PAYMENT_LIST.md. New form Jasa net + intact Material separate account/name/purpose rows, canonical readonlyamount/total, zero hidden/no adddelete; no new PPh rounding. Typed private rows.component validated exactset/amount/alltyped/unique under existinglock, canonical order; fully untyped historicalclient compatibility retained. Preserve issued/paid snapshots, samecomponent-only metadata reuse, all actual7decisions/scope/UUID/revision/payee/source/BAPP/proof/APM/paid/ledger/PID. Shared HTML/Word/print rowtext component label, oldtext unchanged, blankwetTTD.0newSQL/API/schema/migration/dependency/poller; test swappedamountsame-total rollback/replay/private/settlement/singlecomponents/real7, browseractualcomponentsmockAPI andWordXML/printPDF limits, no activeits/env/worker/server/Dompis writes. Build/checkassets; do not claim server or nativeWorddesktop verified.
 
 ## 24 November 2026 — Budgeting PID stage4 and compact master
 

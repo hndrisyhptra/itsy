@@ -1,7 +1,7 @@
 import { isSinglePayment } from './payment-labels';
 import type { Term } from './domain';
 import { money } from './currency';
-import { kasbonTerbilang, kasbonSignatures, kasbonSignatureColumns, kasbonDate, kasbonTermSuffix, type KasbonData } from './kasbon-content';
+import { kasbonRowText, kasbonTerbilang, kasbonSignatures, kasbonSignatureColumns, kasbonDate, kasbonTermSuffix, type KasbonData } from './kasbon-content';
 import { xmlHeader, wns, relns, officeRel, paragraph, table, tableRow } from './word-ooxml';
 import { ooxmlZip } from './ooxml-zip';
 
@@ -15,7 +15,7 @@ export function createKasbonDocx(d:KasbonData,logo:Uint8Array,term?:Term,kasbonI
   body+=paragraph(`${d.projectCode} · ${d.project}\n${d.ppNo}\n${d.spkNo}${kasbonTermSuffix(d)}`,{size:18,before:120,after:140});
   body+=table([
     tableRow(['Cost Center / WBS','No Akun','Nama Akun','Teks','Amount (Rp)'].map(text=>({text})),widths,true,16),
-    ...d.rows.map(r=>tableRow([`${d.costCenter} / ${d.wbs}`,r.accountCode,r.accountName,r.text,money(Number(r.amount))].map((text,i)=>({text,align:i===4?'right' as const:'left' as const})),widths,false,16)),
+    ...d.rows.map(r=>tableRow([`${d.costCenter} / ${d.wbs}`,r.accountCode,r.accountName,kasbonRowText(r),money(Number(r.amount))].map((text,i)=>({text,align:i===4?'right' as const:'left' as const})),widths,false,16)),
     tableRow([{text:'Grand Total',span:4,bold:true,align:'right'},{text:money(d.amount),bold:true,align:'right'}],widths,false,16),
   ],widths,true);
   body+=paragraph([{text:'Pengajuan sebesar: '},{text:kasbonTerbilang(d.amount),italic:true}],{size:18,before:120,after:140});

@@ -50,6 +50,14 @@ final class KasbonSettlement
         return ['policy' => $policy, 'gross' => (float) $gross, 'material' => (float) $material, 'service' => (float) $service, 'withheld' => (float) bcsub($gross, $net, 2), 'net' => (float) $net];
     }
 
+    /** Exact component split of an already canonical quote, without applying tax again. */
+    public static function components(array $quote): array
+    {
+        $parts = ['service' => bcsub((string) $quote['net'], (string) $quote['material'], 2), 'material' => (string) $quote['material']];
+
+        return array_filter($parts, fn ($amount) => bccomp($amount, '0', 2) > 0);
+    }
+
     public static function due(array $term, float $gross): float
     {
         return in_array($term['kasbon']['settlement']['policy'] ?? '', self::POLICIES, true) ? (float) $term['kasbon']['amount'] : $gross;

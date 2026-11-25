@@ -95,7 +95,7 @@ class FinanceKasbonTest extends TestCase
         $this->getJson($path)->assertOk()->assertJsonPath('profile.nik', '0011223344556677')->assertJsonPath('profile.accountNumber', '0001234567')->assertJsonPath('profile.bank', 'Bank QA');
     }
 
-    private function setupTerm(bool $final = false, int $approvals = 5, bool $compatibilitySubmit = false, int $quantity = 1): array
+    private function setupTerm(bool $final = false, int $approvals = 5, bool $compatibilitySubmit = false, int $quantity = 1, bool $material = true, bool $service = true): array
     {
         $this->withoutVite();
         Storage::fake('local');
@@ -107,7 +107,7 @@ class FinanceKasbonTest extends TestCase
         $t = $this->getJson('/api/prototype/state')->json('state.terms.0');
         $t = $this->historicalKasbonFixture($t['id']);
         $t['type'] = $final ? 'Final' : 'Parsial';
-        $t['actuals'] = [$s['deals'][0]['rows'][0]['rowId'] => ['m' => $quantity, 's' => $quantity]];
+        $t['actuals'] = [$s['deals'][0]['rows'][0]['rowId'] => ['m' => $material ? $quantity : 0, 's' => $service ? $quantity : 0]];
         $t['barp']['place'] = 'Tempat uji';
         $t['barp']['date'] = $spk['start'];
         $t['kasbon'] = ['id' => (string) Str::uuid(), 'amount' => 1];
@@ -554,6 +554,85 @@ class FinanceKasbonTest extends TestCase
         $this->assertDatabaseHas('payment_terms', ['approved_amount' => 105400]);
         $this->asRole('Admin Konstruksi');
         $this->api('createTerm', [$t['spkId']])->assertOk();
+    }
+
+    public function test_typed_jasa_and_material_rows_are_private_canonical_and_keep_same_transfer_total(): void
+    {
+        $t = $this->setupTerm(quantity: 4);
+        $this->payee($t['spkId']);
+        $form = $this->form($t);
+        // Reverse incoming order; the stored form consistently shows Jasa then Material.
+        $form['rows'] = [
+            ['component' => 'material', 'accountCode' => 'MAT-001', 'accountName' => 'Akun Material', 'text' => 'Pembelian bahan', 'amount' => '62900'],
+            ['component' => 'service', 'accountCode' => 'JAS-001', 'accountName' => 'Akun Jasa', 'text' => 'Pelaksanaan pekerjaan', 'amount' => '41437'],
+        ];
+        $revision = PrototypeWorkspace::first()->revision;
+        $request = (string) Str::uuid();
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $this->write('/api/finance/terms/'.$t['id'].'/kasbon', $form, $request, $revision)->assertOk();
+        $queries = count(DB::getQueryLog());
+        DB::disableQueryLog();
+        DB::flushQueryLog();
+        $this->assertLessThanOrEqual(48, $queries);
+        fwrite(STDOUT, "\nSplit Jasa/Material kasbon: {$queries} HTTP queries.\n");
+        $private = $this->getJson('/api/finance/terms/'.$t['id'].'/kasbon')->assertOk()->json('documents.0.data');
+        $this->assertSame(['service', 'material'], array_column($private['rows'], 'component'));
+        $this->assertSame(['JAS-001', 'MAT-001'], array_column($private['rows'], 'accountCode'));
+        $this->assertEquals([41437, 62900], array_column($private['rows'], 'amount'));
+        $this->assertEquals(104337, $private['amount']);
+        $this->assertEquals($private['amount'], array_sum(array_column($private['rows'], 'amount')));
+        $row = DB::table('finance_kasbons')->first();
+        $this->assertStringNotContainsString('MAT-001', $row->private_data);
+        $this->assertStringNotContainsString('JAS-001', $this->getJson('/api/prototype/state')->getContent());
+        $this->write('/api/finance/terms/'.$t['id'].'/kasbon', $form, $request, $revision)->assertOk()->assertJsonPath('replayed', true);
+        $this->assertDatabaseCount('finance_kasbons', 1);
+        $this->asRole('Finance');
+        $this->api('decideFinancePayment', [$t['id'], 'Setujui', ''])->assertOk();
+        $this->upload('transfer-proof', $t['id']);
+        $this->api('settleFinancePayment', [$t['id'], ''])->assertOk();
+        $this->assertEquals(104337, $this->term($t['id'])['paid']);
+        $this->assertDatabaseHas('payment_terms', ['approved_amount' => 105400]);
+        $this->assertSame($row->private_data, DB::table('finance_kasbons')->value('private_data'));
+    }
+
+    public function test_typed_components_reject_wrong_split_even_when_grand_total_matches_without_writes(): void
+    {
+        $t = $this->setupTerm(quantity: 4);
+        $this->payee($t['spkId']);
+        $form = $this->form($t);
+        $jasa = ['component' => 'service', 'accountCode' => 'JAS', 'accountName' => 'Jasa', 'text' => 'Jasa QA', 'amount' => '41437'];
+        $material = ['component' => 'material', 'accountCode' => 'MAT', 'accountName' => 'Material', 'text' => 'Material QA', 'amount' => '62900'];
+        $revision = PrototypeWorkspace::first()->revision;
+        foreach ([
+            [array_replace($jasa, ['amount' => '41438']), array_replace($material, ['amount' => '62899'])],
+            [array_replace($jasa, ['amount' => '104337'])],
+            [$jasa, $jasa],
+            [$jasa, array_diff_key($material, ['component' => true])],
+            [$jasa, array_replace($material, ['component' => 'bop'])],
+            [array_replace($jasa, ['accountCode' => '']), $material],
+        ] as $rows) {
+            $form['rows'] = $rows;
+            $this->write('/api/finance/terms/'.$t['id'].'/kasbon', $form)->assertUnprocessable();
+            $this->assertDatabaseCount('finance_kasbons', 0);
+            $this->assertSame($revision, PrototypeWorkspace::first()->revision);
+        }
+    }
+
+    public static function singleKasbonComponents(): array
+    {
+        return [['service', false, true, 41437], ['material', true, false, 62900]];
+    }
+
+    #[DataProvider('singleKasbonComponents')]
+    public function test_single_positive_component_needs_only_its_own_account_row(string $component, bool $material, bool $service, int $amount): void
+    {
+        $t = $this->setupTerm(quantity: 4, material: $material, service: $service);
+        $this->payee($t['spkId']);
+        $form = $this->form($t);
+        $form['rows'] = [['component' => $component, 'accountCode' => 'ONE', 'accountName' => 'Akun QA', 'text' => 'Keperluan QA', 'amount' => (string) $amount]];
+        $this->write('/api/finance/terms/'.$t['id'].'/kasbon', $form)->assertOk();
+        $this->getJson('/api/finance/terms/'.$t['id'].'/kasbon')->assertOk()->assertJsonCount(1, 'documents.0.data.rows')->assertJsonPath('documents.0.data.rows.0.component', $component)->assertJsonPath('documents.0.data.amount', $amount);
     }
 
     public static function issuedPphPolicies(): array

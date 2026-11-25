@@ -1,5 +1,11 @@
 # Catatan perubahan it's Area 3
 
+## 25 November 2026 — Rincian Jasa dan Material pada pengajuan kasbon
+
+- Satu baris per komponen positif, No Akun/Nama Akun/Teks Keperluan terpisah; nominal otomatis Jasa setelah PPh dan Material utuh, footer Total Pengajuan Kasbon.
+- Validasi server perkomponen untuk form terbaru, snapshot terenkripsi, preview/Word/cetak menggunakan rincian yang sama. Kasbon terbit dan kompatibilitas payload lama tetap.
+- Tidak mengubah rumus PPh/uang/status/approval atau menambah migration/query/API. Build aset diperlukan. [Pengujian, aturan dan batas](KASBON_PPH_PAYMENT_LIST.md).
+
 ## 24 November 2026 — Budgeting PID tahap4 dan perapian master
 
 - Tab Daftar PID/Riwayat Impor; filter dan tombol konsisten, identitas PID+LOP satu kolom, sumber Excel/terpakai/sisa terbaca, catatan ringkas, detail dan tooltip.

@@ -1,5 +1,9 @@
 # Optimasi query dan respons aplikasi
 
+## 25 November 2026 — Rincian dua komponen kasbon
+
+Pembagian Jasa bersih dan Material memakai quote existing satu kali; TSBigInt/PHPBCMath O(1), metadata matching maksimal20row lama/formbaru2. Tidak ada percomponent SQL/privatefetch/endpoint/dependency/poller/bootdata baru. Issue typed tetap satu transaksi/revision/payeever/receipt dan batch signer existing; kasbon-v1 fixture44HTTPqueries dengan budget48, bukan perbandingan throughput/server. Full existing paid/private/Branch/unit/PID/volume guards diuji bersama. Preview HTML/nativeWord/paket reuse saved rows tanpa SQL. [Audit/batas](qa/kasbon-components-20261125.json).
+
 ## 24 November 2026 — Budgeting PID stage4 measurement boundaries
 
 Master UI reuses same20+1SQL payload and20DOM; merges PID/name rather than expanding list, Set-selected once, warnings only expanded in detail. No new SQL/endpoint/poller/privatefetch/boot graph/dependency. Existing source-key/abort prevents old unit/page data reuse; import completion carries chosenunit. Stage3 reference6/own7/masterlist6/mapping10012HTTP remain historical fixture measurements, not new MariaDB throughput numbers.

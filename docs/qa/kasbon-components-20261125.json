@@ -1,0 +1,120 @@
+{
+  "date": "2026-11-25",
+  "feature": "Separate Jasa and Material account rows in kasbon submission",
+  "behavior": {
+    "new_form": "One row for net Jasa and one for intact Material, positive components only",
+    "fields_per_row": [
+      "accountCode",
+      "accountName",
+      "text"
+    ],
+    "amounts": "readonly canonical split from current actuals at saved Mandor agreement prices",
+    "tax": "Existing v4 ROUND(total Jasa *0.025) unchanged, never applied twice",
+    "example": {
+      "service_gross": 42500,
+      "material": 62900,
+      "pph": 1063,
+      "service_net": 41437,
+      "total": 104337
+    },
+    "issued_documents": "unchanged frozen snapshot, no GET backfill/reprice",
+    "legacy_clients": "Fully untyped rows retain existing total validation; current form always typed"
+  },
+  "backend": [
+    "Optional component enum in encrypted row JSON; typed rows require exact nonzero component set, uniqueness/all typed and canonical amount",
+    "Sort Jasa then Material, required independent account/name/text and existing exact total",
+    "All existing revision/actor+payload UUID replay/payeeVersion/7 approvals/Branch/unit/Region/source/BAPP/proof/optionalAPM/paid/ledger/PID guards unchanged",
+    "No new endpoint/table/schema/migration/dependency/poller/SQL"
+  ],
+  "verification": {
+    "php_full": {
+      "passed": 525,
+      "assertions": 15397,
+      "php": "8.2.4",
+      "db": "isolated SQLite memory",
+      "seconds": 114.352,
+      "peak_mb": 142.5
+    },
+    "php_new_focused": {
+      "passed": 4,
+      "assertions": 111
+    },
+    "seven_and_return_focused": {
+      "passed": 4,
+      "assertions": 402
+    },
+    "frontend_full": {
+      "passed": 488,
+      "failed": 0
+    },
+    "frontend_new": {
+      "passed": 4
+    },
+    "pint": "passed",
+    "diffcheck": "passed",
+    "typescript_vite": "passed",
+    "assets": {
+      "manifest_references": 49,
+      "preload_dependencies": 40,
+      "profiles": 3
+    },
+    "browser": {
+      "passed": true,
+      "actual_components_mock_api": true,
+      "widths": [
+        375,
+        768,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "separate_account_and_purpose_inputs": true,
+      "readonly_component_amounts": true,
+      "confirmation_cancel_writes": 0,
+      "confirmed_writes": 1,
+      "payee_version_bound": true,
+      "html_preview_rows": 2,
+      "print_pdf_generated": true,
+      "js_errors": 0
+    },
+    "exports": "HTML and real nativeWord generator ZIP/XML same two rows, escaped text, same net/total and blank wet signatures; standalone browser printPDF rendered to PNG and inspected"
+  },
+  "query_evidence": {
+    "new_runtime_sql": 0,
+    "split_kasbon_v1_issue_http": 44,
+    "fixture_budget": 48,
+    "benchmark": false
+  },
+  "qa_corrections": [
+    "Existing BAPP return tests assumed25Nov always changed source; now derive saved date+1day, leaving production source guard unchanged",
+    "Browser currency assert normalized NBSP and fixture serves real local logo PNG"
+  ],
+  "limits": [
+    "No active its data/migration/env/APP_KEY/worker/server/Dompis writes or deployment",
+    "Browser components use mocked API, legacy preissue form and separate static v3 preview fixture; actual seven-step/SQL settlement tested in memory",
+    "No physical MySQL/MariaDB/load/aaPanel test for this change",
+    "Native Word semantic XML test only, not desktopWord rendered; no real bank transfer"
+  ],
+  "deployment": [
+    "Deploy source",
+    "npm run build",
+    "npm run check:assets",
+    "Reload page",
+    "No new migration or feature-specific worker restart"
+  ],
+  "evidence_local_only": [
+    "/private/tmp/area3-kasbon-components-20261125/browser.log",
+    "/private/tmp/area3-kasbon-components-20261125/browser-result.json",
+    "/private/tmp/area3-kasbon-components-20261125/form-1440-light.png",
+    "/private/tmp/area3-kasbon-components-20261125/form-bottom.png",
+    "/private/tmp/area3-kasbon-components-20261125/form-375-dark.png",
+    "/private/tmp/area3-kasbon-components-20261125/kasbon.pdf",
+    "/private/tmp/area3-kasbon-components-20261125/kasbon-print.png",
+    "/private/tmp/area3-kasbon-components-php-full-final.log",
+    "/private/tmp/area3-kasbon-components-frontend-full.log",
+    "/private/tmp/area3-kasbon-components-build.log",
+    "/private/tmp/area3-kasbon-components-assets.log"
+  ]
+}

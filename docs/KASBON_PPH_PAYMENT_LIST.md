@@ -1,5 +1,21 @@
 # Kasbon bersih dan List Payment — 16 November 2026
 
+## 25 November 2026 — Rincian akun Jasa dan Material terpisah
+
+Form Ajukan Kasbon sekarang membuat **satu baris Jasa bersih dan satu baris Material** bila keduanya bernilai positif. Masing-masing memiliki input No Akun, Nama Akun, dan Teks/Keperluan sendiri. Nominal otomatis/read-only dari actuals serta harga kesepakatan Mandor pada pembayaran yang sama; Jasa = net kasbon − Material, sehingga potongan PPh yang sudah dihitung tidak diterapkan lagi. Material tetap utuh. Jika hanya ada Jasa/Material, hanya komponen itu yang ditampilkan; komponen nol tidak memerlukan akun. Baris tidak dapat ditambah/hapus atau digabung melalui form baru. Footer **Total Pengajuan Kasbon** sama dengan penjumlahan dua nominal dan nilai net canonical untuk transfer.
+
+Rumus PPh terbaru tetap `ROUND(total Jasa Mandor × 2,5%, 0)`. Contoh bruto105.400 terdiri dari Material62.900 dan Jasa42.500: PPh1.063, baris Jasa41.437, baris Material62.900, total104.337. Tidak ada pembulatan tambahan/per-row, perubahan BOQ/Owner/gross/tagihan atau pengurangan Material.
+
+`rows[].component` opsional (`service`/`material`) disimpan bersama rincian dalam snapshot kasbon terenkripsi yang sudah ada. Request form baru mengirim komponen ini. Pada penerbitan server memeriksa tepat satu baris untuk setiap komponen positif, semua bertipe/unik, nominal masing-masing sesuai quote, serta semua akun/nama/teks wajib; total benar saja tidak cukup. Server mengurutkan Jasa lalu Material dan menyimpan nominal canonical. Komponen palsu, campuran typed/untyped, duplikat, baris hilang, nominal bergeser antarbaris atau akun kosong ditolak tanpa write/revision/approval. UUID replay tetap mengikat actor dan payload, tidak menciptakan kasbon kedua.
+
+Payload **lama tanpa component seluruhnya** tetap dapat diproses oleh validasi total existing untuk kompatibilitas klien lama; bukan backfill atau pengetatan retroaktif atas dokumen yang sudah diajukan. Form web terbaru selalu memakai komponen terpisah dan readonly. Kasbon issued/pending/approved/paid tidak dipecah, direprice, diubah UUID/keputusannya atau dibayar ulang saat GET. Penerbitan ulang yang sah menampilkan rincian baru; account/teks lama dipakai hanya bila komponen sama teridentifikasi unik. Rincian gabungan historis tidak ditebak sebagai akun Material/Jasa dan harus diisi kembali terpisah.
+
+Preview/Word/cetak/paket memakai baris tersimpan yang sama: kolom Teks menampilkan `Jasa · <keperluan>` atau `Material · <keperluan>` untuk row bertipe; row historis tetap teks asli. Grid template, Grand Total, terbilang, rekening, tanggal, penandatangan, actual approval marks dan blank wetTTD Word/print tetap. Tidak menampilkan baris pajak pada berkas. Account dan keperluan tetap privat/terenkripsi, tidak ditambahkan ke boot/inbox/ledger.
+
+Tanpa schema/migration/endpoint/dependency/poller/query SQL tambahan. Pembagian komponen O(1) setelah quote satu-lintasan existing; validasi maksimal20row kompatibilitas lama, form baru maksimal2. Kasbon-v1 fixture issue44HTTPquery, bukan benchmark aaPanel; seven-stage/Branch/unit/Region/private/source/BAPP/revision/receipt/proof/APMopsional/paid/PID guards tetap. [QA dan batas](LARAVEL_QA.md), [audit](qa/kasbon-components-20261125.json).
+
+Deployment: setelah source tersedia, build `npm run build`, periksa `npm run check:assets`, lalu reload halaman. Tidak ada migration atau kebutuhan restart worker khusus pemisahan baris ini; kebutuhan deployment policy PPh dari pembaruan sebelumnya tetap mengikuti bagian di bawah. Tidak melakukan mutasi data aktif/ENV/APP_KEY/worker/server/Dompis atau deployment oleh agen.
+
 ## 24 November 2026 — Revisi paling baru: ROUND hanya nilai PPh
 
 Pengguna kemudian merevisi secara eksplisit: **“rumus round digunakan ke PPH, hanya khusus nilai PPH; nilai lainnya normal seperti sebelumnya.”** Bagian ini menggantikan aturan Jasa bersih/total akhir sebelumnya untuk kasbon baru dan penerbitan ulang yang sah.
