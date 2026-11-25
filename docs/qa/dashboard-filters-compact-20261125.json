@@ -1,0 +1,85 @@
+{
+  "date": "2026-11-25",
+  "feature": "Compact Dashboard filter card",
+  "changes": [
+    "Horizontal heading and2labelled controls on desktop",
+    "Short heading plus adjacent2dropdowns on phone",
+    "Reduced padding/gaps, redundant visible helper/selection footer removed",
+    "Scope announcement visually hidden with selector scoped to this panel",
+    "36pxdesktop/40pxphone controls, Branch-onlyreset and unit-change reset unchanged"
+  ],
+  "checks": {
+    "focused_dashboard_tests_passed": 36,
+    "failed": 0,
+    "typescript_vite": "passed",
+    "assets": {
+      "manifest_references": 50,
+      "preload_dependencies": 41,
+      "profiles": 3
+    },
+    "diff_check": "passed",
+    "php_or_full_frontend_rerun": false,
+    "reason": "Only dashboard presentation/CSS changed; focused existing dashboard tests and actual App browser checks used"
+  },
+  "browser": {
+    "passed": true,
+    "heights_before": {
+      "375": 373.859375,
+      "768": 220.78125,
+      "1440": 220.78125
+    },
+    "heights_after": {
+      "375": 124,
+      "768": 80,
+      "1440": 80
+    },
+    "unit_and_branch_filter": true,
+    "reset_branch": true,
+    "unit_resets_branch": true,
+    "summary_counts": [
+      2,
+      1,
+      2,
+      1
+    ],
+    "operation_approval_columns": true,
+    "widths": [
+      375,
+      768,
+      1440
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "js_errors": [],
+    "writes": 0,
+    "transport": "Actual App, synthetic state/mock API; external network blocked"
+  },
+  "screenshots_inspected": [
+    "compact-1440-light.png",
+    "compact-375-dark.png"
+  ],
+  "verification_corrections": [
+    "Before comparison initially used unknown App route; harness corrected to /dashboard?before=1",
+    "Browser caught existing sr-only utility being scoped to matrix only; added dashboard-filter-specific visually-hidden CSS, then final browser passed"
+  ],
+  "unchanged": [
+    "authorization and unit/Branch options",
+    "summary/approval calculations and modal routing",
+    "backend/API/query/schema/migration/dependency/poller",
+    "business data and persistence"
+  ],
+  "limits": [
+    "Browser uses synthetic state/intercepted APIs, not real server or load test",
+    "No PHP/Word/PDF changes; no fresh corresponding tests/renders",
+    "No active database/env/worker/server/Dompis writes or commit/push/deploy"
+  ],
+  "deployment": "Build and check assets; no migration or worker restart",
+  "evidence": [
+    "/private/tmp/area3-dashboard-compact-tests.log",
+    "/private/tmp/area3-dashboard-compact-build.log",
+    "/private/tmp/area3-dashboard-compact-assets.log",
+    "/private/tmp/area3-dashboard-filters-20261125/compact-result.json"
+  ]
+}

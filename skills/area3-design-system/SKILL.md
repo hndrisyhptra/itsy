@@ -2,6 +2,14 @@
 name: area3-design-system
 description: Build or revise the its Area 3 interface with its specific enterprise design tokens, responsive shell, tables, and accessible interaction states. Do not apply its brand to Dompis Prov.
 ---
+## 25 November 2026 — Compact Dashboard filter correction
+
+Latest user requires less verticalspace: title+2labelled dropdowns horizontal desktop, shortheading+2adjacent dropdownsphone. Reduce padding/gap/redundant visiblecopy, keep sr-onlyscope and Branch-onlyreset.36pxdesktop/40pxphone supersedes prior44pxpanel-only; scopedCSS/lightdark/no gradient, existing authorization/callback/memos/keys unchanged.36focusedDashboardtests/build/assets50refs41preloads×3 and actualAppmock responsiveQA; record actual height/visual/server limits in compactaudit. No backend/query/API/schema/dependency/poller/datawrite; build/checkassets only.
+
+## 25 November 2026 — Visible Dashboard unit and Branch filters
+
+Use dedicated scoped surface panel above metrics, permanent labels/outlined44px native selects, current scope hint and conditional Branch-only ResetBranch.2columns desktop/tablet→1columnphone, lightdark tokens/no gradient, accessible labels/aria-live. Reuse existing unit/Branch allowed options, callbacks/memos/matrix keys; no auth/calculation/backend/query/statepersist/poller changes.493frontend/build/assets50refs41preloads×3/browseractualAppmock3width2themes screenshots inspected; no freshPHP/server/exportclaim. Follow docs/DASHBOARD_APPROVAL_MATRIX.md, append audit; build/checkassets, no migration/restartworker.
+
 ## 25 November 2026 — Budgeting pagination footer
 
 Use shared BudgetPagination for master lists/history/preview: size10/20/50/100, Total before Halaman X/Y, disabledfirst/last/busy, responsivewrap/lightdark scopedCSS. Sourcekey includespageSize/abort, resetpage+selection; list SQLpaged, previewlocal≤100DOM. Preview Branch+auto/manualsummary uses actualserverplan, never fakeprogress/queue. Follow latest docs/BUDGETING_PID.md;533PHP493frontend/browsermock inspected, no actualserver/load/exportclaim.

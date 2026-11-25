@@ -2,7 +2,7 @@ import { unitOptions, stateForUnit, OPERATION_APPROVERS } from './work-unit';
 import { DashboardMatrix } from './dashboard-matrix-table';
 import { DashboardApproval } from './dashboard-approval-table';
 import { useMemo, useState } from 'react';
-import { ArrowUpRight, ClipboardCheck, Download, FileSignature, FolderKanban, Plus, ReceiptText } from 'lucide-react';
+import { ArrowUpRight, ClipboardCheck, Download, FileSignature, FolderKanban, Plus, ReceiptText, SlidersHorizontal, MapPin, Building2 } from 'lucide-react';
 import { type State, money, operational } from './domain';
 import { dashboardBranches, dashboardSummary } from './dashboard-summary';
 import { Link, PageTitle } from './ui';
@@ -22,14 +22,17 @@ export function Dashboard({ s:source }: { s: State }) {
       {approver&&<Link to="/inbox" className="btn primary"><ClipboardCheck size={16}/> Buka Approval Saya</Link>}
       {operational(s) && <Link to="/project-plan/new" className="btn primary"><Plus size={16}/> Project Plan Baru</Link>}
     </PageTitle>
-    <div className="section-toolbar">
-      <div className="view-tabs"><span className="active">{section}</span><span className="period-label">Branch sesuai akses akun</span></div>
-      <select aria-label="Filter Unit Kerja dashboard" value={unit} onChange={e=>{setUnit(e.target.value);setBranch('');}}>{units.map(u=><option key={u}>{u}</option>)}</select>
-      <select aria-label="Filter Branch dashboard" value={branch} onChange={e => setBranch(e.target.value)}>
-        <option value="">Semua Branch</option>
-        {dashboardBranches(s).map(name => <option key={name} value={name}>{name}</option>)}
-      </select>
-    </div>
+    <section className="dashboard-filters" aria-labelledby="dashboard-filters-title">
+      <div className="dashboard-filters-heading"><div className="dashboard-filters-title"><span className="dashboard-filter-icon"><SlidersHorizontal size={16}/></span><div><h2 id="dashboard-filters-title">Filter Dashboard</h2><p>{section}</p></div></div></div>
+      <div className="dashboard-filter-fields">
+        <label><span><Building2 size={15}/> Unit Kerja</span><select aria-label="Filter Unit Kerja dashboard" value={unit} onChange={e=>{setUnit(e.target.value);setBranch('');}}>{units.map(u=><option key={u}>{u}</option>)}</select></label>
+        <label><span><MapPin size={15}/> Branch</span><select aria-label="Filter Branch dashboard" value={branch} onChange={e => setBranch(e.target.value)}>
+          <option value="">Semua Branch</option>
+          {dashboardBranches(s).map(name => <option key={name} value={name}>{name}</option>)}
+        </select></label>
+      </div>
+      <p className="sr-only" aria-live="polite">Menampilkan: <strong>{unit}</strong><span aria-hidden="true"> · </span><strong>{branch||'Semua Branch'}</strong>. Branch sesuai akses akun.</p>{branch&&<button type="button" className="dashboard-filter-reset" onClick={()=>setBranch('')}>Reset Branch</button>}
+    </section>
     <div className="metrics-grid">{(finance?[
       {label:'Nilai Pengajuan',value:money(data.requested),sub:'Tagihan bruto · pengajuan aktif dan disetujui',icon:ReceiptText,route:'/termin/list-payment'},
       {label:'Nilai Terbayar',value:money(data.paid),sub:'Pembayaran yang dicatat Finance',icon:FileSignature,route:'/termin/list-payment'},

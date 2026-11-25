@@ -1,5 +1,19 @@
 # Dashboard Summary dan Status Approval
 
+## 25 November 2026 — Revisi panel filter lebih ringkas
+
+Permintaan terbaru memadatkan panel: judul/dua dropdown sejajar pada desktop; ponsel memakai judul pendek lalu dua dropdown berdampingan. Padding/jarak dikurangi, keterangan berulang dan footer pilihan aktif tidak lagi mengambil ruang; pilihan tetap terlihat pada dropdown, scope diumumkan melalui aria-live sr-only. Reset Branch tetap tersedia saat dipilih. Tinggi kontrol36px desktop/40px ponsel menggantikan44px khusus panel ini. Hak akses, perhitungan, perubahan Unit→resetBranch, tab/matrix/modal tetap existing.
+
+Tinggi panel default terukur220,781→80px pada desktop dan373,859→124px pada ponsel375px. 36tesDashboard, TypeScript/Vite/aset50refs41preloads×3 lulus. Uji browser actualApp dengan data/API sintetis memeriksa ulang filtering/reset/Operation dan responsif; hasil ukuran serta screenshot dicatat di [audit](qa/dashboard-filters-compact-20261125.json). No new query/API/schema/migration/dependency/poller/datawrite; tidak menguji ulang PHP/server/WordPDF karena jalur tersebut tidak berubah. Deploy build+checkassets, tanpa migration/restartworker. Catatan panel lebih besar berikut bersifat historis.
+
+## 25 November 2026 — Panel filter Unit Kerja dan Branch
+
+Filter kini berada dalam panel **Filter Dashboard** sebelum kartu angka. Label Unit Kerja/Branch selalu terlihat, dropdown memiliki garis dan tinggi44px, pilihan aktif tertulis di bawah beserta keterangan cakupan akses. Tombol **Reset Branch** muncul saat Branch tertentu dipilih dan hanya mengembalikan Branch ke Semua Branch; Unit Kerja tetap. Mengubah Unit Kerja tetap mereset Branch seperti sebelumnya. Panel memakai2kolom di desktop/tablet dan1kolom di ponsel, warna bersih tanpa gradient, mengikuti tema terang/gelap.
+
+Pilihan tetap berasal dari unitOptions/stateForUnit/dashboardBranches existing dan data SQL-authorized. Ringkasan, Summary, Status Approval dan modal tetap mengikuti filter yang sama; tidak mengubah formula, hak akses, polling atau persistensi bisnis. Panel hanya mengubah state filter lokal; tidak POST atau menyimpan preferensi baru. No new SQL/API/schema/migration/dependency/poller.
+
+Verifikasi:493frontend/build/aset50refs41preload×3/diffcheck lulus. Browser actualApp dengan API intercepted/3PP sintetis memeriksa Unit/Branch/reset/Operationapproval,375/768/1440×2tema,0JSerror/overflow/POST; screenshotdesktop/mobile/tablet diperiksa. Bukan login server nyata/physical load/ulangPHPsuite/WordPDFrender; tidak ada backend/generator yang berubah. Deploy source+build/checkassets, tanpa migration/restartworker. [Audit](qa/dashboard-filters-20261125.json).
+
 Dashboard menambah tab **Summary** (default, Matriks Project per Region existing) dan **Status Approval** (dua tabel angka: Approval Paket PP dan Approval Pembayaran). Kartu ringkasan sebelumnya tetap. Region accordion menampilkan Branch beserta subtotal/total; angka termasuk0dapat diklik. Tidak menampilkan satu baris perPP pada dashboard.
 
 PP: TotalPP, Draf, lima peran sesuai Unit, Revisi, Disetujui. Pembayaran: TotalPengajuan, Draf, lima peran sesuai Unit, Mgr Finance & Settlement, Finance, Revisi, Menunggu Pelunasan, Sudah Dibayar. Setiap PP/pengajuan hanya masuk satu bucket terkini, bukan jumlah persetujuan kumulatif; beberapa PP pada IDProject sama tetap beberapaPP, beberapa pembayaran padaPP sama tetap beberapa pengajuan. Konstruksi/Operation memakai peran aktual, tanpa mengganti rantai historis: role lama yang sedang menunggu mendapat kolom tambahan berlabel Alur lama. Ketidakkonsistenan status/versi mendapat Periksa Status, bukan persetujuan rekaan. PP historis Disetujui mengikuti statusPP Sah tersimpan, tidak mengesahkan BA KH/SPK lama yang terpisah.

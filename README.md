@@ -1,5 +1,9 @@
 # it's Area 3 — Construction Workspace
 
+**25 November 2026 — Filter Dashboard ringkas:** panel dipadatkan menjadi baris horizontal di desktop dan dua dropdown berdampingan di ponsel. Label serta Reset Branch tetap tersedia. Build/check aset diperlukan, tanpa migration. [Detail](docs/DASHBOARD_APPROVAL_MATRIX.md).
+
+**25 November 2026 — Filter Dashboard:** Unit Kerja dan Branch kini berada dalam panel berlabel jelas, dropdown lebih terlihat, indikator pilihan aktif dan Reset Branch. Tampilan menyesuaikan desktop/ponsel serta mode terang/gelap. Build/check aset diperlukan, tanpa migration. [Detail](docs/DASHBOARD_APPROVAL_MATRIX.md).
+
 **25 November 2026 — Master Budgeting:** pagination 10/20/50/100 baris dengan total sesuai filter; impor memetakan kode PID seperti `R409` ke Branch aktif secara otomatis. PID tanpa kode yang dikenali tetap manual; pemetaan tersimpan dipertahankan. Preview menampilkan Branch dan ringkasan pemetaan sebelum simpan. Build/check aset diperlukan, tanpa migration baru. Impor tetap sinkron; belum dipindah ke queue. [Aturan dan batas](docs/BUDGETING_PID.md).
 
 **25 November 2026 — Audit penyimpanan dan kinerja:** konfirmasi simpan kini membuktikan PP yang tepat; penyimpanan 500 baris volume BA RP turun dari 3.038 menjadi 50 query pada fixture. **528 tes PHP dan 491 tes frontend lulus**, ditambah MariaDB privat dan browser data besar. Data aktif/server tidak diubah; tanpa migration baru. [Hasil, batas dan penerapan](docs/RUNTIME_SAFETY_AUDIT.md).

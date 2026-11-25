@@ -1,5 +1,13 @@
 # Arsitektur aplikasi it's Area 3
 
+## 25 November 2026 — Compact Dashboard filter layout
+
+Presentation correction uses existing filter callbacks/memos; heading+fields+conditionalreset now flexrow, responsivewrap with2columns on phone. Duplicate visible footer removed; aria-live sr-only scope retained. CSS controls36pxdesktop/40pxphone, no query/backend/API/schema/poller/dependency/datachange. [Actual checks and limits](qa/dashboard-filters-compact-20261125.json).
+
+## 25 November 2026 — Dashboard filter presentation
+
+Dashboard replaces borderless section-toolbar controls with a dedicated scoped filter section: label-wrapped native selects, role-dependent summary badge, aria-live selectedscope and conditional Branch-only reset. Existing unit/Branch callbacks and memoized authorized readmodels reused; unit change still resets Branch and matrix keys. CSS only targets dashboard-filter classes,2column→1column, surface/input/theme tokens. No backend/API/query/schema/migration/dependency/poller change or data write. [Evidence/limits](qa/dashboard-filters-20261125.json).
+
 ## 25 November 2026 — Master Budgeting SQL pagination dan Branch plan
 
 BudgetPidMaster/Branch listing menerima boundedperPage10/20/50/100; COUNT clone dari filtered/scoped builder sebelum offset+limit(perPage+1), item+usage tetap batch. BudgetPagination dipakai empat mode+preview, key termasuk ukuran/abort dan resetpage+selection. Import membaca satu active Branch catalog locking; regex single code lookupMap, existing mapping wins, knownoutside403, reservedwrongBranch lookup per500→422. HMAC plan mapping mengikat perubahan kode setelah preview. Branch_id masuk savedPID dan audit before/after di satu transaksi/version/receipt existing; tidak menulis workflow/ledger/private atau menambahschema/API/poller/dependency. [Kontrak/bukti/batas](BUDGETING_PID.md#25-november-2026--pagination-dan-pemetaan-branch-otomatis-saat-impor).

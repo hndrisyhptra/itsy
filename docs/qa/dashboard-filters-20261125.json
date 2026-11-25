@@ -1,0 +1,74 @@
+{
+  "date": "2026-11-25",
+  "feature": "Visible Dashboard Unit Kerja and Branch filtering",
+  "changes": [
+    "Dedicated clean surface filter panel above metrics",
+    "Permanent label-wrapped Unit Kerja and Branch controls with44px outlined selects",
+    "Visible current selection and account access hint",
+    "Reset Branch clears Branch only; unit change retains existing reset behavior",
+    "Scoped desktop2column/mobile1column light-dark CSS, no gradient"
+  ],
+  "unchanged": [
+    "unitOptions/stateForUnit/dashboardBranches/dashboardSummary",
+    "SQL authorization and actual allowed Branch/unit scopes",
+    "summary and approval matrix calculations and exact modal keys",
+    "business data/history/amounts/approval/private documents",
+    "backend query/API/schema/migration/dependency/poller"
+  ],
+  "checks": {
+    "frontend_passed": 493,
+    "failed": 0,
+    "skipped": 0,
+    "typescript_vite": "passed",
+    "assets": {
+      "manifest_references": 50,
+      "preload_dependencies": 41,
+      "profiles": 3
+    },
+    "diff_check": "passed",
+    "php_suite_rerun": false,
+    "reason": "Only dashboard TSX/CSS changed; prior533PHP run belongs to earlier audit, not this UI test"
+  },
+  "browser": {
+    "passed": true,
+    "unit_and_branch_filter": true,
+    "reset_branch": true,
+    "unit_resets_branch": true,
+    "summary_counts": [
+      2,
+      1,
+      2,
+      1
+    ],
+    "operation_approval_columns": true,
+    "widths": [
+      375,
+      768,
+      1440
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "js_errors": [],
+    "writes": 0,
+    "transport": "Actual App, synthetic state/mock API; external network blocked"
+  },
+  "screenshots_inspected": [
+    "filters-1440-light.png",
+    "filters-375-dark.png",
+    "filters-768-light.png"
+  ],
+  "limits": [
+    "Synthetic App state/intercepted APIs, no production login or server/load measurement",
+    "No fresh Word/PDF render because no document source/generator changed",
+    "No active database/env/worker/server/Dompis writes, commit/push/deploy"
+  ],
+  "deployment": "Build and verify assets, no migration or worker restart for this change",
+  "evidence": [
+    "/private/tmp/area3-dashboard-filters-frontend.log",
+    "/private/tmp/area3-dashboard-filters-build.log",
+    "/private/tmp/area3-dashboard-filters-assets.log",
+    "/private/tmp/area3-dashboard-filters-20261125/result.json"
+  ]
+}

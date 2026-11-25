@@ -1,5 +1,13 @@
 # Catatan perubahan it's Area 3
 
+## 25 November 2026 — Panel filter Dashboard dipadatkan
+
+Panel lebih pendek, judul dan dropdown sejajar di desktop; dua dropdown berdampingan di ponsel. Keterangan berulang dihapus dari tampilan, label dan ResetBranch tetap.36tesDashboard/build/aset lulus, tanpa migration atau perubahan data. [QA](qa/dashboard-filters-compact-20261125.json).
+
+## 25 November 2026 — Filter Dashboard lebih jelas
+
+Panel Filter Dashboard memisahkan Unit Kerja dan Branch dengan label tetap, dropdown bergaris44px dan indikator filter aktif. Reset Branch kembali ke Semua Branch pada unit terpilih; pilihan mengikuti akses akun existing.493frontend/build/assets lulus, responsivebrowser3width2theme inspected. Tidak ada migration/perubahan query atau data. [Detail](DASHBOARD_APPROVAL_MATRIX.md).
+
 ## 25 November 2026 — Pagination Budgeting dan pemetaan otomatis Branch
 
 Footer total+halaman serta pilihan10/20/50/100 pada daftar/riwayat/rincian/preview. Impor mengenali singleRxxx aktif dariPID→Branch; unknown/ambiguous tetapmanual, existingmappingtetap, scope/reserved conflict/HMAC/version/replay/atomicaudit terjaga. Full533PHP+493frontend/build/assets lulus, tanpa migration baru atau dataaktifwrite. Impor belum memakai queue. [Detail](BUDGETING_PID.md).

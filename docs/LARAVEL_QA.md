@@ -1,5 +1,13 @@
 # Laravel rebuild QA — 2 November 2026
 
+## 25 November 2026 — Filter Dashboard compact
+
+36focusedDashboardtests/0failed (423.891ms), TypeScript/Vite/assets50refs41preloads×3/diffcheck lulus. ActualApp mockAPI3PP2Branch2unit: filtering/resetBranch/unitreset/Operationapproval/summarycount2-1-2-1,375/768/1440×lightdark0JSerror/root overflow/POST. Panel defaultdesktop220.781→80px, phone373.859→124px; native selects36desktop/40phone. Desktoplight/mobiledark PNGs inspected. Initial harness comparison route unknown corrected to dashboardquery; browser caught sr-only style originally matrix-only causing compressed controls, fixed with panel-scoped visually-hidden rule and final run passed. No application guard weakened. No fullPHP/frontendrerun for presentation-only correction, no server/load/WordPDF/liveits/env/worker/Dompis changes. [Evidence and limits](qa/dashboard-filters-compact-20261125.json).
+
+## 25 November 2026 — Kejelasan filter Dashboard
+
+UI-only Dashboard+scopedCSS:493frontend/0failed/0skipped, TypeScript/Vite/assets50manifest41preloads×3/diffcheck lulus. Existing dashboard tests retain scope/summary/Operation/approval/paid calculations. ActualApp interceptedAPI with3syntheticPP,2authorizedbranches/2units: summary PPcount2→branch1→reset2→Operation1, unitchange resetsbranch, Operationapprovalcolumns and filterwithin StatusApproval, native selects≥44px,375/768/1440×lightdark no root overflow/JSerror,0POST. Desktoplight/mobile dark/tabletlight PNGs inspected. No freshPHPsuite (no PHP/query changes), physicalserver/load/WordPDF/export render; existing prior533PHP result remains separate earlier evidence. No activeits/env/worker/server/Dompis/commit/push/deploy. [Audit](qa/dashboard-filters-20261125.json).
+
 ## 25 November 2026 — Budgeting pagination dan kode Branch PID
 
 Final533PHP/16573assertions, XAMPP8.2.4 SQLite`:memory:`,126.322s/142.50MB/process512M;493frontend/0failed, TypeScript/Vite/assets49refs40preload×3/scopedPint/diffcheck lulus. Lima PHP cases baru mencakupR409 exact/unknown/missing/multiple/R4099/Operation/noop/replay, existingunmapped adoption hanyaimport/auditID/timestamp/manualpreserve, inactive/outscope/HMACchangedcode409, all4sizes/105total/search/unit/Branch/changehistory/invalidsize/querybudget, conflictingreserved422 no master/ledger/PPchange. Existingimport rollback/privacy/paid/workflowguards tetap.
