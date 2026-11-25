@@ -1,5 +1,9 @@
 # Paket PP dan kasbon sebelum tujuh approval
 
+## 25 November 2026 — Scan pada tahap review Finance
+
+Finance owns signedpaymentscan upload for both units. Current7stage may upload/verify after six actual orderedselected/currentkasbon decisions and beforeexplicitFinance7. Verifying scan never supplies Finance7 or payment; when scanpresentnonValid, existingFinanceSetujui gate remains. LegacyAdminfiles and paidlatehistory kept, no dataadoption/backfill/schema/migration. [Current contract, QA and deployment](FINANCE_SCAN_UPLOAD.md).
+
 ## 17 November 2026 — Preview paket untuk approver sebelum keputusan
 
 Sebelumnya halaman detail sudah memiliki empat preview BA KH/lampiran/SPK/lampiran pada kartu terpisah sesudah approval, dan Preview PP di judul halaman. Kini bagian **Berkas Paket untuk Ditinjau** berada langsung dalam panel approval, sebelum catatan dan tombol keputusan. Semua lima approver terpilih dapat membuka tombol tersendiri:

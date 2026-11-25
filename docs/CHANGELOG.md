@@ -1,5 +1,9 @@
 # Catatan perubahan it's Area 3
 
+## 25 November 2026 — Finance mengunggah hasil scan pembayaran
+
+Unggah/koreksi scan kini hanya Finance; Admin melihat/mengunduh sesuai akses. Upload berhasil→BerkasOK, verifikasi dan approval Finance tetap terpisah. Baru7stage dapat mengunggah pada giliranFinance setelah6keputusan UUIDaktif; legacy/fullapproved dan pelengkapanlatepaid mengikuti guardlama. File/histori/nominal existing tetap, tanpa migration baru.535PHP/496frontend/build/assets/browsermock lulus. [Detail](FINANCE_SCAN_UPLOAD.md).
+
 ## 25 November 2026 — Panel filter Dashboard dipadatkan
 
 Panel lebih pendek, judul dan dropdown sejajar di desktop; dua dropdown berdampingan di ponsel. Keterangan berulang dihapus dari tampilan, label dan ResetBranch tetap.36tesDashboard/build/aset lulus, tanpa migration atau perubahan data. [QA](qa/dashboard-filters-compact-20261125.json).

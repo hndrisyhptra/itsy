@@ -1,5 +1,9 @@
 # Optimasi query dan respons aplikasi
 
+## 25 November 2026 — Finance signed scan readiness
+
+Readyhelper uses loaded term and≤7actualroledecisions, onecomputedUIvalue shared forupload/verify;0query/API/schema/dependency/poller. Controller rejects wrongrole before expensiveworkspacegraph, domainfreshrole remains underlock. Existingfile/projection/receipt transaction reused; measured55HTTPupload atFinance stage forConstructionPartial/Final andOperation, no before/afterlatencyclaim. NewFlowverifydoesnotrewriteactualSQLdecisions; no perrowlookup/privatefetch. Existing500BOQ59query/500BARP50query/full20PP353vs8/archive3SELECT tests retained. [Evidence and limits](FINANCE_SCAN_UPLOAD.md).
+
 ## 25 November 2026 — Pagination master dan batched Branch inference
 
 SQL count scoped/filter tambah1query/list, offset+limit size+1 dengan allowlist10/20/50/100; items/usage tetap satuquery masing-masing untuk halaman. KatalogBranch aktif dibaca sekali secara locking dalam transaksi impor; lookupkode in-memoryMap, reserved conflict≤1query/500PID (bukan perbaris), existingwritebuffers100PID/50items tetap.5192PIDpreview49/commit780/list7 vs37/768/6 terdahulu; page10–100≤8HTTPqueries. UImax100DOM/localpreview, sourcekey+abortsize/resetselection dan loadeddata reuse;0newpoller/dependency/API/schema. Import masih serialized/sinkron120s, belum bukti file40k dapat selesai sebelum timeout atau server bebasbottleneck. [Kontrak dan batas](BUDGETING_PID.md).

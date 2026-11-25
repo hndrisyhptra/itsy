@@ -33,7 +33,7 @@ test('scope changes clear adopted master name and selection but keep manual name
 
 test('reference output has four independent amounts; unknown/unmapped/conflict never invent zero budgets or leak name',()=>{
  const base={error:undefined,loading:false,refresh:()=>{},adopt:()=>{},blocked:false,nameLocked:false};
- const html=renderToStaticMarkup(h(PidReferenceView,{p,lookup:{...base,result:found},duplicate:2}));assert.match(html,/Nama Master &lt; &gt;/);assert.match(html,/Material Owner/);assert.match(html,/Jasa Owner/);assert.match(html,/BOP/);assert.match(html,/Alokasi PP Lain/);assert.match(html,/PP lama sebelum fitur ini dikecualikan/);assert.match(html,/mandor berbeda/);assert.match(html,/data-confirm="Gunakan Nama Kegiatan/);
+ const html=renderToStaticMarkup(h(PidReferenceView,{p,lookup:{...base,result:found},duplicate:2}));assert.match(html,/Nama Master &lt; &gt;/);assert.match(html,/>Total Budget</);assert.match(html,/>Material</);assert.match(html,/>Non Material</);assert.match(html,/>Operasional</);assert.match(html,/Alokasi PP Lain/);assert.match(html,/PP lama sebelum fitur ini dikecualikan/);assert.match(html,/mandor berbeda/);assert.match(html,/data-confirm="Gunakan Nama Kegiatan/);
  for(const status of ['not_found','branch_unmapped','unit_conflict','branch_conflict'] as const){const markup=renderToStaticMarkup(h(PidReferenceView,{p,lookup:{...base,result:{pid:p.projectCode,branch:p.branch,unit:p.unit,status}}}));assert(!markup.includes('<table>'));assert(!markup.includes('Nama Master'));assert(!markup.includes('Rp'));}
 });
 

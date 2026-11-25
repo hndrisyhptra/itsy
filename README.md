@@ -1,5 +1,7 @@
 # it's Area 3 — Construction Workspace
 
+**25 November 2026 — Scan pembayaran oleh Finance:** unggah hasil scan TTD dipindahkan dari Admin ke Finance. Tombol Unggah Scan & Tandai OK tersedia saat giliran Finance dan untuk pelengkapan setelah pembayaran; OK berarti file tersimpan, approval tetap terpisah. File lama dipertahankan. Build/check aset diperlukan, tanpa migration baru. [Aturan dan bukti](docs/FINANCE_SCAN_UPLOAD.md).
+
 **25 November 2026 — Filter Dashboard ringkas:** panel dipadatkan menjadi baris horizontal di desktop dan dua dropdown berdampingan di ponsel. Label serta Reset Branch tetap tersedia. Build/check aset diperlukan, tanpa migration. [Detail](docs/DASHBOARD_APPROVAL_MATRIX.md).
 
 **25 November 2026 — Filter Dashboard:** Unit Kerja dan Branch kini berada dalam panel berlabel jelas, dropdown lebih terlihat, indikator pilihan aktif dan Reset Branch. Tampilan menyesuaikan desktop/ponsel serta mode terang/gelap. Build/check aset diperlukan, tanpa migration. [Detail](docs/DASHBOARD_APPROVAL_MATRIX.md).

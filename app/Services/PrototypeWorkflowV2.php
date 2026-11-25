@@ -323,12 +323,40 @@ trait PrototypeWorkflowV2
         return null;
     }
 
+    /** Loaded current term only; scan review is not a payment approval. */
+    public static function scanReviewReady(array $t): bool
+    {
+        $roles = self::approvalRoles($t);
+        if (($t['workflowVersion'] ?? 1) < 2) {
+            return false;
+        }
+        if ($t['status'] === 'Disetujui' && count($t['approvals']) === count($roles)) {
+            return true;
+        }
+        if (! self::usesSettlementPayment($t) || $t['status'] !== 'Diajukan' || empty($t['kasbon']['id']) || ($t['paid'] ?? 0) > 0 || $t['apmStatus'] === 'Valid'
+            || self::nextApprovalRole($t) !== 'Finance' || count($t['approvals']) !== count($roles) - 1) {
+            return false;
+        }
+        foreach (array_slice($roles, 0, -1) as $i => $role) {
+            $a = $t['approvals'][$i] ?? [];
+            if (($a['role'] ?? '') !== $role || ($a['decision'] ?? '') !== 'Setujui' || empty($a['userId'])
+                || $a['userId'] !== ($t['approverUserIds'][$role] ?? '') || ($a['kasbonId'] ?? '') !== $t['kasbon']['id']) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     private function attachTermScan(string $id, array $file): null
     {
-        $this->admin();
+        $this->finance();
         $t = $this->record('terms', $id);
-        if (($t['workflowVersion'] ?? 1) < 2 || $t['status'] !== 'Disetujui' || count($t['approvals']) !== $this->approvalCount($t) || ($t['apmStatus'] === 'Valid' && ! self::usesPartialPayment($t) && ! self::usesFinancePayment($t)) || ($t['scan']['status'] ?? '') === 'Valid') {
-            $this->fail('Scan hanya diunggah setelah seluruh approval dan sebelum verifikasi/APM.');
+        if (! self::scanReviewReady($t) || ($t['apmStatus'] === 'Valid' && ! self::usesPartialPayment($t) && ! self::usesFinancePayment($t)) || ($t['scan']['status'] ?? '') === 'Valid') {
+            $this->fail('Scan hanya dapat diunggah Finance saat giliran review Finance atau setelah persetujuan lengkap, sebelum scan diverifikasi.');
+        }
+        if ($t['status'] === 'Diajukan') {
+            $this->assigned($t, 'Finance');
         }
         $t['scanHistory'] ??= [];
         if (isset($t['scan'])) {
@@ -348,14 +376,17 @@ trait PrototypeWorkflowV2
         $t = $this->record('terms', $id);
         $this->enum($decision, ['Valid', 'Perlu Koreksi']);
         $note = $this->text($note);
-        if (($t['workflowVersion'] ?? 1) < 2 || $t['status'] !== 'Disetujui' || count($t['approvals']) !== $this->approvalCount($t) || ! isset($t['scan']) || ($t['apmStatus'] === 'Valid' && ! self::usesPartialPayment($t) && ! self::usesFinancePayment($t)) || ($t['scan']['status'] ?? '') !== 'Menunggu Verifikasi') {
-            $this->fail('Scan menunggu verifikasi dengan seluruh approval diperlukan.');
+        if (! self::scanReviewReady($t) || ! isset($t['scan']) || ($t['apmStatus'] === 'Valid' && ! self::usesPartialPayment($t) && ! self::usesFinancePayment($t)) || ($t['scan']['status'] ?? '') !== 'Menunggu Verifikasi') {
+            $this->fail('Scan menunggu verifikasi pada giliran Finance atau setelah persetujuan lengkap diperlukan.');
         }
         if ($decision === 'Perlu Koreksi' && ! $note) {
             $this->fail('Catatan koreksi scan wajib diisi.');
         }
+        if ($t['status'] === 'Diajukan') {
+            $this->assigned($t, 'Finance');
+        }
         $t['scan'] = array_merge($t['scan'], ['status' => $decision, 'note' => $note, 'verifiedAt' => now()->toISOString(), 'verifiedBy' => $this->state['actorUserId'] ?? '', 'verifiedRole' => 'Finance']);
-        if (($t['workflowVersion'] ?? 1) >= 3) {
+        if (($t['workflowVersion'] ?? 1) >= 3 && ! self::usesSettlementPayment($t)) {
             $user = $this->approver($this->state['actorUserId'] ?? '', 'Finance');
             $approval = ['role' => 'Finance', 'userId' => $user['id'], 'actorName' => $user['name'], 'decision' => $decision === 'Valid' ? 'Setujui' : 'Kembalikan', 'note' => $note, 'at' => now()->toISOString(), 'scanId' => $t['scan']['id']];
             $t['financeHistory'][] = $approval;

@@ -2,6 +2,10 @@
 name: area3-business-workflow
 description: Implement its Area 3 Project Plan, BOQ, mandor contracting, assigned two-stage approvals, scan verification and full APM settlement, APM gating, BA PP and continuation state transitions.
 ---
+## 25 November 2026 — Finance signed payment scan
+
+Follow latest docs/FINANCE_SCAN_UPLOAD.md. User moves physicalsignedscan upload/correction to Financeonly, not allAdmin uploads. Current7stage Finance turn requires exact6 orderedselected/currentkasbonUUID decisions, actorFinance/Branch/unit; legacycomplete/paidlate guards retained. Uploadsuccess→presenceOK; separateverification writes scanmetadata only forsettlement, never actualFinance7/financeApproval/history/payment. Oldlegacy verification semantics and oldAdminfileactor/path/history/paid/ledger unchanged; no GETrewrite or schema/API/poller/dependency. Controllerrolepreflight beforegraph plus domainrole undertransaction, exactreceipt/revision/private/MIME/SHA/cleanup/replay/Valid locks.535PHP496frontend/bothunit55HTTP/browsermock tested; no liveits/env/worker/server/Dompis writes, no migration/newworker. Build/checkassets.
+
 ## 25 November 2026 — Explicit Budgeting import may infer Branch
 
 Latest user supersedes24Nov no-PID-inference only for explicitFinance/Superadmin import. SingleRxxx→activebranches.kode_branch, saved mapping wins; unknown/missing/ambiguous/inactive manual. Keep scope/currentunit/knownoutside403/reservedbranchconflict422, mapping-boundHMAC/version/UUID/atomicbeforeafter. Never rewrite PP or move allocations/paid consumption/history; no GETbackfill/schema/migration/API/poller/livewrites. Follow latest docs/BUDGETING_PID.md; import remains synchronous120s, pagination10/20/50/100/count and actual testlimits recorded.

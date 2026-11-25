@@ -109,6 +109,7 @@ class PartialPaymentTest extends TestCase
         $this->asRole('Admin Konstruksi');
         $this->api('createTerm', [$t['spkId']])->assertOk();
         $revision = $this->getJson('/api/prototype/state')->json('revision');
+        $this->asRole('Finance');
         $this->post('/api/prototype/payments/'.$id.'/scan', ['revision' => (string) $revision, 'request_id' => (string) Str::uuid(), 'file' => UploadedFile::fake()->createWithContent('scan-late.pdf', "%PDF-1.4\nlate signed scan\n%%EOF")], ['Accept' => 'application/json'])->assertOk();
         $scan = $this->term($id)['scan'];
         Storage::disk('local')->assertExists('prototype-scans/'.PrototypeWorkspace::first()->id.'/'.$id.'/'.$scan['id'].'.pdf');
@@ -251,6 +252,7 @@ class PartialPaymentTest extends TestCase
     {
         $t = $this->approved(true);
         $revision = $this->getJson('/api/prototype/state')->json('revision');
+        $this->asRole('Finance');
         $this->post('/api/prototype/payments/'.$t['id'].'/scan', [
             'revision' => (string) $revision, 'request_id' => (string) Str::uuid(),
             'file' => UploadedFile::fake()->createWithContent('signed-final.pdf', "%PDF-1.4\nlegacy scan\n%%EOF"),

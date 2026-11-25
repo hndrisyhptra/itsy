@@ -1,5 +1,9 @@
 # Arsitektur aplikasi it's Area 3
 
+## 25 November 2026 — Finance signed payment scan authority
+
+PrototypeScanController checks trustedFINANCE context before workspacepayload; existing MIME/privatepath/SHA/cleanup/revision/receipt kept. Domain attach now finance-only. SharedPHP/TSscanReviewReady permits exactcurrent6/7orderedassignedkasbon prefix at Finance turn plus completed legacy states. Pending verification callsassignedFinance; settlement scan metadata never generates seventh approval or financeApproval/history, while legacy separateverification semantics stay. ExistingdocumentStatuspresence derivesOK, current catalogs unchanged; fileuploadedBy records actualFinance. UIreadonly fornonFinance, fullscanpanel at stage6 Finance and paidlate; paidamounts/decisions/history/source/private/ledger not rewritten.0newSQL/API/schema/migration/poller/dependency, loadedhelper≤7; upload55HTTP fixture. [Contract/QA/limits](FINANCE_SCAN_UPLOAD.md).
+
 ## 25 November 2026 — Compact Dashboard filter layout
 
 Presentation correction uses existing filter callbacks/memos; heading+fields+conditionalreset now flexrow, responsivewrap with2columns on phone. Duplicate visible footer removed; aria-live sr-only scope retained. CSS controls36pxdesktop/40pxphone, no query/backend/API/schema/poller/dependency/datachange. [Actual checks and limits](qa/dashboard-filters-compact-20261125.json).

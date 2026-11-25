@@ -131,7 +131,7 @@ export function FinanceKasbonPanel({s,t}:{s:State;t:Term}) {
     {t.status==='Diajukan'&&<Notice>{usesSettlementPayment(t)?'Kasbon diajukan bersama pembayaran. Menunggu tujuh approval berurutan.':'Menunggu seluruh approval sampai Head of PMO sebelum kasbon.'}</Notice>}
     {(finance||s.role==='Mgr Finance & Settlement')&&<div className="actions"><FinanceReviewButton s={s} t={t} kasbon={latest?.data} identity={<KasbonPayeeReview s={s} t={t} kasbon={latest?.data}/>}/></div>}
     {finance&&ready&&!t.kasbon&&<Notice>Menunggu Admin Konstruksi mengisi dan mengajukan form kasbon.</Notice>}
-    {!t.scan&&<Notice tone="warning">Berkas belum lengkap (NOK). Scan TTD dapat dilengkapi dan diverifikasi setelah pembayaran.</Notice>}
+    {!t.scan&&<Notice tone="warning">Berkas belum lengkap (NOK). Finance dapat mengunggah dan memverifikasi scan TTD saat review atau melengkapinya setelah pembayaran.</Notice>}
     {t.legacySettlementReview&&<Notice tone={legacyReviewApproved(t)?'success':'warning'}>{legacyReviewApproved(t)?'Mgr Finance & Settlement telah menyetujui kasbon aktif.':'Menunggu review Mgr Finance & Settlement.'} {t.legacySettlementReview.name}{t.legacySettlementReview.decision?.note&&' · '+t.legacySettlementReview.decision.note}</Notice>}
     {t.financePayment?.decision?.note&&<Notice tone="warning">Catatan Finance: {t.financePayment.decision.note}</Notice>}
     {documents.length>0&&<div className="actions">{documents.map(d=><Button key={d.id} onClick={()=>{setPreview(d.id);setPrintSigner(d.data.printSigner?.userId??'');}}>Preview Kasbon v{d.version}{d.id!==t.kasbon?.id?' · Arsip':''}</Button>)}</div>}

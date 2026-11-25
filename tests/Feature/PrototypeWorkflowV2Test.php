@@ -224,9 +224,10 @@ class PrototypeWorkflowV2Test extends TestCase
     {
         Storage::fake('local');
         $id = $this->approvedPayment();
-        $this->upload($id)->assertForbidden();
         $this->asRole('Admin Konstruksi');
+        $this->upload($id)->assertForbidden();
         $this->api('_attachTermScan', [$id, ['id' => 'forged']])->assertUnprocessable();
+        $this->asRole('Finance');
         $this->upload($id, file: UploadedFile::fake()->createWithContent('fake.pdf', '<html>not a PDF</html>'))->assertUnprocessable();
         $this->upload($id, file: UploadedFile::fake()->create('oversized.pdf', 10241, 'application/pdf'))->assertUnprocessable();
         $this->upload($id, revision: 0)->assertConflict();
@@ -237,6 +238,7 @@ class PrototypeWorkflowV2Test extends TestCase
         $this->upload($id, requestId: $requestId)->assertOk()->assertJsonPath('replayed', true)->assertJsonPath('state.terms.0.scan.id', $first['id']);
         $this->assertCount(1, Storage::disk('local')->allFiles());
         $this->get('/api/prototype/payments/'.$id.'/scan')->assertOk()->assertDownload('scan-demo.pdf');
+        $this->asRole('Admin Konstruksi');
         $this->api('verifyTermScan', [$id, 'Valid', ''])->assertForbidden();
         $this->asRole('Finance');
         $this->api('recordApm', [$id, 'APM/TEST/001', true])->assertUnprocessable();
@@ -250,11 +252,13 @@ class PrototypeWorkflowV2Test extends TestCase
         $this->api('recordApm', [$id, 'APM/TEST/001', true], $apmRequest)->assertOk()->assertJsonPath('replayed', true);
         $this->api('recordApm', [$id, 'APM/TEST/002', true])->assertUnprocessable();
         $this->api('recordPayment', [$id, 1, 'double-payment'])->assertUnprocessable();
-        $this->asRole('Admin Konstruksi');
+        $this->asRole('Finance');
         $this->upload($id)->assertUnprocessable();
+        $this->asRole('Admin Konstruksi');
         $state = $this->getJson('/api/prototype/state')->json('state');
         $this->api('createTerm', [$state['terms'][0]['spkId']])->assertOk()->assertJsonPath('state.terms.1.number', 2);
-        app(AccountAccess::class)->assign($this->accounts['Admin Konstruksi'], 'ADMIN_KONSTRUKSI', [DB::table('branches')->where('name', 'SEMARANG')->value('id_branch')]);
+        $this->asRole('Finance');
+        app(AccountAccess::class)->assign($this->accounts['Finance'], 'FINANCE', [DB::table('branches')->where('name', 'SEMARANG')->value('id_branch')]);
         $this->get('/api/prototype/payments/'.$id.'/scan')->assertNotFound();
         $this->upload($id)->assertNotFound();
     }
@@ -263,12 +267,12 @@ class PrototypeWorkflowV2Test extends TestCase
     {
         Storage::fake('local');
         $id = $this->approvedPayment();
-        $this->asRole('Admin Konstruksi');
+        $this->asRole('Finance');
         $this->upload($id)->assertOk();
         $before = $this->getJson('/api/prototype/state')->json('state.terms.0');
         $this->asRole('Finance');
         $this->api('verifyTermScan', [$id, 'Perlu Koreksi', 'Halaman kurang'])->assertOk();
-        $this->asRole('Admin Konstruksi');
+        $this->asRole('Finance');
         $this->upload($id)->assertOk();
         $after = $this->getJson('/api/prototype/state')->json('state.terms.0');
         $this->assertCount(1, $after['scanHistory']);
@@ -276,6 +280,7 @@ class PrototypeWorkflowV2Test extends TestCase
         $this->assertSame($before['actuals'], $after['actuals']);
         $this->assertSame($before['approvals'], $after['approvals']);
         $this->assertCount(2, Storage::disk('local')->allFiles());
+        $this->asRole('Admin Konstruksi');
         $this->api('saveTerm', [$after, false])->assertUnprocessable();
     }
 

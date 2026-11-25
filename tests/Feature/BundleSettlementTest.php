@@ -566,6 +566,91 @@ class BundleSettlementTest extends TestCase
         $this->assertCount(0, $after['terms'][0]['approvals']);
     }
 
+    private function scanUpload(string $id, ?string $uuid = null)
+    {
+        return $this->post('/api/prototype/payments/'.$id.'/scan', ['revision' => PrototypeWorkspace::first()->revision, 'request_id' => $uuid ?? (string) Str::uuid(),
+            'file' => UploadedFile::fake()->createWithContent('finance-scan.pdf', "%PDF-1.4\nsynthetic scan QA\n%%EOF")], ['Accept' => 'application/json']);
+    }
+
+    private function scanAtFinanceReview(string $id): void
+    {
+        $before = $this->term();
+        $this->assertTrue(PrototypeDomain::scanReviewReady($before));
+        foreach (['Admin Konstruksi', 'Admin Operation', 'Superadmin', 'Mgr Finance & Settlement'] as $role) {
+            $this->asRole($role);
+            $this->scanUpload($id)->assertForbidden();
+        }
+        $this->asRole('Finance');
+        $decisionRows = DB::table('approval_decisions')->orderBy('id_approval_decision')->get()->toJson();
+        foreach (['kasbon', 'user', 'order'] as $wrong) {
+            $bad = $before;
+            if ($wrong === 'kasbon') {
+                $bad['approvals'][0]['kasbonId'] = 'old-version';
+            }
+            if ($wrong === 'user') {
+                $bad['approvals'][0]['userId'] = 'wrong-user';
+            }
+            if ($wrong === 'order') {
+                $bad['approvals'] = array_reverse($bad['approvals']);
+            }
+            $this->assertFalse(PrototypeDomain::scanReviewReady($bad));
+        }
+        $uuid = (string) Str::uuid();
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $saved = $this->scanUpload($id, $uuid)->assertOk()->json('state.terms.0');
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+        $this->assertLessThanOrEqual(75, count($queries));
+        fwrite(STDERR, "\nFinance scan HTTP ".($before['approvalScheme'] ?? 'Construction').': '.count($queries)." queries.\n");
+        $this->assertSame('db-user-'.$this->accounts['Finance']->getKey(), $saved['scan']['uploadedBy']);
+        $this->assertSame('Menunggu Verifikasi', $saved['scan']['status']);
+        $this->scanUpload($id, $uuid)->assertOk()->assertJsonPath('replayed', true)->assertJsonPath('state.terms.0.scan.id', $saved['scan']['id']);
+        $this->assertCount(1, Storage::disk('local')->files('prototype-scans/'.PrototypeWorkspace::first()->id.'/'.$id));
+        $this->assertSame($before['approvals'], $saved['approvals']);
+        $this->assertSame($before['financePayment'], $saved['financePayment']);
+        $this->assertSame('Diajukan', $saved['status']);
+        $this->getJson('/api/finance/payments')->assertOk()->assertJsonPath('items.0.documents', 'OK');
+        $this->api('decide', [$id, 'Setujui', ''])->assertUnprocessable();
+        $this->api('verifyTermScan', [$id, 'Perlu Koreksi', ''])->assertUnprocessable();
+        $this->api('verifyTermScan', [$id, 'Perlu Koreksi', 'Perbaiki halaman'])->assertOk();
+        $this->scanUpload($id)->assertOk()->assertJsonCount(1, 'state.terms.0.scanHistory');
+        $verified = $this->api('verifyTermScan', [$id, 'Valid', 'Berkas lengkap'])->assertOk()->json('state.terms.0');
+        $this->assertSame($before['approvals'], $verified['approvals']);
+        $this->assertSame($before['financePayment'], $verified['financePayment']);
+        $this->assertArrayNotHasKey('financeApproval', $verified);
+        $this->assertSame($before['financeHistory'] ?? [], $verified['financeHistory'] ?? []);
+        $this->assertSame($before['paid'], $verified['paid']);
+        $this->assertSame($before['kasbon'], $verified['kasbon']);
+        $this->assertSame($decisionRows, DB::table('approval_decisions')->orderBy('id_approval_decision')->get()->toJson());
+        $this->assertDatabaseCount('apm_settlements', 0);
+        $this->scanUpload($id)->assertUnprocessable();
+        $file = DB::table('document_files')->where('original_name', 'finance-scan.pdf')->first();
+        $this->assertEquals($this->accounts['Finance']->getKey(), $file->uploaded_by);
+    }
+
+    #[DataProvider('paymentTypes')]
+    public function test_finance_uploads_scan_at_its_turn_without_approving_or_paying_automatically(bool $final): void
+    {
+        $t = $this->draftPayment();
+        if ($final) {
+            $t['type'] = 'Final';
+            $this->api('saveTerm', [$t, false])->assertOk();
+            $t = $this->term();
+        }
+        $this->attestCurrentWorkBapp($t);
+        $this->submitKasbon($this->term())->assertOk();
+        $this->asRole('Finance');
+        $this->scanUpload($t['id'])->assertUnprocessable();
+        foreach ([...PrototypeDomain::APPROVERS_V3, 'Mgr Finance & Settlement'] as $role) {
+            $this->asRole($role);
+            $this->api('decide', [$t['id'], 'Setujui', ''])->assertOk();
+        }
+        $this->scanAtFinanceReview($t['id']);
+        $this->api('decide', [$t['id'], 'Setujui', ''])->assertOk()->assertJsonCount(7, 'state.terms.0.approvals')->assertJsonPath('state.terms.0.financePayment.status', 'Diverifikasi');
+        $this->assertDatabaseCount('apm_settlements', 0);
+    }
+
     public static function paymentTypes(): array
     {
         return [[false], [true]];
@@ -1090,6 +1175,9 @@ class BundleSettlementTest extends TestCase
         foreach ($roles as $i => $role) {
             $this->asRole($role);
             $this->getJson('/api/finance/terms/'.$t['id'].'/kasbon?current_only=1')->assertOk();
+            if ($role === 'Finance') {
+                $this->scanAtFinanceReview($t['id']);
+            }
             $this->api('decide', [$t['id'], 'Setujui', 'Operation QA'])->assertOk();
             $t = $this->term();
             $this->assertSame($i === 6 ? 'Disetujui' : 'Diajukan', $t['status']);

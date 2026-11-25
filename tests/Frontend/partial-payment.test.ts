@@ -59,7 +59,7 @@ test('list shows paid value with termin description and independent NOK/OK; Fina
   requestPartialPayment(s,t.id);actor(s,'Finance');let html=renderToStaticMarkup(createElement(PartialPaymentPanel,{s,t}));assert.match(html,/Verifikasi Payment/);assert.doesNotMatch(html,/Nomor APM/);
   verifyPartialPayment(s,t.id,'Setujui','Dokumen menyusul');html=renderToStaticMarkup(createElement(PartialPaymentPanel,{s,t}));assert.match(html,/Nomor APM/);assert.match(html,/Nilai pembayaran \(otomatis\)/);
   payPartialPayment(s,t.id,'APM/VIEW/001');actor(s,'Admin Konstruksi');html=renderToStaticMarkup(createElement(Terms,{s}));assert.match(html,/Status Berkas/);assert.match(html,/Termin 1 · Parsial/);assert.match(html,/NOK/);assert.match(html,/Lunas/);
-  const scanPanel=renderToStaticMarkup(createElement(PaymentEvidencePanel,{s,t}));assert.match(scanPanel,/type="file"(?! disabled)/);assert.doesNotMatch(scanPanel,/Nomor APM/);
+  let scanPanel=renderToStaticMarkup(createElement(PaymentEvidencePanel,{s,t}));assert.doesNotMatch(scanPanel,/type="file"/);actor(s,'Finance');scanPanel=renderToStaticMarkup(createElement(PaymentEvidencePanel,{s,t}));assert.match(scanPanel,/type="file"(?! disabled)/);assert.doesNotMatch(scanPanel,/Nomor APM/);
 });
 
 test('1000-row payment list indexes loaded relationships once and bounds DOM to twenty rows without catalog finds',()=>{

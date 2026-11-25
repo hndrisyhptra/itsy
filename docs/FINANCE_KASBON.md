@@ -1,5 +1,9 @@
 # Kasbon, data Mandor dan pembayaran — 11 November 2026
 
+## 25 November 2026 — Unggah scan dikelola Finance
+
+Latest user supersedes Admin-as-scan-uploader in historical sections below. Only Finance uploads/corrects signed payment scan, at its current6/7review turn or allowed completed/paidlate stages. PresenceOK is separate from fileverification and explicitFinance approval/settlement; no fake decision. OldAdminscans/history and issued/paid/private/ledger remain. [Current contract/tests/deployment](FINANCE_SCAN_UPLOAD.md).
+
 ## 25 November 2026 — Form dua komponen akun
 
 Form baru memisahkan Jasa bersih dan Material, masing-masing No Akun/Nama Akun/Teks Keperluan, nominal readonly dan satu Total Pengajuan. Komponen nol disembunyikan. Typed row divalidasi terhadap quote canonical, lalu disimpan terenkripsi pada rows existing; rekening/identitas tetap dari payeeVersion yang dipilih. PPh hanya Jasa dan rumus terbaru tidak berubah. Baris typed muncul konsisten pada preview/Word/cetak/paket, sedangkan snapshot historis tidak ditulis ulang. Payload untyped lama tetap validasi total existing untuk kompatibilitas. [Aturan terkini, validasi dan penerapan](KASBON_PPH_PAYMENT_LIST.md).

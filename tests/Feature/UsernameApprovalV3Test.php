@@ -968,9 +968,10 @@ class UsernameApprovalV3Test extends TestCase
         $this->assertSame('REJECTED', $oldRun->status);
         $decisions = DB::table('approval_decisions')->orderBy('id_approval_decision')->get()->all();
         $this->api('saveTerm', [$rejected, true])->assertForbidden();
-        $this->asRole('Admin Konstruksi');
+        $this->asRole('Finance');
         $this->upload($t['id'])->assertUnprocessable();
         $this->assertEmpty(Storage::disk('local')->allFiles());
+        $this->asRole('Admin Konstruksi');
         $this->api('createTerm', [$t['spkId']])->assertUnprocessable();
         $forged = $rejected;
         $forged['history'] = [];
@@ -1007,6 +1008,7 @@ class UsernameApprovalV3Test extends TestCase
     {
         Storage::fake('local');
         $t = $this->payment();
+        $this->asRole('Finance');
         $this->upload($t['id'])->assertUnprocessable();
         $this->assertEmpty(Storage::disk('local')->allFiles());
         $this->asRole('Finance');
@@ -1015,12 +1017,15 @@ class UsernameApprovalV3Test extends TestCase
         $this->approvePayment($t['id']);
         $this->asRole('Admin Konstruksi');
         $this->api('saveTerm', [$t, false])->assertUnprocessable();
+        $this->upload($t['id'])->assertForbidden();
+        $this->asRole('Finance');
         $this->upload($t['id'])->assertOk()->assertJsonPath('state.terms.0.scan.status', 'Menunggu Verifikasi');
+        $this->asRole('Admin Konstruksi');
         $this->api('verifyTermScan', [$t['id'], 'Valid', ''])->assertForbidden();
         $this->asRole('Finance');
         $this->api('recordApm', [$t['id'], 'APM/QA/V3-01', true])->assertUnprocessable();
         $this->api('verifyTermScan', [$t['id'], 'Perlu Koreksi', 'QA halaman kurang'])->assertOk()->assertJsonCount(1, 'state.terms.0.financeHistory');
-        $this->asRole('Admin Konstruksi');
+        $this->asRole('Finance');
         $this->upload($t['id'])->assertOk()->assertJsonCount(1, 'state.terms.0.scanHistory');
         $this->asRole('Finance');
         $verified = $this->api('verifyTermScan', [$t['id'], 'Valid', 'QA diperiksa'])->assertOk()->assertJsonCount(5, 'state.terms.0.approvals')->assertJsonCount(2, 'state.terms.0.financeHistory')->json('state.terms.0');
@@ -1031,8 +1036,9 @@ class UsernameApprovalV3Test extends TestCase
         $this->assertEquals(2422500, $paid['paid']);
         $this->assertCount(1, $paid['paymentHistory']);
         $this->api('recordApm', [$t['id'], 'APM/QA/V3-02', true])->assertUnprocessable();
-        $this->asRole('Admin Konstruksi');
+        $this->asRole('Finance');
         $this->upload($t['id'])->assertUnprocessable();
+        $this->asRole('Admin Konstruksi');
         $this->api('createTerm', [$t['spkId']])->assertOk()->assertJsonPath('state.terms.1.number', 2)->assertJsonPath('state.terms.1.workflowVersion', 3);
     }
 

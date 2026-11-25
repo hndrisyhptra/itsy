@@ -97,7 +97,7 @@ export function dashboardApprovalData(s:State,branch='',unit='Konstruksi'):{proj
       if(!t.paymentRequest){add(payment,p,t,'draft','Draf · menunggu pengajuan Admin','Admin',since);continue;}
       if(t.paymentRequest.status==='Diajukan'){add(payment,p,t,roleKey('Finance'),'Menunggu Finance','Tim Finance sesuai Branch',since);continue;}
     }else if(t.paymentFlow!=='kasbon-settlement-v2'&&(t.workflowVersion??1)>=2&&t.scan?.status!=='Valid'){
-      const pending=t.scan?.status==='Menunggu Verifikasi';add(payment,p,t,pending?roleKey('Finance'):'draft',pending?'Menunggu verifikasi Finance':'Draf · menunggu berkas Admin',pending?'Tim Finance sesuai Branch':'Admin',since);continue;
+      const pending=t.scan?.status==='Menunggu Verifikasi';add(payment,p,t,pending?roleKey('Finance'):'draft',pending?'Menunggu verifikasi Finance':'Draf · menunggu unggahan Finance','Tim Finance sesuai Branch',since);continue;
     }
     if(t.paymentFlow==='kasbon-settlement-v2'&&waiting.role){add(payment,p,t,'other','Periksa versi/status approval','',since);continue;}
     add(payment,p,t,'settlement','Menunggu Pelunasan','Finance',since);

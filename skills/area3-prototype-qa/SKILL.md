@@ -2,6 +2,10 @@
 name: area3-prototype-qa
 description: Test the its Area 3 interactive prototype through the linked business scenarios, permissions, persistence, financial/volume invariants, documents and responsive layouts.
 ---
+## 25 November 2026 — Finance scan responsibility
+
+Follow docs/FINANCE_SCAN_UPLOAD.md; testFinanceonly scanner and Adminreadonly, role403/scope404, privateMIME10MB/revision/replay/cleanup/current6selectedorderedkasbonUUID prefix beforeFinance7, bothunits, scanpresenceOKdistinctverification, no fake7decision/financeApproval/history/paid change, oldAdminfiles andlatepaidsettlementidentical. Actual535PHP16744assertions/496frontend,upload55HTTPfixture, actualAppmockTIDAK0POST/YA1scan+explicitverify/0JSerrors3width2themes. No activeDB/env/server/worker/Dompis writes or physicalMariaDB/load/exportclaim; no newmigration/worker. Existingusercostlabel edit preserved andSSRassertion updated withoutformula changes; build/checkassets.
+
 ## 25 November 2026 — Budgeting pagination and automatic Branch import
 
 Follow latest docs/BUDGETING_PID.md; user now explicitly allows singleexactRxxx→activekode_branch on explicitimport only, superseding old no-inference notes. Preserve savedmanualmapping; unknown/multiple/inactive/code4digits staymanual; outside403/reservedwrongBranch422, HMACmapping drift409, replay/atomicbeforeafter/IDs/history/paidledger unchanged. SQLpage10/20/50/100+scopedfilteredtotal, abortsizekey/resetpage+selection, preview≤100DOM. Actual533PHP/493frontend/5192query49-780-7/browsermock3width2themes; no actual40k/MariaDB/serverclaim or newqueue. No schema/migration/livewrites; document actual evidence and deploybuild/checkassets.

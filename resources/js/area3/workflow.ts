@@ -128,12 +128,21 @@ export function assignProjectApprovers(s: State, id: string, pm: string, manager
   p.pmUserId = approver(s, pm, 'PM Konstruksi').id; p.managerUserId = approver(s, manager, 'Manager Konstruksi').id;
   for (const id of [pm, manager]) { const user = s.users.find(u => u.id === id)!; if (user.branches && !user.branches.includes(p.branch)) throw new Error('PM dan Manager harus ditugaskan pada Branch PP.'); }
 }
+/** Current scan review; completing it does not approve the payment. */
+export function scanReviewReady(t:Term):boolean {
+  const roles=approvalRoles(t);
+  if((t.workflowVersion??1)<2)return false;
+  if(t.status==='Disetujui'&&t.approvals.length===roles.length)return true;
+  if(t.paymentFlow!=='kasbon-settlement-v2'||t.workflowVersion!==3||t.status!=='Diajukan'||!t.kasbon?.id||t.paid>0||t.apmStatus==='Valid'||nextApprovalRole(t)!=='Finance'||t.approvals.length!==roles.length-1)return false;
+  return roles.slice(0,-1).every((role,i)=>{const a=t.approvals[i];return a?.role===role&&a.decision==='Setujui'&&!!a.userId&&a.userId===t.approverUserIds?.[role]&&a.kasbonId===t.kasbon?.id;});
+}
 export function verifyTermScan(s: State, id: string, decision: 'Valid' | 'Perlu Koreksi', note: string) {
   recordCommand('verifyTermScan', [id, decision, note]); requireFinance(s); const t = getTerm(s, id);
-  if ((t.workflowVersion ?? 1) < 2 || t.status !== 'Disetujui' || t.approvals.length !== approvalRoles(t).length || !t.scan || t.scan.status !== 'Menunggu Verifikasi' || (t.apmStatus === 'Valid'&&!usesPartialPayment(t)&&!usesFinancePayment(t))) throw new Error('Scan menunggu verifikasi dengan seluruh approval diperlukan.');
+  if (!scanReviewReady(t) || !t.scan || t.scan.status !== 'Menunggu Verifikasi' || (t.apmStatus === 'Valid'&&!usesPartialPayment(t)&&!usesFinancePayment(t))) throw new Error('Scan menunggu verifikasi pada giliran Finance atau setelah persetujuan lengkap diperlukan.');
+  if(t.status==='Diajukan')assertAssigned(s,t,'Finance');
   if (decision === 'Perlu Koreksi' && !note.trim()) throw new Error('Catatan koreksi scan wajib diisi.');
   t.scan = { ...t.scan, status: decision, note, verifiedBy: s.actorUserId, verifiedAt: now() };
-  if ((t.workflowVersion ?? 1) >= 3) { const user = approver(s, s.actorUserId, 'Finance'); const approval:Approval = {role:'Finance', userId:user.id, actorName:user.name, decision: decision === 'Valid' ? 'Setujui' : 'Kembalikan', note, at:now(), scanId:t.scan.id}; (t.financeHistory ??= []).push(approval); if (decision === 'Valid') t.financeApproval = approval; else delete t.financeApproval; }
+  if ((t.workflowVersion ?? 1) >= 3 && t.paymentFlow!=='kasbon-settlement-v2') { const user = approver(s, s.actorUserId, 'Finance'); const approval:Approval = {role:'Finance', userId:user.id, actorName:user.name, decision: decision === 'Valid' ? 'Setujui' : 'Kembalikan', note, at:now(), scanId:t.scan.id}; (t.financeHistory ??= []).push(approval); if (decision === 'Valid') t.financeApproval = approval; else delete t.financeApproval; }
 }
 
 export function assignPaymentApprovers(s:State, id:string, assignments:Partial<Record<Role,string>>) {

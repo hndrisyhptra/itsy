@@ -1,5 +1,11 @@
 # Laravel rebuild QA — 2 November 2026
 
+## 25 November 2026 — Finance signed scan upload
+
+Final535PHP/16744assertions (XAMPP8.2.4 SQLite`:memory:`,126.255s/142.50MB/process512M),496frontend/0failed, TypeScript/Vite/assets50manifest41preloads×3/scopedPint/diffcheck lulus. Focused91PHP/3953assertions38.088s, scan16/1045,3newfrontend: current6 sourceUUID/selectedID/order, bothunit readiness, nonFinance403/outscope404, MIME/size/revision/replay/cleanup, SQLuploadedByFinance/correctionversions/readonlyGET, scanmetadata no fake7approval/financehistory/payment and latepaidsettlement unchanged. Actualuploadfixture55queries (1revisionreadoutsideHTTP) acrossConstructionPartial/Final/Operation; no new queryhelper.
+
+ActualAppmock browser375/768/1440×lightdark: TIDAK0POST/YA1scan, NOK→OK aftercanonicalresponse, explicitverify only sendsverifyTermScan and retains6decisions/paid0, Admin fileinputhidden/oldfile+downloadretained, Operationenabled,0JSerror/overflow; desktop/mobilePNGs inspected. Existinguploadtests changed actor toFinance, preserving forbiddenrole/legacylifecycle guards; initial6old-rolefixturefailures corrected. Existing useredited costlabels preserved, oldSSRlabelassertion updated. No physicalMariaDB/aaPanel/concurrency/load/WordPDF/realbankworkerTelegram tests or liveits/env/worker/server/Dompis/commit/push/deploy. [Contract](FINANCE_SCAN_UPLOAD.md), [audit](qa/finance-scan-upload-20261125.json).
+
 ## 25 November 2026 — Filter Dashboard compact
 
 36focusedDashboardtests/0failed (423.891ms), TypeScript/Vite/assets50refs41preloads×3/diffcheck lulus. ActualApp mockAPI3PP2Branch2unit: filtering/resetBranch/unitreset/Operationapproval/summarycount2-1-2-1,375/768/1440×lightdark0JSerror/root overflow/POST. Panel defaultdesktop220.781→80px, phone373.859→124px; native selects36desktop/40phone. Desktoplight/mobiledark PNGs inspected. Initial harness comparison route unknown corrected to dashboardquery; browser caught sr-only style originally matrix-only causing compressed controls, fixed with panel-scoped visually-hidden rule and final run passed. No application guard weakened. No fullPHP/frontendrerun for presentation-only correction, no server/load/WordPDF/liveits/env/worker/Dompis changes. [Evidence and limits](qa/dashboard-filters-compact-20261125.json).

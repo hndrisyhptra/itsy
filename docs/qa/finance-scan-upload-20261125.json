@@ -1,0 +1,148 @@
+{
+  "date": "2026-11-25",
+  "feature": "Finance owns signed payment scan upload",
+  "contract": "docs/FINANCE_SCAN_UPLOAD.md",
+  "authorization": {
+    "uploader": "FINANCE only, SQL context checked before workspace read; role rechecked in locked domain command",
+    "non_uploaders": [
+      "Admin Konstruksi",
+      "Admin Operation",
+      "Superadmin",
+      "Mgr Finance & Settlement"
+    ],
+    "both_work_units": true,
+    "reads": "Existing scoped download/read access retained",
+    "other_uploads": "Admin work evidence/payee ownership unchanged"
+  },
+  "readiness": {
+    "current_settlement": "six ordered Setujui from selected actors and active kasbon UUID, Finance current assigned role, not paid/returned/draft",
+    "completed_and_legacy": "Existing full approval and APM/paid-late guards retained",
+    "scope": "Current Branch/unit/Region and Head/Cancel/revision guards retained"
+  },
+  "status": {
+    "NOK": "No current scan metadata",
+    "OK": "Current file successfully stored; existing presence-derived status, not an approval",
+    "scan_status": "Menunggu Verifikasi / Valid / Perlu Koreksi",
+    "new_settlement_verification": "File metadata only; no financeApproval/history or seventh application decision",
+    "seventh_approval": "Explicit existing Finance decision remains required",
+    "legacy_verification": "Existing separate legacy Finance approval semantics retained"
+  },
+  "compatibility": {
+    "old_admin_file_identity_history_and_read_access": "preserved without GET backfill",
+    "late_scan": "Existing kasbon/partial allowance, Finance upload now; amounts/settlement/private quote/current decisions/paymentHistory/documentsAtPayment unchanged",
+    "new_schema_migration_api_dependency_poller": false,
+    "new_upload_queue": false,
+    "scan_transport": "Existing synchronous scan endpoint; no new worker",
+    "user_edited_reference_cost_labels": "Preserved original user changes; SSR assertions updated only"
+  },
+  "tests": {
+    "php": {
+      "passed": 535,
+      "assertions": 16744,
+      "php": "8.2.4",
+      "database": "SQLite :memory:",
+      "seconds": 126.255,
+      "memory_mb": 142.5,
+      "process_limit_mb": 512
+    },
+    "focused_php": {
+      "passed": 91,
+      "assertions": 3953,
+      "seconds": 38.088
+    },
+    "scan_focused_php": {
+      "passed": 16,
+      "assertions": 1045
+    },
+    "frontend_passed": 496,
+    "new_frontend_cases": 3,
+    "typescript_vite": "passed",
+    "assets": {
+      "manifest_refs": 50,
+      "preload_dependencies": 41,
+      "profiles": 3
+    },
+    "scoped_pint": "passed",
+    "diff_check": "passed",
+    "cases": [
+      "Finance upload at true current six-stage prefix, both units",
+      "Wrong role403, Finance wrong Branch404",
+      "Invalid MIME, oversized, stale revision, cleanup and UUID replay",
+      "Uploaded_by recorded to actual Finance SQL account",
+      "Correction creates scan version history",
+      "Active kasbon UUID, selected actors and prefix order checked",
+      "Verifying scan does not create actual SQL approval decisions or payment",
+      "Explicit seventh Finance approval and subsequent Operation transfer still pass",
+      "Legacy paid-late settlement/private history preserved",
+      "Admin scanner hidden, old Admin scan and download kept"
+    ]
+  },
+  "query_measurement": {
+    "fixture": 55,
+    "includes_test_revision_select_outside_http": 1,
+    "actual_http_excluding_fixture_revision_select": 54,
+    "scope": "Construction Partial/Final and Operation current Finance uploads",
+    "new_helper_sql": 0,
+    "per_row_queries": false,
+    "method": "Loaded term at most7roles; controller early role rejection, existing transaction/projection reused",
+    "server_latency_measured": false
+  },
+  "browser": {
+    "passed": true,
+    "finance_before_seventh": true,
+    "upload_marks_presence_OK": true,
+    "separate_verification": true,
+    "actual_decisions_after_verify": 6,
+    "paid": 0,
+    "admin_read_only": true,
+    "old_admin_scan_visible": true,
+    "operation": true,
+    "widths": [
+      375,
+      768,
+      1440
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "writes": [
+      "scan",
+      "verifyTermScan"
+    ],
+    "js_errors": [],
+    "transport": "Actual App with mocked APIs; real HTTP persistence covered separately"
+  },
+  "screenshots_inspected": [
+    "scan-1440-light.png",
+    "scan-375-dark.png"
+  ],
+  "verification_corrections": [
+    "Existing tests assumed Admin scanner ownership and were updated to Finance while preserving lifecycle and unauthorized-role assertions",
+    "One unrelated SSR test expected old cost labels; user-edited labels retained and assertions aligned"
+  ],
+  "not_tested": [
+    "Fresh physical MariaDB/aaPanel deployment or production concurrent load",
+    "Real upload worker/Telegram/transfer bank",
+    "Word/PDF physical render; no document generator changed"
+  ],
+  "no_live_mutation": [
+    "active its database",
+    "env/APP_KEY",
+    "server/workers",
+    "Dompis",
+    "migration/seed/reset",
+    "git commit/push/deploy"
+  ],
+  "deployment": "Deploy source and build/check assets; no new migration or upload worker. Old scans do not need reupload or workflow resubmission.",
+  "evidence": [
+    "/private/tmp/area3-finance-scan-php-full.log",
+    "/private/tmp/area3-finance-scan-focused-final.log",
+    "/private/tmp/area3-finance-scan-regression.log",
+    "/private/tmp/area3-finance-scan-frontend-final.log",
+    "/private/tmp/area3-finance-scan-ts-focused.log",
+    "/private/tmp/area3-finance-scan-build.log",
+    "/private/tmp/area3-finance-scan-assets.log",
+    "/private/tmp/area3-finance-scan-20261125/result.json"
+  ]
+}

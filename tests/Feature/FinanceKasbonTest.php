@@ -516,6 +516,7 @@ class FinanceKasbonTest extends TestCase
             $this->api('recordApm', [$t['id'], 'APM/QA/002', true])->assertUnprocessable();
             $this->asRole('Admin Konstruksi');
             $this->api('createTerm', [$t['spkId']])->{$final ? 'assertUnprocessable' : 'assertOk'}();
+            $this->asRole('Finance');
             $this->post('/api/prototype/payments/'.$t['id'].'/scan', ['revision' => (string) PrototypeWorkspace::first()->revision, 'request_id' => (string) Str::uuid(), 'file' => UploadedFile::fake()->createWithContent('late.pdf', "%PDF-1.4\nwet scan QA\n%%EOF")], ['Accept' => 'application/json'])->assertOk();
             $this->asRole('Finance');
             $this->api('verifyTermScan', [$t['id'], 'Valid', ''])->assertOk();
@@ -1032,7 +1033,7 @@ class FinanceKasbonTest extends TestCase
         $t = $this->setupTerm();
         $this->payee($t['spkId']);
         $t = $this->issue($t);
-        $this->asRole('Admin Konstruksi');
+        $this->asRole('Finance');
         $this->post('/api/prototype/payments/'.$t['id'].'/scan', ['revision' => (string) PrototypeWorkspace::first()->revision, 'request_id' => (string) Str::uuid(), 'file' => UploadedFile::fake()->createWithContent('signed.pdf', "%PDF-1.4\nwet QA\n%%EOF")], ['Accept' => 'application/json'])->assertOk();
         $this->asRole('Finance');
         $this->api('decideFinancePayment', [$t['id'], 'Setujui', ''])->assertUnprocessable();
