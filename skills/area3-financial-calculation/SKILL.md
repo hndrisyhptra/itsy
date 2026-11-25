@@ -3,6 +3,16 @@ name: area3-financial-calculation
 description: Implement and verify official KHS component prices, agreed BA KH/SPK snapshots, actual term amounts, outstanding payment and consolidated budgets for its Area 3.
 ---
 
+## 24 November 2026 — Latest: ROUND only the PPh amount
+
+Latest explicit revision supersedes service-net ROUND: tax=ROUND(totalMandorJasa×0.025,0), net=Material+Jasa−tax; only tax is rounded, same canonical sources/money policy and other values. Follow latest docs/KASBON_PPH_PAYMENT_LIST.md. Defaulttax-round-v4; keep savedv1/v2/v3 due/matches/notice/private/proof/paid frozen, no GET reprice/backfill/fakeapproval. PHPBCMath/TSBigInt,0SQL/onepass/no new API/schema/migration/dependency/poller/liveits/env/worker/server/Dompis. Actual520PHP/15266assertions,483frontend,40XAMPPfocused/1679;40sharedvectors/taxhalf/perrowtrap/Materialcentpure/HTMLWord36words/privateSQLnet104337gross105400 and three oldissuedpolicy worker+Financeciphertexts preserved. Issue45/settle41queries unchanged; no actual browser/physicalWordPDF/server/bank/load claim. Operator build/checkassets and restart only project uploadworker for v4 recognition.
+
+
+## 24 November 2026 — ROUND total Jasa after PPh only, final correction
+
+Latest user correction supersedes24Nov final-total ROUND and tax-first interpretations. Follow docs/KASBON_PPH_PAYMENT_LIST.md: Material + ROUND(totalMandorJasa×0.975,0), half-up once after PPh on totalJasa, never tax/perrow/Material/finalsum. Newservice-round-v3 only explicit new/allowed reissued quotes; preserve issued/pending/approved/paid v1 truncation and v2 final-round in due/matches/notice/private/proof/settlement, no GET repricing/backfill/fakeapproval. PHPBCMath/TSBigInt parity/0SQL/onepass/canonicalsource unchanged; withheld effectivegross−net, newUI label includesJasarounding, paper net-only. Actual517PHP/15096assertions,482frontend,37XAMPPfocused/1509;12new+16historicvectors/perrowtrap/Materialcentpure/privateSQLnet104338gross105400/oldv1-v2worker+Financeciphertextpreserved. Issue45/settle41queries/noextraAPI/schema/migration/dependency/poller/livewrites. Word semantic checks only, browser/physicalMySQL/server/render unverified. Operator build/checkassets and restart only Area3 uploadworker so newpolicy recognized.
+
+
 ## 24 November 2026 — PID budget allocation for new PP only
 
 Follow docs/BUDGETING_PID.md stage3. Canonical OwnerM, OwnerJ, TOTAL=M+J, BOP are separate caps against Excel minus other active tracked PP allocations. Never use Header COGS/Mandor/net tax as Owner budget. Old PP including Draft exempt; server policy pinned. Draft0, revisionholds, formal replaces own, cancel guarded, paid remains consumed. Genuine released unused volume credits snapshot OwnerM/J once, never accepted/paid/BOP. Exact integer BCMath, safe bounds, atomic current locking reads and actor/payload UUID events. No historical reprice/adoption or live migration; document actual tests/physical server limitations.

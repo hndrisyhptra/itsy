@@ -1,5 +1,47 @@
 # Kasbon bersih dan List Payment — 16 November 2026
 
+## 24 November 2026 — Revisi paling baru: ROUND hanya nilai PPh
+
+Pengguna kemudian merevisi secara eksplisit: **“rumus round digunakan ke PPH, hanya khusus nilai PPH; nilai lainnya normal seperti sebelumnya.”** Bagian ini menggantikan aturan Jasa bersih/total akhir sebelumnya untuk kasbon baru dan penerbitan ulang yang sah.
+
+```text
+PPh Jasa        = ROUND(total Jasa Mandor × 2,5%, 0)
+Jasa bersih     = total Jasa Mandor − PPh Jasa
+Kasbon/transfer = Material + Jasa bersih
+```
+
+ROUND half-up satu kali terhadap PPh atas **total Jasa** actuals pembayaran saat ini × snapshot harga Mandor. Material tidak dikenai PPh; sumber Material/Jasa/bruto, harga per baris, kuantitas dan moneyPolicy existing tidak diubah. Jasa bersih dan total akhir tidak di-ROUND lagi oleh langkah pajak ini. Contoh Material62.900/Jasa42.500: PPh1.062,50→**1.063**, Jasa bersih41.437, kasbon**104.337**; angka104.338 dari service-net ROUND adalah aturan versi sebelumnya.
+
+Policy default sekarang `mandor-service-pph25-tax-round-v4`. PHP BCMath menghitung Jasa×0.025 dengan presisi sumber lalu menambah0.5/div0 untuk PPh integer; TS BigInt memakai serviceCents/4000 dan half2000. Bruto dikurangi nominal PPh tersebut tanpa pembulatan baru. Quote tetap satu lintasan sumber tersimpan/0SQL. `withheld` v4 sama dengan PPh bulat; UI kembali label **Potongan PPh 2,5% · Jasa Mandor** dan menjelaskan ROUND khusus PPh. Berkas kasbon tetap net-only tanpa baris pajak. Private snapshot/rows/summary/amount/HTML/nativeWord/terbilang/proof/paymentDue/transfer/settlement memakai satu net canonical yang sama.
+
+V1 truncation, v2 final-total-round dan v3 service-net-round tetap didukung per saved policy. Kasbon sudah terbit/pending/approved/paid tetap nominal tersimpan; tidak mengubah policy/UUID/ciphertext/approval/bukti/paid/APM saat membaca atau memproses Finance. Penerbitan ulang hanya lewat pengembalian/perbaikan sah existing dan keputusan baru sesuai flow. Tidak mengalihkan semua data lama ke rumus terbaru. Label v3 hanya tampil pada quote v3 yang memang tersimpan, bukan perkiraan baru. Proposal tax-round-v3 sebelumnya tidak diterapkan; tax-round-v4 sekarang merupakan revisi eksplisit terbaru.
+
+Tidak ada schema/migration/API/dependency/poller/query baru; semua current actor/Branch/unit/Region/UUID/revision/source/Head/BAPP/private/proof/APMopsional/paid/volume/PID guards tetap. Pure helper juga menguji sumber historis Material0.75/Jasa20→PPh1/net19.75 untuk membuktikan langkah pajak tidak membulatkan nilai lain; itu bukan izin input pecahan SQL BIGINT atau perubahan kebijakan harga. Dua Jasa20 menghasilkan totalPPh1, bukan dua potongan bulat1. Actual fixture issue45/settle41HTTP tetap, bukan benchmark aaPanel.
+
+Penerapan setelah source dipush/pull: `npm run build`, `npm run check:assets`, clear cache PHP sesuai prosedur, lalu restart **hanya worker upload Area3** (`supervisorctl restart area3-uploads`, gunakan nama program aktual). Ini diperlukan agar worker lama mengenali policyv4 saat memeriksa bukti transfer. Tanpa migration baru, tanpa reset data/ENV/APP_KEY/queue. Agen belum deploy atau menyentuh activeits/server/worker/Dompis. [QA](LARAVEL_QA.md), [audit v4](qa/pph-tax-round-v4-20261124.json). Bagian-bagian di bawah merupakan riwayat kebijakan sebelumnya.
+
+## 24 November 2026 — Koreksi terakhir: ROUND hanya hasil Jasa setelah PPh
+
+Pengguna menegaskan **“Hanya nilai setelah potongan PPH saja”**, dengan sumber potongan hanya Jasa Mandor. Aturan terkini menggantikan bagian ROUND total sebelumnya:
+
+```text
+PPh acuan       = total Jasa Mandor × 2,5%          (tidak dibulatkan dahulu)
+Jasa bersih     = ROUND(total Jasa Mandor − PPh acuan, 0)
+Kasbon/transfer = Material + Jasa bersih
+```
+
+Pembulatan half-up satu kali pada hasil bersih **total Jasa** dari actuals pembayaran saat ini × snapshot kesepakatan Mandor. Bukan pembulatan tiap baris, pajak terlebih dahulu, Material atau gabungan total akhir. Contoh Material62.900 dan Jasa42.500: PPh acuan1.062,50, Jasa bersih41.437,50→41.438, kasbon104.338. Membulatkan pajak menjadi1.063 dahulu akan memberi104.337 dan tidak mengikuti aturan ini. Untuk Material rupiah bulat, hasil bisa sama dengan kebijakanv2 final-total-round; tahap perhitungannya tetap dipisahkan secara eksplisit, tidak memaksa angka yang sama menjadi berbeda.
+
+`KasbonSettlement::POLICY`/`KASBON_SETTLEMENT_POLICY` sekarang `mandor-service-pph25-service-round-v3`. PHP BCMath menghitung Jasa×0.975, menambah0.5 lalu mengambil integer Jasa bersih; TS BigInt mengerjakan pembilang97,5% yang sama. Baru kemudian Material canonical ditambahkan, tanpa pembulatan akhir. Aturan pembentukan Material/Jasa dari harga×actuals dan moneyPolicy dokumen tetap; tidak mengubah per-row input/harga/quantity/BARP/BOQ/bruto. Pure helper turut menguji Material historis0.75 tetap0.75, bukan bulat1/0; itu bukan izin memasukkan nominal pecahan baru ke kolom SQL BIGINT atau migrasi data historis.
+
+`withheld` tetap selisih efektif `gross − net`, sehingga memperhitungkan penyesuaian pembulatan Jasa bersih. UI v3 menamainya **Selisih PPh & pembulatan Jasa**, disertai penjelasan bahwa yang dibulatkan adalah nilai Jasa setelah PPh. Ini bukan pembulatan nominal PPh terlebih dahulu. Dokumen kasbon HTML/Word/cetak tetap hanya net dan terbilangnya, tanpa menambahkan baris potongan pajak. Satu net yang dibekukan dipakai pada rows/summary/private_data/amount, Finance transfer, paymentDue, proof/settlement dan next-term; tidak ada selisih nominal antartampilan.
+
+Policyv1 `mandor-service-pph25-v1` dan policyv2 `mandor-service-pph25-round-v2` tetap dikenali secara terpisah. Kasbon terbit/pending/approved/paid tidak diubah atau dihitung ulang saat GET, approval, upload bukti atau pelunasan. V1 tetap truncation semula, v2 tetap final-total round semula, no-policy gross tetap historis. Penerbitan ulang hanya lewat pengembalian/perbaikan sah existing, snapshot/UUID baru dan approval sesuai flow; tidak menandai approval fiktif atau memindahkan nominal paid. Proposal pembulatan pajak di tengah klarifikasi belum diterapkan ke database/deploy dan tidak menjadi policy tersimpan yang didukung.
+
+Perubahan hanya kalkulator dan informasi UI;0SQL kalkulasi/onepass, tanpa endpoint/schema/migration/dependency/poller baru. Same Branch/unit/Region/selectedactor/currentkasbon/revision/UUID/private/source/BAPP/proof/APMopsional/ledger/paid guards tetap. Issue45HTTP dan settle41HTTP pada fixture existing; bukan benchmark server. Pengujian menutup12vectorbaru,16vectorv1/v2, total-Jasa vs per-row, half-tax trap, Material utuh, private issue/net/APM SQL, dan pembayaran quote lama melalui worker/bukti/Finance tanpa rewriteciphertext. [QA aktual](LARAVEL_QA.md), [audit koreksi](qa/pph-service-net-round-20261124.json).
+
+**Penerapan:** setelah push/pull source, `npm run build`, `npm run check:assets`, clear cache PHP sesuai prosedur, lalu restart **hanya worker upload Area3** agar proses lama mengenali policyv3 (`supervisorctl restart area3-uploads`, sesuaikan nama program bila berbeda). Tidak ada migration baru. Agen tidak menjalankan migration/import/its aktif/ENV/APP_KEY/server/worker/Dompis atau deployment. Server/transfer bank/Word desktop/cetakfisik belum diverifikasi; generator Word dan layout tidak diubah.
+
 ## 24 November 2026 — ROUND pada hasil akhir setelah PPh
 
 Pengguna mengubah khusus pembulatan hasil bersih kasbon/transfer: **ROUND(Material + Jasa Mandor × 97,5%, 0)**. Pembulatan satu kali di hasil akhir ke rupiah terdekat, pecahan tepat0,5 naik; bukan ROUND potongan pajak dahulu, bukan pembulatan tiap item. Material tidak dikenai2,5%, bruto BOQ/BARP/approved_amount tidak berubah. Contoh31450Material+21250Jasa menghasilkan52168,75→**52169**; contoh17Material+20Jasa menghasilkan36,5→37 (membulatkan pajak dahulu akan keliru menjadi36).

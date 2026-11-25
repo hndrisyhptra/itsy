@@ -1,5 +1,17 @@
 # Arsitektur aplikasi it's Area 3
 
+## 24 November 2026 — Budgeting PID master UI and isolated MariaDB stage4
+
+`BudgetingPid` retains exact scope-key/abort/version/receipt architecture; `BudgetPidList` and `BudgetPidDetail` are pure renderers over existing page payloads. One Set per page selection,20DOM,8columns with unified PID/name, original Excel/used/remaining and explicit unmapped labels. Scoped CSS aligns filters/actions, gridlines and light/dark responsive tables; Branch/import modal buttons keep confirmations. Import callback carries actual selected unit for success/uncertain-history navigation. No runtime service/query/schema/API/migration/poller/boot change. Offline guarded operator tool verifies production services against synthetic MariaDB10.4.28 via private socket;76migration, actual concurrency/RR/currentreads/Construction settlement/Operation approvals, hash24tables on repeated up/refused down. Standard PHPUnit remains memory-only. No active data/env/workers/server mutation. [Evidence and boundaries](qa/budgeting-pid-stage4-20261124.json), [usage/deployment](BUDGETING_PID.md).
+
+## 24 November 2026 — Revisi terbaru ROUND khusus PPh Jasa
+
+Default quote tax-round-v4: PPh=ROUND(totalJasa×0.025,0), net=Material+Jasa−PPh tanpa roundbaru pada nilai lain. `KasbonSettlement`/TShelper tetap satu pass0SQL, exactBCMath/BigInt. Service-round-v3 menjadi compatibility constant bersama v1/v2; savedpolicy menentukan due/matches/notice/private/proof/settlement. Existing amount/summary/encrypted snapshot tetap; quote baru memakai roundedPPh di withheld dan label/UI sesuai, paper tetap net-only. Tidak ada schema/API/migration/query/poller/dependency atau mutasi approval/history/paid/ledger/PID. [Kontrak/deploy](KASBON_PPH_PAYMENT_LIST.md), [QA/batas](qa/pph-tax-round-v4-20261124.json).
+
+## 24 November 2026 — Kasbon membulatkan hanya Jasa bersih
+
+Latest correction: Material + ROUND(totalJasaMandor×0.975,0), bukan pajak atau final total. Default quote server-onlyservice-round-v3; v1/v2 tetap branch arithmetic historis pada quote/due/matches/notice sehingga issued/private/proof/payment tidak direprice. PHPBCMath/TSBigInt, same canonical frozen net→encryptedkasbon/summary/HTML/Word/transfer/paymentDue. `withheld` selisihgross−net tetap; new UI mengidentifikasi selisih PPh+Jasa rounding dan tidak mengubah paper net-only.0query/newAPI/schema/dependency/poller, onepasssavedrows; current scope/receipt/approval/paid/ledger unchanged. [Kontrak/deploy](KASBON_PPH_PAYMENT_LIST.md), [bukti/batas](qa/pph-service-net-round-20261124.json).
+
 ## 24 November 2026 — Konfirmasi receipt setelah respons simpan PP hilang
 
 `store.commit` memberi PP draft60s, satu recovery GET30s existing state dengan original requestUUID+target; command lain20s. Indexed read committed receipt difilter actual actor/workspace/PPcommand, target harus visible menurut scope terkini. Client memverifikasi original UUID/command/PP/expected+resultrevision dan authorized canonical state, tidak hanya PP exists. Receipt yang lebih baru daripada metadata awal menyebabkan satu runtime metadata reload sebelum payload, tanpa archive. Sukses recovery menyelesaikan promise awal; unknown/4xx tetap error/input, tanpa POSTretry/UUIDbaru/poller. Kedua alias savePP tidak mengirim globalerror navigation. UI status pending/disabled tetap satu action/YA-TIDAK.

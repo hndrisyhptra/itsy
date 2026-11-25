@@ -1,0 +1,188 @@
+{
+  "date": "2026-11-24",
+  "feature": "Budgeting PID stage4 isolated MariaDB UAT and compact master UI",
+  "status": "Local isolated verification and UI completed; aaPanel deployment and real-user UAT not performed",
+  "production_changes": [
+    "Pure master list/detail renderers, compact8columns, accessible tooltip icons, aligned filters/actions and clean light/dark scoped grid CSS",
+    "Scoped page20 selection/mapping/history, source/used/remaining and unmapped Excel labels",
+    "Import success/uncertain-history navigates to selected import unit"
+  ],
+  "invariants": [
+    "Finance/Superadmin and existing activeBranch/unit scopes",
+    "Explicit Branch mapping, no Rxxx inference",
+    "Only genuinely new PP budgeting; old PP unchanged",
+    "Draf0/resubmit replaces/cancel guarded/paid retained",
+    "Same UUID/version/scope-key/abort and uncertain retry"
+  ],
+  "physical_mariadb": {
+    "engine": "10.4.28-MariaDB",
+    "php": "8.2.4",
+    "datadir": "/private/tmp/area3-pid-stage4-20261124/mysql",
+    "socket": "/private/tmp/area3-pid-stage4-20261124/mysql.sock",
+    "networking": false,
+    "active_application_database_touched": false,
+    "data": "Synthetic users/workbook/BOQ/payee/profile/transfer proof only",
+    "migration": {
+      "phase": "migrate",
+      "engine": "10.4.28-MariaDB",
+      "migrations": 76,
+      "offline": true,
+      "isolated": true
+    },
+    "scenario": {
+      "phase": "scenario",
+      "migration_resume_with_data": true,
+      "real_workbook_preview_commit_replay": true,
+      "explicit_branch_not_pid_prefix": true,
+      "over_budget_rollback": true,
+      "return_resubmit_two_pp": true,
+      "cancel_credit": true
+    },
+    "concurrency": {
+      "phase": "concurrency",
+      "independent_processes": 2,
+      "statuses": [
+        200,
+        409
+      ],
+      "fresh_retry_status": 422,
+      "cap_preserved": true
+    },
+    "snapshot": {
+      "before": 7,
+      "stale_snapshot": 7,
+      "current_locking": 11,
+      "wait_ms": 330,
+      "phase": "snapshot",
+      "isolation": "REPEATABLE-READ"
+    },
+    "settlement": {
+      "phase": "settlement",
+      "actual_five_project_and_seven_payment_approvals": true,
+      "private_kasbon_and_transfer_proof": true,
+      "optional_apm": true,
+      "paid_retains_budget": true,
+      "unused_service_release_only": true,
+      "continuation_tracked": true,
+      "fixture_assertion_numeric_type_corrected": true
+    },
+    "operation": {
+      "phase": "operation",
+      "real_excel_unit_selected": true,
+      "explicit_branch_mapping": true,
+      "five_actual_operation_approvals": true,
+      "region_scoped_manager_and_gm": true,
+      "cross_unit_pid_rollback": true
+    },
+    "schema": {
+      "phase": "verify-schema",
+      "tables_hashed": 24,
+      "resume_preserves_data": true,
+      "populated_rollbacks_refused": 3,
+      "archive_and_workflow_preserved": true
+    },
+    "shutdown": {
+      "guarded_phase_exit": 0,
+      "private_pid_file_removed": true,
+      "private_socket_removed": true
+    }
+  },
+  "verification": {
+    "php_full": {
+      "tests": 521,
+      "assertions": 15278,
+      "seconds": 114.356,
+      "peak_mb": 140.5,
+      "engine": "SQLite memory only",
+      "php": "8.2.4"
+    },
+    "frontend": {
+      "passed": 484,
+      "failed": 0
+    },
+    "typecheck_vite": "passed",
+    "pint": "passed",
+    "diffcheck": "passed",
+    "assets": {
+      "manifest_refs": 49,
+      "preloads": 40,
+      "profiles": 3
+    },
+    "browser": [
+      {
+        "actual_app_mock_api": true,
+        "viewports": [
+          375,
+          768,
+          1440
+        ],
+        "themes": [
+          "light",
+          "dark"
+        ],
+        "twenty_dom_rows": true,
+        "large_money_negative_unmapped": true,
+        "exact_detail": true,
+        "mapping_cancel_zero_write": true,
+        "mapping_twenty_exact_ids": true,
+        "search_empty_retry": true,
+        "import_cancel_zero_write": true,
+        "import_operation_history": true,
+        "js_errors": 0
+      }
+    ],
+    "screenshots_inspected": [
+      "master-1440-light.png",
+      "master-375-light.png",
+      "import-mobile.png",
+      "detail.png"
+    ]
+  },
+  "query_changes": {
+    "new_production_sql": 0,
+    "new_api": 0,
+    "new_schema_or_migration": 0,
+    "new_poller": 0,
+    "prior_stage3_http_counts_not_rebenchmarked": {
+      "reference": 6,
+      "own_reference": 7,
+      "master_list": 6,
+      "mapping100": 12
+    }
+  },
+  "qa_corrections": [
+    "Synthetic XLSX missing Act.costs IDR currency corrected, known fixture resumed without reset",
+    "PHP use aliases moved before bootstrap",
+    "Release expected-credit fixture coerced to canonical integer to avoid strict int/float assertion failure; exact paid chain verified and continued without repeat payment",
+    "Viewport screenshots wait220ms after resize to avoid sidebar transition artifact; scoped filter field margin/button alignment corrected"
+  ],
+  "limits": [
+    "No production/active its import/migration or user data changes",
+    "Single-workspace concurrency and one RR lock probe, not cross-workspace deadlock/highload/server benchmark",
+    "No actual MySQL8/aaPanel/PHP8.4 deployment test",
+    "Operation real five package approvals; shared seven-payment Operation path covered by isolated standard suite, not additional physical Operation settlement",
+    "Browser actual App uses mocked API, not real browser authenticated MariaDB HTTP",
+    "No Word/PDF rerender or actual bank transfer; generators and printable sources unchanged",
+    "No new dependency/env/APP_KEY/worker/server/Dompis writes; no commit/push/deploy"
+  ],
+  "deployment": [
+    "Backup database",
+    "After code available, operator runs php artisan migrate --force for any pending PID000001\u2013000003",
+    "npm run build",
+    "npm run check:assets",
+    "Reload, scoped Finance/Admin smoke test",
+    "No stage4 migration/worker; no fresh/drop/seed/reset/manual migration receipt"
+  ],
+  "evidence_local_only": [
+    "/private/tmp/area3-pid-stage4-20261124/php-full.log",
+    "/private/tmp/area3-pid-stage4-20261124/frontend-full.log",
+    "/private/tmp/area3-pid-stage4-20261124/build-final.log",
+    "/private/tmp/area3-pid-stage4-20261124/assets.log",
+    "/private/tmp/area3-pid-stage4-20261124/browser-results.json",
+    "/private/tmp/area3-pid-stage4-20261124/schema-final.log",
+    "/private/tmp/area3-pid-stage4-20261124/settlement-final.log",
+    "/private/tmp/area3-pid-stage4-20261124/operation.log",
+    "/private/tmp/area3-pid-stage4-20261124/concurrency.log",
+    "/private/tmp/area3-pid-stage4-20261124/snapshot.log"
+  ]
+}

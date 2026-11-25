@@ -1,0 +1,109 @@
+{
+  "date": "2026-11-24",
+  "feature": "Kasbon ROUND only total Jasa net after PPh",
+  "latest_user_intent": "Kembalikan hasil setelah potongan PPh; ROUND hanya nilai setelah potongan PPh. Prior clarification limits PPh to Mandor Jasa.",
+  "formula": {
+    "pph_reference": "Jasa * 0.025 (not rounded first)",
+    "service_net": "ROUND(Jasa * 0.975, 0), half-up once on total service",
+    "net": "Material + service_net, no final rounding",
+    "example": {
+      "material": 62900,
+      "service": 42500,
+      "pph_reference": 1062.5,
+      "service_before_round": 41437.5,
+      "service_net": 41438,
+      "net": 104338,
+      "gross": 105400
+    },
+    "material": "Unchanged by the PPh rounding step; existing money source policy still applies",
+    "withheld": "Effective gross minus net; UI labels PPh and Jasa rounding difference"
+  },
+  "policy": {
+    "new": "mandor-service-pph25-service-round-v3",
+    "retained": [
+      "mandor-service-pph25-v1",
+      "mandor-service-pph25-round-v2"
+    ],
+    "scope": "New/allowed reissued quote only, no GET/adoption/paid rewrite",
+    "not_shipped": "Tax-first intermediate interpretation was replaced during clarification; never deployed/live-saved"
+  },
+  "preservation": [
+    "Whole currency source/prices/actual quantities unchanged",
+    "Frozen old quote due/matches and private ciphertext",
+    "Original selected decisions/7stage workflow/UUID/revision/Branch/unit/Region/source/Head/proof/APMoptional/paid/ledger/PID guards",
+    "Official kasbon HTML/Word/print remain net-only"
+  ],
+  "verification": {
+    "full_php": {
+      "tests": 517,
+      "assertions": 15096,
+      "php": "8.5.10",
+      "database": "isolated SQLite :memory:",
+      "seconds": 66.684,
+      "peak_mb": 136.5,
+      "memory_limit": "process-only512M"
+    },
+    "xampp_focused": {
+      "tests": 37,
+      "assertions": 1509,
+      "php": "8.2.4",
+      "seconds": 17.46
+    },
+    "frontend": {
+      "passed": 482,
+      "failed": 0
+    },
+    "build": "TypeScript/Vite passed",
+    "pint": "Three changed PHP files passed",
+    "assets": {
+      "manifest_references": 49,
+      "preloads": 40,
+      "deployment_profiles": 3
+    },
+    "diff_check": "passed",
+    "vectors": {
+      "new": 12,
+      "historical_v1_v2": 16,
+      "coverage": [
+        "Material-only/Jasa-only/combined",
+        "Half service net versus tax-first trap",
+        "Large safe values/zero",
+        "Total Jasa rounding, not perrow",
+        "Pure historical Material0.75 preserved (not a new SQL fractional input allowance)",
+        "Source immutability/gross/due/matches/forged and unknown policies"
+      ]
+    },
+    "http": "New net104338 in encrypted snapshot/current summary/actual Finance proof+optionalAPM settlement; approved gross105400; next term remains gated by real settlement",
+    "historical_http": "Explicit memory-only pre-update v1net104337/v2net104338 fixtures pass actual Finance proof worker+settlement with identical saved ciphertext, UUID, policy and gross",
+    "word_html": "Generated native Word XML and actual HTML amount37/terbilang tiga puluh tujuh rupiah, no withholding row/gross; generator/layout unchanged",
+    "qa_fixture_correction": "Initial HTML assertion omitted existing Rp prefix; fixed assertion, currency formatting unchanged"
+  },
+  "performance": {
+    "calculator_queries": 0,
+    "calculator_passes": 1,
+    "new_settlement_http": 41,
+    "issue_http": 45,
+    "new_api_schema_dependency_poller": false,
+    "not_a_server_benchmark": true
+  },
+  "limits": [
+    "No physical Word/PDF rerender or browser/live account verification for arithmetic-only change",
+    "No physical MySQL concurrency/load/serverbank verification",
+    "No activeits/env/worker/server/Dompis writes",
+    "No migration/import/repricing/commit/push/deployment"
+  ],
+  "deployment": [
+    "Push/pull source through normal workflow",
+    "npm run build",
+    "npm run check:assets",
+    "Clear PHP cache per project deployment procedure",
+    "Restart only project upload worker area3-uploads so long-lived process recognizes v3",
+    "Reload browser; no new migration"
+  ],
+  "local_evidence": [
+    "/private/tmp/area3-pph-service-net-round-focused.log",
+    "/private/tmp/area3-pph-service-net-round-frontend.log",
+    "/private/tmp/area3-pph-service-net-round-build.log",
+    "/private/tmp/area3-pph-service-net-round-full.log"
+  ]
+}

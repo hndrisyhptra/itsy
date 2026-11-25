@@ -3,6 +3,21 @@ name: area3-business-workflow
 description: Implement its Area 3 Project Plan, BOQ, mandor contracting, assigned two-stage approvals, scan verification and full APM settlement, APM gating, BA PP and continuation state transitions.
 ---
 
+## 24 November 2026 — Budgeting PID stage4 and compact master
+
+Follow latest docs/BUDGETING_PID.md. UI8columns/PID+name, exact source/used/remaining and unmappedExcel distinction, scoped20DOM selection/tooltip/details, aligned filters/search/reset/refresh, cleanwhite/lightdark. Import successful or uncertain-history callback must carry actual selectedunit. Preserve all stage1–3 authorization/UUID/version/atomic/reservation/oldPPexemption/paid guards;0newruntimeSQL/API/schema/migration/poller/privatefetch. Offline MariaDB tool checks private root+marker+datadir/socket/skipnetworking before Laravel, process-localkey/config/storage only; never use activeits or loosen PHPUnit memoryguard. Tests actually cover76migrations/2process200409retry422/RR7to11/Construction5+7paidreleasecontinuation/Operation5/Region/hash24uprefuseddown; browserAPI mocked, serverload/WordPDF unchanged notverified. Finish by shutting only privateQAinstance; document actual counts/limits in stage4audit.
+
+
+## 24 November 2026 — Latest: ROUND only the PPh amount
+
+Latest explicit revision supersedes service-net ROUND: tax=ROUND(totalMandorJasa×0.025,0), net=Material+Jasa−tax; only tax is rounded, same canonical sources/money policy and other values. Follow latest docs/KASBON_PPH_PAYMENT_LIST.md. Defaulttax-round-v4; keep savedv1/v2/v3 due/matches/notice/private/proof/paid frozen, no GET reprice/backfill/fakeapproval. PHPBCMath/TSBigInt,0SQL/onepass/no new API/schema/migration/dependency/poller/liveits/env/worker/server/Dompis. Actual520PHP/15266assertions,483frontend,40XAMPPfocused/1679;40sharedvectors/taxhalf/perrowtrap/Materialcentpure/HTMLWord36words/privateSQLnet104337gross105400 and three oldissuedpolicy worker+Financeciphertexts preserved. Issue45/settle41queries unchanged; no actual browser/physicalWordPDF/server/bank/load claim. Operator build/checkassets and restart only project uploadworker for v4 recognition.
+
+
+## 24 November 2026 — ROUND total Jasa after PPh only, final correction
+
+Latest user correction supersedes24Nov final-total ROUND and tax-first interpretations. Follow docs/KASBON_PPH_PAYMENT_LIST.md: Material + ROUND(totalMandorJasa×0.975,0), half-up once after PPh on totalJasa, never tax/perrow/Material/finalsum. Newservice-round-v3 only explicit new/allowed reissued quotes; preserve issued/pending/approved/paid v1 truncation and v2 final-round in due/matches/notice/private/proof/settlement, no GET repricing/backfill/fakeapproval. PHPBCMath/TSBigInt parity/0SQL/onepass/canonicalsource unchanged; withheld effectivegross−net, newUI label includesJasarounding, paper net-only. Actual517PHP/15096assertions,482frontend,37XAMPPfocused/1509;12new+16historicvectors/perrowtrap/Materialcentpure/privateSQLnet104338gross105400/oldv1-v2worker+Financeciphertextpreserved. Issue45/settle41queries/noextraAPI/schema/migration/dependency/poller/livewrites. Word semantic checks only, browser/physicalMySQL/server/render unverified. Operator build/checkassets and restart only Area3 uploadworker so newpolicy recognized.
+
+
 ## 24 November 2026 — PP save response loss and committed confirmation
 
 PP Draft commits may lose HTTP response after actual SQL success. Follow latest docs/PP_DRAFTS_PREVIEW.md:60s draft only/one30s same-origin no-store GET state with original UUID+exact PP; server filters own committed receipt/workspace/PPcommand/current visible scope; client checks command/UUID/target/expected+resultrevision/state. Never infer success from PPexists, never autoPOSTretry or fabricate approval. Confirmed promise clears/navigates; uncertain/error preserves both PP alias editors. Other command20s/strict revision/approval/paid/PID/private guards unchanged. Deploy source+build/assets, no migration/live writes.

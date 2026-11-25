@@ -13,10 +13,12 @@ use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Concerns\AuthenticatesArea3;
 use Tests\TestCase;
 
@@ -523,17 +525,18 @@ class FinanceKasbonTest extends TestCase
         }
     }
 
-    public function test_round_up_net_is_frozen_in_private_kasbon_and_finance_settlement_without_changing_gross(): void
+    public function test_rounded_jasa_tax_is_frozen_in_private_kasbon_and_finance_settlement_without_changing_gross(): void
     {
-        $t = $this->setupTerm(quantity: 2);
+        $t = $this->setupTerm(quantity: 4);
         $this->payee($t['spkId']);
         $t = $this->issue($t);
         $this->assertSame(KasbonSettlement::POLICY, $t['kasbon']['settlement']['policy']);
-        $this->assertEquals(52700, $t['kasbon']['settlement']['gross']);
-        $this->assertEquals(31450, $t['kasbon']['settlement']['material']);
-        $this->assertEquals(21250, $t['kasbon']['settlement']['service']);
-        $this->assertEquals(52169, $t['kasbon']['amount'], 'ROUND(31450 + 21250 * 0.975, 0), previously52168.');
-        $this->getJson('/api/finance/terms/'.$t['id'].'/kasbon')->assertOk()->assertJsonPath('documents.0.data.amount', 52169);
+        $this->assertEquals(105400, $t['kasbon']['settlement']['gross']);
+        $this->assertEquals(62900, $t['kasbon']['settlement']['material']);
+        $this->assertEquals(42500, $t['kasbon']['settlement']['service']);
+        $this->assertEquals(1063, $t['kasbon']['settlement']['withheld']);
+        $this->assertEquals(104337, $t['kasbon']['amount'], '62900 + 42500 - ROUND(42500 * 0.025, 0).');
+        $this->getJson('/api/finance/terms/'.$t['id'].'/kasbon')->assertOk()->assertJsonPath('documents.0.data.amount', 104337);
         $this->api('decideFinancePayment', [$t['id'], 'Setujui', ''])->assertOk();
         $this->upload('transfer-proof', $t['id']);
         DB::enableQueryLog();
@@ -543,14 +546,54 @@ class FinanceKasbonTest extends TestCase
         DB::disableQueryLog();
         DB::flushQueryLog();
         $this->assertLessThanOrEqual(45, $queries);
-        fwrite(STDOUT, "\nRounded PPh optional APM settlement: {$queries} HTTP queries.\n");
+        fwrite(STDOUT, "\nRounded Jasa tax optional APM settlement: {$queries} HTTP queries.\n");
         $paid = $this->term($t['id']);
-        $this->assertEquals(52169, $paid['paid']);
+        $this->assertEquals(104337, $paid['paid']);
         $this->assertSame('Dibayar', $paid['financePayment']['status']);
-        $this->assertDatabaseHas('apm_settlements', ['amount' => 52169, 'apm_no' => null]);
-        $this->assertDatabaseHas('payment_terms', ['approved_amount' => 52700]);
+        $this->assertDatabaseHas('apm_settlements', ['amount' => 104337, 'apm_no' => null]);
+        $this->assertDatabaseHas('payment_terms', ['approved_amount' => 105400]);
         $this->asRole('Admin Konstruksi');
         $this->api('createTerm', [$t['spkId']])->assertOk();
+    }
+
+    public static function issuedPphPolicies(): array
+    {
+        return [[KasbonSettlement::LEGACY_POLICY, 104337], [KasbonSettlement::FINAL_ROUND_POLICY, 104338], [KasbonSettlement::SERVICE_NET_ROUND_POLICY, 104338]];
+    }
+
+    #[DataProvider('issuedPphPolicies')]
+    public function test_old_issued_policy_keeps_its_private_amount_through_finance_proof_and_settlement(string $policy, int $amount): void
+    {
+        $t = $this->setupTerm(quantity: 4);
+        $this->payee($t['spkId']);
+        $t = $this->issue($t);
+        $state = $this->getJson('/api/prototype/state')->json('state');
+        $spk = collect($state['spks'])->firstWhere('id', $t['spkId']);
+        $deal = collect($state['deals'])->firstWhere('id', $spk['dealId']);
+        $quote = KasbonSettlement::quote($deal, $t, $policy);
+        // Explicit pre-update fixture in the fail-closed in-memory test database only.
+        $this->assertSame(':memory:', DB::connection()->getDatabaseName());
+        $t['kasbon']['settlement'] = $quote;
+        $t['kasbon']['amount'] = $quote['net'];
+        $row = DB::table('finance_kasbons')->where('id_kasbon', $t['kasbon']['id'])->first();
+        $private = json_decode(Crypt::decryptString($row->private_data), true, 512, JSON_THROW_ON_ERROR);
+        $private['settlement'] = $quote;
+        $private['amount'] = $quote['net'];
+        $private['rows'][0]['amount'] = (string) $quote['net'];
+        $cipher = Crypt::encryptString(json_encode($private, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE));
+        DB::table('payment_terms')->where('source_id', $t['id'])->update(['document_data' => json_encode($t, JSON_THROW_ON_ERROR)]);
+        DB::table('finance_kasbons')->where('id_kasbon', $row->id_kasbon)->update(['amount' => $quote['net'], 'private_data' => $cipher]);
+        $this->getJson('/api/finance/terms/'.$t['id'].'/kasbon')->assertOk()->assertJsonPath('documents.0.data.amount', $amount);
+        $this->api('decideFinancePayment', [$t['id'], 'Setujui', ''])->assertOk();
+        $this->upload('transfer-proof', $t['id']);
+        $this->api('settleFinancePayment', [$t['id'], ''])->assertOk();
+        $paid = $this->term($t['id']);
+        $this->assertEquals($amount, $paid['paid']);
+        $this->assertSame($policy, $paid['kasbon']['settlement']['policy']);
+        $this->assertSame($row->id_kasbon, $paid['kasbon']['id']);
+        $this->assertSame($cipher, DB::table('finance_kasbons')->where('id_kasbon', $row->id_kasbon)->value('private_data'));
+        $this->assertDatabaseHas('apm_settlements', ['kasbon_id' => $row->id_kasbon, 'amount' => $amount, 'apm_no' => null]);
+        $this->assertDatabaseHas('payment_terms', ['approved_amount' => 105400]);
     }
 
     public function test_new_term_defaults_to_finance_flow_and_generic_save_cannot_restore_legacy_payment_authority(): void

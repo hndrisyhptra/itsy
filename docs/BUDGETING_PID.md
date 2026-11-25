@@ -1,5 +1,33 @@
 # Master Budgeting PID — 24 November 2026
 
+## Tahap 4 — Verifikasi MariaDB terisolasi dan perapian master
+
+**Tahap 4 selesai untuk pengujian lokal terisolasi dan UI; belum deployment/UAT akun nyata di aaPanel.** MariaDB 10.4.28 dijalankan pada datadir/socket privat baru dengan networking dimatikan, bukan database `its` aplikasi. Seluruh akun, workbook, PP, identitas Mandor dan bukti transfer merupakan fixture buatan. Tidak menyalin/mengubah data aktif, `.env`, APP_KEY aplikasi, worker, server, Dompis atau histori pengguna.
+
+Halaman sekarang memisahkan **Daftar PID** dan **Riwayat Impor**, dengan filter Unit/Pencarian/Cari/Reset/Muat ulang yang sejajar. PID dan nama kegiatan berada dalam satu kolom; empat kolom sisa menampilkan angka utama, Available Excel dan Terpakai. PID belum dipetakan tetap diberi label referensi Excel, bukan alokasi resmi. Catatan sumber diringkas pada baris dan diperinci dalam modal. Rincian menampilkan sumber Release/Commitment/Actual serta perbandingan Excel/alokasi/sisa. Pilih seluruh halaman, jumlah pilihan dan tombol Atur Branch berada dalam satu toolbar. Ikon rincian memiliki tooltip dan label aksesibel; pemetaan dan impor tetap YA/TIDAK. Tabel bergaris, angka rata kanan, warna putih bersih mengikuti light/dark, dan scroll horizontal hanya di tabel pada layar kecil.
+
+Impor yang memilih Operation dari halaman Konstruksi sekarang kembali ke **riwayat Operation**, termasuk saat hasil belum pasti lalu memilih periksa riwayat. Tidak ada retry otomatis, perubahan UUID replay, pengurangan jumlah pemeriksaan server, pemetaan Rxxx, hak akses atau perubahan rumus budget. SQL halaman tetap20+1 dan DOM20; preview tetap metadata terbatasi/DOM20. Tidak ada SQL/API/schema/migration/dependency/poller baru pada runtime fitur ini.
+
+### Bukti tahap 4
+
+- MariaDB fisik:76 migration pada database kosong terisolasi, parse workbook→preview tanpa write→commit/replay, pemetaan eksplisit PID berkode R424 ke SURABAYA, dua PP dan batas atomik, return/resubmit mengganti sendiri, Cancel mengkreditkan sesuai guard.
+- Dua proses pengajuan benar-benar bersamaan: satu200/satu409; retry eksplisit versi terbaru422 karena budget tidak cukup. Konsumsi tidak melebihi plafon. Ini satu workspace, bukan benchmark lintas workspace atau uji beban produksi.
+- Dua koneksi REPEATABLE-READ: ordinary snapshot tetap7 setelah menunggu lock, tetapi production locking-read membaca11, tunggu330ms. Probe ledger ini fixture isolasi khusus, bukan keputusan/payment palsu.
+- Konstruksi: lima keputusan paket nyata→BA RP Sah→BA PP Sah→kasbon privat→tujuh keputusan pembayaran nyata→unggah/proses bukti→Tandai Lunas dengan APM kosong. Alokasi sesudah paid identik dengan sebelumnya; pelepasan mengkreditkan hanya Jasa Owner sisa, Material/BOP tetap; PP lanjutan mendapat policy baru/draf nol.
+- Operation: workbook dipilih unit Operation→mapping eksplisit→lima keputusan Operation sampai Sah, termasuk Region Mgr SS/GM; PID lintas unit ditolak dengan revision tetap. Rantai pembayaran Operation juga dicakup suite SQLite existing, bukan klaim uji pembayaran Operation fisik tambahan.
+- Pengulangan `up()` tiga migration PID dengan data populated dan penolakan ketiga `down()`: hash24 tabel budget/workspace/paket/payment/approval/private/volume identik sebelum/sesudah.
+- Suite PHP521tes/15278assertions (XAMPP PHP8.2.4, SQLite memory,114.356s/140.50MB); frontend484 lulus; TypeScript/Vite, asset49refs/40preload×3profile, Pint dan diffcheck lulus. Browser actual App dengan API buatan:375/768/1440 light/dark,20DOM, exact detail, mapping20, TIDAK0write, search/empty/retry, Operation import/history,0JSerror; screenshot desktop/mobile/modal diinspeksi.
+
+[Audit lengkap dan batas](qa/budgeting-pid-stage4-20261124.json). Word/PDF tidak dirender ulang karena sumber/generator berkas tidak diubah. Tidak ada pengujian kapasitas produksi, MySQL8 fisik, versi/schema aaPanel, timeout server atau transfer bank nyata. Formula/cache workbook asli tetap kontrak tahap1; tidak mengimpor master-PID pengguna ke database aktif.
+
+### Alat QA dan penerapan
+
+`tools/qa_budget_pid_stage4.php` adalah **alat operator QA**, bukan endpoint atau perintah deployment. Hanya menerima realpath `/private/tmp/area3-pid-stage4-*` dengan marker tepat `area3-budget-pid-stage4-isolated`. Sebelum Laravel dibuka, PDO memakai socket absolut `<root>/mysql.sock` dan memeriksa datadir `<root>/mysql`, socket yang sama serta `skip_networking=1`. Path/marker salah ditolak sebelum membuka PDO. Konfigurasi/kunci/cache/storage QA berada dalam folder privat tersebut; konfigurasi database aplikasi tidak digunakan. Tidak menyediakan reset/drop/seed terhadap database aktif.
+
+Untuk reproduksi, operator menyiapkan MariaDB baru **kosong/offline** pada datadir tersebut, database kosong bernama `its` pada instance itu saja, root folder0700, marker0600, kemudian menjalankan PHP script dengan argumen root dan fase: `migrate`, `scenario`, `concurrency`, `snapshot`, `settlement`, `operation`, `verify-schema`, terakhir `shutdown`. Fase stateful tidak untuk diulang sembarangan; periksa error/log sebelum melanjutkan, jangan mengubah status atau menandai approval manual. File hasil hanya fixture. Fase `shutdown` memeriksa identitas instance kembali sebelum mematikan instance QA; instance uji sesi ini sudah dihentikan. Standard PHPUnit tetap mewajibkan SQLite `:memory:`, tanpa melonggarkan guard tersebut.
+
+**Deployment oleh operator:** backup terlebih dahulu; setelah kode tersedia di server jalankan `php artisan migrate --force` bila migration PID000001–000003 belum selesai, `npm run build`, `npm run check:assets`, lalu reload halaman dan lakukan smoke test Finance/Admin pada scope sah. Tidak ada migration tahap4 baru, import/seed otomatis, worker baru, atau kebutuhan restart worker khusus PID. Jangan memakai `migrate:fresh`, menghapus ledger/riwayat, generate ulang APP_KEY atau mengisi receipt migration manual. Perubahan PPh yang terpisah tetap mengikuti panduan deployment-nya sendiri. Data PP lama tetap dikecualikan dari kebijakan plafon PP baru.
+
 ## Tahap 3 — Alokasi dan batas budget PP baru (status terkini)
 
 **Tahap 3 selesai di kode.** Referensi empat komponen sekarang menampilkan Available Excel, Alokasi PP Lain, Sisa untuk PP Ini, Nilai PP Ini dan Sisa Setelah PP Ini. Master Finance menampilkan sisa setiap komponen beserta angka Excel dan pemakaian aplikasi. Editor SPK menampilkan pemeriksaan budget sebelum Ajukan Paket untuk PP baru yang masuk kebijakan ini. Bagian tahap 1/2 di bawah tetap sebagai catatan historis; pernyataan “batas/reservasi belum aktif” pada bagian lama telah digantikan bagian ini.
@@ -53,7 +81,7 @@ erDiagram
     users ||--o{ budget_pid_allocation_changes : acts
 ```
 
-Perintah memakai transaksi dan lock workspace existing, lalu singleton master control yang sama dengan impor/pemetaan. Setelah menunggu lock, ledger identitas/kapasitas dan item plafon dibaca dengan **current locking reads**; tidak memakai SUM dari snapshot REPEATABLE READ lama. Kapasitas untuk write diproses maksimal500 baris ledger per halaman, bukan seluruh graph BOQ/arsip. Ini desain penguncian; bukan hasil uji konkurensi fisik MariaDB. Lock global sengaja menserialkan perubahan budget lintas PID saat impor/pemetaan; bukan klaim throughput tanpa bottleneck.
+Perintah memakai transaksi dan lock workspace existing, lalu singleton master control yang sama dengan impor/pemetaan. Setelah menunggu lock, ledger identitas/kapasitas dan item plafon dibaca dengan **current locking reads**; tidak memakai SUM dari snapshot REPEATABLE READ lama. Kapasitas untuk write diproses maksimal500 baris ledger per halaman, bukan seluruh graph BOQ/arsip. Pada tahap3 ini masih desain penguncian; tahap4 di atas kini mencatat uji fisik MariaDB terisolasi, tanpa klaim throughput produksi. Lock global sengaja menserialkan perubahan budget lintas PID saat impor/pemetaan; bukan klaim throughput tanpa bottleneck.
 
 Domain guards selesai sebelum alokasi direncanakan; PP SQL ditulis sebelum ledger FK baru, lalu ledger/event/receipt diselesaikan dalam transaksi yang sama. Trigger kegagalan audit pada fixture membuktikan rollback termasuk data workflow. Retry request yang sudah berefek tidak menambah alokasi; actor dan payload diikat hash, termasuk result_id. Request baru untuk pengajuan ulang tetap merekam event walaupun nominal sama.
 

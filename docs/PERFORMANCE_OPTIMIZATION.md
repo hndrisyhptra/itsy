@@ -1,5 +1,19 @@
 # Optimasi query dan respons aplikasi
 
+## 24 November 2026 — Budgeting PID stage4 measurement boundaries
+
+Master UI reuses same20+1SQL payload and20DOM; merges PID/name rather than expanding list, Set-selected once, warnings only expanded in detail. No new SQL/endpoint/poller/privatefetch/boot graph/dependency. Existing source-key/abort prevents old unit/page data reuse; import completion carries chosenunit. Stage3 reference6/own7/masterlist6/mapping10012HTTP remain historical fixture measurements, not new MariaDB throughput numbers.
+
+Actual offline MariaDB10.4.28: two independent concurrent submissions at same workspace revision produced200/409, fresh explicit retry422 budgetcap. Separate2connection RRprobe ordinary SUMsnapshot7 vs lockingcurrent11 after330ms; globalmasterlock serialized correctly. Construction paid reservation kept, authorizedreleasecreditsonlyunusedJ, Operation5/Region flows and repeated populatedmigrationhash24 passed. This does not establish production capacity/deadlockfreedom/crossworkspace/highload/aaPanel latency. Fullsuite521PHP/15278assertions114.356s/140.50MB onXAMPP8.2.4, frontend484, actualApp mockAPI3widths2themes noJSerror. [Audit/bounds](qa/budgeting-pid-stage4-20261124.json).
+
+## 24 November 2026 — Revisi ROUND khusus PPh
+
+Tax-round-v4 mengganti tahap arithmetic saja: satu passsavedrows/0SQL, exactBCMath/BigInt, no extra lookup atau rounding nilai lain. Legacyv1/v2/v3 resolusi in-memory per policy; no GET reprice/PIIfetch/poller/schema/dependency. Actualissue45HTTP/settle41HTTP tetap; full520tes menjaga existing500BOQ59query danarchiveexclusion3SELECT. Bukan pengukuran latency/loadserver. [Kontrak](KASBON_PPH_PAYMENT_LIST.md), [audit](qa/pph-tax-round-v4-20261124.json).
+
+## 24 November 2026 — ROUND hanya Jasa net kasbon
+
+Quote tetap satu lintasan loaded saved agreement×actuals/0SQL; BCMath/BigInt hanya mengubah tahap pembulatan ke totalJasa setelahPPh, Material langsungditambah. Policyv1/v2 dipilih per savedquote, tidak lookup tambahan/reprice/mutasi GET. UI notice memakai summaryauthorized, tanpa fetch/rowquery/poller baru. Existingissue45HTTP/newnetsettle41HTTP padafixture; full517tests mempertahankan500BOQ59query danarchiveexclusion3SELECT. Ini perubahan arithmetic, bukan bukti throughputserver. [Kontrak](KASBON_PPH_PAYMENT_LIST.md), [audit](qa/pph-service-net-round-20261124.json).
+
 ## 24 November 2026 — Simpan draf dan respons terlambat
 
 NewrootDraft tidak memiliki saldo lama untuk dipindah; dua SELECT movement seluruhworkspace sebelum/sesudah save dihilangkan khusus absentroot. Pembacaan scoped existing balances untuk membangun state/proyeksi tetap wajib. Empat real queued26BOQ Construction/Operation×duaalias66→64HTTPquery; existing edits/approval/continuation audit scans tetap. Recovery hanya satu GET state bila respons tidak pasti, +1uniqueUUIDreceipt SELECT (18vs17HTTPfixture),0extraquery normalGET; rare metadata-race menambah1lightweightSELECT sebelum satu payload. Tidak menggandakan write/loopretry/poller, tidak menambah schema/index/dependency. TimeoutPP60s/recovery30s tidak membuktikan server lebih cepat; graph/bootstrap/hash/lock dan infrastruktur masih perlu profiling fisik. [Kontrak/deploy](PP_DRAFTS_PREVIEW.md), [audit](qa/pp-save-confirmation-20261124.json).

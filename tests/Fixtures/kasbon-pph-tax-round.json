@@ -1,0 +1,14 @@
+[
+  {"id":"material-unchanged","material":100000,"service":0,"gross":100000,"net":100000,"withheld":0},
+  {"id":"mixed-exact","material":100000,"service":200000,"gross":300000,"net":295000,"withheld":5000},
+  {"id":"tax-below-half","material":100000,"service":200001,"gross":300001,"net":295001,"withheld":5000},
+  {"id":"small-service","material":1000,"service":1,"gross":1001,"net":1001,"withheld":0},
+  {"id":"half-tax-not-net","material":17,"service":20,"gross":37,"net":36,"withheld":1},
+  {"id":"tax-above-half","material":7,"service":21,"gross":28,"net":27,"withheld":1},
+  {"id":"tax-below-half-small","material":7,"service":19,"gross":26,"net":26,"withheld":0},
+  {"id":"half-tax-service-only","material":0,"service":60,"gross":60,"net":58,"withheld":2},
+  {"id":"service-only","material":0,"service":200000,"gross":200000,"net":195000,"withheld":5000},
+  {"id":"half-tax-workflow","material":62900,"service":42500,"gross":105400,"net":104337,"withheld":1063},
+  {"id":"large-exact","material":999999999999,"service":20,"gross":1000000000019,"net":1000000000018,"withheld":1},
+  {"id":"zero","material":0,"service":0,"gross":0,"net":0,"withheld":0}
+]

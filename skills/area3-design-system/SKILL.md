@@ -3,6 +3,11 @@ name: area3-design-system
 description: Build or revise the its Area 3 interface with its specific enterprise design tokens, responsive shell, tables, and accessible interaction states. Do not apply its brand to Dompis Prov.
 ---
 
+## 24 November 2026 — Budgeting PID stage4 and compact master
+
+Follow latest docs/BUDGETING_PID.md. UI8columns/PID+name, exact source/used/remaining and unmappedExcel distinction, scoped20DOM selection/tooltip/details, aligned filters/search/reset/refresh, cleanwhite/lightdark. Import successful or uncertain-history callback must carry actual selectedunit. Preserve all stage1–3 authorization/UUID/version/atomic/reservation/oldPPexemption/paid guards;0newruntimeSQL/API/schema/migration/poller/privatefetch. Offline MariaDB tool checks private root+marker+datadir/socket/skipnetworking before Laravel, process-localkey/config/storage only; never use activeits or loosen PHPUnit memoryguard. Tests actually cover76migrations/2process200409retry422/RR7to11/Construction5+7paidreleasecontinuation/Operation5/Region/hash24uprefuseddown; browserAPI mocked, serverload/WordPDF unchanged notverified. Finish by shutting only privateQAinstance; document actual counts/limits in stage4audit.
+
+
 ## 24 November 2026 — Budgeting PID capacity UI, stage3
 
 Follow latest docs/BUDGETING_PID.md. Six-column scoped reference shows Excel/other allocations/remaining/currentPP/after; allow negative remainder visually and draft save. Explain old PP exempt and paid retained, distinguish Owner from Header COGS. Exact sourcePP+PID/unit/Branch response key, debounce350ms/abort, no stale autofill; old names adopt explicitly only. Show readonly budget check before Ajukan Paket on editable tracked SPK, no name-adoption button there. Master list currentpage20 uses remaining with Excel+used annotation; unbound Branch remains Excelreference. Import preview still Available, not fake remaining. Existing light-dark/responsive table, no gradient/dependency/poller/localStorage/new private read; browser transport mocks are not live server/export evidence.

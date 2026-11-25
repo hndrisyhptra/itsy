@@ -5,7 +5,7 @@ import {createElement} from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 import {seed} from '../../resources/js/area3/seed';
 import {createTerm,getTerm,termTotal,type Term,type Deal} from '../../resources/js/area3/domain';
-import {kasbonQuote,paymentDue,kasbonQuoteMatches,KASBON_SETTLEMENT_POLICY,LEGACY_KASBON_SETTLEMENT_POLICY} from '../../resources/js/area3/kasbon-settlement';
+import {kasbonQuote,paymentDue,kasbonQuoteMatches,KASBON_SETTLEMENT_POLICY,SERVICE_NET_ROUND_KASBON_SETTLEMENT_POLICY,FINAL_ROUND_KASBON_SETTLEMENT_POLICY,LEGACY_KASBON_SETTLEMENT_POLICY} from '../../resources/js/area3/kasbon-settlement';
 import {KasbonAmountNotice} from '../../resources/js/area3/kasbon-amount-notice';
 import {KasbonDocument,type KasbonData} from '../../resources/js/area3/kasbon-document';
 import {createKasbonDocx} from '../../resources/js/area3/kasbon-docx';
@@ -27,21 +27,50 @@ test('only Mandor service is reduced, net is truncated without floating-point ro
  assert.equal(kasbonQuote(deal,t).net,1950);
 });
 
-test('new quotes ROUND the final net once with exact half-up arithmetic; old issued amounts remain frozen',()=>{
+test('issued v2 quotes retain final-net ROUND and v1 quotes retain truncation after service-net-round policy',()=>{
  const s=seed('D'),d=s.deals[0],t=getTerm(s,createTerm(s,s.spks[0].id));t.moneyPolicy='idr-trunc-v1';t.actuals={r:{m:1,s:1}};
  for(const v of JSON.parse(readFileSync(new URL('../Fixtures/kasbon-pph-round.json',import.meta.url),'utf8'))){
   const deal={...d,rows:[{...d.rows[0],rowId:'r',m:true,s:true,pm:v.material,ps:v.service}]} as Deal;
-  const before=JSON.stringify({deal,t}),quote=kasbonQuote(deal,t);assert.equal(quote.policy,KASBON_SETTLEMENT_POLICY);
+  const before=JSON.stringify({deal,t}),quote=kasbonQuote(deal,t,FINAL_ROUND_KASBON_SETTLEMENT_POLICY);assert.equal(quote.policy,FINAL_ROUND_KASBON_SETTLEMENT_POLICY);
   for(const k of ['gross','material','service','withheld','net'] as const)assert.equal(quote[k],v[k],v.id+'/'+k);
   assert.equal(JSON.stringify({deal,t}),before);t.kasbon={id:'new',version:2,amount:quote.net,settlement:quote,issuedAt:'2026-11-24',issuedBy:'qa'};
   assert.equal(paymentDue(t,quote.gross),v.net);assert(kasbonQuoteMatches(deal,t));delete t.kasbon;
  }
  const deal={...d,rows:[{...d.rows[0],rowId:'r',m:true,s:true,pm:17,ps:20}]} as Deal;
  const old=kasbonQuote(deal,t,LEGACY_KASBON_SETTLEMENT_POLICY);t.kasbon={id:'old',version:1,amount:old.net,settlement:old,issuedAt:'2026-11-16',issuedBy:'qa'};
- const before=JSON.stringify(t);assert.equal(paymentDue(t,37),36);assert(kasbonQuoteMatches(deal,t));assert.equal(JSON.stringify(t),before);assert.equal(kasbonQuote(deal,t).net,37);
- t.kasbon.settlement={...old,policy:KASBON_SETTLEMENT_POLICY};assert(!kasbonQuoteMatches(deal,t));
+ const before=JSON.stringify(t);assert.equal(paymentDue(t,37),36);assert(kasbonQuoteMatches(deal,t));assert.equal(JSON.stringify(t),before);assert.equal(kasbonQuote(deal,t).net,36);
+ t.kasbon.settlement={...old,policy:FINAL_ROUND_KASBON_SETTLEMENT_POLICY};assert(!kasbonQuoteMatches(deal,t));
  const notice=renderToStaticMarkup(createElement(KasbonAmountNotice,{gross:37,amount:37,settlement:kasbonQuote(deal,t),estimate:true}));assert.match(notice,/rupiah terdekat \(ROUND\)/);
  const legacy=renderToStaticMarkup(createElement(KasbonAmountNotice,{gross:37,amount:36,settlement:old}));assert.match(legacy,/Nilai setelah potongan PPh/);assert.doesNotMatch(legacy,/rupiah terdekat/);
+ assert.match(notice,/Nominal PPh 2,5% dari Jasa dibulatkan/);assert.doesNotMatch(notice,/Hasil akhir dibulatkan/);
+});
+
+test('issued v3 adds intact Material to ROUND of total service net, never tax or each item',()=>{
+ const s=seed('D'),d=s.deals[0],t=getTerm(s,createTerm(s,s.spks[0].id));t.moneyPolicy='idr-trunc-v1';t.actuals={r:{m:1,s:1}};
+ for(const v of JSON.parse(readFileSync(new URL('../Fixtures/kasbon-pph-service-round.json',import.meta.url),'utf8'))){
+  const deal={...d,rows:[{...d.rows[0],rowId:'r',m:true,s:true,pm:v.material,ps:v.service}]} as Deal;
+  const before=JSON.stringify({deal,t}),quote=kasbonQuote(deal,t,SERVICE_NET_ROUND_KASBON_SETTLEMENT_POLICY);assert.equal(quote.policy,SERVICE_NET_ROUND_KASBON_SETTLEMENT_POLICY);
+  for(const k of ['gross','material','service','withheld','net'] as const)assert.equal(quote[k],v[k],v.id+'/'+k);
+  t.kasbon={id:'service-round',version:1,amount:quote.net,settlement:quote,issuedAt:'2026-11-24',issuedBy:'qa'};
+  assert.equal(paymentDue(t,v.gross),v.net);assert(kasbonQuoteMatches(deal,t));delete t.kasbon;assert.equal(JSON.stringify({deal,t}),before);
+ }
+ const deal={...d,rows:['a','b'].map(rowId=>({...d.rows[0],rowId,m:true,s:true,pm:1,ps:20}))} as Deal;t.actuals={a:{m:1,s:1},b:{m:1,s:1}};
+ assert.deepEqual(kasbonQuote(deal,t,SERVICE_NET_ROUND_KASBON_SETTLEMENT_POLICY),{policy:SERVICE_NET_ROUND_KASBON_SETTLEMENT_POLICY,material:2,service:40,gross:42,withheld:1,net:41});
+});
+
+test('current quotes ROUND only total PPh on Jasa; other values and old quotes remain unchanged',()=>{
+ const s=seed('D'),d=s.deals[0],t=getTerm(s,createTerm(s,s.spks[0].id));t.moneyPolicy='idr-trunc-v1';t.actuals={r:{m:1,s:1}};
+ for(const v of JSON.parse(readFileSync(new URL('../Fixtures/kasbon-pph-tax-round.json',import.meta.url),'utf8'))){
+  const deal={...d,rows:[{...d.rows[0],rowId:'r',m:true,s:true,pm:v.material,ps:v.service}]} as Deal;
+  const before=JSON.stringify({deal,t}),quote=kasbonQuote(deal,t);assert.equal(quote.policy,KASBON_SETTLEMENT_POLICY);
+  for(const k of ['gross','material','service','withheld','net'] as const)assert.equal(quote[k],v[k],v.id+'/'+k);
+  t.kasbon={id:'tax-v4',version:1,amount:quote.net,settlement:quote,issuedAt:'2026-11-24',issuedBy:'qa'};
+  assert.equal(paymentDue(t,v.gross),v.net);assert(kasbonQuoteMatches(deal,t));delete t.kasbon;assert.equal(JSON.stringify({deal,t}),before);
+ }
+ const deal={...d,rows:['a','b'].map(rowId=>({...d.rows[0],rowId,m:true,s:true,pm:1,ps:20}))} as Deal;t.actuals={a:{m:1,s:1},b:{m:1,s:1}};
+ assert.deepEqual(kasbonQuote(deal,t),{policy:KASBON_SETTLEMENT_POLICY,material:2,service:40,gross:42,withheld:1,net:41});
+ deal.rows=[{...d.rows[0],rowId:'a',m:true,s:true,pm:0.75,ps:20}];delete t.moneyPolicy;
+ assert.deepEqual(kasbonQuote(deal,t),{policy:KASBON_SETTLEMENT_POLICY,material:0.75,service:20,gross:20.75,withheld:1,net:19.75});
 });
 
 test('kasbon HTML and Word show the frozen net and net words, never a withholding row or gross total',()=>{
@@ -54,13 +83,13 @@ test('kasbon HTML and Word show the frozen net and net words, never a withholdin
  for(const text of [html,xml]){assert.match(text,/295\.000/);assert.match(text,/dua ratus sembilan puluh lima ribu rupiah/);assert.doesNotMatch(text,/PPh|2,5|300\.000|(?<!\d)5\.000/);}
 });
 
-test('rounded new net is printed consistently in HTML, native Word and terbilang without exposing the deduction',()=>{
+test('tax-rounded amount is identical in HTML, native Word and terbilang without exposing the deduction',()=>{
  const data=JSON.parse(readFileSync(new URL('../Fixtures/kasbon-vector.json',import.meta.url),'utf8')) as KasbonData;
- const s=seed('D'),d={...s.deals[0],rows:[{...s.deals[0].rows[0],rowId:'r',m:true,s:true,pm:100000,ps:200001}]} as Deal;
+ const s=seed('D'),d={...s.deals[0],rows:[{...s.deals[0].rows[0],rowId:'r',m:true,s:true,pm:17,ps:20}]} as Deal;
  const t=getTerm(s,createTerm(s,s.spks[0].id));t.moneyPolicy='idr-trunc-v1';t.actuals={r:{m:1,s:1}};const quote=kasbonQuote(d,t);
  data.amount=quote.net;data.rows=[{accountCode:'QA',accountName:'QA',text:'Pekerjaan QA',amount:String(quote.net)}];data.settlement=quote;
  const html=renderToStaticMarkup(createElement(KasbonDocument,{data}));
  const logo=new Uint8Array(readFileSync(new URL('../../resources/js/area3/assets/spk-telkom-akses.png',import.meta.url)));
  const xml=docxParts(createKasbonDocx(data,logo))['word/document.xml'];
- for(const text of [html,xml]){assert.match(text,/295\.001/);assert.match(text,/dua ratus sembilan puluh lima ribu satu rupiah/);assert.doesNotMatch(text,/PPh|2,5|300\.001|295\.000/);}
+ for(const text of [html,xml]){assert.match(text,/(?:Rp\s*)?36</);assert.match(text,/tiga puluh enam rupiah/);assert.doesNotMatch(text,/PPh|2,5|>37</);}
 });

@@ -1,5 +1,20 @@
 # Catatan perubahan it's Area 3
 
+## 24 November 2026 — Budgeting PID tahap4 dan perapian master
+
+- Tab Daftar PID/Riwayat Impor; filter dan tombol konsisten, identitas PID+LOP satu kolom, sumber Excel/terpakai/sisa terbaca, catatan ringkas, detail dan tooltip.
+- Toolbar pilih halaman/Atur Branch, modal mapping/import/history bergaris, responsif, tanpa gradient. Riwayat setelah impor mengikuti unit file, termasuk hasil belum pasti.
+- Verifikasi MariaDB offline terpisah:76migrasi, pengajuan bersamaan, batas atomik, return/resubmit/Cancel,5+7approval Konstruksi dan paid-retention/release/continuation, Operation5/Region serta penolakan lintasunit. Guarded CLIQA; tidak menjalankan migrasi atau mengubah data aplikasi aktif.
+- PHP521/15278assertions, frontend484, build/assets dan browser terisolasi lulus. Tidak ada migration/API/SQL runtime tambahan; deployment server belum dilakukan. [Audit/batas](qa/budgeting-pid-stage4-20261124.json).
+
+## 24 November 2026 — ROUND hanya nominal PPh, revisi terbaru
+
+PPh Jasa sekarang ROUND(JasaMandor×2,5%,0), lalu dikurangi dari Material+Jasa tanpa pembulatan baru nilai lain. Kasbon baru/terbit ulang sah memakai tax-round-v4; savedv1/v2/v3/pending/paid tetap. UI menampilkan potongan PPh bulat; preview/Word/transfer satu nominal net. Build/checkassets dan restart worker upload Area3 saat deploy; tanpa migration/data reset. [Aturan terkini](KASBON_PPH_PAYMENT_LIST.md).
+
+## 24 November 2026 — ROUND hasil Jasa setelah PPh saja
+
+Rumus kasbon baru/terbit ulang sah menjadi Material + ROUND(Jasa Mandor×97,5%,0). Tidak membulatkan potongan pajak/Material/gabungan total; UI menjelaskan selisih PPh dan pembulatan Jasa, berkas tetap net-only. Policyv3 baru menjaga issuedv1/v2/paid dan seluruh keputusan/nominal historis. Build/checkassets dan restart worker upload Area3 saat deploy, tanpa migration baru/live rewrite. [Aturan](KASBON_PPH_PAYMENT_LIST.md).
+
 ## 24 November 2026 — Hilangkan error palsu setelah draf berhasil tersimpan
 
 Simpan draf menunggu60detik, kemudian satu pemeriksaan receipt request asli bila respons terlambat/hilang. Jika benar sudah commit oleh akun tersebut dan PP masih dalam scope, tampil sukses/state canonical tanpa kirim ulang. Jika belum pasti, isian tetap tersedia. Tombol menampilkan Menyimpan draf dan status menunggu; kedua alias save tetap berada di editor saat error. NewrootDraft mengurangi dua pembacaan ledger seluruh workspace tanpa mengubah saldo/audit proses lain. Build aset terbaru wajib, tanpa migration/worker baru. [Penerapan](PP_DRAFTS_PREVIEW.md).

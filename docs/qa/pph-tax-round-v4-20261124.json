@@ -1,0 +1,109 @@
+{
+  "date": "2026-11-24",
+  "feature": "Latest kasbon revision: ROUND only nominal PPh on Jasa",
+  "user_request": "rumus round digunakan ke PPH, hanya khusus nilai PPH; nilai lainnya normal seperti sebelumnya",
+  "formula": {
+    "tax": "ROUND(total canonical Mandor Jasa * 0.025, 0), positive half-up once",
+    "net": "Material + Jasa - tax",
+    "other_values": "Original saved agreement/actuals and document money policies unchanged; no tax-step rounding of Material/service-net/final sum",
+    "example": {
+      "material": 62900,
+      "service": 42500,
+      "gross": 105400,
+      "raw_pph": 1062.5,
+      "rounded_pph": 1063,
+      "net": 104337
+    }
+  },
+  "policy": {
+    "new": "mandor-service-pph25-tax-round-v4",
+    "retained": [
+      "mandor-service-pph25-v1",
+      "mandor-service-pph25-round-v2",
+      "mandor-service-pph25-service-round-v3"
+    ],
+    "new_scope": "New/allowed reissued kasbon only",
+    "historical": "Issued/pending/approved/paid amounts/ciphertext/UUID/policy stay saved, no GET reprice/backfill"
+  },
+  "verification": {
+    "php_full": {
+      "tests": 520,
+      "assertions": 15266,
+      "php": "8.5.10",
+      "database": "isolated SQLite :memory:",
+      "seconds": 67.13,
+      "peak_mb": 136.5,
+      "memory_limit": "process-only512M"
+    },
+    "xampp_focused": {
+      "tests": 40,
+      "assertions": 1679,
+      "php": "8.2.4",
+      "seconds": 17.96
+    },
+    "frontend": {
+      "passed": 483,
+      "failed": 0
+    },
+    "build": "TypeScript/Vite passed",
+    "pint": "Changed PHP files passed",
+    "assets": {
+      "manifest_references": 49,
+      "preloads": 40,
+      "deployment_profiles": 3
+    },
+    "diff_check": "passed",
+    "shared_vectors": {
+      "v1": 6,
+      "v2": 10,
+      "v3": 12,
+      "v4": 12,
+      "coverage": [
+        "Tax half0.5 rounds up",
+        "Only Material/only Jasa/combined/large/zero",
+        "One rounding of total tax, not per-row",
+        "Other-value precision retained in pure historical helper, not new fractional SQL permission",
+        "No query/source mutation; due/matches/forgery/unknown policy"
+      ]
+    },
+    "http": "New encrypted quote/rows/net104337; actual Finance private proof and optionalAPM settlement104337; SQLgross105400; nextterm after actualpaid",
+    "historical_http": "Three memory-only issued-policy fixtures pass actual Finance/workerproof/settlement with identical private ciphertext/UUID/policy/amount",
+    "documents": "Actual HTML/nativeDOCX XML amount36 and tiga puluh enam rupiah, net-only; generators/layout unchanged; no new physical render"
+  },
+  "performance": {
+    "calculator_queries": 0,
+    "passes": 1,
+    "issue_http": 45,
+    "settle_http": 41,
+    "new_queries": 0,
+    "new_api_schema_dependency_poller": false,
+    "not_a_server_benchmark": true
+  },
+  "preserved": [
+    "Actual five work+seven payment approvals",
+    "Scope Branch/unit/Region/current assignee/Head",
+    "Current source and kasbonUUID/revision/receipts",
+    "Private files/proof/APM optional/paid/history",
+    "Physical ledger/PID allocation/gross/source snapshots"
+  ],
+  "limits": [
+    "No activeits/env/server/worker/Dompis writes",
+    "No migration/import/repricing/deployment/commit/push",
+    "No browser/physicalWordPDF rerender/bank transfer/server load or physical MySQL concurrency verification",
+    "Retained earlier uncommitted service-round implementation and its audit as historical compatibility; latest v4 is default"
+  ],
+  "deployment": [
+    "Push/pull normal source",
+    "npm run build",
+    "npm run check:assets",
+    "Clear PHP cache per project procedure",
+    "Restart only area3-uploads (actual Supervisor project program) to recognize v4",
+    "Reload browser; no new migration"
+  ],
+  "local_evidence": [
+    "/private/tmp/area3-pph-tax-v4-focused.log",
+    "/private/tmp/area3-pph-tax-v4-frontend.log",
+    "/private/tmp/area3-pph-tax-v4-build.log",
+    "/private/tmp/area3-pph-tax-v4-full.log"
+  ]
+}
