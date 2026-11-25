@@ -1,5 +1,9 @@
 # Optimasi query dan respons aplikasi
 
+## 25 November 2026 — Budgeting Mandor tanpa query tambahan
+
+Canonical totals already produced by PP domain reused for grossMandorM/J/total/BOP. New-release planner builds loaded exact-parent maps only when BAPPs exist, returns before accepted-term scan when no own release, then O(terms+actuals+released+Mandorrows), no perrowSQL/catalog/private lookup. Legacy branch untouched. UI amount changes reuse scoped reference result; actual interactivebrowser1GET for all Mandor volume/price edits,0write. Same formal67/reference6/own7/mapping10012HTTP fixtures; not latency or productionload proof. No API/schema/migration/dependency/poller or crossrequest authorization cache. [Rules/tests/limits](BUDGETING_PID.md).
+
 ## 25 November 2026 — Finance signed scan readiness
 
 Readyhelper uses loaded term and≤7actualroledecisions, onecomputedUIvalue shared forupload/verify;0query/API/schema/dependency/poller. Controller rejects wrongrole before expensiveworkspacegraph, domainfreshrole remains underlock. Existingfile/projection/receipt transaction reused; measured55HTTPupload atFinance stage forConstructionPartial/Final andOperation, no before/afterlatencyclaim. NewFlowverifydoesnotrewriteactualSQLdecisions; no perrowlookup/privatefetch. Existing500BOQ59query/500BARP50query/full20PP353vs8/archive3SELECT tests retained. [Evidence and limits](FINANCE_SCAN_UPLOAD.md).

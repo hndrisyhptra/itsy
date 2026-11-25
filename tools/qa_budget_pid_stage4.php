@@ -303,7 +303,8 @@ if ($phase === 'operation') {
         $users[$role] = (int) $user->getKey();
     }
     [$p] = qaPackage('QA-OPERATION-STAGE4', $users, 10, true);
-    $values = ['TOTAL' => $p['planBudgetTotals']['ownerTotal'], 'Material' => $p['planBudgetTotals']['ownerM'], 'Non Material' => $p['planBudgetTotals']['ownerS'], 'Operasional' => $p['planBudgetTotals']['bop'], 'Tenaga Kerja' => 0, 'Depresiasi' => 0];
+    $newBasis = ($p['budgetPidPolicy'] ?? '') === BudgetPidAllocation::POLICY;
+    $values = ['TOTAL' => $p['planBudgetTotals'][$newBasis ? 'mandor' : 'ownerTotal'], 'Material' => $p['planBudgetTotals'][$newBasis ? 'mandorM' : 'ownerM'], 'Non Material' => $p['planBudgetTotals'][$newBasis ? 'mandorS' : 'ownerS'], 'Operasional' => $p['planBudgetTotals']['bop'], 'Tenaga Kerja' => 0, 'Depresiasi' => 0];
     $path = $qaRoot.'/operation-budget.xlsx';
     qaWorkbook($path, $p['projectCode'], $values);
     qaActor($users['Finance']);
@@ -346,12 +347,12 @@ if ($phase === 'verify-settlement') {
     qaCheck($p['status'] === 'Sah' && $t['paid'] > 0 && count($t['approvals']) === 7, 'actual seven approvals and payment');
     $ppId = app(RelationalWorkflowStore::class)->id(qaWorkspace()->id, 'projects', $p['id']);
     $a = DB::table('budget_pid_allocations')->where('pp_id', $ppId)->first();
-    $credit = BudgetPidAllocation::integer(2 * collect($p['boq'])->firstWhere('id', 'qa-service')['s']);
+    $credit = BudgetPidAllocation::integer(2 * (($p['budgetPidPolicy'] ?? '') === BudgetPidAllocation::POLICY ? collect($p['planBudget']['mandor'])->firstWhere('rowId', 'qa-service')['priceS'] : collect($p['boq'])->firstWhere('id', 'qa-service')['s']));
     qaCheck((int) $a->service === (int) $a->planned_service - $credit && (int) $a->material === (int) $a->planned_material && (int) $a->bop === (int) $a->planned_bop, 'exact unused-service credit');
     qaCheck(! collect($state['projects'])->contains('parentId', $p['id']), 'no existing continuation');
     qaCommand('createContinuation', [$b['id'], '', ['qa-service' => ['m' => 0, 's' => 2]], 'Isolated QA continuation']);
     $child = collect(qaState()['projects'])->firstWhere('parentId', $p['id']);
-    qaCheck($child['budgetPidPolicy'] === BudgetPidAllocation::POLICY && BudgetPidAllocation::integer($child['planBudgetTotals']['ownerTotal']) === $credit, 'continuation tracked exact credit');
+    qaCheck($child['budgetPidPolicy'] === BudgetPidAllocation::POLICY && BudgetPidAllocation::integer($child['planBudgetTotals']['ownerTotal']) === BudgetPidAllocation::integer(2 * collect($p['boq'])->firstWhere('id', 'qa-service')['s']), 'continuation tracked exact credit');
     $result = ['phase' => 'settlement', 'actual_five_project_and_seven_payment_approvals' => true, 'private_kasbon_and_transfer_proof' => true, 'optional_apm' => true, 'paid_retains_budget' => true, 'unused_service_release_only' => true, 'continuation_tracked' => true, 'fixture_assertion_numeric_type_corrected' => true];
     file_put_contents($qaRoot.'/settlement-result.json', json_encode($result, JSON_THROW_ON_ERROR));
     echo json_encode($result, JSON_THROW_ON_ERROR).PHP_EOL;
@@ -404,12 +405,12 @@ if ($phase === 'settlement') {
     qaCheck($reserved === (array) DB::table('budget_pid_allocations')->where('pp_id', $sqlPP)->first(), 'paid retains allocation unchanged');
     qaActor($users['Admin Konstruksi']);
     qaCommand('releaseVolume', [$b['id'], ['qa-service' => ['m' => 0, 's' => 2]]]);
-    $credit = BudgetPidAllocation::integer(2 * collect($p['boq'])->firstWhere('id', 'qa-service')['s']);
+    $credit = BudgetPidAllocation::integer(2 * (($p['budgetPidPolicy'] ?? '') === BudgetPidAllocation::POLICY ? collect($p['planBudget']['mandor'])->firstWhere('rowId', 'qa-service')['priceS'] : collect($p['boq'])->firstWhere('id', 'qa-service')['s']));
     $after = DB::table('budget_pid_allocations')->where('pp_id', $sqlPP)->first();
     qaCheck((int) $after->service === (int) $reserved['service'] - $credit && (int) $after->bop === (int) $reserved['bop'] && (int) $after->material === (int) $reserved['material'], 'release credits unused service only');
     qaCommand('createContinuation', [$b['id'], '', ['qa-service' => ['m' => 0, 's' => 2]], 'Isolated QA continuation']);
     $child = collect(qaState()['projects'])->firstWhere('parentId', $p['id']);
-    qaCheck($child['budgetPidPolicy'] === BudgetPidAllocation::POLICY && BudgetPidAllocation::integer($child['planBudgetTotals']['ownerTotal']) === $credit, 'continuation tracked exact credit');
+    qaCheck($child['budgetPidPolicy'] === BudgetPidAllocation::POLICY && BudgetPidAllocation::integer($child['planBudgetTotals']['ownerTotal']) === BudgetPidAllocation::integer(2 * collect($p['boq'])->firstWhere('id', 'qa-service')['s']), 'continuation tracked exact credit');
     $result = ['phase' => 'settlement', 'actual_five_project_and_seven_payment_approvals' => true, 'private_kasbon_and_transfer_proof' => true, 'optional_apm' => true, 'paid_retains_budget' => true, 'unused_service_release_only' => true, 'continuation_tracked' => true];
     file_put_contents($qaRoot.'/settlement-result.json', json_encode($result, JSON_THROW_ON_ERROR));
     echo json_encode($result, JSON_THROW_ON_ERROR).PHP_EOL;
@@ -575,8 +576,9 @@ if (in_array($phase, ['scenario', 'resume-scenario'], true)) {
         qaActor($users['Admin Konstruksi']);
         $first = qaState()['projects'][0];
     }
-    $values = ['TOTAL' => $first['planBudgetTotals']['ownerTotal'], 'Material' => $first['planBudgetTotals']['ownerM'],
-        'Non Material' => $first['planBudgetTotals']['ownerS'], 'Operasional' => $first['planBudgetTotals']['bop'] * 2, 'Tenaga Kerja' => 0, 'Depresiasi' => 0];
+    $newBasis = ($first['budgetPidPolicy'] ?? '') === BudgetPidAllocation::POLICY;
+    $values = ['TOTAL' => $first['planBudgetTotals'][$newBasis ? 'mandor' : 'ownerTotal'], 'Material' => $first['planBudgetTotals'][$newBasis ? 'mandorM' : 'ownerM'],
+        'Non Material' => $first['planBudgetTotals'][$newBasis ? 'mandorS' : 'ownerS'], 'Operasional' => $first['planBudgetTotals']['bop'] * 2, 'Tenaga Kerja' => 0, 'Depresiasi' => 0];
     $path = $qaRoot.'/synthetic-budget.xlsx';
     qaWorkbook($path, $first['projectCode'], $values);
     qaActor($users['Finance']);

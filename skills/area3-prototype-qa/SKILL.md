@@ -2,6 +2,11 @@
 name: area3-prototype-qa
 description: Test the its Area 3 interactive prototype through the linked business scenarios, permissions, persistence, financial/volume invariants, documents and responsive layouts.
 ---
+
+## 25 November 2026 — PID gross Mandor validation
+
+Follow latest docs/BUDGETING_PID.md, superseding Owner basis only new/editable tracked records. Policy2 canonical MandorM/J/TOTAL=M+J, separate BOP; defer UI comparison before positiveMandor, formal currentcaps/locks/UUID/rollback remain. Preserve pending/Sah/paid1 and unmarked exemption; exact editable1 adopts2, revisionholds until resubmit. New release savedMandorprices cap to planned-minusaccepted exactPP, never accepted/paid/unbudgeted/sibling/BOP; legacyrelease unchanged. No schema/query/API/poller/liveits/env/worker/server/Dompis writes or money/PPh/export rewrite. Test Owner>Mandor, manualNonStockdifferent, boundaries, frozen1, revisionhold, actualpaid/releasecontinuation, sourceaudit and browserliveedit1GET. Record actual full/focused/build/browsermock vs physicalserver/export limits and deployment without newmigration.
+
 ## 25 November 2026 — Finance scan responsibility
 
 Follow docs/FINANCE_SCAN_UPLOAD.md; testFinanceonly scanner and Adminreadonly, role403/scope404, privateMIME10MB/revision/replay/cleanup/current6selectedorderedkasbonUUID prefix beforeFinance7, bothunits, scanpresenceOKdistinctverification, no fake7decision/financeApproval/history/paid change, oldAdminfiles andlatepaidsettlementidentical. Actual535PHP16744assertions/496frontend,upload55HTTPfixture, actualAppmockTIDAK0POST/YA1scan+explicitverify/0JSerrors3width2themes. No activeDB/env/server/worker/Dompis writes or physicalMariaDB/load/exportclaim; no newmigration/worker. Existingusercostlabel edit preserved andSSRassertion updated withoutformula changes; build/checkassets.

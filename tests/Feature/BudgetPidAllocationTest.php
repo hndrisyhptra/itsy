@@ -121,7 +121,8 @@ class BudgetPidAllocationTest extends TestCase
     private function master(array $p, array $overrides = [], bool $map = true): void
     {
         $this->asRole('Finance');
-        $values = ['TOTAL' => $p['planBudgetTotals']['ownerTotal'], 'Material' => $p['planBudgetTotals']['ownerM'], 'Non Material' => $p['planBudgetTotals']['ownerS'], 'Operasional' => $p['planBudgetTotals']['bop'], 'Tenaga Kerja' => 0, 'Depresiasi' => 0];
+        $new = ($p['budgetPidPolicy'] ?? '') === BudgetPidAllocation::POLICY;
+        $values = ['TOTAL' => $p['planBudgetTotals'][$new ? 'mandor' : 'ownerTotal'], 'Material' => $p['planBudgetTotals'][$new ? 'mandorM' : 'ownerM'], 'Non Material' => $p['planBudgetTotals'][$new ? 'mandorS' : 'ownerS'], 'Operasional' => $p['planBudgetTotals']['bop'], 'Tenaga Kerja' => 0, 'Depresiasi' => 0];
         $values = array_replace($values, $overrides);
         $items = [];
         foreach (['TOTAL', ...BudgetPidWorkbook::CATEGORIES] as $i => $category) {
@@ -160,7 +161,7 @@ class BudgetPidAllocationTest extends TestCase
     public function test_each_bound_rejects_formal_submission_atomically_but_allows_draft(string $category): void
     {
         [$p] = $this->package();
-        $key = ['TOTAL' => 'ownerTotal', 'Material' => 'ownerM', 'Non Material' => 'ownerS', 'Operasional' => 'bop'][$category];
+        $key = ['TOTAL' => 'mandor', 'Material' => 'mandorM', 'Non Material' => 'mandorS', 'Operasional' => 'bop'][$category];
         $this->master($p, [$category => $p['planBudgetTotals'][$key] - 1]);
         $revision = PrototypeWorkspace::first()->revision;
         $allocation = (array) $this->allocation($p['id']);
@@ -172,7 +173,7 @@ class BudgetPidAllocationTest extends TestCase
         $this->assertSame('Draft', $this->project($p['id'])['status']);
         $p['planBudgetTotals'] = ['ownerM' => 0, 'ownerS' => 0, 'bop' => 0];
         $this->api('saveProjectBundle', [$p, false])->assertOk();
-        $this->assertSame('pid-budget-v1', $this->project($p['id'])['budgetPidPolicy']);
+        $this->assertSame(BudgetPidAllocation::POLICY, $this->project($p['id'])['budgetPidPolicy']);
         $this->assertSame('draft', $this->allocation($p['id'])->status);
         $this->api('submitProjectBundle', [$p['id']])->assertUnprocessable();
     }
@@ -193,9 +194,9 @@ class BudgetPidAllocationTest extends TestCase
         $this->assertLessThanOrEqual(110, count($queries));
         fwrite(STDERR, "\nBudget PID formal submission: ".count($queries)." HTTP queries.\n");
         $first = (array) $this->allocation($p['id']);
-        $this->assertSame((int) $p['planBudgetTotals']['ownerM'], (int) $first['material']);
+        $this->assertSame((int) $p['planBudgetTotals']['mandorM'], (int) $first['material']);
         $this->reference($p)->assertOk()->assertJsonPath('remaining.TOTAL', 0);
-        $this->reference($p, true)->assertOk()->assertJsonPath('remaining.TOTAL', (int) $p['planBudgetTotals']['ownerTotal']);
+        $this->reference($p, true)->assertOk()->assertJsonPath('remaining.TOTAL', (int) $p['planBudgetTotals']['mandor']);
         $events = DB::table('budget_pid_allocation_changes')->count();
         $this->api('submitProjectBundle', [$p['id']], $request, $revision)->assertOk()->assertJsonPath('replayed', true);
         $this->assertDatabaseCount('budget_pid_allocation_changes', $events);
@@ -243,9 +244,9 @@ class BudgetPidAllocationTest extends TestCase
         $before = (array) $this->allocation($p['id']);
         $this->master($p, ['TOTAL' => 1]);
         $this->assertSame($before, (array) $this->allocation($p['id']));
-        $this->reference($p)->assertOk()->assertJsonPath('remaining.TOTAL', 1 - (int) $p['planBudgetTotals']['ownerTotal']);
+        $this->reference($p)->assertOk()->assertJsonPath('remaining.TOTAL', 1 - (int) $p['planBudgetTotals']['mandor']);
         $this->asRole('Finance');
-        $this->getJson('/api/budgeting-pid?unit=Konstruksi')->assertOk()->assertJsonPath('rows.0.application_used.TOTAL', (int) $p['planBudgetTotals']['ownerTotal']);
+        $this->getJson('/api/budgeting-pid?unit=Konstruksi')->assertOk()->assertJsonPath('rows.0.application_used.TOTAL', (int) $p['planBudgetTotals']['mandor']);
     }
 
     public function test_old_pp_is_not_tagged_or_counted_even_if_client_forges_policy(): void
@@ -256,7 +257,7 @@ class BudgetPidAllocationTest extends TestCase
         $this->assertDatabaseCount('budget_pid_allocations', 1);
         $this->assertArrayNotHasKey('budgetPidPolicy', $this->project($old['id']));
         $this->api('submitProjectBundle', [$p['id']])->assertOk();
-        $this->reference($p)->assertOk()->assertJsonPath('application_used.TOTAL', (int) $p['planBudgetTotals']['ownerTotal']);
+        $this->reference($p)->assertOk()->assertJsonPath('application_used.TOTAL', (int) $p['planBudgetTotals']['mandor']);
         $old['budgetPidPolicy'] = BudgetPidAllocation::POLICY;
         $old['unit'] = 'Konstruksi';
         $this->api('saveProjectBundle', [$old, false])->assertUnprocessable();
@@ -339,7 +340,7 @@ class BudgetPidAllocationTest extends TestCase
         fwrite(STDERR, "\nBudget PID own-reference: ".count($queries)." HTTP queries.\n");
     }
 
-    public function test_paid_retains_consumption_release_frees_only_unused_owner_volume_and_continuation_is_new(): void
+    public function test_paid_retains_consumption_release_frees_only_unused_mandor_volume_and_continuation_is_new(): void
     {
         [$p, $d, $v] = $this->package();
         $this->master($p);
@@ -377,7 +378,7 @@ class BudgetPidAllocationTest extends TestCase
         $this->reference($p)->assertOk()->assertJsonPath('remaining.TOTAL', 0);
         $this->api('releaseVolume', [$b['id'], ['budget-row' => ['m' => 0, 's' => 2]]])->assertOk();
         $rootRow = collect($p['boq'])->firstWhere('id', 'budget-row');
-        $credit = 2 * $rootRow['s'];
+        $credit = 2 * collect($p['planBudget']['mandor'])->firstWhere('rowId', 'budget-row')['priceS'];
         $afterRelease = $this->allocation($p['id']);
         $this->assertSame((int) $reserved['service'] - $credit, (int) $afterRelease->service);
         $this->assertSame((int) $reserved['material'], (int) $afterRelease->material);
@@ -388,7 +389,7 @@ class BudgetPidAllocationTest extends TestCase
         $this->assertSame(BudgetPidAllocation::POLICY, $child['budgetPidPolicy']);
         $this->assertSame('draft', $this->allocation($child['id'])->status);
         $this->reference($p)->assertOk()->assertJsonPath('remaining.TOTAL', $credit);
-        $this->assertSame($credit, (int) $child['planBudgetTotals']['ownerTotal']);
+        $this->assertSame(2 * $rootRow['s'], $child['planBudgetTotals']['ownerTotal']);
         $this->assertSame('Sah', $this->project($p['id'])['status']);
         $this->assertGreaterThan(0, $getTerm()['paid']);
     }
@@ -468,5 +469,111 @@ class BudgetPidAllocationTest extends TestCase
         $this->assertSame($allocation, (array) $this->allocation($p['id']));
         $this->asRole('Admin Konstruksi');
         $this->assertSame($before, $this->state());
+    }
+
+    public function test_mandor_material_and_service_control_limits_even_when_owner_and_nonstock_are_larger(): void
+    {
+        [$p] = $this->package();
+        $p['planBudget']['mandor'][1] = ['rowId' => 'material-row', 'qtyM' => 4, 'qtyS' => 0, 'priceM' => 100, 'priceS' => 0];
+        $p['planBudget']['excludedMaterialRowIds'] = ['material-row'];
+        $p['planBudget']['materials'][] = ['id' => 'manual-extra', 'name' => 'Extra', 'unit' => 'pcs', 'qty' => 1, 'price' => 1000];
+        $p['planBudgetTotals'] = ['mandorM' => 0, 'mandorS' => 0, 'ownerM' => 0, 'ownerS' => 0, 'bop' => 0];
+        $this->api('saveProjectBundle', [$p, false])->assertOk();
+        $p = $this->project($p['id']);
+        $this->assertEquals(400, $p['planBudgetTotals']['mandorM']);
+        $this->assertEquals(500, $p['planBudgetTotals']['mandorS']);
+        $this->assertEquals(1010, $p['planBudgetTotals']['material']);
+        $this->assertGreaterThan(900, $p['planBudgetTotals']['ownerTotal']);
+        foreach (['Material' => 399, 'Non Material' => 499, 'TOTAL' => 899] as $category => $limit) {
+            $this->master($p, [$category => $limit]);
+            $this->asRole('Admin Konstruksi');
+            $revision = PrototypeWorkspace::first()->revision;
+            $this->api('submitProjectBundle', [$p['id']])->assertUnprocessable()->assertSee('Budget PID '.$category, false);
+            $this->assertSame($revision, PrototypeWorkspace::first()->revision);
+            $this->assertSame('draft', $this->allocation($p['id'])->status);
+        }
+        $this->master($p);
+        $this->asRole('Admin Konstruksi');
+        $this->api('submitProjectBundle', [$p['id']])->assertOk();
+        $this->assertEquals(400, $this->allocation($p['id'])->planned_material);
+        $this->assertEquals(500, $this->allocation($p['id'])->planned_service);
+        $this->reference($p)->assertOk()->assertJsonPath('remaining.TOTAL', 0);
+        $after = json_decode(DB::table('budget_pid_allocation_changes')->where('action', 'reserve')->value('after_data'), true);
+        $this->assertSame(BudgetPidAllocation::POLICY, $after['budget_basis']);
+    }
+
+    public function test_owner_policy_pending_is_not_repriced_by_get_unrelated_save_or_decision_and_revision_holds_it_until_submit(): void
+    {
+        [$p] = $this->package('LEGACY-OWNER-ALLOCATION');
+        $this->asRole('Admin Konstruksi');
+        $workspace = PrototypeWorkspace::first();
+        $before = $this->state();
+        $legacy = $before;
+        foreach ($legacy['projects'] as &$row) {
+            if ($row['id'] === $p['id']) {
+                $row['budgetPidPolicy'] = BudgetPidAllocation::LEGACY_POLICY;
+            }
+        }
+        unset($row);
+        // Trusted isolated pre-update fixture only: no application backfill or maintenance bypass.
+        $legacy = app(PrototypeDomain::class)->execute($legacy, 'submitProjectBundle', [$p['id']])['state'];
+        foreach ($legacy['projects'] as &$row) {
+            if ($row['id'] === $p['id']) {
+                $row['budgetPidPolicy'] = BudgetPidAllocation::LEGACY_POLICY;
+            }
+        }
+        unset($row);
+        DB::transaction(fn () => app(RelationalWorkflowStore::class)->write($workspace, $legacy, $before));
+        $p = collect($legacy['projects'])->firstWhere('id', $p['id']);
+        $old = BudgetPidAllocation::amounts($legacy, $p);
+        DB::table('budget_pid_allocations')->where('pp_id', $this->allocation($p['id'])->pp_id)->update($old + ['status' => 'reserved', 'source_hash' => hash('sha256', 'isolated-v1-owner-record')]);
+        $this->master($p);
+        $saved = (array) $this->allocation($p['id']);
+        $this->asRole('Admin Konstruksi');
+        $this->assertSame(BudgetPidAllocation::LEGACY_POLICY, $this->project($p['id'])['budgetPidPolicy']);
+        $unrelated = $p;
+        $unrelated['id'] = $unrelated['rootId'] = 'pp-'.Str::uuid();
+        $unrelated['projectCode'] = 'UNRELATED-NEW-MANDOR';
+        unset($unrelated['contractBundle']);
+        $this->api('saveProjectBundle', [$unrelated, false])->assertOk();
+        $this->assertSame(BudgetPidAllocation::LEGACY_POLICY, $this->project($p['id'])['budgetPidPolicy']);
+        $this->assertSame($saved, (array) $this->allocation($p['id']));
+        $this->asRole('PM Konstruksi');
+        $this->api('decideProject', [$p['id'], 'Setujui', ''])->assertOk();
+        $this->assertSame($saved, (array) $this->allocation($p['id']));
+        $this->asRole('Admin Area');
+        $this->api('decideProject', [$p['id'], 'Kembalikan', 'Perbaiki'])->assertOk();
+        $decisions = DB::table('approval_decisions')->orderBy('id_approval_decision')->get()->toJson();
+        $this->asRole('Admin Konstruksi');
+        $draft = $this->project($p['id']);
+        $this->api('saveProjectBundle', [$draft, false])->assertOk();
+        $this->assertSame(BudgetPidAllocation::POLICY, $this->project($p['id'])['budgetPidPolicy']);
+        $this->assertSame($saved, (array) $this->allocation($p['id']), 'Revision draft cannot free the old reservation early.');
+        $this->api('submitProjectBundle', [$p['id']])->assertOk();
+        $this->assertEquals($p['planBudgetTotals']['mandorS'], $this->allocation($p['id'])->planned_service);
+        $this->assertEquals($p['planBudgetTotals']['mandorM'], $this->allocation($p['id'])->planned_material);
+        $this->assertSame($decisions, DB::table('approval_decisions')->orderBy('id_approval_decision')->get()->toJson());
+    }
+
+    public function test_mandor_release_is_capped_to_budgeted_unused_quantity_and_never_credits_owner_or_siblings(): void
+    {
+        $p = ['id' => 'pp', 'rootId' => 'pp', 'budgetPidPolicy' => BudgetPidAllocation::POLICY, 'moneyPolicy' => 'idr-trunc-v1',
+            'planBudgetTotals' => ['mandorM' => 1000, 'mandorS' => 1000, 'ownerM' => 10000, 'ownerS' => 20000, 'bop' => 50],
+            'boq' => [['id' => 'row', 'm' => 1000, 's' => 2000]],
+            'planBudget' => ['mandor' => [['rowId' => 'row', 'qtyM' => 10, 'qtyS' => 10, 'priceM' => 100, 'priceS' => 100]]]];
+        $state = ['projects' => [$p], 'deals' => [['id' => 'deal', 'projectId' => 'pp'], ['id' => 'other', 'projectId' => 'sibling']],
+            'spks' => [['id' => 'spk', 'dealId' => 'deal'], ['id' => 'other-spk', 'dealId' => 'other']],
+            'terms' => [['id' => 'term', 'spkId' => 'spk', 'status' => 'Disetujui', 'paid' => 1, 'actuals' => ['row' => ['m' => 8, 's' => 10]]], ['id' => 'other-term', 'spkId' => 'other-spk', 'status' => 'Disetujui', 'actuals' => ['row' => ['m' => 999, 's' => 999]]]],
+            'bapps' => [['termId' => 'term', 'released' => ['row' => ['m' => 6, 's' => 6]]], ['termId' => 'other-term', 'released' => ['row' => ['m' => 999, 's' => 999]]]]];
+        $before = $state;
+        $amounts = BudgetPidAllocation::amounts($state, $p);
+        $this->assertSame(800, $amounts['material']);
+        $this->assertSame(1000, $amounts['service']);
+        $this->assertSame(50, $amounts['bop']);
+        $this->assertSame($before, $state);
+        $p['budgetPidPolicy'] = BudgetPidAllocation::LEGACY_POLICY;
+        $legacy = BudgetPidAllocation::amounts($state, $p);
+        $this->assertSame(4000, $legacy['material']);
+        $this->assertSame(8000, $legacy['service']);
     }
 }

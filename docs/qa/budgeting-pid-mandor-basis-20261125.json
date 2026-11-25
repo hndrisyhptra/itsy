@@ -1,0 +1,159 @@
+{
+  "date": "2026-11-25",
+  "feature": "Budgeting PID gross BOQ TA Mandor basis",
+  "status": "implemented-and-isolated-tests-passed",
+  "contract": {
+    "new_policy": "pid-budget-mandor-v2",
+    "preserved_policy": "pid-budget-v1",
+    "material": "canonical planBudgetTotals.mandorM",
+    "non_material": "canonical planBudgetTotals.mandorS",
+    "total": "mandorM + mandorS",
+    "operational": "canonical BOP, separate cap",
+    "not_basis": [
+      "Owner totals",
+      "manual NonStock extras/deletions",
+      "Header/COGS",
+      "PPh",
+      "net transfer"
+    ],
+    "deferred_ui": "reference/remaining visible; PP comparison dash until positive Mandor costs",
+    "formal": "positive Mandor, current locked caps, atomic reserve",
+    "old_unmarked": "remains exempt",
+    "old_pending_approved_paid": "no reprice on GET, unrelated save or decisions",
+    "editable_tracked": "exact editable target save/submit adopts new policy; revision retains old reservation until explicit resubmit",
+    "release": "own cumulative explicit released quantity capped to planned Mandor minus accepted exact PP quantity times saved Mandor price; no accepted/paid/unbudgeted/BOP/sibling credit; policy1 retains old arithmetic"
+  },
+  "backend": {
+    "runtime": "XAMPP PHP 8.2.4",
+    "database": "SQLite :memory: strict test guard",
+    "full": {
+      "tests": 538,
+      "assertions": 16809,
+      "failed": 0,
+      "time_seconds": 126.54,
+      "memory_mb": 142.5,
+      "process_memory_limit_mb": 512
+    },
+    "focused": {
+      "tests": 28,
+      "assertions": 507,
+      "failed": 0,
+      "seconds": 6.144
+    },
+    "upload_regression": {
+      "tests": 13,
+      "assertions": 288,
+      "failed": 0,
+      "seconds": 5.29
+    },
+    "query_fixtures": {
+      "formal_http": 67,
+      "reference_http": 6,
+      "own_reference_http": 7,
+      "mapping100_http": 12,
+      "boq500": 59,
+      "barp500_http": 50,
+      "changed_barpr_details": 13,
+      "incremental20pp": 8,
+      "full20pp": 353
+    }
+  },
+  "frontend": {
+    "tests": 499,
+    "failed": 0,
+    "skipped": 0,
+    "milliseconds": 4648.589375,
+    "typescript_vite": "passed",
+    "assets": {
+      "manifest_references": 50,
+      "preload_dependencies": 41,
+      "profiles": 3
+    },
+    "pint": "passed",
+    "diff_check": "passed"
+  },
+  "regressions": [
+    "all four caps and equality/rollback",
+    "server recalculates forged totals",
+    "Mandor400/500/900 vs larger Owner and NonStock1010",
+    "policy1 pending and actual decision history unchanged through unrelated write/return/draft/resubmit",
+    "revisions retain previous row until formal replacement",
+    "paid retains consumption and exact unused Mandor release/continuation",
+    "release caps planned-minusaccepted, no siblings or Ownerprice for policy2",
+    "frozen1 UI vs editable preview2",
+    "no-input dash, material-only/service-only ready"
+  ],
+  "browser": {
+    "actual_app": true,
+    "api": "intercepted synthetic fixtures; external network blocked",
+    "header_spk_flows": [
+      "construction",
+      "operation",
+      "existing_unmarked",
+      "tracked_mandor2",
+      "spk_mandor2"
+    ],
+    "viewports": [
+      375,
+      768,
+      1440
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "js_errors": 0,
+    "root_overflow": false,
+    "scope_stale_and_confirmation": "tested using existing handlers",
+    "interactive": {
+      "material": 400,
+      "service": 500,
+      "total": 900,
+      "larger_owner_no_false_warning": true,
+      "service_above_limit": "warning immediately",
+      "reference_gets_for_all_amount_edits": 1,
+      "writes": 0
+    },
+    "screenshots_inspected": [
+      "desktop-light",
+      "mobile-dark"
+    ]
+  },
+  "test_corrections": [
+    "Initial old Owner expectations updated to Mandor; explicit policy1 regression added rather than dropping historical guards.",
+    "Legacy memory fixture restores trusted policy after Domain whitelist; unrelated Draft avoids Storage::fake clearing original payee photos.",
+    "Full initial run had 3 upload submission fixtures without Mandor. Only formal fixture supplies positive qty/prices now; upload-only Draft assertions and production validation unchanged. Focused and full reruns passed.",
+    "Browser harness role corrected button to tab and normalized currency whitespace; production UI unchanged.",
+    "Negative existing remaining budget retains warning even while current Mandor input is empty."
+  ],
+  "performance": "No new SQL/API/schema/migration/dependency/poller. Loaded maps and early return before accepted scan without release. Measured query counts unchanged; no production latency or bottleneck-free claim.",
+  "limits": [
+    "No physical MariaDB/MySQL/aaPanel/concurrency/load run for this correction. Stage4 offline QA script updated but not physically rerun.",
+    "No real external workbook import or active database mutation.",
+    "No Word/PDF render for unchanged document generators.",
+    "Browser uses fake APIs and synthetic data, not server sessions."
+  ],
+  "deployment": {
+    "new_migration": false,
+    "new_worker": false,
+    "new_env": false,
+    "steps": [
+      "deploy source",
+      "npm run build",
+      "npm run check:assets",
+      "reload and smoke test scoped Admin/Finance"
+    ],
+    "historical_resubmission_required": false
+  },
+  "not_performed": [
+    "active its writes",
+    "live migration",
+    "ENV/key modification",
+    "worker changes",
+    "aaPanel/server changes",
+    "Dompis changes",
+    "commit",
+    "push",
+    "deployment"
+  ]
+}

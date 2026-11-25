@@ -2,6 +2,11 @@
 name: area3-financial-calculation
 description: Implement and verify official KHS component prices, agreed BA KH/SPK snapshots, actual term amounts, outstanding payment and consolidated budgets for its Area 3.
 ---
+
+## 25 November 2026 — PID gross Mandor validation
+
+Follow latest docs/BUDGETING_PID.md, superseding Owner basis only new/editable tracked records. Policy2 canonical MandorM/J/TOTAL=M+J, separate BOP; defer UI comparison before positiveMandor, formal currentcaps/locks/UUID/rollback remain. Preserve pending/Sah/paid1 and unmarked exemption; exact editable1 adopts2, revisionholds until resubmit. New release savedMandorprices cap to planned-minusaccepted exactPP, never accepted/paid/unbudgeted/sibling/BOP; legacyrelease unchanged. No schema/query/API/poller/liveits/env/worker/server/Dompis writes or money/PPh/export rewrite. Test Owner>Mandor, manualNonStockdifferent, boundaries, frozen1, revisionhold, actualpaid/releasecontinuation, sourceaudit and browserliveedit1GET. Record actual full/focused/build/browsermock vs physicalserver/export limits and deployment without newmigration.
+
 ## 25 November 2026 — BOP ratio denominator aligned
 
 Follow latest docs/PP_BUDGET_TEMPLATE.md. IV.3BOPpercentage and margin2.5Operasional both TotalBOP/Revenue×100; label %BOP/Revenue. Same ratio helper/zero dash, saved Sah totals; never alter amount/revenuepolicy/COGS/Header/history/PID/ledger/approvals or NonStock ratio. Shared editor/preview/print/DOMWord source,0SQL/API/schema/migration/poller/dependency/livewrite. Regressioncompare Draf/Sah editor/printing/zero/nonmutation, record actual focusedPHP/frontend/build and no physicalexport/server claim. Deploy build/checkassets only.

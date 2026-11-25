@@ -1,5 +1,9 @@
 # Catatan perubahan it's Area 3
 
+## 25 November 2026 — Dasar plafon PID menjadi BOQ Mandor
+
+Validasi Material/Jasa/TOTAL kini dari gross BOQ TA - Mandor; BOP terpisah. Sebelum diisi tampil referensi+sisa tanpa membandingkan Owner; sesudah input perbandingan langsung berubah, halaman SPK sama. Server policy2 untuk baru/editabletracked, alokasi lama pending/Sah/paid tetap; revisi menahan saldo sampai pengajuan ulang, PP pra-budget tetap exempt. Pelepasan memakai Mandor dengan cap unused/accepted. Tanpa migration/query/API/poller baru, tanpa backfill atau perubahan PPh/nominal dokumen. [Kontrak, tes dan deployment](BUDGETING_PID.md).
+
 ## 25 November 2026 — Finance mengunggah hasil scan pembayaran
 
 Unggah/koreksi scan kini hanya Finance; Admin melihat/mengunduh sesuai akses. Upload berhasil→BerkasOK, verifikasi dan approval Finance tetap terpisah. Baru7stage dapat mengunggah pada giliranFinance setelah6keputusan UUIDaktif; legacy/fullapproved dan pelengkapanlatepaid mengikuti guardlama. File/histori/nominal existing tetap, tanpa migration baru.535PHP/496frontend/build/assets/browsermock lulus. [Detail](FINANCE_SCAN_UPLOAD.md).

@@ -1,5 +1,7 @@
 # it's Area 3 — Construction Workspace
 
+**25 November 2026 — Budgeting memakai BOQ Mandor:** Material dan Non Material (Jasa) kini dibandingkan dengan total BOQ TA - Mandor; TOTAL adalah keduanya, BOP tetap terpisah. Referensi tampil sejak Header, perbandingan nominal setelah Mandor diisi. Alokasi pending/Sah/paid lama tetap; Draft/revisi bertanda budgeting memakai basis baru saat disimpan/diajukan ulang. Tanpa migration baru; build/check aset diperlukan. [Aturan, pengujian dan batas](docs/BUDGETING_PID.md).
+
 **25 November 2026 — Scan pembayaran oleh Finance:** unggah hasil scan TTD dipindahkan dari Admin ke Finance. Tombol Unggah Scan & Tandai OK tersedia saat giliran Finance dan untuk pelengkapan setelah pembayaran; OK berarti file tersimpan, approval tetap terpisah. File lama dipertahankan. Build/check aset diperlukan, tanpa migration baru. [Aturan dan bukti](docs/FINANCE_SCAN_UPLOAD.md).
 
 **25 November 2026 — Filter Dashboard ringkas:** panel dipadatkan menjadi baris horizontal di desktop dan dua dropdown berdampingan di ponsel. Label serta Reset Branch tetap tersedia. Build/check aset diperlukan, tanpa migration. [Detail](docs/DASHBOARD_APPROVAL_MATRIX.md).

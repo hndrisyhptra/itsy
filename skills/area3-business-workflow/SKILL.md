@@ -2,6 +2,11 @@
 name: area3-business-workflow
 description: Implement its Area 3 Project Plan, BOQ, mandor contracting, assigned two-stage approvals, scan verification and full APM settlement, APM gating, BA PP and continuation state transitions.
 ---
+
+## 25 November 2026 — PID gross Mandor validation
+
+Follow latest docs/BUDGETING_PID.md, superseding Owner basis only new/editable tracked records. Policy2 canonical MandorM/J/TOTAL=M+J, separate BOP; defer UI comparison before positiveMandor, formal currentcaps/locks/UUID/rollback remain. Preserve pending/Sah/paid1 and unmarked exemption; exact editable1 adopts2, revisionholds until resubmit. New release savedMandorprices cap to planned-minusaccepted exactPP, never accepted/paid/unbudgeted/sibling/BOP; legacyrelease unchanged. No schema/query/API/poller/liveits/env/worker/server/Dompis writes or money/PPh/export rewrite. Test Owner>Mandor, manualNonStockdifferent, boundaries, frozen1, revisionhold, actualpaid/releasecontinuation, sourceaudit and browserliveedit1GET. Record actual full/focused/build/browsermock vs physicalserver/export limits and deployment without newmigration.
+
 ## 25 November 2026 — Finance signed payment scan
 
 Follow latest docs/FINANCE_SCAN_UPLOAD.md. User moves physicalsignedscan upload/correction to Financeonly, not allAdmin uploads. Current7stage Finance turn requires exact6 orderedselected/currentkasbonUUID decisions, actorFinance/Branch/unit; legacycomplete/paidlate guards retained. Uploadsuccess→presenceOK; separateverification writes scanmetadata only forsettlement, never actualFinance7/financeApproval/history/payment. Oldlegacy verification semantics and oldAdminfileactor/path/history/paid/ledger unchanged; no GETrewrite or schema/API/poller/dependency. Controllerrolepreflight beforegraph plus domainrole undertransaction, exactreceipt/revision/private/MIME/SHA/cleanup/replay/Valid locks.535PHP496frontend/bothunit55HTTP/browsermock tested; no liveits/env/worker/server/Dompis writes, no migration/newworker. Build/checkassets.

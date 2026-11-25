@@ -1,3 +1,4 @@
+import {pidBudgetCosts,tracksPidBudget} from './budget-pid-policy';
 import {useEffect,useRef,useState} from 'react';
 import type {Project,State} from './domain';
 import {money} from './domain';
@@ -43,9 +44,9 @@ export function usePidReference(p:Project,existing:Project|undefined,enabled:boo
 }
 export function samePidCount(s:State,p:Project,existing?:Project){return existing||p.parentId?0:s.projects.filter(v=>v.id!==p.id&&v.unit===p.unit&&pidCode(v.projectCode)===pidCode(p.projectCode)).length;}
 export function pidDraftChange(p:Project,patch:Partial<Project>):Project{return {...p,...patch,...(Object.hasOwn(patch,'projectCode')||Object.hasOwn(patch,'unit')||Object.hasOwn(patch,'branch')?{budgetPidSelection:undefined,...(p.budgetPidSelection?.importId?{name:''}:{})}:{})};}
-export function PidReferenceView({p,lookup,duplicate=0,legacy=false,adopt=true}:{p:Project;lookup:ReturnType<typeof usePidReference>;duplicate?:number;legacy?:boolean;adopt?:boolean}){
+export function PidReferenceView({p,lookup,duplicate=0,legacy=false,adopt=true,editing=false}:{p:Project;lookup:ReturnType<typeof usePidReference>;duplicate?:number;legacy?:boolean;adopt?:boolean;editing?:boolean}){
  const result=lookup.result;
- const current=p.planBudgetTotals,amounts={TOTAL:current?.ownerTotal??0,Material:current?.ownerM??0,'Non Material':current?.ownerS??0,Operasional:current?.bop??p.costs.bop};
+ const {amounts,mandor,ready}=pidBudgetCosts(p,editing);
  return <div className="pid-reference stack" aria-label="Referensi Budgeting PID">
   {duplicate>0&&<Notice tone="warning">ID Project ini pernah digunakan pada {duplicate} PP dalam cakupan akses Anda. Pastikan PP baru menggunakan mandor berbeda.</Notice>}
   {!p.branch&&pidCode(p.projectCode)&&<Notice>Pilih Branch untuk memeriksa referensi PID sesuai unit kerja.</Notice>}
@@ -55,13 +56,15 @@ export function PidReferenceView({p,lookup,duplicate=0,legacy=false,adopt=true}:
   {result?.status==='branch_unmapped'&&<Notice tone="warning">PID belum dipetakan ke Branch. Hubungi Finance untuk pemetaan; sementara Nama Kegiatan dapat diisi manual dan referensi budget belum tersedia.</Notice>}
   {(result?.status==='branch_conflict'||result?.status==='unit_conflict')&&<Notice tone="error">PID terdaftar pada {result.status==='unit_conflict'?'unit kerja':'Branch'} lain. Periksa ID Project, Branch dan Unit Kerja sebelum menyimpan.</Notice>}
   {result?.status==='found'&&<><div className="section-heading"><div><h3>Sisa Budget PID</h3><p>{result.pid} · {result.name}</p></div><div className="actions"><Button onClick={lookup.refresh}>Periksa Ulang PID</Button>{adopt&&!lookup.nameLocked&&<Button confirm="Gunakan Nama Kegiatan dari master pada PP ini?" onClick={lookup.adopt}>Gunakan Nama Master</Button>}</div></div>
-   <Table className="budget-pid-table" headers={['Komponen','Available Excel','Alokasi PP Lain','Sisa untuk PP Ini','Nilai PP Ini','Sisa Setelah PP Ini']}>{(['TOTAL','Material','Non Material','Operasional'] as const).map(c=><tr key={c}><td>{c==='TOTAL'?'Total Budget':c==='Non Material'?'Non Material':c==='Material'?'Material':'Operasional'}</td><td className="numeric">{money(result.available[c])}</td><td className="numeric">{money(result.application_used[c])}</td><td className="numeric"><b>{money(result.remaining[c])}</b></td><td className="numeric">{money(amounts[c])}</td><td className={`numeric ${amounts[c]>result.remaining[c]?'error-text':''}`}>{money(result.remaining[c]-amounts[c])}</td></tr>)}</Table>
-   {legacy?<Notice>PP lama ini dikecualikan dari alokasi dan batas budget baru. Status, nominal dan riwayatnya tetap.</Notice>:<Notice tone={Object.keys(amounts).some(c=>amounts[c as keyof Costs]>result.remaining[c as keyof Costs])?'warning':'info'}>Draf belum mengurangi budget. Saat Ajukan Paket, sistem memeriksa ulang empat batas dan mereservasi budget secara bersamaan. PP lama sebelum fitur ini dikecualikan; pembayaran lunas tetap terpakai. Total BOQ Owner berbeda dari Total Anggaran Header PP.</Notice>}
+   <Table className="budget-pid-table" headers={['Komponen','Available Excel','Alokasi PP Lain','Sisa untuk PP Ini','Nilai PP Ini','Sisa Setelah PP Ini']}>{(['TOTAL','Material','Non Material','Operasional'] as const).map(c=><tr key={c}><td>{c==='TOTAL'?'Total Budget':c==='Non Material'?'Non Material':c==='Material'?'Material':'Operasional'}</td><td className="numeric">{money(result.available[c])}</td><td className="numeric">{money(result.application_used[c])}</td><td className={`numeric ${result.remaining[c]<0?'error-text':''}`}><b>{money(result.remaining[c])}</b></td><td className="numeric">{ready?money(amounts[c]):'—'}</td><td className={`numeric ${ready&&amounts[c]>result.remaining[c]?'error-text':''}`}>{ready?money(result.remaining[c]-amounts[c]):'—'}</td></tr>)}</Table>
+   {!ready&&<Notice>Isi volume dan harga pada BOQ TA - Mandor di tab Anggaran &amp; Margin. Validasi nominal budget dilakukan setelah BOQ Mandor diisi.</Notice>}
+   {ready&&<Notice>{mandor?'Dasar validasi: Material dan Jasa bruto dari BOQ TA - Mandor; Total = Material + Jasa. BOP diperiksa terpisah.':'PP ini masih memakai alokasi historis BOQ Owner. Dasar Mandor digunakan saat draf/revisi disimpan dan diajukan kembali.'}</Notice>}
+   {legacy?<Notice>PP lama ini dikecualikan dari alokasi dan batas budget baru. Status, nominal dan riwayatnya tetap.</Notice>:<Notice tone={ready&&Object.keys(amounts).some(c=>amounts[c as keyof Costs]>result.remaining[c as keyof Costs])?'warning':'info'}>Draf belum mengurangi budget. Saat Ajukan Paket, sistem memeriksa ulang empat batas dan mereservasi budget secara bersamaan. PP lama sebelum fitur ini dikecualikan; pembayaran lunas tetap terpakai. Nominal budgeting tidak memakai potongan PPh atau nilai transfer kasbon.</Notice>}
   </>}
  </div>;
 }
 
-export function ProjectBudgetReference({p,enabled}:{p:Project;enabled:boolean}){
+export function ProjectBudgetReference({p,enabled,editing=false}:{p:Project;enabled:boolean;editing?:boolean}){
  const lookup=usePidReference(p,p,enabled,()=>{});
- return <PidReferenceView p={p} lookup={lookup} legacy={p.budgetPidPolicy!=='pid-budget-v1'} adopt={false}/>;
+ return <PidReferenceView p={p} lookup={lookup} legacy={!tracksPidBudget(p)} adopt={false} editing={editing}/>;
 }

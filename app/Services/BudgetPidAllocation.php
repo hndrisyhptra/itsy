@@ -11,7 +11,14 @@ use Illuminate\Support\Str;
 /** Separate budget ledger for genuinely new PP only; old/paid workflow records are never adopted. */
 final class BudgetPidAllocation
 {
-    public const POLICY = 'pid-budget-v1';
+    public const POLICY = 'pid-budget-mandor-v2';
+
+    public const LEGACY_POLICY = 'pid-budget-v1';
+
+    public static function tracked(array $p): bool
+    {
+        return in_array($p['budgetPidPolicy'] ?? '', [self::POLICY, self::LEGACY_POLICY], true);
+    }
 
     public const CATEGORIES = ['Material' => 'material', 'Non Material' => 'service', 'Operasional' => 'bop'];
 
@@ -23,8 +30,8 @@ final class BudgetPidAllocation
     public static function pin(array $input, ?array $old): array
     {
         unset($input['budgetPidPolicy']);
-        if (($old['budgetPidPolicy'] ?? '') === self::POLICY) {
-            $input['budgetPidPolicy'] = self::POLICY;
+        if ($old && self::tracked($old)) {
+            $input['budgetPidPolicy'] = $old['budgetPidPolicy'];
         }
 
         return $input;
@@ -97,6 +104,9 @@ final class BudgetPidAllocation
 
     public static function amounts(array $state, array $p): array
     {
+        if (($p['budgetPidPolicy'] ?? '') === self::POLICY) {
+            return self::mandorAmounts($state, $p);
+        }
         $owners = $p['planBudgetTotals'] ?? null;
         abort_unless(is_array($owners) && isset($owners['ownerM'], $owners['ownerS'], $owners['bop']), 422, 'Rincian BOQ Owner dan BOP belum lengkap untuk alokasi budget PID.');
         $m = self::integer($owners['ownerM']);
@@ -132,6 +142,63 @@ final class BudgetPidAllocation
             'planned_material' => $m, 'planned_service' => $s, 'planned_bop' => $bop];
     }
 
+    /** Cost basis stays frozen on issued PP; only explicit physical unused-volume release earns credit. */
+    private static function mandorAmounts(array $state, array $p): array
+    {
+        $totals = $p['planBudgetTotals'] ?? [];
+        abort_unless(isset($totals['mandorM'], $totals['mandorS'], $totals['bop']) && isset($p['planBudget']['mandor']), 422, 'Isi BOQ TA - Mandor sebelum validasi budget PID.');
+        $m = self::integer($totals['mandorM']);
+        $s = self::integer($totals['mandorS']);
+        $bop = self::integer($totals['bop']);
+        abort_unless($m + $s > 0, 422, 'Isi volume dan harga positif BOQ TA - Mandor sebelum mengajukan paket PP.');
+        $planned = ['material' => $m, 'service' => $s, 'bop' => $bop, 'planned_material' => $m, 'planned_service' => $s, 'planned_bop' => $bop];
+        if (empty($state['bapps'])) {
+            return $planned;
+        }
+        $deals = array_column($state['deals'], null, 'id');
+        $spks = array_column($state['spks'], null, 'id');
+        $terms = array_column($state['terms'], null, 'id');
+        $owned = fn ($t) => ($deals[$spks[$t['spkId'] ?? '']['dealId'] ?? '']['projectId'] ?? '') === $p['id'];
+        $accepted = $releasedQty = [];
+        foreach ($state['bapps'] as $b) {
+            if (! $owned($terms[$b['termId']] ?? [])) {
+                continue;
+            }
+            foreach ($b['released'] ?? [] as $id => $q) {
+                foreach (['m', 's'] as $c) {
+                    $releasedQty[$id][$c] = ($releasedQty[$id][$c] ?? 0) + ($q[$c] ?? 0);
+                }
+            }
+        }
+        if (! $releasedQty) {
+            return $planned;
+        }
+        foreach ($state['terms'] as $t) {
+            if (! $owned($t) || $t['status'] !== 'Disetujui') {
+                continue;
+            }
+            foreach ($t['actuals'] as $id => $q) {
+                foreach (['m', 's'] as $c) {
+                    $accepted[$id][$c] = ($accepted[$id][$c] ?? 0) + ($q[$c] ?? 0);
+                }
+            }
+        }
+        $credit = ['m' => 0, 's' => 0];
+        foreach ($p['planBudget']['mandor'] as $row) {
+            foreach (['m' => ['qtyM', 'priceM'], 's' => ['qtyS', 'priceS']] as $c => [$qty, $price]) {
+                // A larger physical SPK release can never free accepted/paid or unbudgeted Mandor volume.
+                $unused = max(0, $row[$qty] - ($accepted[$row['rowId']][$c] ?? 0));
+                $released = min($releasedQty[$row['rowId']][$c] ?? 0, $unused);
+                $amount = WholeRupiah::amount(bcmul((string) $released, (string) $row[$price], 6), $p);
+                $credit[$c] = self::integer(bcadd((string) $credit[$c], (string) $amount, 0));
+            }
+        }
+        abort_if($credit['m'] > $m || $credit['s'] > $s, 422, 'Pelepasan melebihi alokasi BOQ TA - Mandor.');
+
+        return ['material' => $m - $credit['m'], 'service' => $s - $credit['s'], 'bop' => $bop,
+            'planned_material' => $m, 'planned_service' => $s, 'planned_bop' => $bop];
+    }
+
     /** Called only after domain guards succeed, under the existing workspace transaction/lock. */
     public function plan(PrototypeWorkspace $w, array $before, array &$state, array $input, string $payloadHash): ?array
     {
@@ -139,10 +206,15 @@ final class BudgetPidAllocation
             return null;
         }
         $old = array_column($before['projects'], null, 'id');
+        $command = $input['command'];
+        $editTarget = in_array($command, ['saveProject', 'saveProjectBundle', 'submitProjectBundle'], true) ? (is_array($input['args'][0]) ? $input['args'][0]['id'] : $input['args'][0]) : null;
         $target = null;
         foreach ($state['projects'] as &$p) {
-            if (($old[$p['id']]['budgetPidPolicy'] ?? '') === self::POLICY) {
-                $p['budgetPidPolicy'] = self::POLICY;
+            if (isset($old[$p['id']]) && self::tracked($old[$p['id']])) {
+                $p['budgetPidPolicy'] = $old[$p['id']]['budgetPidPolicy'];
+                if ($p['id'] === $editTarget && in_array($old[$p['id']]['status'], ['Draft', 'Dikembalikan', 'Ditolak'], true)) {
+                    $p['budgetPidPolicy'] = self::POLICY;
+                }
             } elseif (! isset($old[$p['id']]) && ($p['workflowVersion'] ?? 1) >= 3) {
                 $p['budgetPidPolicy'] = self::POLICY;
                 $target = $p['id'];
@@ -151,7 +223,6 @@ final class BudgetPidAllocation
             }
         }
         unset($p);
-        $command = $input['command'];
         if (in_array($command, ['saveProject', 'saveProjectBundle', 'submitProjectBundle', 'cancelProject'], true)) {
             $target = is_array($input['args'][0]) ? $input['args'][0]['id'] : $input['args'][0];
         } elseif ($command === 'releaseVolume') {
@@ -161,7 +232,7 @@ final class BudgetPidAllocation
             $target = collect($state['deals'])->firstWhere('id', $v['dealId'])['projectId'];
         }
         $p = collect($state['projects'])->firstWhere('id', $target);
-        if (! $p || ($p['budgetPidPolicy'] ?? '') !== self::POLICY) {
+        if (! $p || ! self::tracked($p)) {
             return null;
         }
         if (! empty($p['parentId'])) {
@@ -211,14 +282,15 @@ final class BudgetPidAllocation
         $record = ['pp_id' => $ppId, 'pid_code' => $pid, 'unit' => $p['unit'], 'branch_id' => $branchId,
             'budget_pid_id' => $master && $master->unit === $p['unit'] && (int) $master->branch_id === $branchId ? $master->id_budget_pid : null,
             'status' => $status] + $amounts;
-        $record['source_hash'] = hash('sha256', json_encode(Arr::sortRecursive($record), JSON_THROW_ON_ERROR));
+        $basis = $p['budgetPidPolicy'];
+        $record['source_hash'] = hash('sha256', json_encode(Arr::sortRecursive($basis === self::POLICY ? $record + ['budget_basis' => $basis] : $record), JSON_THROW_ON_ERROR));
         if (! $formal && $existing && $existing->source_hash === $record['source_hash']) {
             return null;
         }
 
         return ['before' => $existing ? (array) $existing : null, 'record' => $record,
             'id' => $existing->id_budget_allocation ?? (string) Str::uuid(), 'request' => $input['request_id'], 'hash' => $payloadHash,
-            'action' => $cancel ? 'cancel' : ($release ? 'release' : ($formal ? 'reserve' : 'draft')), 'actor' => (int) auth()->id()];
+            'basis' => $basis, 'action' => $cancel ? 'cancel' : ($release ? 'release' : ($formal ? 'reserve' : 'draft')), 'actor' => (int) auth()->id()];
     }
 
     public function persist(?array $plan, int $revision): void
@@ -235,6 +307,6 @@ final class BudgetPidAllocation
         DB::table('budget_pid_allocation_changes')->insert(['id_budget_allocation_change' => (string) Str::uuid(), 'allocation_id' => $plan['id'],
             'request_uuid' => $plan['request'], 'actor_user_id' => $plan['actor'], 'action' => $plan['action'], 'payload_hash' => $plan['hash'],
             'before_data' => $plan['before'] ? json_encode($plan['before'], JSON_THROW_ON_ERROR) : null,
-            'after_data' => json_encode($record, JSON_THROW_ON_ERROR), 'created_at' => now()]);
+            'after_data' => json_encode($record + ['budget_basis' => $plan['basis']], JSON_THROW_ON_ERROR), 'created_at' => now()]);
     }
 }

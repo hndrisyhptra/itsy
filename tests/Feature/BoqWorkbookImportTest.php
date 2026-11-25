@@ -59,6 +59,12 @@ class BoqWorkbookImportTest extends TestCase
 
     private function api(array $p, bool $submit = false)
     {
+        if ($submit) {
+            // Formal new PP also supplies Mandor costs; upload-only Draft assertions stay unchanged.
+            $p['planBudget']['mandor'] = array_map(fn ($row) => ['rowId' => $row['id'],
+                'qtyM' => $row['m'] === null ? 0 : $row['qty'], 'qtyS' => $row['s'] === null ? 0 : $row['qty'],
+                'priceM' => $row['m'] === null ? 0 : 1, 'priceS' => $row['s'] === null ? 0 : 1], $p['boq']);
+        }
         $revision = $this->getJson('/api/prototype/state')->assertOk()->json('revision');
 
         return $this->historicalProjectCommand($p, $submit, fn () => $this->postJson('/api/prototype/commands', ['command' => 'saveProject', 'args' => [$p, $submit], 'revision' => $revision, 'request_id' => (string) Str::uuid()]));

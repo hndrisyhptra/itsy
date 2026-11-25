@@ -1,5 +1,38 @@
 # Master Budgeting PID — 24 November 2026
 
+## 25 November 2026 — Validasi memakai BOQ TA - Mandor
+
+Permintaan terbaru mengganti dasar Owner pada tahap3 **untuk PP baru dan penyimpanan/pengajuan ulang PP bertanda budgeting yang masih dapat diedit**. Dasar plafon sekarang:
+
+| Batas master | Nilai PP yang dibandingkan |
+|---|---|
+| TOTAL Level02 | Total Material + Jasa BOQ TA - Mandor |
+| Material Level04 | Jml_Mat BOQ TA - Mandor |
+| Non Material Level04 | Jml_Jasa BOQ TA - Mandor |
+| Operasional Level04 | Total BOP PP, diperiksa terpisah |
+
+Nilai Mandor adalah bruto sebelum PPh. BOP tidak ditambahkan kembali pada TOTAL. Tambahan/penghapusan Material Non Stock di IV.2, Total Anggaran Header, Revenue Owner serta nilai bersih kasbon/transfer tidak menjadi pengganti dasar Mandor. Rumus Excel Release−Tot.cst.cm−Act.costs, pemetaan Branch, empat batas dan cakupan unit/Branch tetap.
+
+Header dan BOQ Plan tetap dapat menampilkan referensi master lebih dahulu. **Sebelum ada volume×harga Mandor positif**, kolom Nilai PP Ini/Sisa Setelah PP Ini berisi `—`, dengan petunjuk mengisi BOQ Mandor di Anggaran & Margin. Nilai Owner hasil upload tidak memicu perbandingan plafon. Defisit sisa master yang sudah ada tetap ditandai. Sesudah Mandor diisi, perbandingan mengikuti perubahan input tanpa fetch tambahan; pemeriksaan SPK memakai dasar yang sama. Draf tetap dapat disimpan, sedangkan Ajukan Paket memeriksa ulang angka kanonis dan seluruh batas dalam transaksi; melebihi salah satu batas ditolak tanpa menyimpan pengajuan sebagian.
+
+### Kompatibilitas alokasi tersimpan
+
+- Server menandai PP baru/lanjutan dengan `budgetPidPolicy=pid-budget-mandor-v2`; klien tidak dapat memalsukan/menghapus policy. PP tanpa marker budgeting dari sebelum fitur ini **tetap dikecualikan**.
+- PP policy lama `pid-budget-v1` yang menunggu approval, Sah atau paid mempertahankan nominal alokasi Owner tersimpan. Membuka halaman, menyimpan PP lain atau memberi keputusan approval tidak menghitung ulang saldo/riwayatnya.
+- Policy1 Draft/revisi yang benar-benar diedit beralih ke Mandor melalui simpan/pengajuan eksplisit. Pada revisi yang pernah diajukan, simpan draf **masih menahan reservasi sebelumnya**; pengajuan ulang mengganti alokasi sendiri dan memeriksa plafon terbaru. Tidak ada pelepasan otomatis lebih awal.
+- Karenanya Alokasi PP Lain dapat memuat alokasi historis Owner policy1 dan Mandor policy2 sesuai riwayat masing-masing. Tidak dilakukan konversi massal. Tampilan beku policy1 memberi keterangan dasar historis; editor/SPK menunjukkan dasar Mandor untuk pengajuan berikutnya.
+- Lunas tidak membebaskan budget. Pelepasan volume policy2 hanya mengkreditkan volume yang benar-benar dilepas pada PP yang tepat, memakai harga Mandor tersimpan. Kredit dibatasi volume Mandor yang belum accepted: `min(total volume dilepas, max(0, volume Mandor − volume accepted PP)) × harga Mandor`. Volume accepted/paid, volume yang tidak dianggarkan, sibling PP dan BOP tidak dikreditkan. Policy1 tetap memakai rumus historisnya. Ledger fisik Owner dan alokasi volume PP lanjutan tidak diubah menjadi harga Mandor.
+
+`source_hash` policy2 mengikat basis; audit `budget_pid_allocation_changes.after_data` menambah `budget_basis`. Kolom ledger/tujuh tabel budgeting yang sudah ada tidak diubah. Transaksi, singleton master lock, current locking reads, self-exclusion, UUID actor/payload replay, rollback, source import UUID, akses Branch/unit/Region dan approval/paid guards tetap.
+
+### Pengujian dan penerapan koreksi Mandor
+
+Uji khusus28PHP/507assertions lulus: empat batas/equality/rollback, forged totals, M400/J500/total900 walaupun Owner dan manual NonStock lebih besar, policy1 pending/GET/approval/unrelated save tetap, return→Draft menahan saldo→resubmit Mandor tanpa mengubah keputusan lama, paid tetap terpakai, pelepasan harga Mandor/cap accepted/sibling dan lanjutan. Formal67HTTPqueries, referensi6/own7, pemetaan100=12; tidak ada query baru untuk menghitung basis. Regresi unggah13PHP/288assertions lulus setelah fixture pengajuan formal lama dilengkapi Mandor; validasi aplikasi tidak dilonggarkan.
+
+Full538PHP/16809assertions (126.540s/142.50MB, XAMPP8.2.4 SQLite memory) dan499frontend lulus, TypeScript/Vite/aset50refs41preloads×3, Pint/diffcheck. Browser actualApp dengan API buatan: lima alur Header/BOQ/SPK/Konstruksi/Operation/legacy, scope/stale response/YA-TIDAK dan375/768/1440 light-dark; tambahan uji input Mandor400/500→900, Owner lebih besar tanpa warning, perubahan Jasa melewati batas memicu warning,1referenceGET/0write/0JSerror/root overflow. Screenshot desktop/mobile diperiksa. Suite PHP lengkap dan batas dicatat di [audit](qa/budgeting-pid-mandor-basis-20261125.json) dan [QA](LARAVEL_QA.md).
+
+**Penerapan:** source terbaru, `npm run build`, `npm run check:assets`, kemudian muat ulang halaman. Tidak ada migration/worker/ENV baru khusus koreksi ini. Migration PID lama yang belum selesai tetap mengikuti panduan tahap1–3. Tidak perlu mengajukan ulang PP yang sedang berjalan/paid. Tidak mengubah database aktif atau server oleh agen; uji SQLite memory/browser mock bukan bukti MariaDB/aaPanel/load nyata. Alat QA MariaDB diperbarui untuk basis baru tetapi belum dijalankan ulang fisik; generator/template Word/PDF tidak berubah dan tidak dirender ulang. Bagian bertanggal lebih lama berikut merupakan catatan historis bila bertentangan dengan koreksi ini.
+
 ## 25 November 2026 — Pagination dan pemetaan Branch otomatis saat impor
 
 Permintaan terbaru menggantikan aturan24November “Rxxx tidak dapat menentukan Branch” **khusus saat impor eksplisit berikutnya**. Tidak menjalankan pemetaan massal/backfill pada data aktif atau mengubah PP lama saat halaman dibaca.

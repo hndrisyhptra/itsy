@@ -1,5 +1,13 @@
 # Laravel rebuild QA — 2 November 2026
 
+## 25 November 2026 — Budgeting PID BOQ Mandor basis
+
+Full538PHP/16809assertions (XAMPP8.2.4, strict SQLite`:memory:`,126.540s/142.50MB/process512M),499frontend/0failed/0skipped, TypeScript/Vite/assets50refs41preloads×3/Pint/diffcheck lulus. Focused28PHP/507assertions6.144s; importregression13PHP/288assertions5.290s. Tests preserve policy1 pending/GET/unrelatedsave/realdecisionhistory, explicit editableupgrade/revisionhold/resubmit2, unmarkedexemption, paidretention, capsequality/rollback/forgedtotals, grossMandor400/500/900 vs Owner/manualNonStock1010, savedMandorrelease/plannedminusaccepted/siblingcap/continuation. Formal67/reference6/own7/mapping10012HTTP unchanged; existing500BOQ59/500BARP50HTTP/13details/full20PP353vsincremental8 retained.
+
+ActualAppmock browser5Header/SPK/unit/legacyflows plus live Mandor input: beforeinput8dashcells/mastervisible, M400/J500/900 despiteOwnerlarger, Jovercap warns,1referenceGET/0write foramountedits,375/768/1440×lightdark/0JSerror/root overflow, desktop/mobile screenshots inspected. Existing stale/scope/nameadoption/YA-TIDAK guards exercised; any command responses mock-only. Initialfull3oldBOQsubmissionfixturefailures lackedMandor; formalfixture now suppliesvalidpositiveMandor, Draftuploadassertions and productionguard unchanged; finalfullpassed. LegacyfixtureStoragefake reset and browser tab/currencywhitespace corrected, no scope/privateguard weakening.
+
+No fresh physicalMariaDB/MySQL/concurrency/load/aaPanel/realworkerdelivery/WordPDF render; isolatedstage4script adapted only. No activeits/env/worker/server/Dompis/commit/push/deploy. Source+build/checkassets, no newmigration/worker/ENV, no historicalautomaticrepricing/resubmission. [Contract](BUDGETING_PID.md), [audit](qa/budgeting-pid-mandor-basis-20261125.json).
+
 ## 25 November 2026 — Finance signed scan upload
 
 Final535PHP/16744assertions (XAMPP8.2.4 SQLite`:memory:`,126.255s/142.50MB/process512M),496frontend/0failed, TypeScript/Vite/assets50manifest41preloads×3/scopedPint/diffcheck lulus. Focused91PHP/3953assertions38.088s, scan16/1045,3newfrontend: current6 sourceUUID/selectedID/order, bothunit readiness, nonFinance403/outscope404, MIME/size/revision/replay/cleanup, SQLuploadedByFinance/correctionversions/readonlyGET, scanmetadata no fake7approval/financehistory/payment and latepaidsettlement unchanged. Actualuploadfixture55queries (1revisionreadoutsideHTTP) acrossConstructionPartial/Final/Operation; no new queryhelper.
