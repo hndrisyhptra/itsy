@@ -1,0 +1,124 @@
+{
+  "date": "2026-11-26",
+  "feature": "PP save referenced BOQ foreign key error",
+  "observed_server": {
+    "source": "user-provided aaPanel stacktrace",
+    "sqlstate": "23000",
+    "mysql_error": 1451,
+    "constraint": "a3_fk_037",
+    "relation": "contract_components.boq_component_id -> boq_components.id_boq_component",
+    "origin": "RelationalWorkflowStore::projectChildren delete",
+    "production_payload": "not available; reupload as exact trigger inferred from matching local reproduction"
+  },
+  "correction": {
+    "identity": "exact saved editable PP + KHS ID keeps existing BOQ row UUID independent file/order/new UUID",
+    "editable_budget": "only Mandor.rowId/Material.sourceRowId/excludedMaterialRowIds mapped, prices/volumes/manual rows preserved",
+    "guards": "loaded root related deal/child-allocation components and existing ledger available",
+    "sql_prune": "conditional <=3EXISTS contract_components/volume_movements/volume_releases before deleting referenced candidates;422 atomic rollback",
+    "historical": "no FKdisable/cascade/contractcomponent reassignment/GETsync/backfill/live repair",
+    "scope": "all current role/Branch/unit/lifecycle/manifest/private/paid/PID/revision/UUID safeguards remain",
+    "client": "stabilize before budget derivation; Validate and save share reference+volume checks"
+  },
+  "tests": {
+    "php": {
+      "runtime": "XAMPP8.2.4",
+      "database": "SQLite :memory: strictguard/fakedisk",
+      "full": {
+        "tests": 567,
+        "assertions": 17559,
+        "failures": 0,
+        "errors": 0,
+        "seconds": 127.061,
+        "memory_mb": 146.5,
+        "process_limit_mb": 512
+      },
+      "focused": {
+        "tests": 29,
+        "assertions": 450,
+        "seconds": 5.007,
+        "memory_mb": 68.5
+      }
+    },
+    "frontend": {
+      "tests": 510,
+      "failures": 0,
+      "skipped": 0,
+      "milliseconds": 4870.966666
+    },
+    "build": "TypeScript+Vite passed",
+    "assets": {
+      "manifest_refs": 53,
+      "preloads": 44,
+      "profiles": 3
+    },
+    "pint": "passed",
+    "diff_check": "passed"
+  },
+  "coverage": [
+    "actual queued26rows initialfile/saveDraft/Bakh/Spk then secondactualfile/reversedroworder/save200/replay bothunits",
+    "saved BOQcomponent IDs/contractcomponent snapshots/BakhSpk unchanged, newfileprovenance saved",
+    "used item removal and IDrebind ->422withfullrow/revision/audit/receipt rollback",
+    "quantitybelowused rejected using same ledger math",
+    "unuseditem removal allowed",
+    "actual FK remains enabled/direct referenceddelete raises FKexception",
+    "trusted relational projection with SQLreference absent proposedgraph refuses beforeprune",
+    "budgetprices/qty/manualmaterials/exclusion retained, siblingPPnever source"
+  ],
+  "queries": {
+    "reimport26withBakhSpk_http_both_units": 61,
+    "newDraft26_http": 64,
+    "confirmation_http": 18,
+    "normal_state_http": 17,
+    "normal_500boq": 59,
+    "500barp_actuals_http": 50,
+    "actual_component_detail": 13,
+    "full20PP_write": 353,
+    "incremental_write": 8,
+    "additional_normal_SQL": 0,
+    "actual_prune_exists_max": 3,
+    "per_row_SQL": false
+  },
+  "browser": {
+    "actual_app": true,
+    "api": "mocked synthetic; external network blocked",
+    "cases": 4,
+    "units": [
+      "Construction",
+      "Operation"
+    ],
+    "same_items": "valid + one save POST + navigateBAKH; original IDs and Mandor prices",
+    "used_removal": "form/toast warning,0POST/editorretained",
+    "widths": [
+      375,
+      768,
+      1440
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "js_errors": 0,
+    "root_overflow": false,
+    "screenshots_inspected": true
+  },
+  "limits": [
+    "No actual aaPanel request/database access, no physicalMySQL/MariaDB/concurrency/load UAT.",
+    "Original server trigger/payload not inspected; FK cause proven by supplied log, local matching reupload path reproduced.",
+    "No new Word/PDF template/render or realworker verification.",
+    "Counts are fixture query evidence, not server latency/bottleneck-free proof."
+  ],
+  "deployment": [
+    "source PHP/TS including new ProjectBoqIdentity helper",
+    "npm run build",
+    "npm run check:assets",
+    "operator php84 artisan optimize:clear",
+    "reload browser/PHPsite OPcache if required",
+    "no new migration/specificuploadworker restart"
+  ],
+  "not_performed": [
+    "live its read/write/migration/import/backfill/reset",
+    "ENV/APP_KEY/FK settings",
+    "worker/server/Dompis changes",
+    "commit/push/deploy"
+  ]
+}

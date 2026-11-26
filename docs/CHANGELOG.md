@@ -1,5 +1,9 @@
 # Catatan perubahan it's Area 3
 
+## 26 November 2026 — Perbaikan Server Error PP saat lanjut BA KH
+
+LogaaPanel menunjukkan komponenBOQ akan dihapus padahal sudah dirujukBAKH. IDitemKHSsama kini dipertahankan saat reuploadpadaPPyangsama; harga/rincianMandor tidakreset, BA KH/SPK tidakdiganti. Penghapusanitem/komponenterpakai dan volumelebihkecildaripemakaian ditahanvalidasi; SQLhistoryguard menolakprune sebelumFKerror.567PHP/510frontend/build/aset/browsermock lulus. Source+build/checkaset, tidakadamigrationbaru. [Penjelasan/penerapan](PP_DRAFTS_PREVIEW.md#26-november-2026--server-error-pp-komponen-boq-sudah-dirujuk-ba-kh).
+
 ## 26 November 2026 — Dropdown Mandor di Negosiasi & BA KH
 
 NamaMandor kini dropdown pencarian dari master bersama. Belumada→konfirmasiYA/TIDAK→formTambah→pilihUUIDbaru; basicrequired3tetap, rekening/foto wajib sebelumformalpaket. PilihanBAKH tersimpanid/versi/nama dari server; firstDraftSPK mengisi otomatis alamat/NIK/rekening/foto dan menyimpansnapshot atomik. ExistingSah/kasbon/paid tidak disinkronkan ulang; sourceberubah perlu pilihulang eksplisit. Tanpa migration/API/workerbaru, build/checkaset diperlukan. [Panduan/QA](MASTER_MANDOR.md#terbaru--pilih-mandor-sejak-negosiasi--ba-kh-baru).

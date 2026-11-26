@@ -1,5 +1,15 @@
 # Laravel rebuild QA — 2 November 2026
 
+## 26 November 2026 — PP/BOQ referenced component FK failure
+
+UserprovidedaaPanellog MySQL23000/1451,a3_fk_037 contract_components→boq_components, projectChildren564 proves deleteblocked. LocalactualreuploadsameworkbookfreshUUID reproducesmatchingpath, originalproductionpayloadunknown. FixexactPP/KHSstableIDs/editablebudgetrefmap, loadedrootdeal/childallocations+existingledgerguard and SQLcandidatehistoryEXISTS422/rollback, neverdisableFK/cascade/backfill.
+
+Finalfull**567PHP/17559assertions**0fail/error127.061s146.50MB/process512M, focused**29/450**5.007s68.50MB, **510frontend**0fail/skip4870ms, TypeScript/Vite/assets53refs44preloads×3/Pint/diffcheck pass. Realqueue26rows→BAKH+SPK→secondfileimport/reorder/save200+UUIDreplaybothunits, exactoldIDs/childsnapshots preserved;61HTTP. New26BOQ64/receipt18vs17/500BOQ59/500BARP50/detail13/full20PP353vs8 retained. Useddelete/rebindID/qtycap422rollback, unusedremove200, DBFKenabled/directdeleteforbidden, hiddenSQLrefpruneguard tested. PurebudgetIDremap retainsprices/manualmaterials/exclusions; siblingPPexcluded.
+
+BrowseractualApp/API**mock**4casesbothunits: Valid+savenext1POST→BAKH forsamemasteritems, usedremovalshowsform+toast/0POST/editorretained;3width2theme0overflow/0JSerror,screenshotsinspected. Fixtures initially missedassignedHead/GMfornewSPK; addedlegitimateassignee ratherthanweakeningguard. Browsermessage appearsin2places, testlocator narrowed, noUIerror.
+
+No activeitsreads/writes/migration/reset/import/env/worker/server/Dompis/deploy; no physicalMySQLserverDDL/load/concurrency/newWordPDFrender. Userlog is serverevidence, tests memory/fakedisk/mock separate. Source+build/checkassets/operatorclearcache, no migration/specificworkerrestart. [Contract](PP_DRAFTS_PREVIEW.md#26-november-2026--server-error-pp-komponen-boq-sudah-dirujuk-ba-kh), [audit](qa/pp-boq-reference-20261126.json).
+
 ## 26 November 2026 — BA KH Master Mandor dropdown dan identitas SPK otomatis
 
 Fullfinal**562PHP/17468assertions**0failure/error131.163s146.50MB512M, masterfocused15/4633.332s62.50MB/broadfocusedsequential109/415040.907s72.50MB, **507frontend**0failed/skipped5916ms, TypeScript/Vite/assets53refs44preloads×3/Pint/diffcheck lulus. Pengujian SQLite`:memory:` failclosed/fakedisk, bukan itsaktif. Bothunits actualHTTP BAKHcanonicalid/version/name/stale/unknown/forged/crossBranch403/replaybodyconflict; firstSPKexactsource/privatecopy/profile/audit/changedmaster409/reselect; existingSPKfreeze, incompletebasicDraft/formalrequirePayee422; lateauditrollbackcleanscopiesandpreservesoriginals.61BAKHchoice/48firstSPK2photoHTTPbothunits,9list/54explicitselection unchanged.

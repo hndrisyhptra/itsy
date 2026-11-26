@@ -7,6 +7,7 @@ use App\Support\Area3MigrationTarget;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use RuntimeException;
 
 /** Business records own runtime data. The old workspace JSON is a read-only archive. */
@@ -560,6 +561,15 @@ class RelationalWorkflowStore
         }
         $removed = DB::table('boq_lines')->where('root_pp_id', $pp)->whereNotIn('id_boq', $keep)->pluck('id_boq');
         $components = DB::table('boq_components')->whereIn('boq_line_id', $removed)->pluck('id_boq_component');
+        if ($components->isNotEmpty()) {
+            // Fail closed for persisted references absent from the loaded document graph too.
+            $referenced = DB::table('contract_components')->whereIn('boq_component_id', $components)->exists()
+                || DB::table('volume_movements')->whereIn('boq_component_id', $components)->exists()
+                || DB::table('volume_releases')->whereIn('boq_component_id', $components)->exists();
+            if ($referenced) {
+                throw ValidationException::withMessages(['boq' => ProjectBoqIdentity::MESSAGE]);
+            }
+        }
         DB::table('volume_balances')->whereIn('boq_component_id', $components)->delete();
         DB::table('boq_components')->whereIn('id_boq_component', $components)->delete();
         DB::table('boq_lines')->whereIn('id_boq', $removed)->delete();

@@ -3,6 +3,11 @@ name: area3-volume-ledger
 description: Implement and reconcile its Area 3 BOQ component volume reservations, commitments, accepted actuals, authorized release and continuation allocation without double use.
 ---
 
+## 26 November 2026 — PP referenced BOQ components
+
+Follow latest docs/PP_DRAFTS_PREVIEW.md. UseraaPanellog1451/a3_fk_037 provesBOQprunecontractFK. Rooteditable sameexactPP+KHS ID stable across reupload/order/newUUID, editablebudgetreferenceIDs only remapped (Mandor/materialsource/exclusions), prices/manualrows/provenanceunchanged; no sibling/name/code/order fallback oroldIDrebind. Loadedgraphrootdeals/childallocations blockusedcomponentremoval, existingledgeravailable guardsqtybelowused evenReview. SQLpruneEXISTScontract/movement/releaseonlyactualcandidates≤3,0newnormalSQL,422rollback/noFKdisable/cascade/historydeletion/repair. ExistingSah/paid/private/approval/PIDmanifest/receipt/sourceguards retained. Reproreal26queue+BAKH/SPK+reimportbothunits61HTTP, normal64;567PHP17559assertions/510frontend/29focused450assertions/build/assets/browsermock4cases passed. No newmigration/API/dependency/poller/liveits/env/worker/server/Dompiswrite. Deploysource+build/checkassets/cacheclear, no specificworkerrestart; distinguishserverlog frommemory/mock tests and physicalserver/exportlimits.
+
+
 ## 24 November 2026 — PP save response loss and committed confirmation
 
 Follow docs/PP_DRAFTS_PREVIEW.md timeout/performance correction. Genuine new root Draft has no prior component balance; skip ONLY two workspace-wide before/after movement audit scans. Normal RelationalWorkflowStore scoped balance reads and BOQ balance projection remain. No skip for existing edit/submission/approval/payment/release/continuation and no fake movement/paid/history/PID mutation. Test old balances/movements identical, new BOQ available projection intact,26BOQ64vs66HTTP; no physicalDB/concurrency claim or schema/livewrite.

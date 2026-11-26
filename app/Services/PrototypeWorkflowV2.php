@@ -164,6 +164,11 @@ trait PrototypeWorkflowV2
                 $this->fail('Masukkan 1–500 baris BOQ sebelum pengajuan PP.');
             }
         }
+        [$rows, $stableBudget] = ProjectBoqIdentity::stabilize($rows, $old, $input['planBudget'] ?? null);
+        if ($stableBudget !== null) {
+            $input['planBudget'] = $stableBudget;
+        }
+        $boqReferences = ProjectBoqIdentity::references($this->state, $p + ['boq' => $rows]);
         if ($automaticPrices) {
             $p['budget'] = $this->boqTotal(['boq' => $rows, 'moneyPolicy' => $p['moneyPolicy'] ?? null]);
         }
@@ -244,6 +249,13 @@ trait PrototypeWorkflowV2
         }
         $p['status'] = $submit ? 'Diajukan' : 'Draft';
         $this->put('projects', $p);
+        foreach ($boqReferences as $rowId => $components) {
+            foreach ($components as $component => $_) {
+                if ($this->ledger($p['id'], $rowId, $component)['available'] < -0.00001) {
+                    $this->fail('Volume BOQ tidak boleh lebih kecil daripada volume yang sudah digunakan atau dialokasikan pada BA KH/SPK dan PP lanjutan.');
+                }
+            }
+        }
         $this->state['events'][0]['title'] = $submit ? 'PP diajukan ke '.($scheme === 'operation-v1' ? 'Officer 1 Operation' : 'PM Konstruksi').' terpilih' : 'Draft PP dan BOQ disimpan';
 
         return $id;

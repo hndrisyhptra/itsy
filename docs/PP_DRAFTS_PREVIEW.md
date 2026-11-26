@@ -1,5 +1,40 @@
 # Draft PP, cap preview dan penghapusan batas BOP — 5 November 2026
 
+## 26 November 2026 — Server Error PP: komponen BOQ sudah dirujuk BA KH
+
+Log aaPanel yang dikirim pengguna menunjukkan **MySQL1451/a3_fk_037**: `contract_components.boq_component_id` masih merujuk `boq_components.id_boq_component` yang hendak dihapus oleh `RelationalWorkflowStore::projectChildren`. Ini bukti penyebab SQL500; bukan error validasi Header. Tombol **Validasi** memeriksa formulir di browser, sedangkan **Simpan & Lanjut BA KH** menjalankan saveProjectBundle(false) dan baru membuka BA KH setelah konfirmasi penyimpanan server.
+
+Skenario lokal yang dapat direproduksi: unggah ulang workbook yang sama menghasilkan UUIDbaris baru; BA KH/SPK tersimpan masih menunjuk UUIDkomponen lama. Permintaan server asli/isi workbook tidak diakses, sehingga pemicu uploadulang pada insiden server adalah penjelasan yang cocok dengan reproduksi, bukan hasil membaca payload produksi.
+
+### Koreksi
+
+- Pada rootPP yang masih boleh diedit, item dengan **ID KHS persis sama pada PP tersimpan yang sama** mempertahankan IDbaris lama meskipun urutanExcel/UUIDupload berubah. Tidak mencocokkan nama, kode bebas, posisi, siblingPID atau PP lain. ID tersimpan yang dipakai untuk KHSberbeda ditolak.
+- Remap hanya referensi **draf saat ini**: Mandor.rowId, Material.sourceRowId dan excludedMaterialRowIds. Harga, volume dan materialmanual tetap; provenancefilebaru tetap berasal dari manifest server. Frontend menstabilkanID sebelum applyBudgetPlan agar harga Mandor tidak reset; server memeriksa lagi di dalam transaksi existing. BOQimport asli/manifest tidak ditulis ulang.
+- Item/komponen yang masih dipakai BA KH/SPK atau alokasiPP-lanjutan tidak boleh dihapus. Volume roottidak boleh lebih kecil dari penggunaan menurut ledgerexisting, termasuk saatBOQberstatusReview. Ketentuan ini memakai hitunganledger/reservasi/committed/accepted/releaseexisting, bukan pelepasan atau saldo baru.
+- Sebelum SQLprune benar-benar menghapus baris, referensi tersimpan pada kontrak, volume_movements dan volume_releases diperiksa bila ada calonhapus. Referensi yang tidak terlihat di graph pun ditahan422, sehingga riwayatSQL tidak hilang dan FK tidak perlu dimatikan. Seluruh header/rincian/nomor/revisi/audit/receipt kembali seperti semula bila ditolak.
+- Item belum dipakai dan tanpa riwayat tetap boleh dihapus. Tidak ada cascade, hapusBAKH/SPK, resetworkflow, reassigncontractcomponent, backfill, atau perbaikan SQLlangsung pada data aktif. DokumenSah/pembayaran/private/PIDledger tidak disentuh oleh GET atau correctionhistoris.
+- Validasi di editor kini memakai guardreferensi yang sama. PenggantianBOQvalid tetap dapat **Simpan & Lanjut BA KH**; penghapusanitemterpakai menampilkan alasan dan isian tetap di editor.
+
+Jika sesudahpenerapan masih terlihat pesan “Item BOQ masih digunakan…”, gunakan kembali item/komponen BOQ tersimpan yang dirujukdokumen. Jangan menghapusrelasi SQL untuk memaksa lanjut. Bila perbedaanhanyaIDakibatuploadulangitemKHSsama, sistem menstabilkanotomatis. KondisiSQLhistoris yang tidak sesuai graph ditahan untuk pemeriksaanterpisah, tidak diperbaiki diam-diam.
+
+### Uji dan optimasi
+
+Full **567PHP/17559assertions**, focused29/450(5.007s/68.50MB), **510frontend**, TypeScript/Vite/aset53refs44preloads×3/Pint/diffcheck lulus. Actualqueued workbook26baris di keduaunit →BAKH/SPK →realreupload/reverseorder →save200/replay, IDkomponen dan snapshotBAKH/SPK sama;61HTTPquery. Normalnew26BOQ tetap64HTTP, receipt18vs17,500BOQ59/500BARP50/detail13 tetap. Helpers memakai Map/arrayindex dan graphloaded tanpaSQLperrow.0SQLtambahan untukjalurnormal tanpa calonprune; palingbanyak3EXISTS saat ada kandidatkomponenhapus.
+
+Tests memastikan usedremoval/rebindID/qtybelowused422/atomicrollback, unusedremovalvalid, FK benar-benaraktif dan directSQLdeleteyangdirujuktetapgagal, referensitersimpan diluargraftidakdihapus; editablebudgetremap preservesprices/manual/exclusion. ActualApp/browser **API mock**,4casesKonstruksi/Operation: sameitems→Valid→onePOST→BAKH, removedused→Validasiwarning/0POST/editorretained;375/768/1440/lightdark nooverflow,0JSerror. Screenshotinspected. Datauji sintetisSQLite`:memory:`/fakedisk, bukan bukti fisikMySQL/server/aaPanel/load atau renderWordPDFbaru. [Audit](qa/pp-boq-reference-20261126.json).
+
+### Penerapan server
+
+Deploy sourcePHP baru **beserta** hasilbuild/manifest yangsesuai. Dari `/www/wwwroot/itsy` setelahpullkode:
+
+```sh
+runuser -u www -- /www/server/php/84/bin/php artisan optimize:clear
+npm run build
+npm run check:assets
+```
+
+Build boleh dilakukan di lingkunganbuild yang biasa digunakan lalu seluruh public/build diterapkanbersama. Reload browser. Jika OPcache situs tidak memeriksa perubahanfile, reload layananPHP situs melaluiaaPanel. **Tidak ada migrationbaru atau restartworker khusus koreksi ini.** Jangan migrate:fresh/seed/reset, mematikanFK, mengubah `.env`/APP_KEY atau menghapus kontrak. Agen tidak menjalankan perintah pada server/dataits aktif.
+
 ## 25 November 2026 — Bukti committed harus terikat ke PP yang disimpan
 
 Receipt aktor/workspace + PPvisible ternyata belum membuktikan target; regresi crossPP gagal sebelum koreksi. Explicit saveDraft kini menyimpan `draftSaveReceipt` server-owned pada exactPP JSON, satu transaksi dengan data/revisi/audit/receipt. Marker client dibuang, trusted prior marker dipertahankan, raw payload hash dihitung sekali. Recovery GET existing mengharuskan UUID/PP/aktor/perintah/expected+resultrevision sama dengan receipt committed; scope tetap diperiksa. Marker replay terkini wajib sama payload, changedbody409.0newSQL/schema/migration/API/poller, recovery18vs17queries tetap.

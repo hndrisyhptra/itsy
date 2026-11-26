@@ -1,5 +1,9 @@
 # Optimasi query dan respons aplikasi
 
+## 26 November 2026 — BOQ reimport identity and reference checks
+
+Exact savedPP/KHS indexes normalize UUIDs and editableplanrefs in PHP/TS0SQL. Loadedroot/child/dealsets validate referencedcomponents, existingledger availability reused; no perrowcatalog/sourcequery. Conditionalprune only when actualremovedcomponents, ≤3EXISTS onindexedcontract/movement/releaseFKs,0newnormalquery. Real26rowreuploadbothunitswithBAKH/SPK61HTTP/newroot26BOQ64; full500BOQ59/500BARP50/detail13/full20PP353vs8 unchanged. Keep serializedtransaction/revision/receipts/PID and financial/privatehistory; not productionlatency/concurrencyloadproof. No migration/API/poller/dependency. [QA/limits](PP_DRAFTS_PREVIEW.md#26-november-2026--server-error-pp-komponen-boq-sudah-dirujuk-ba-kh).
+
 ## 26 November 2026 — BA KH Mandor choice and bounded SPK source
 
 Reuseslazy globalmaster SQLcount+20option limit,350msdebounce/abort/querykey/keyboard, no private detailuntilnewSPK. BAKHonlysourceid/version/name; newSPK1privatedetail, noPIIboot/localStorage. Underexistingworkspacelock onecurrentmaster and filebatch,loadedgraphspk/deal scans;0masterSQL on normalunlinkedcommand, no perBOQrow lookup. Measured61BAKHchoice/48firstSPK2photosHTTPbothunits, list9 unchanged. SPK firstonlyinherit, unchangedhistoric snapshots/ledger/PID; atomicwritebufferssame, cleanup1IDlookup foractualcopies and guardedretry. No schema/API/migration/poller/dependency/newworker. Fixturequerynotproductionloadproof. [Contract](MASTER_MANDOR.md#terbaru--pilih-mandor-sejak-negosiasi--ba-kh-baru).
