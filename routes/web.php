@@ -3,6 +3,7 @@
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BudgetPidController;
+use App\Http\Controllers\DashboardBudgetController;
 use App\Http\Controllers\FinanceDocumentController;
 use App\Http\Controllers\FinancePaymentCatalogController;
 use App\Http\Controllers\MandorMasterController;
@@ -65,6 +66,7 @@ Route::middleware(PrivatePrototype::class)->group(function () {
         Route::post('/api/finance/spk/{spk}/mandor', [MandorMasterController::class, 'apply'])->where('spk', '[a-zA-Z0-9-]{3,100}')->middleware('throttle:30,1');
         Route::get('/api/masters', [MasterDesignatorController::class, 'index']);
         Route::get('/api/budgeting-pid', [BudgetPidController::class, 'index'])->middleware('throttle:120,1');
+        Route::get('/api/dashboard/budget', DashboardBudgetController::class)->middleware('throttle:120,1');
         Route::get('/api/budgeting-pid/reference', [BudgetPidController::class, 'reference'])->middleware('throttle:60,1');
         Route::match(['get', 'post'], '/api/budgeting-pid/branch', [BudgetPidController::class, 'branch'])->middleware('throttle:30,1');
         Route::post('/api/budgeting-pid/import', [BudgetPidController::class, 'import'])->middleware('throttle:10,1');

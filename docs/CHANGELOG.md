@@ -1,5 +1,17 @@
 # Catatan perubahan it's Area 3
 
+## 26 November 2026 — Card Nilai Pengajuan Pembayaran
+
+Ganti SisaBudgetPID dengan total nilai bruto pengajuan aktif dan sudah dibayar, jumlah pengajuan/PID serta rincian/pencarian/pagination. Draf/revisi/ditolak/Cancel dikecualikan; perhitungan matriks disamakan termasuk pengembalianFinance belumlunas. Koreksi scan setelah lunas tetap mempertahankan tagihan dan nilai terbayar. Tidak mengubah data/approval/PPh, tidak ada lagi requestbudget dariDashboard; sembilan card dan diagramtetaptersembunyi. Build/checkassets diperlukan, tanpa migration/workerrestart.
+
+## 26 November 2026 — Diagram batang dashboard disembunyikan sementara
+
+Hilangkan tampilan diagram Pembayaran Bulanan dan pilihan tahun sesuai permintaan terbaru. Sembilan card, filter, modal rincian serta tabel Summary/StatusApproval tetap. Tidak mengubah data atau perhitungan pembayaran. Frontend/build/aset diverifikasi; tanpa migration/restart worker.
+
+## 26 November 2026 — Sembilan card dashboard dan diagram pembayaran
+
+Tambah ringkasanPID/PPberjalan/anggaranPP/SudahDibayar/Outstanding/approval/pelunasan/SisaBudgetPID/berkasNOK; tidak menampilkan Pengeluaran Bulan Ini. Klik angka/batangbulanan membuka modal rincian, pencarian/pagination. Paid berdasarkan catatanFinance/optionalAPM, tanggalWIB; kasbon historis tidak dihitungulang. Budget read-only terpetakan sesuai unit/Branch, masterCRUDtetapFinanceSuperadmin. ExistingtabelSummary/StatusApproval tetap.573PHP/17709assertions,521frontend/build/assets/browsermock lulus. Source+routes+build/checkassets, tanpa migration/workerrestart khusus. [Panduan](DASHBOARD_EXECUTIVE.md).
+
 ## 26 November 2026 — Pagination Aktivitas dan pencarian akun
 
 Pengaturan → Aktivitas serta Kelola akun pengguna kini mendukung pagination 10/20/50/100 baris (default20), total/rentang dan navigasi. Kelola akun ditambah pencarian nama/username/NIK/email/jabatan/peran dan Reset. Akun dibaca per halaman dengan konteks batch, tetap hanya Superadmin; aktivitas tetap mengikuti akses existing. 17focusedPHP/296assertions,512frontend/build/aset/browsermock lulus. Tanpa migration/restartworker khusus. [Panduan](SETTINGS_PAGINATION.md).

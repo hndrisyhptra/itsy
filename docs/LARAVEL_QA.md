@@ -1,5 +1,23 @@
 # Laravel rebuild QA — 2 November 2026
 
+## 26 November 2026 — Nilai Pengajuan Pembayaran replaces Budget card
+
+Frontend-only readmodel/view correction, **523tests passed**,0failed/skipped4,885s. TypeScript/Vite/build and assets **54refs45preloads×3**, diffcheck passed. Two new tests verify card/matrixgross600 (pending+ready+paid), exclude financialreturn/Draft/reject/revision/Cancel, retainnetpaid195/outstanding390/exactroutes/uniquePID and fullypaid late scan correction. Existing matrix/detail/requestsum/oldmoney/Operation tests remain green. No fresh fullPHPsuite because PHP/API/schema unchanged.
+
+ActualReactApp/API mock:9cards/nochart/noSisaBudget,3milliongross/3pengajuan/1PID, modal3contributors/Termin2search, BranchMALANGzero/Operationzero,375/768/1440×lightdark,0JSerror/0writes/**0budgetGET**; screenshots inspected. This is syntheticbrowserfixture, not liveits/aaPanel/physicalDB/load/export evidence. No data/approval/paid/PID writes, migration/worker/dependency/poller changes. [Rules](DASHBOARD_EXECUTIVE.md), [audit](qa/dashboard-requested-card-20261126.json).
+
+## 26 November 2026 — Hide monthly bar chart
+
+Koreksi UI saja:9card tetap, chart/tahun/monthmodal dihapus dari view. Existing frontend assertions diperbarui untuk memastikan9card serta tidak ada PembayaranBulanan/executive-chart/executive-month/yearselector. Helper perhitungan bulanan/historis tetap dites, backend/query/SQL/data tidak berubah. **521frontend lulus** (4,829s), TypeScript/Vite build dan checkassets **54refs/45preloads×3** serta diffcheck lulus; tidak mengulang fullPHP atau browser/server untuk penghapusan tampilan ini.
+
+## 26 November 2026 — Executive dashboard
+
+Full **573PHP/17.709assertions**, SQLite`:memory:` failclosed, **129,415s146,50MB** process512M; focusedDashboardBudget+Region **6/154**,1,587s52,50MB. NewHTTP tests mapped105PID summary/detail **3/4queries**, page20last5, literalsearch, empty, readonlySQL/noPII, unit/Branch403, Operation, inactiveBranch, masterCRUDstill403, missingSchema503/noautocreate; reservedM+Jonce/paidconsumptionretention/independentcategorydeficit/cancelrelease. No itsactive reads/writes.
+
+Full **521frontend**,0failed/skipped; focusedexecutive+summary19tests. Moneyfreezeoldpolicy/optionalAPM/proofboundpaid/PIDandPPclosure/CancelFinanceReturn/point5rootbudget/Operation/monthWIB/legacyhistoryundated/exactresponsebinding tested. TypeScript/Vite/build/asets **54manifestrefs45preloads×3**,Pint/diffcheck lulus. Oldthreecardmarkup acceptance updated only to latest ninecard request, old summary money tests retained.
+
+ActualReactApp/API **mock** 27ConstructionPP+1Operation syntheticgraph:9cards/12months/modal20last7/search/PIDdrill/NovemberpaidnoAPM/budget20search/error-retry/Branchreset/Operationstage,375/768/1440×lightdark,0JSerrors/0writes; screenshot inspected. Fixtures API are not realserverproof; endpoint actualHTTPmemory testedseparately. No physicalMySQL/aaPanel/load/Telegram/export/print claim. No migration/env/worker/liveits/server/Dompis/deploy changes. [Contract](DASHBOARD_EXECUTIVE.md), [audit](qa/dashboard-executive-20261126.json).
+
 ## 26 November 2026 — Pagination Pengaturan dan pencarian akun
 
 PHP terfokus AccountPaginationTest/AuthenticationTest/UserJabatanTest **17 tes /296 assertions**, lulus 2,843s58,50MB, SQLite`:memory:`. Fixture105akun **4HTTPqueries** konstan pada10/20/50/100baris, aman tanpa password SELECT dan contexts hanya currentpage; uji pencarian nama/uppercaseusername/NIK/email/jabatan/role/wildcardliteral, invalidparameters/escaping/guest/403/total105/last5. Tidak mengulang fullPHP.

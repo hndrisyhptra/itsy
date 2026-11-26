@@ -21,10 +21,11 @@ function invoice(s: State, id: string, status: Term['status'], qty = 2): Term {
     paymentHistory: [], apm: '', apmStatus: 'Belum Terbit' };
 }
 
-test('dashboard restores original three cards and six summaries without removed operational or analytics panels', () => {
+test('dashboard shows executive cards without monthly chart without previously removed operational panels', () => {
   const html = renderToStaticMarkup(createElement(Dashboard, { s: state() }));
-  for (const label of ['Dashboard', 'Ringkasan operasional', 'Proyek Aktif', 'Total Nilai SPK', 'Outstanding Pembayaran', 'PP Lanjutan', 'Mandor Aktif', 'Total Nilai BOQ', 'Tagihan Disetujui', 'Pembayaran Terealisasi', 'Approval Menunggu']) assert.ok(html.includes(label));
+  for (const label of ['Dashboard', 'Ringkasan operasional', 'Total ID Project', 'Paket PP Berjalan', 'Total Anggaran PP', 'Total Sudah Dibayar', 'Outstanding Pembayaran', 'Menunggu Approval', 'Menunggu Pelunasan', 'Nilai Pengajuan Pembayaran', 'Berkas Belum Lengkap']) assert.ok(html.includes(label));
   assert.doesNotMatch(html, /Progress Pekerjaan per PP|Aktivitas Terbaru|Monitoring Volume|Inbox Approval|Dashboard Analitik|Posisi Approval|Tahapan Pembayaran|Portofolio per ID Project/);
+  assert.doesNotMatch(html, /Pembayaran Bulanan|Tahun pembayaran bulanan/);
   assert.match(html, /aria-label="Filter Branch dashboard"/);
   assert.match(html, /<option value="" selected="">Semua Branch<\/option>/);
   assert.match(html, /href="\/project-plan\/new"/);
@@ -116,6 +117,6 @@ test('approval summary follows the assigned actor and Branch, including Finance 
 test('empty authorized state renders zero summaries and keeps Branch choices without synthetic data', () => {
   const s = state(); s.projects = []; s.deals = []; s.spks = []; s.terms = []; s.bapps = [];
   const html = renderToStaticMarkup(createElement(Dashboard, { s }));
-  assert.match(html, /0 Project Plan terdaftar/); assert.match(html, /value="Semarang"/); assert.doesNotMatch(html, /NaN|Infinity/);
+  assert.match(html, /0 Open · 0 Close/); assert.match(html, /value="Semarang"/); assert.doesNotMatch(html, /NaN|Infinity/);
   assert.equal(dashboardSummary(s).outstanding, 0);
 });

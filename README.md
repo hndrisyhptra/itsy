@@ -1,5 +1,11 @@
 # it's Area 3 — Construction Workspace
 
+**26 November 2026 — Card Nilai Pengajuan Pembayaran:** menggantikan Sisa Budget PID, menampilkan total bruto sebelum PPh, jumlah pengajuan dan ID Project. Klik membuka rincian/pencarian/pagination; nilai konsisten dengan matriks, draf/revisi/ditolak/Cancel dikecualikan. Dashboard tidak lagi meminta ringkasan Budget PID; diagram tetap disembunyikan. Build/checkassets diperlukan, tanpa migration/workerrestart. [Aturan dan QA](docs/DASHBOARD_EXECUTIVE.md).
+
+**26 November 2026 — Diagram dashboard disembunyikan sementara:** diagram batang pembayaran bulanan dan pilihan tahun tidak ditampilkan. Sembilan card, rincian, filter dan tabel monitoring tetap tersedia. Deploy build terbaru; tanpa migration atau restart worker.
+
+**26 November 2026 — Dashboard pimpinan:** sembilan card mencakup PID, PP berjalan, anggaran Sah, terbayar, Outstanding, approval, pelunasan, sisa Budget PID dan kelengkapan berkas. Diagram batang pembayaran bulanan mengikuti pembayaran tercatat Finance/WIB; klik card/batang membuka rincian dengan pencarian/pagination. Tanpa card Pengeluaran Bulan Ini. Unit/Branch sesuai akses; kasbon/data/status lama tetap. Deploy PHP/routes+build/checkaset, tanpa migration/restart worker khusus. [Aturan, QA dan batas](docs/DASHBOARD_EXECUTIVE.md).
+
 **26 November 2026 — Pagination Pengaturan:** Aktivitas dan Kelola akun pengguna memiliki pilihan 10/20/50/100 baris, jumlah total dan navigasi halaman. Akun dapat dicari berdasarkan nama, username, NIK, email, jabatan atau peran; akses pengelolaan tetap Superadmin. Daftar akun memakai SQL pagination dan penugasan batch. Tanpa migration/restart worker khusus; deploy source, Blade dan build terbaru. [Panduan dan pengujian](docs/SETTINGS_PAGINATION.md).
 
 **26 November 2026 — Perbaikan simpan PP setelah BA KH/SPK:** IDBOQ untuk itemKHSsama padaPPyangsama tetap saatunggahulang; relasiBAKH/SPK dan hargadrafMandor terjaga. Itemterpakai tidakbisadihapus; validasijelas menggantikan FKServerError. **Tanpa migrationbaru**, deploysource+build/checkaset dan bersihkancacheLaravel. [Rincian/penerapan](docs/PP_DRAFTS_PREVIEW.md#26-november-2026--server-error-pp-komponen-boq-sudah-dirujuk-ba-kh).

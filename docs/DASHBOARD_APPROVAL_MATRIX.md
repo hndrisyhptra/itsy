@@ -1,5 +1,13 @@
 # Dashboard Summary dan Status Approval
 
+## 26 November 2026 — Gross payment submission card
+
+Card NilaiPengajuanPembayaran menggantikan SisaBudgetPID. Total/contributors berasal dari readmodel matriks yang sama; shared predicate mengecualikan financeReturn/correction belumlunas, sedangkan fullypaid latescan correction tetap dihitung dan semua pembayaran tercatat dipertahankan. Rincian NilaiPengajuan hanya contributorpositif; NilaiTerbayar tetap actualrecorded. Tidak ada SQL/data/approvalwrite atau querytambahan. [Aturan terbaru](DASHBOARD_EXECUTIVE.md).
+
+## 26 November 2026 — Card dan grafik baru
+
+Tabel Summary/StatusApproval beserta matriks, detail, Branch/unit/Region authorization dan perhitungan existing dipertahankan. Bagian atas kini sembilan card dan diagram pembayaran bulanan sesuai [DASHBOARD_EXECUTIVE](DASHBOARD_EXECUTIVE.md), tanpa Pengeluaran Bulan Ini. Outstanding baru mencakup pengajuan aktif yang masih diproses; tidak mengubah nilai tabel Nilai Pengajuan bruto/Nilai Terbayar atau domain laporan existing. SisaBudget melalui endpoint aggregate baca-saja terpisah, tidak memasukkan master ke graph.
+
 ## 25 November 2026 — Revisi panel filter lebih ringkas
 
 Permintaan terbaru memadatkan panel: judul/dua dropdown sejajar pada desktop; ponsel memakai judul pendek lalu dua dropdown berdampingan. Padding/jarak dikurangi, keterangan berulang dan footer pilihan aktif tidak lagi mengambil ruang; pilihan tetap terlihat pada dropdown, scope diumumkan melalui aria-live sr-only. Reset Branch tetap tersedia saat dipilih. Tinggi kontrol36px desktop/40px ponsel menggantikan44px khusus panel ini. Hak akses, perhitungan, perubahan Unit→resetBranch, tab/matrix/modal tetap existing.

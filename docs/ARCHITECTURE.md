@@ -1,5 +1,17 @@
 # Arsitektur aplikasi it's Area 3
 
+## 26 November 2026 — Requested payment instead of remaining PID budget
+
+ExecutiveDashboard removes budget hook/modal/refresh and uses requested metric from loaded matrix contributors via indexedMap. Same scoped gross sources/card/table/detail, normalizeduniquePID count, exactpayment route/labels; shared read predicate excludes unpaidfinanceReturn/correction but retains fullypaid late scan gross and all recordedpaid.0additionalSQL/API/request/poller/dependency/schema/businesswrites; previous readonlybudget API retained for compatibility, never called by Dashboard. [Current contract](DASHBOARD_EXECUTIVE.md).
+
+## 26 November 2026 — Hide monthly dashboard presentation
+
+Permintaan terbaru menyembunyikan diagram bulanan. ExecutiveDashboard menghapus chart/tahun/state modal bulan dari render, tetap merender9card dan rincian metrik. Helper historis bulanan tetap tersedia untuk penggunaan kembali; backend/API/query/otorisasi/perhitungan uang dan data tersimpan tidak berubah. Tabel Summary/StatusApproval tetap. Build/checkassets diperlukan, tanpa migration/workerrestart.
+
+## 26 November 2026 — Executive dashboard read models
+
+Dashboard mengganti3card+6mini dengan9card dan diagram12bulan. Pure graph helper memakai exactPP/deal/SPK/term maps, shared matrix closure/currentapproval resolver, savedpoint5rootbudget/netkasbon/actualpaid/dateWIB; oldsummary/report unchanged. Modal storesselection identity then derivescurrentauthorizedcontributors, max20DOM. Dedicated readonly DashboardBudget endpoint validates currentaccountunit+activeassignedBranches, groupedreservations+4categoryjoins, aggregate3HTTP/detail4HTTP105PID; no fullmaster/privategraph read. ClientlazyGET exactscope/no-store/abort/manualrefresh/no poller. No business/schema/migration/worker change. [Contract/tests/deploy](DASHBOARD_EXECUTIVE.md).
+
 ## 26 November 2026 — Settings pagination and account search
 
 ActivityLog membatasi DOM dari s.events yang sudah diotorisasi, tanpa endpoint/query baru. AccountController memakai COUNT+LIMIT/OFFSET, urutan name/id_user, kolom aman terpilih dan batch konteks hanya halaman aktif. Pencarian GET terikat parameter dengan wildcard literal dan label peran; akses /akun tetap Superadmin. Blade menyimpan q/per_page pada navigasi dan kembali halaman1 saat pencarian baru. Tidak ada mutasi data/approval/schema. [Kontrak, QA dan batas](SETTINGS_PAGINATION.md).

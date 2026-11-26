@@ -11,6 +11,13 @@ export interface DashboardMatrixData { regions:MatrixRegion[]; totals:MatrixTota
 const normalized=(value:string)=>value.trim().toUpperCase();
 const empty=():MatrixTotals=>({projects:0,open:0,closed:0,plans:0,requested:0,paid:0,total:0,missingCodes:0});
 
+/** Active gross submissions; a late scan correction never removes a fully paid bill. */
+export function dashboardSubmittedPayment(t:Term,gross:number):boolean{
+  if(!['Diajukan','Disetujui'].includes(t.status))return false;
+  if(t.status==='Disetujui'&&settlementRecorded(t)&&t.paid>0&&t.paid>=paymentDue(t,gross))return true;
+  return t.financePayment?.status!=='Dikembalikan'&&t.paymentRequest?.status!=='Dikembalikan'&&t.scan?.status!=='Perlu Koreksi';
+}
+
 /** Read model of authorized saved rows only. Classification sees all visible PP, even when a Branch is selected. */
 export function dashboardMatrix(s:State,branch=''):DashboardMatrixData {
   const branches=new Map<string,MatrixBranch>();
@@ -38,7 +45,7 @@ export function dashboardMatrix(s:State,branch=''):DashboardMatrixData {
     const amount=termTotalForDeal(d,t),paid=Number.isFinite(t.paid)?Math.max(0,round(t.paid)):0;
     settled.set(t.id,t.status==='Disetujui'&&settlementRecorded(t)&&amount>0&&paid>=paymentDue(t,amount));
     if(order.spk.status==='Sah'&&['Diajukan','Disetujui'].includes(t.status)){
-      const requested=amount,actualPaid=t.status==='Disetujui'?paid:0;
+      const requested=dashboardSubmittedPayment(t,amount)?amount:0,actualPaid=t.status==='Disetujui'?paid:0;
       const plan=plans.get(d.projectId)!;plan.requested+=requested;plan.paid+=actualPaid;
       payments.push({id:t.id,planId:d.projectId,spkNo:order.spk.no,number:t.number,type:t.type,apm:t.apm,status:t.status,requested,amount:actualPaid});
     }

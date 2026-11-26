@@ -1,0 +1,60 @@
+{
+  "date": "2026-11-26",
+  "feature": "Replace remaining PID budget card with gross submitted payments",
+  "frontend": {
+    "tests": 523,
+    "passed": true,
+    "seconds": 4.885
+  },
+  "build": {
+    "typescript_vite": true,
+    "manifest_references": 54,
+    "preload_dependencies": 45,
+    "profiles": 3
+  },
+  "regression": [
+    "Card gross equals matrix contributors and request detail sum",
+    "Pending approved and paid invoices included; Draft/revision/reject/Cancel excluded",
+    "Unpaid financial return excluded without deleting recorded paid history",
+    "Fully paid late scan correction retains requested and paid totals",
+    "Frozen old cashbon/net/proof/optional APM untouched"
+  ],
+  "browser": {
+    "passed": true,
+    "app": "actual React App with mocked API and synthetic state",
+    "cards": 9,
+    "gross": 3000000,
+    "requests": 3,
+    "pids": 1,
+    "search_modal": true,
+    "branch_unit_scope": true,
+    "monthly_chart_absent": true,
+    "budget_requests": 0,
+    "viewports": [
+      375,
+      768,
+      1440
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "js_errors": [],
+    "writes": []
+  },
+  "limits": [
+    "Browser actual React App with API mock/synthetic data; no server or active DB access",
+    "No new PHP full suite (PHP unchanged)",
+    "No physical database/load/export/Telegram test"
+  ],
+  "runtime": {
+    "new_queries": 0,
+    "dashboard_budget_requests": 0,
+    "new_api": false,
+    "new_dependencies": false,
+    "new_migration": false,
+    "new_poller": false,
+    "business_write": false
+  },
+  "deployment": "Build/checkassets only for this correction; no migration/worker restart"
+}

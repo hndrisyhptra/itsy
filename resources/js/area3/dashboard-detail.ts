@@ -21,7 +21,7 @@ export function matrixDetailRows(data:DashboardMatrixData,selection:MatrixSelect
   const row=(p:MatrixPlanDetail):MatrixDetailRow=>({id:p.id,code:p.code,name:p.name,branch:p.branch,status:p.status,plans:1,requested:p.requested,paid:p.paid,total:p.total,parentId:p.parentId,no:p.no,route:'/project-plan/'+p.id});
   if(selection.metric==='requested'||selection.metric==='paid'){
     const index=new Map(plans.map(p=>[p.id,p]));
-    return data.payments.flatMap(t=>{const p=index.get(t.planId);return p&&(selection.metric==='requested'||t.amount>0)?[{...row(p),id:t.id,status:t.status,requested:t.requested,paid:t.amount,spkNo:t.spkNo,term:paymentDescription(t),apm:t.apm,route:'/termin/'+t.id}]:[];});
+    return data.payments.flatMap(t=>{const p=index.get(t.planId);return p&&(selection.metric==='requested'?t.requested>0:t.amount>0)?[{...row(p),id:t.id,status:t.status,requested:t.requested,paid:t.amount,spkNo:t.spkNo,term:paymentDescription(t),apm:t.apm,route:'/termin/'+t.id}]:[];});
   }
   // Show all saved root plans, including zero drafts, because those are the source set for Total Nilai.
   if(selection.metric==='total'||selection.metric==='plans')return plans.filter(p=>selection.metric!=='total'||!p.parentId).map(row);

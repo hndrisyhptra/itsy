@@ -1,5 +1,13 @@
 # Optimasi query dan respons aplikasi
 
+## 26 November 2026 — Requested payment card without budget reads
+
+Dashboard no longer mounts useDashboardBudget/BudgetModal, eliminating the prior summary3HTTPqueries/detail4query requests for this view. NilaiPengajuanPembayaran reuses existing scoped matrix and one Map of termID→gross, no pertermfind/SQL/privatefetch/newendpoint/poller. Existing generic modal20DOM and normalizedPID Set reused; all source money/ledger/history intact. Previous budgetAPI remains compatible but is not fetched by Dashboard. Not a server-load benchmark.
+
+## 26 November 2026 — Executive read-only dashboard
+
+Graph-derived9cards/chart use loaded scopedmaps/currentresolvers, no perrowSQL/privatefile reads. Monthly buckets indexedonce,0newpoller; card/modal DOMbounded20. Masterbudget fetched separately onscope/revision/manualrefresh only: currentactorcontext +1activeBranchbatch +1SQLaggregate with groupedreservation+4uniqueitemjoins = **3HTTPqueries** at105PID; detail adds1LIMIT20 =**4**. No fullmasterboot/context/privatecashbon, wildcardliteral search/no automaticretry. Existingfullgraph stillloads; SQLcontains/largeOFFSETmayneedproductionmeasurement, fixturecountnotbottleneck-free claim. No schema/migration/worker/dependency/businesswrite. [Rules/limits](DASHBOARD_EXECUTIVE.md).
+
 ## 26 November 2026 — Account SQL pages and bounded Activity DOM
 
 AccountController mengganti seluruh users get dengan scoped-authorized Superadmin COUNT+LIMIT/OFFSET dan safe selectedcolumns. AccountAccess contexts hanya currentpage melalui satu batch UNION, bukan query per akun. Fixture105users: **4HTTPqueries** konstan untuk10/20/50/100baris termasuk konteks aktor. Search contains memakai parameter/literalwildcard, masih dapat memindai data; bukan bukti latensi/beban produksi. ActivityLog hanya slice existing authorizedevents, max100DOM,0newSQL/API/poller; full workspace event fetch belum dipaginasi. Semua read-only, tidak mengubah login/CRUD/approval/private/history/schema. [QA dan batas](SETTINGS_PAGINATION.md).

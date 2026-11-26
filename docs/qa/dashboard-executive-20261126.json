@@ -1,0 +1,75 @@
+{
+  "date": "2026-11-26",
+  "feature": "Nine executive dashboard cards and paid monthly bars; monthly expenditure omitted",
+  "php": {
+    "full_tests": 573,
+    "assertions": 17709,
+    "seconds": 129.415,
+    "memory_mb": 146.5,
+    "database": "sqlite :memory:",
+    "passed": true,
+    "focused_tests": 6,
+    "focused_assertions": 154,
+    "focused_seconds": 1.587
+  },
+  "frontend": {
+    "tests": 521,
+    "focused_tests": 19,
+    "passed": true,
+    "seconds": 5.137
+  },
+  "build": {
+    "typescript_vite": true,
+    "manifest_refs": 54,
+    "preload_dependencies": 45,
+    "profiles": 3
+  },
+  "queries": {
+    "fixture_pids": 105,
+    "summary_http": 3,
+    "detail_http": 4,
+    "detail_limit": 20,
+    "private_queries": 0
+  },
+  "browser": [
+    {
+      "scenario": "actual React App / mocked API / synthetic graph",
+      "cards": 9,
+      "chart_months": 12,
+      "modal_page20_last7_search": true,
+      "PID_drill": true,
+      "monthly_paid_without_APM": true,
+      "budget_SQL_response_mock_page_search_error_retry": true,
+      "branch_reset_unit_operation_scope": true,
+      "viewports": [
+        375,
+        768,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "js_errors": [],
+      "writes": [],
+      "requests": 9
+    }
+  ],
+  "limits": [
+    "Actual browser React App uses mocked API and synthetic graph; endpoint separately tested with real HTTP memory fixture",
+    "No physical MariaDB/aaPanel/load/export/Telegram verification",
+    "Existing authorized full graph still loads; contains search can scan",
+    "Budget remaining excludes unmapped PIDs and unmarked old PP allocations",
+    "Paid records with no verified date remain in total and are disclosed outside monthly chart"
+  ],
+  "mutations": {
+    "live_its": false,
+    "environment": false,
+    "migration": false,
+    "worker": false,
+    "server": false,
+    "dompis": false,
+    "business_state": false
+  },
+  "deployment": "Source PHP/routes + build/checkassets; refresh existing route cache if used; no new migration/specific worker restart"
+}
