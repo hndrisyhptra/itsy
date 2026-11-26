@@ -1,6 +1,6 @@
 import { appUrl, boot } from './laravel';
 import { postUpload, taskUploadProgress, type UploadProgressHandler } from './upload-progress';
-export type UploadKind='boq'|'evidence'|'mandor-ktp'|'mandor-bank'|'transfer-proof';
+export type UploadKind='boq'|'evidence'|'mandor-ktp'|'mandor-bank'|'transfer-proof'|'master-ktp'|'master-bank';
 export interface UploadTask {id:string;kind:UploadKind;documentId:string;name:string;status:'queued'|'processing'|'completed'|'failed';attempts:number;error:string|null;createdAt:string}
 export class UploadTaskFailedError extends Error {
   constructor(readonly taskId:string,message:string){super(message);this.name='UploadTaskFailedError';}
@@ -16,7 +16,7 @@ async function json(response:Response) {
 export async function enqueueUpload(kind:UploadKind,documentId:string,file:File,revision?:number,signal?:AbortSignal,onProgress?:UploadProgressHandler,requestId?:string):Promise<UploadTask> {
   if(!boot?.account)throw new Error('Gunakan sesi login aktif untuk upload.');
   const body=new FormData();body.set('file',file);body.set('request_id',requestId??crypto.randomUUID());body.set('document_id',documentId);if(revision!==undefined)body.set('revision',String(revision));
-  const path=kind==='boq'?'/api/uploads/boq':kind==='evidence'?'/api/uploads/payments/'+encodeURIComponent(documentId)+'/evidence':'/api/finance/uploads/'+kind+'/'+encodeURIComponent(documentId);
+  const path=kind==='boq'?'/api/uploads/boq':kind==='evidence'?'/api/uploads/payments/'+encodeURIComponent(documentId)+'/evidence':kind.startsWith('master-')?'/api/mandors/'+encodeURIComponent(documentId)+'/uploads/'+kind:'/api/finance/uploads/'+kind+'/'+encodeURIComponent(documentId);
   const data=await json(await postUpload(appUrl(path),body,{Accept:'application/json','X-CSRF-TOKEN':boot.csrf},onProgress,signal));
   onProgress?.(taskUploadProgress(data.task));
   window.dispatchEvent(new Event('area3:upload-queued'));

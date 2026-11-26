@@ -1,0 +1,161 @@
+{
+  "date": "2026-11-26",
+  "feature": "Master Mandor photo actions, bulk XLSX import and versioned SPK/kasbon recipient",
+  "user_clarification": "Bank/account/owner/both photos remain required before PP+BAKH+SPK package submission; initial Master save/import requires name/address/NIK only",
+  "policy": {
+    "directory": "same authenticated workspace, global Branch/unit, same five active manager roles",
+    "actions": "Edit always; missing either photo -> Upload; both saved -> Preview lazy readonly",
+    "draft": "incomplete Master may be explicitly selected on editable Draft SPK",
+    "formal": "existing requirePayee demands NIK/bank/account/owner/exact-SPK KTP and bank photos",
+    "linked_spk": "recipient/photo writes via Master then explicit allowed Draft reselection; historical unlinked manual flow retained",
+    "kasbon": "reads frozen SPK master-source version, never current-master GET overwrite or reprice"
+  },
+  "import": {
+    "file": "XLSX Data sheet,1000rows/5MB; bounded ZIP32MB/20k cells",
+    "required": [
+      "nama_mandor",
+      "alamat",
+      "nik_ktp"
+    ],
+    "optional": [
+      "no_rekening",
+      "nama_bank",
+      "nama_pemilik_rekening"
+    ],
+    "identity": "text NIK16/account1..40 preserves leading zero; numeric identity/formulas rejected",
+    "upsert": "workspace+keyed NIK hash; blank optional preserves existing; no absent deletion/photo replacement",
+    "preview": "names/action/row only, no business writes; local20DOM pagination",
+    "commit": "one workspace metadata-lock transaction, actor/workspace/file/current-version HMAC, UUID receipt replay,50 master/50 encrypted audit batches",
+    "source": "request temporary file only, sourceSHA/summary/receipt persisted; no original filename/PII in receipt",
+    "uncertain": "keep dialog/file/requestUUID; explicit same-UUID retry only, no automatic POST retry"
+  },
+  "migration": {
+    "new": "2026_11_26_000003_create_mandor_import_receipts",
+    "tables": "mandor_imports named UUIDPK/workspace+actorFK, nullable mandor_changes.import_id FK/unique(import_id,mandor_id)",
+    "rollback": "refuses populated imports",
+    "fresh_total_migrations": 79,
+    "named_schema_foreign_keys": 120,
+    "applied_live": false,
+    "physical_mysql_mariadb": "not tested"
+  },
+  "backend": {
+    "runtime": "XAMPP PHP8.2.4",
+    "database": "strict SQLite :memory:",
+    "full": {
+      "tests": 556,
+      "assertions": 17318,
+      "errors": 0,
+      "failures": 0,
+      "seconds": 122.707,
+      "memory_mb": 144.5,
+      "memory_limit_mb": 512,
+      "note": "Final full regression after MySQL JSON-null compatibility guard; same556/17318passed."
+    },
+    "focused": {
+      "tests": 37,
+      "assertions": 915,
+      "seconds": 8.397,
+      "memory_mb": 76.5
+    }
+  },
+  "coverage": [
+    "five allowed roles and forbidden Finance/approvers",
+    "required3, optional empty bank, encrypted private fields/audits, text leading zeros",
+    "duplicate NIK/invalid rows/numeric identity/formula/DTD/1001 rejection without writes",
+    "preview readonly, actual commit and sameUUID replay, changed actor/token/file/stale source refusal",
+    "NIK upsert preserves master id, created actor, optional bank, both photo pointers and file rows; unchanged version no audit rewrite",
+    "late audit trigger failure rolls back master/import receipt; populated migration rollback refuses",
+    "both units incomplete Draft selection then actual HTTP package submission fails all missing required recipient keys",
+    "linked SPK direct payee/old photo upload rejects; complete Master explicit reselection permits requirePayee",
+    "existing paid master/private/kasbon snapshots unchanged; original full financial regression"
+  ],
+  "queries": {
+    "1000_row_preview_http": 12,
+    "1000_row_commit_http": 55,
+    "lookup_chunk": 250,
+    "master_upsert_chunk": 50,
+    "audit_insert_chunk": 50,
+    "per_row_sql": false,
+    "list_105_records_http": 9,
+    "list_sizes": [
+      10,
+      20,
+      50,
+      100
+    ],
+    "select_2photos_http_each_unit": 54,
+    "linked_marker": "scalarJSON added to existing authorizationSELECT,0extraSQL"
+  },
+  "frontend": {
+    "tests": 504,
+    "failures": 0,
+    "skipped": 0,
+    "typescript_vite": "passed",
+    "assets": {
+      "manifest_references": 53,
+      "actual_preload_dependencies": 44,
+      "profiles": 3
+    },
+    "pint": "passed",
+    "diff_check": "passed"
+  },
+  "browser": {
+    "actual_app": true,
+    "api": "synthetic mocked APIs, external network blocked",
+    "roles": 6,
+    "viewports": [
+      375,
+      768,
+      1440
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "js_errors": 0,
+    "root_overflow": false,
+    "checks": [
+      "Upload vs Preview action/Edit enabled optional-bank fields",
+      "private lazy readonly preview",
+      "bulk45row preview20/20/5 and TIDAK0POST/YA2POST preview+commit",
+      "global list105/20/100/last5/search1, no Branch/unit params or inputs",
+      "Construction/Operation add,2photo queues,explicit source selection/readonly recipient,dirty other SPK fields preserved",
+      "Finance management menu hidden/direct UI denied, no NIK/account localStorage",
+      "same-SPK id+payeeVersion recipient refresh on second explicit selection, aborted reads ignored"
+    ],
+    "screenshots_inspected": [
+      "import1440light",
+      "import375dark",
+      "SPK375dark"
+    ],
+    "source_version_refresh": "passed final same-SPK explicit reselection v3->v4 in both units; readonly account updates to new snapshot while dirty Waspang input remains"
+  },
+  "qa_corrections": [
+    "Old missing-photo selection expectation updated to match clarified incomplete Draft allowance; strict formal HTTP requirement tested separately.",
+    "Header assertion corrected to existing middleware max-age=0; scenario reseed clears private file fixture.",
+    "SPK recipient effect keyed by id+payeeVersion, ignores aborted reads, preserves dirty manual inputs during same-version photo reload.",
+    "MySQL JSON null scalar tolerated in linked-marker check so old unlinked recipients remain editable."
+  ],
+  "limits": [
+    "No active its migration/read/write, real server aaPanel/worker or physical MySQL/MariaDB DDL/concurrency/load.",
+    "Backend memory/fake disk and browser mocked APIs; not production upload latency evidence.",
+    "No Word/PDF generator change or new physical render; existing document regression passes.",
+    "Template generated/ZIP-validated; no desktop Excel application interoperability claim."
+  ],
+  "deployment": [
+    "deploy source",
+    "php artisan migrate --force through000003",
+    "npm run build",
+    "npm run check:assets",
+    "restart only existing Area3 upload worker",
+    "reload and test one synthetic Mandor/import on permitted Draft"
+  ],
+  "not_performed": [
+    "live migration/import/backfill",
+    "ENV/APP_KEY changes",
+    "worker/server/Dompis edits",
+    "commit",
+    "push",
+    "deployment"
+  ]
+}

@@ -2,6 +2,21 @@
 name: area3-design-system
 description: Build or revise the its Area 3 interface with its specific enterprise design tokens, responsive shell, tables, and accessible interaction states. Do not apply its brand to Dompis Prov.
 ---
+
+## 26 November 2026 — Mandor import and completeness correction
+
+Follow latest docs/MASTER_MANDOR.md. Globaldirectory same5roles. Required3name/address/textNIK16 at initialsave/import; bank/account/owner/bothphotos still required beforebundleformal inbothunits. Edit always, Upload ifmissingphotos else Preview lazyreadonly; optionalbanklabels. Draftselection incompleteallowed, linkedSPK edits viamaster+explicitreselect only, oldunlinkedmanual and frozenSPK/kasbon/paid history unchanged. XLSX1000/5MB/textidentity/noformulas, preview20DOM/YA-TIDAK then atomicbyNIKupsert; optionalblankpreservesold/files/id, HMACcurrentversions/actor/source/UUIDreplay/encryptedaudit, lookup250/upsert50/audit50 no perrowSQL. Newmigration000003 additiveimportsreceipt/auditFK/refusepopulateddown preparedonly. Test1000/query12preview55commit, required3/duplicates/numericidentity/staleactor/token/replay/lateauditrollback/mandatoryformal/sourceprivate/oldfrozen; actualbrowsermockresponsive/actions/edit/importconfirm and documentedserver/DDL/exportlimits. Build/checkassets/operatorrestartonlyArea3uploadworker; no liveits/env/key/worker/server/Dompis changes.
+
+
+## 26 November 2026 — Master Mandor shared directory correction
+
+Latest user removes Mandor Branch/unit isolation only; follow latest docs/MASTER_MANDOR.md. Same5roles+activeaccount/workspace/privatePII controls, masterquery/form/filter no Branch/unit, globalworkspaceNIKdedup. Keep actualSPK Branch/unit/role/status/Head/Cancel/pending/revision/version/receipt guards and immutablecopiedfiles/payee/kasbon/history/PID/money. Additionalmigration000002 originnullable+globalindexes preserveslegacyrows/files/audit/receipt, rejectsduplicates beforeDDL/noidentitymerge and populatedsharedrollback. No liveits/env/worker/server/Dompis writes. TestsameMaster across2Branches+2units and forbidout-of-scopeSPK, globalPIIfileaccessonlyrole5, preservedlegacyhash/snapshots/FKenforcement/query9list54select, browserno Branch/unitinputs; record physicalDDL/export/server limits. Operator migrate/build/checkassets/restartonlyArea3uploadworker. Older scoped-master instructions below are superseded for master only.
+
+
+## 26 November 2026 — Master Mandor
+
+Follow docs/MASTER_MANDOR.md. Scoped5managementroles only, encryptedPII+privatephotos/no PIIboot/list/localStorage, SQL10/20/50/100 and lazydetail/max20SPKsearch350ms/abort. Basicmetadata thenexistingqueue2masterkinds, actor/scope/bytes rechecked. ExactDraftparents/revision+sourceversion/UUID/pending/Head/Cancel/descendantguards; explicitselection copies immutableSPKfiles+payeeversion, updatesdraftdealname/address only, retainsotherdirtySPKinputs. No historicalautomaticadoption/reprice/paid/approval/PID/ledger writes. Additiveguardedmigration/refusepopulatedrollback prepared only, operatordeploymigrate/build/assets/restartonlyArea3uploadworker. Test5roles/crossscope/duplicate/stale/replay/encryption/queuefailure/currentactor/atomiclatefailure/snapshotimmutability/querybounds, actualAppmockresponsive/confirm/search/photos/autofill andrecordlimits; never claim server or physicalDDL/Wordrender verified without evidence.
+
 ## 25 November 2026 — Compact Dashboard filter correction
 
 Latest user requires less verticalspace: title+2labelled dropdowns horizontal desktop, shortheading+2adjacent dropdownsphone. Reduce padding/gap/redundant visiblecopy, keep sr-onlyscope and Branch-onlyreset.36pxdesktop/40pxphone supersedes prior44pxpanel-only; scopedCSS/lightdark/no gradient, existing authorization/callback/memos/keys unchanged.36focusedDashboardtests/build/assets50refs41preloads×3 and actualAppmock responsiveQA; record actual height/visual/server limits in compactaudit. No backend/query/API/schema/dependency/poller/datawrite; build/checkassets only.

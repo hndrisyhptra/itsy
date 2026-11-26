@@ -51,6 +51,7 @@ class PrototypeDomain
             'saveDeal' => $this->saveDeal($this->object($args[0] ?? null), $args[1] ?? 'save'),
             'saveSpkFinance' => $this->saveSpkFinance($this->object($args[0] ?? null), $args[1] ?? 'save'),
             '_recordPayeeFile' => $this->recordPayeeFile($args[0] ?? ''),
+            '_selectMasterMandor' => $this->selectMasterMandor($args[0] ?? '', $this->object($args[1] ?? null)),
             '_setPayeeVersion' => $this->setPayeeVersion($args[0] ?? '', (int) ($args[1] ?? 0)),
             '_issueKasbon' => $this->issueKasbonSummary($args[0] ?? '', $this->object($args[1] ?? null)),
             '_attachTransferProof' => $this->attachTransferProof($args[0] ?? '', $this->object($args[1] ?? null)),
@@ -692,8 +693,8 @@ class PrototypeDomain
         $v['evidence'] = $old['evidence'] ?? '';
         unset($v['approvedWithProject']);
         unset($v['_payeeReady']);
-        unset($v['financialFlow'], $v['payeeVersion']);
-        foreach (['financialFlow', 'payeeVersion'] as $field) {
+        unset($v['financialFlow'], $v['payeeVersion'], $v['masterMandor']);
+        foreach (['financialFlow', 'payeeVersion', 'masterMandor'] as $field) {
             if (isset($old[$field])) {
                 $v[$field] = $old[$field];
             }

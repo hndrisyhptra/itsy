@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BudgetPidController;
 use App\Http\Controllers\FinanceDocumentController;
 use App\Http\Controllers\FinancePaymentCatalogController;
+use App\Http\Controllers\MandorMasterController;
 use App\Http\Controllers\MasterDesignatorController;
 use App\Http\Controllers\NegotiationProjectController;
 use App\Http\Controllers\PaymentProjectController;
@@ -54,6 +55,14 @@ Route::middleware(PrivatePrototype::class)->group(function () {
         Route::get('/api/prototype/negotiation/projects/{project}/plans', [NegotiationProjectController::class, 'plans'])->whereUuid('project')->middleware('throttle:120,1');
         Route::get('/api/prototype/payment-selection/projects', [PaymentProjectController::class, 'projects'])->middleware('throttle:120,1');
         Route::get('/api/prototype/payment-selection/projects/{project}/orders', [PaymentProjectController::class, 'orders'])->whereUuid('project')->middleware('throttle:120,1');
+        Route::get('/api/mandors/template', [MandorMasterController::class, 'template'])->middleware('throttle:20,1');
+        Route::post('/api/mandors/import', [MandorMasterController::class, 'import'])->middleware('throttle:10,1');
+        Route::get('/api/mandors', [MandorMasterController::class, 'index'])->middleware('throttle:120,1');
+        Route::post('/api/mandors', [MandorMasterController::class, 'store'])->middleware('throttle:30,1');
+        Route::get('/api/mandors/files/{file}', [MandorMasterController::class, 'file'])->whereUuid('file');
+        Route::get('/api/mandors/{mandor}', [MandorMasterController::class, 'show'])->whereUuid('mandor')->middleware('throttle:60,1');
+        Route::post('/api/mandors/{mandor}/uploads/{kind}', [MandorMasterController::class, 'upload'])->whereUuid('mandor')->where('kind', 'master-ktp|master-bank')->middleware('throttle:prototype-scans');
+        Route::post('/api/finance/spk/{spk}/mandor', [MandorMasterController::class, 'apply'])->where('spk', '[a-zA-Z0-9-]{3,100}')->middleware('throttle:30,1');
         Route::get('/api/masters', [MasterDesignatorController::class, 'index']);
         Route::get('/api/budgeting-pid', [BudgetPidController::class, 'index'])->middleware('throttle:120,1');
         Route::get('/api/budgeting-pid/reference', [BudgetPidController::class, 'reference'])->middleware('throttle:60,1');
@@ -79,7 +88,7 @@ Route::middleware(PrivatePrototype::class)->group(function () {
         Route::get('/', fn () => redirect()->route('prototype.dashboard'));
         Route::get('/dashboard', [PrototypeController::class, 'show'])->name('prototype.dashboard');
         Route::get('/{module}/{path?}', [PrototypeController::class, 'show'])
-            ->where('module', 'project-plan|boq|ba-kh|spk|ba-rp|termin|inbox|ba-pp|master-designator|master-khs|budgeting-pid|laporan|pengaturan')
+            ->where('module', 'project-plan|boq|ba-kh|spk|ba-rp|termin|inbox|ba-pp|master-designator|master-khs|master-mandor|budgeting-pid|laporan|pengaturan')
             ->where('path', '[a-zA-Z0-9/-]+');
     });
 });

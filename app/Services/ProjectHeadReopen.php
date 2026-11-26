@@ -69,7 +69,7 @@ final class ProjectHeadReopen
         $project = match ($command) {
             'saveDeal' => $input['projectId'] ?? '',
             'saveSpk', 'saveSpkFinance' => $deal($input['dealId'] ?? ''),
-            '_recordPayeeFile', '_setPayeeVersion', 'createTerm', 'createSettlementTerm' => $spk($input),
+            '_recordPayeeFile', '_setPayeeVersion', '_selectMasterMandor', 'createTerm', 'createSettlementTerm' => $spk($input),
             'attestBarp', 'saveTerm', 'submitFinanceTerm' => $term($input['id'] ?? ''),
             'resetPaymentApproval', 'prepareBapp', 'decide', 'adoptFinancePayment', '_submitSettlementKasbon', '_issueKasbon', '_attachTransferProof', 'decideFinancePayment', 'requestPartialPayment', 'verifyPartialPayment', 'payPartialPayment', 'recordApm', 'settleFinancePayment', 'updatePaymentApm', 'setKasbonPrintSigner', 'decideLegacySettlementReview', 'recordPayment', 'verifyTermScan', '_attachTermScan', '_attachTermWorkEvidence', 'removeTermWorkEvidence' => $term($input),
             'attestBapp', 'releaseVolume', 'createContinuation' => $term($lookup('bapps', $input)['termId'] ?? ''),

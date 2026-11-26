@@ -282,6 +282,28 @@ trait FinancePaymentWorkflow
         return null;
     }
 
+    private function selectMasterMandor(string $id, array $data): null
+    {
+        $this->admin();
+        $v = $this->record('spks', $id);
+        $d = $this->record('deals', $v['dealId']);
+        $p = $this->record('projects', $d['projectId']);
+        $this->assertBundleDocumentEditable($p, 'save');
+        if (! in_array($p['status'], ['Draft', 'Dikembalikan', 'Ditolak'], true) || $v['status'] !== 'Draft' || $d['status'] !== 'Draft'
+            || collect($this->state['terms'])->contains('spkId', $id)) {
+            $this->fail('Pilih Mandor hanya pada draf paket sebelum BA RP/pembayaran.');
+        }
+        $d['mandor'] = $data['name'];
+        $v['address'] = $data['address'];
+        $v['payeeVersion'] = (int) $data['payeeVersion'];
+        $v['masterMandor'] = ['id' => $data['id'], 'version' => (int) $data['version']];
+        $this->put('deals', $d);
+        $this->put('spks', $v);
+        $this->log('Mandor dipilih dari master', 'Identitas dan rekening disalin sebagai versi penerima SPK.', '/spk/'.$id);
+
+        return null;
+    }
+
     private function setPayeeVersion(string $id, int $version): null
     {
         $this->admin();

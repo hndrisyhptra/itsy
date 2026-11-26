@@ -1,5 +1,17 @@
 # Optimasi query dan respons aplikasi
 
+## 26 November 2026 — Mandor bulk import bounded to 1000 rows
+
+Reuse mastercodec bounded1000rows5MB/ZIP32MB/20k cells, textNIK/account+noformulas. Lookup250NIK/chunk, masterupsert50/auditinsert50, metadataworkspacelock and encryptedPII, no perrowSQL/fullgraph/revision mutation. Actual1000rowHTTP preview12/commit55; unchangedrows no version/audit rewrite, actorpayloadUUID receipt skips currentplan onreplay. Preview20DOM, stalepreview409, boundedexistinguploadprogress/no newpoller/worker/dependency. LinkedSPK marker added to original authSELECT0extraSQL, formalpayee completeness retained; source version explicit/frozenkasbon. Fixturequerycounts not serverlatency/loadproof. [Rules/QA/limits](MASTER_MANDOR.md).
+
+## 26 November 2026 — Shared Mandor lookup
+
+Remove Branch join/options query and unit/Branch predicates solely on MandorMaster; preserve exactSPK SQLauthorization. Same105fixture list10→9HTTPqueries across10/20/50/100pages/noPIIdataSELECT or perrowquery, workspace+nameindex forscopedsearch; globalworkspace+NIKunique/dedup lookup underexistingworkspace lock. Explicit selection54HTTPbothunits stilltwoimmutablecopies+payeeprofile+oneprojectioncommand. No newruntimeendpoint/poller/dependency/privatebootfetch; additionalDDLmigrationonly. Not serverlatency/load evidence. [Contract and limits](MASTER_MANDOR.md).
+
+## 26 November 2026 — Bounded Master Mandor directory
+
+No master PII joins or decryption in workflowboot/fullgraph/list. Scoped SQL count+offsetlimit10/20/50/100, namefilter, lazy1detail with2photos loaded onlyexplicit preview. Fixture105:10HTTPqueries independentofpage size (no perrowSQL); selection54HTTP inbothunits includes2filecopies+profile+canonicalworkspace response. CRUD/queueattachment takes workspace metadata lock withoutreadinggraph/changingworkflowrevision; apply reusesoneexistingprojectioncommand. Existinguploadedtasksmonitor reused/no newpoller/dependency/cache. Search350ms/AbortController/querykey preventsstale scopes andmax20SPKoptions, nosystemwideprivatefetch. Not a productionload/latency benchmark; bytescopy/privatepermission/query budgets require realserverUAT. [Contract/bounds](MASTER_MANDOR.md).
+
 ## 25 November 2026 — Budgeting Mandor tanpa query tambahan
 
 Canonical totals already produced by PP domain reused for grossMandorM/J/total/BOP. New-release planner builds loaded exact-parent maps only when BAPPs exist, returns before accepted-term scan when no own release, then O(terms+actuals+released+Mandorrows), no perrowSQL/catalog/private lookup. Legacy branch untouched. UI amount changes reuse scoped reference result; actual interactivebrowser1GET for all Mandor volume/price edits,0write. Same formal67/reference6/own7/mapping10012HTTP fixtures; not latency or productionload proof. No API/schema/migration/dependency/poller or crossrequest authorization cache. [Rules/tests/limits](BUDGETING_PID.md).

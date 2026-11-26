@@ -1,0 +1,174 @@
+{
+  "date": "2026-11-26",
+  "feature": "Scoped Master Mandor and SPK lookup/adoption",
+  "status": "implemented-isolated-tests-passed-not-deployed",
+  "roles": [
+    "Admin Konstruksi",
+    "Admin Operation",
+    "Admin Area",
+    "Officer 1 Operation",
+    "Superadmin"
+  ],
+  "contract": {
+    "scope": "workspace + active account Branch + exact work unit; SPK selection uses its PP scope",
+    "fields": [
+      "name",
+      "address",
+      "nik (16 digits)",
+      "accountNumber (1–40 digits)",
+      "accountName",
+      "bank",
+      "private KTP photo",
+      "private bank-book photo"
+    ],
+    "basic_save": "record persists before two queued photos, ready only after both attached",
+    "identity_unique": "HMAC NIK per workspace/Branch/unit",
+    "directory": "SQL page10/20/50/100 with scoped count, list contains no PII",
+    "selection": "explicit exact Draft SPK/BAKH and editable PP with no work/payment descendants, pending uploads or Head/Cancel issue; current revision/source version and actor+payload UUID",
+    "copied_snapshot": "new SPK-private photo IDs and encrypted payee version, Draft BA KH name/SPK address; old source/private/paid/approval/PID/ledger remains",
+    "master_edits": "no automatic selected SPK or kasbon updates",
+    "new_tables": {
+      "mandors": "id_mandor",
+      "mandor_files": "id_mandor_file",
+      "mandor_changes": "id_mandor_change"
+    },
+    "migration": "2026_11_26_000001_create_mandor_master additive, target guarded, populated rollback refused",
+    "queue": "existing uploads/area3-uploads with master-ktp/master-bank; no new worker/ENV/dependency"
+  },
+  "backend": {
+    "runtime": "XAMPP PHP 8.2.4",
+    "database": "strict SQLite :memory:",
+    "full": {
+      "tests": 546,
+      "assertions": 17055,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 133.436,
+      "memory_mb": 144.5,
+      "process_memory_limit_mb": 512
+    },
+    "master_focused": {
+      "tests": 8,
+      "assertions": 240,
+      "seconds": 1.832,
+      "memory_mb": 58.5
+    },
+    "migration_and_master_focused": {
+      "tests": 22,
+      "assertions": 551,
+      "seconds": 6.917,
+      "memory_mb": 62.5
+    },
+    "existing_upload_queue": {
+      "tests": 12,
+      "assertions": 146,
+      "seconds": 1.955
+    }
+  },
+  "checks": [
+    "all five manager roles with fresh actor scope",
+    "forbidden roles/unit/Branch/file/task scope",
+    "encrypted private profile and audit; NIK duplicate/stale version/UUID replay",
+    "queued two genuine fake test photos, worker byte verification/revoked actor/terminal cleanup",
+    "copied exact hashes/file IDs/name/address/provenance under both units",
+    "master edits leave selected SPK/payee unchanged",
+    "wrong source/revision/missing photos/issued document/internal-command rejection",
+    "injected late audit SQL failure rolls back workflow/private rows and cleans unlinked copies",
+    "existing synthetic paid table snapshots unchanged by master save/reads/uploads",
+    "105 rows SQL paging and constant querycount; no list private_data SELECT",
+    "new named PKs/FKs, populated rollback refused, PID recovery still preserves data"
+  ],
+  "query_fixtures": {
+    "master_list_http": 10,
+    "page_sizes": [
+      10,
+      20,
+      50,
+      100
+    ],
+    "list_count_independent_of_size": true,
+    "select_master_construction_http": 54,
+    "select_master_operation_http": 54,
+    "existing_boq500_http": 59,
+    "existing_barp500_http": 50,
+    "actual_component_queries": 13,
+    "incremental20pp": 8,
+    "full20pp": 353
+  },
+  "frontend": {
+    "tests": 502,
+    "failures": 0,
+    "skipped": 0,
+    "milliseconds": 5200.795875,
+    "new_focused": {
+      "tests": 3,
+      "failures": 0
+    },
+    "typescript_vite": "passed",
+    "assets": {
+      "manifest_references": 52,
+      "preload_dependencies": 43,
+      "profiles": 3
+    },
+    "pint": "passed",
+    "diff_check": "passed"
+  },
+  "browser": {
+    "actual_app": true,
+    "api": "intercepted synthetic responses, external network blocked",
+    "roles": 6,
+    "list_rows": 105,
+    "default_DOM": 20,
+    "size100_last_page": 5,
+    "search_total": 1,
+    "viewports": [
+      375,
+      768,
+      1440
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "js_errors": 0,
+    "root_overflow": false,
+    "construction_operation": [
+      "missing name → add → TIDAK no write → YA form",
+      "one master POST, two photo enqueues, one explicit selection POST",
+      "KTP private preview modal",
+      "canonical name/address/payee autofill",
+      "unsaved other SPK fields retained",
+      "no NIK/account values in localStorage"
+    ],
+    "master_only_roles": "menu/list/forms visible, no SPK authority added",
+    "finance": "master menu hidden/direct management page denied",
+    "screenshots_inspected": [
+      "dark master form",
+      "desktop light SPK identity",
+      "mobile dark SPK picker"
+    ]
+  },
+  "corrections_during_qa": [
+    "Initial file header assertion updated to actual Symfony max-age=0/no-store/private header.",
+    "Laravel fake PNG advertises MIME independently of bytes: test now verifies real worker rejects non-image bytes before link/ready.",
+    "Existing migration count76→77 and checked FK count109→117; PID recovery rollback fixture derives later migration count instead of hardcoded last3. Production rollback guards unchanged.",
+    "Browser exact file label included existing hint: explicit aria-label added to shared private photo input.",
+    "Metadata reload protected from overwriting dirty edit; uncertain first save retains UUID/generated target for explicit recovery."
+  ],
+  "limits": [
+    "No live its migration, read/write of real KTP/account photos, ENV/APP_KEY changes, active worker restart, aaPanel/server/Dompis changes, commit/push/deploy.",
+    "No new physical MariaDB/MySQL migration/concurrency/load test; actual runtime tests SQLite memory.",
+    "Browser API mocked; not server sessions or real long-running worker. PHP service worker executed against isolated fake disk/DB.",
+    "Document generators/approval signatures unchanged, no new Word/PDF rendering claim.",
+    "Local fixture query counts are not production latency or bottleneck-free evidence."
+  ],
+  "deployment": [
+    "backup and deploy source",
+    "php artisan migrate --force",
+    "npm run build",
+    "npm run check:assets",
+    "restart only existing Area3 upload worker so it recognizes master-ktp/master-bank",
+    "reload and scoped Master/SPK smoke test"
+  ],
+  "old_data": "No automatic directory backfill; stored SPK/kasbon/paid snapshots remain. No historical resubmission required."
+}

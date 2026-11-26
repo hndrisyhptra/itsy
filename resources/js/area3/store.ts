@@ -232,7 +232,7 @@ export async function uploadPrivateDocument(kind:UploadKind,documentId:string,fi
   const key=kind+'|'+documentId,requests=privateUploadRequests.get(file)??new Map<string,string>();privateUploadRequests.set(file,requests);
   const requestId=requests.get(key)??crypto.randomUUID();requests.set(key,requestId);
   try{const task=await enqueueUpload(kind,documentId,file,revision,undefined,onProgress,requestId);
-    await waitUpload(task,undefined,undefined,onProgress);await refreshState();requests.delete(key);return task;
+    await waitUpload(task,undefined,undefined,onProgress);if(!kind.startsWith('master-'))await refreshState();requests.delete(key);return task;
   }catch(error){
     // Only a confirmed terminal task can get a fresh ID on the next explicit attempt.
     // Network/polling uncertainty must keep the original idempotency key.

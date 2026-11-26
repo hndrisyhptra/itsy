@@ -1,0 +1,50 @@
+{
+  "date": "2026-11-26",
+  "feature": "Actionable missing Mandor import migration error",
+  "observed_cause": "local MySQL42S02/1146 missing its.mandor_imports before receipt read; user confirms local Simpan Impor",
+  "root_fix": "operator php artisan migrate through2026_11_26_000003, not run by agent",
+  "code_change": "narrow missing receipt table exception -> sanitized503 MANDOR_IMPORT_MIGRATION_REQUIRED, unrelated exceptions retained",
+  "queries": "0additional SQL/schema probes,1000row preview12/commit55 unchanged",
+  "client": "no uncertain-connection suffix for known migration/4xx/preview; keep requestUUID/file/preview, no automatic retry",
+  "tests": {
+    "focused_php": 39,
+    "assertions": 935,
+    "seconds": 8.912,
+    "memory_mb": 76.5,
+    "database": "strictSQLite :memory:",
+    "frontend": 505,
+    "frontend_failures": 0,
+    "build": "passed",
+    "assets": "53refs44preloads x3profiles",
+    "pint": "passed after test formatting",
+    "diff_check": "passed"
+  },
+  "coverage": [
+    "actual memory drop000003, commit503 without master/audit write, recreate000003, sameUUIDcommit/replay",
+    "simulated MySQL42S02/1146 handled safely without rawSQL",
+    "original late-audit failure rethrows500/atomicrollback",
+    "required3, encryption, upsert, sameactorpayloadreplay,1000rows tests retained",
+    "frontend knownmigration/validation/preview vs uncertaincommit messages"
+  ],
+  "browser": {
+    "actual_app": true,
+    "api": "mocked synthetic, external network blocked",
+    "previews": 1,
+    "commit_attempts": 2,
+    "same_uuid": true,
+    "first": "503 missing migration",
+    "second": "success after simulated operator migration",
+    "js_errors": 0,
+    "screenshot_inspected": true
+  },
+  "limits": [
+    "No fresh full PHP suite; prior556/17318 baseline remains historical.",
+    "No live its migration/read/write; only local log read.",
+    "No physical MySQL/MariaDB DDL, server/worker/env/Dompis writes or export render."
+  ],
+  "deployment": [
+    "operator migrate000003",
+    "source+build/checkassets",
+    "no worker change needed for this controller/UI correction"
+  ]
+}

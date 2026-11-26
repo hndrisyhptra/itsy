@@ -15,6 +15,7 @@ class MasterImportWorkbook
     public const HEADERS = [
         'designator' => ['kode_designator', 'uraian_pekerjaan', 'satuan', 'kode_jenis'],
         'khs' => ['kode_designator', 'kode_paket', 'harga'],
+        'mandor' => ['nama_mandor', 'alamat', 'nik_ktp', 'no_rekening', 'nama_bank', 'nama_pemilik_rekening'],
     ];
 
     private function invalid(string $message): never
@@ -120,6 +121,9 @@ class MasterImportWorkbook
                         $value .= $text->textContent;
                     }
                 }
+                if ($entity === 'mandor' && (int) $m[2] > 1 && in_array($m[1], ['C', 'D'], true) && $value !== '' && ! in_array($type, ['s', 'inlineStr', 'str'], true)) {
+                    $this->invalid("Sel {$address}: NIK KTP/nomor rekening harus berformat Teks agar digit dan nol awal tidak berubah. Gunakan template Mandor.");
+                }
                 $formula = $sheet->query('./*[local-name()="f"]', $cell)->length > 0;
                 if ($type === 'e' || ($formula && ! ($entity === 'khs' && $m[1] === 'C' && (int) $m[2] > 1 && in_array($type, ['', 'n'], true) && preg_match('/^\d+(?:\.\d+)?$/D', $value)))) {
                     $this->invalid("Sel {$address}: gunakan teks/angka valid. Rumus harga hanya diterima bila hasil angkanya sudah tersimpan; hitung ulang lalu simpan Excel.");
@@ -161,6 +165,19 @@ class MasterImportWorkbook
     /** Generate in memory: Apache may not access the CLI user's macOS TMPDIR. */
     public function template(string $entity, array $catalog): string
     {
+        if ($entity === 'mandor') {
+            return $this->writeSheets(['Data' => [self::HEADERS['mandor']], 'Panduan' => [
+                ['Petunjuk Impor Mandor'],
+                ['Nama Mandor, alamat dan NIK KTP wajib. Rekening, bank dan pemilik rekening opsional.'],
+                ['NIK harus 16 digit. Kolom NIK/rekening berformat Teks; pertahankan nol awal. Jangan pakai rumus.'],
+                ['Maksimal 1000 baris data / 5 MB. Isi sheet Data mulai baris 2, jangan ubah header.'],
+                ['NIK yang sama memperbarui nama/alamat. Kolom opsional kosong mempertahankan data lama.'],
+                ['NIK duplikat dalam satu file ditolak. Satu baris salah membatalkan seluruh impor.'],
+                ['Foto KTP dan buku tabungan diunggah setelah impor melalui tombol Upload/Edit.'],
+                ['Rekening dan kedua foto tetap wajib lengkap sebelum pengajuan paket PP + BA KH + SPK.'],
+                ['Impor tidak mengubah snapshot SPK, kasbon, approval atau pembayaran lama.'],
+            ]], ['Data' => [3, 4]]);
+        }
         $sheets = ['Data' => [self::HEADERS[$entity]], 'Panduan' => [['Petunjuk'],
             ['Isi sheet Data mulai baris 2. Jangan ubah header. Maksimal '.self::MAX_ROWS.' baris / 5 MB.'],
             ['Gunakan kode persis dari sheet referensi. ID database dibuat otomatis.'],
@@ -185,6 +202,12 @@ class MasterImportWorkbook
                 }
             }
         }
+
+        return $this->writeSheets($sheets);
+    }
+
+    private function writeSheets(array $sheets, array $textColumns = []): string
+    {
         $entries = [];
         $escape = fn ($v) => htmlspecialchars((string) $v, ENT_XML1 | ENT_QUOTES, 'UTF-8');
         $types = '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>';
@@ -196,7 +219,11 @@ class MasterImportWorkbook
             $types .= '<Override PartName="/xl/worksheets/sheet'.$index.'.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>';
             $book .= '<sheet name="'.$name.'" sheetId="'.$index.'" r:id="rId'.$index.'"/>';
             $rels .= '<Relationship Id="rId'.$index.'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet'.$index.'.xml"/>';
-            $xml = '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols><col min="1" max="1" width="32" customWidth="1"/><col min="2" max="2" width="65" customWidth="1"/><col min="3" max="4" width="24" customWidth="1"/></cols><sheetData>';
+            $xml = '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>';
+            foreach (range(1, max(array_map('count', $rows))) as $c) {
+                $xml .= '<col min="'.$c.'" max="'.$c.'" width="'.($c === 1 ? 32 : ($c === 2 ? 65 : 24)).'" customWidth="1"'.(in_array($c, $textColumns[$name] ?? [], true) ? ' style="2"' : '').'/>';
+            }
+            $xml .= '</cols><sheetData>';
             foreach ($rows as $n => $row) {
                 $xml .= '<row r="'.($n + 1).'">';
                 foreach ($row as $c => $value) {
@@ -212,7 +239,7 @@ class MasterImportWorkbook
         $entries['_rels/.rels'] = '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>';
         $entries['xl/workbook.xml'] = $book.'</sheets></workbook>';
         $entries['xl/_rels/workbook.xml.rels'] = $rels;
-        $entries['xl/styles.xml'] = '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF9FA1FF"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border><left style="thin"/><right style="thin"/><top style="thin"/><bottom style="thin"/></border></borders><cellStyleXfs count="1"><xf/></cellStyleXfs><cellXfs count="2"><xf fontId="0" fillId="0" borderId="0"/><xf fontId="1" fillId="2" borderId="0" applyFill="1" applyFont="1"/></cellXfs></styleSheet>';
+        $entries['xl/styles.xml'] = '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF9FA1FF"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border><left style="thin"/><right style="thin"/><top style="thin"/><bottom style="thin"/></border></borders><cellStyleXfs count="1"><xf/></cellStyleXfs><cellXfs count="3"><xf fontId="0" fillId="0" borderId="0"/><xf fontId="1" fillId="2" borderId="0" applyFill="1" applyFont="1"/><xf numFmtId="49" fontId="0" fillId="0" borderId="0" applyNumberFormat="1"/></cellXfs></styleSheet>';
 
         return $this->archive($entries);
     }

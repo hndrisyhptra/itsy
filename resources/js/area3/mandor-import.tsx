@@ -1,0 +1,24 @@
+import {useState} from 'react';
+import {Download,Upload,FileCheck} from 'lucide-react';
+import {appUrl,boot} from './laravel';
+import {Button,Field,Modal,Notice,Table,ActionLink,toast} from './ui';
+import {postUpload,startingUpload,type UploadProgress} from './upload-progress';
+import {UploadProgressView} from './upload-progress-view';
+export type MandorImportPreview={sha256:string;token:string;total:number;summary:{created:number;updated:number;unchanged:number};rows:{row:number;name:string;action:'created'|'updated'|'unchanged'}[]};
+export function mandorImportFailure(stage:'preview'|'commit',error:unknown,uncertain:boolean){
+ const message=error instanceof Error?error.message:'Impor belum dikonfirmasi.';
+ return message+(stage==='commit'&&uncertain?' Status penyimpanan belum dapat dipastikan. Pertahankan file/dialog lalu gunakan Simpan Impor lagi untuk memeriksa UUID yang sama.':'');
+}
+export function MandorImport({onClose,onComplete}:{onClose:()=>void;onComplete:()=>void}){
+ const [file,setFile]=useState<File|null>(null),[preview,setPreview]=useState<MandorImportPreview>(),[request,setRequest]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(''),[progress,setProgress]=useState<UploadProgress>(),[page,setPage]=useState(1);
+ async function send(stage:'preview'|'commit'){
+  if(!file||busy||stage==='commit'&&!preview)return;if(file.size>5*1024*1024){setError('Ukuran file maksimal 5 MB.');return;}setBusy(true);setError('');setProgress(startingUpload());
+  let uncertain=stage==='commit';
+  const form=new FormData();form.set('file',file);form.set('stage',stage);if(stage==='commit'&&preview){form.set('sha256',preview.sha256);form.set('token',preview.token);form.set('request_id',request);}
+  try{const response=await postUpload(appUrl('/api/mandors/import'),form,{Accept:'application/json','X-CSRF-TOKEN':boot?.csrf??''},setProgress),data=await response.json();
+   if(!response.ok){if(response.status<500||data.code==='MANDOR_IMPORT_MIGRATION_REQUIRED')uncertain=false;if(response.status===409){setPreview(undefined);setRequest('');}throw Error((Object.values(data.errors??{}).flat() as string[]).join('\n')||data.message||'Impor belum dikonfirmasi.');}
+   setProgress({phase:'completed',percent:100});if(stage==='preview'){setPreview(data);setRequest(crypto.randomUUID());setPage(1);}else{toast(`Impor Mandor selesai: ${data.summary.created} baru, ${data.summary.updated} diperbarui, ${data.summary.unchanged} tetap.`);onComplete();}
+  }catch(e){setProgress(p=>({phase:'error',percent:p?.percent??null}));setError(mandorImportFailure(stage,e,uncertain));}finally{setBusy(false);}
+ }
+ return <Modal title="Bulk Import Mandor" wide onClose={()=>{if(!busy)onClose();}}><div className="stack"><Notice>Nama, alamat dan NIK KTP wajib. Rekening, bank dan pemilik rekening opsional; foto dilengkapi melalui Upload/Edit. Maksimal 1000 baris / 5 MB. NIK dan rekening harus berformat Teks.</Notice><Notice>NIK yang sudah ada memperbarui nama/alamat. Kolom opsional kosong mempertahankan data lama; foto dan snapshot SPK/kasbon lama tetap. Seluruh baris harus valid sebelum simpan.</Notice><ActionLink className="btn" confirm="Unduh template Excel Mandor?" href={appUrl('/api/mandors/template')}><Download size={14}/>Download Template Mandor</ActionLink><Field label="File Excel Mandor"><input aria-label="File bulk import Mandor" type="file" accept=".xlsx" disabled={busy} onChange={e=>{setFile(e.target.files?.[0]??null);setPreview(undefined);setRequest('');setError('');setProgress(undefined);}}/></Field>{progress&&<UploadProgressView name="Impor Mandor" progress={progress}/>} {error&&<Notice tone="error">{error}</Notice>}{preview&&<><Notice>{preview.summary.created} baru · {preview.summary.updated} diperbarui · {preview.summary.unchanged} tetap</Notice><Table headers={['Baris','Nama Mandor','Aksi']}>{preview.rows.slice((page-1)*20,page*20).map(r=><tr key={r.row}><td>{r.row}</td><td>{r.name}</td><td>{{created:'Tambah',updated:'Perbarui',unchanged:'Tetap'}[r.action]}</td></tr>)}</Table><div className="table-foot"><span>Total {preview.total} baris</span><div className="actions"><Button disabled={page===1||busy} onClick={()=>setPage(v=>v-1)}>Sebelumnya</Button><span>Halaman {page}/{Math.max(1,Math.ceil(preview.total/20))}</span><Button disabled={page*20>=preview.total||busy} onClick={()=>setPage(v=>v+1)}>Berikutnya</Button></div></div></>}<div className="modal-actions"><Button disabled={busy} onClick={onClose}>Tutup</Button><Button confirm="Unggah dan periksa file Mandor? Data belum disimpan pada tahap ini." disabled={!file||busy} onClick={()=>void send('preview')}><FileCheck size={14}/>Periksa File</Button><Button primary confirm="Simpan seluruh hasil impor Mandor yang telah diperiksa?" disabled={!preview||busy} onClick={()=>void send('commit')}><Upload size={14}/>Simpan Impor</Button></div></div></Modal>;
+}

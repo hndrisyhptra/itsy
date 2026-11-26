@@ -68,7 +68,7 @@ final class ProjectCancellation
             'adoptApprovalOrder' => $input === 'projects' ? ($args[1] ?? '') : $term($args[1] ?? ''),
             'saveDeal' => $deal($input['id'] ?? '') ?: ($input['projectId'] ?? ''),
             'saveSpk', 'saveSpkFinance' => $spk($input['id'] ?? '') ?: $deal($input['dealId'] ?? ''),
-            '_recordPayeeFile', '_setPayeeVersion', 'createTerm', 'createSettlementTerm' => $spk($input),
+            '_recordPayeeFile', '_setPayeeVersion', '_selectMasterMandor', 'createTerm', 'createSettlementTerm' => $spk($input),
             'saveTerm', 'submitFinanceTerm', 'attestBarp' => $term($input['id'] ?? ''),
             'attestBapp', 'releaseVolume', 'createContinuation' => $term($find('bapps', $input)['termId'] ?? ''),
             default => '',

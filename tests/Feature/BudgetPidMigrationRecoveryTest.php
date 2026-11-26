@@ -66,7 +66,7 @@ class BudgetPidMigrationRecoveryTest extends TestCase
 
     public function test_retry_after_only_control_table_survived_preserves_version_and_completes_both_migrations(): void
     {
-        $this->artisan('migrate:rollback', ['--step' => 3, '--force' => true])->assertSuccessful();
+        $this->artisan('migrate:rollback', ['--step' => DB::table('migrations')->where('migration', '>=', '2026_11_24_000001_create_budgeting_pid_master')->count(), '--force' => true])->assertSuccessful();
         Schema::create('budget_pid_controls', function (Blueprint $t) {
             $t->unsignedTinyInteger('id_budget_control')->primary();
             $t->unsignedBigInteger('version')->default(0);
@@ -136,7 +136,7 @@ class BudgetPidMigrationRecoveryTest extends TestCase
 
     public function test_incompatible_existing_table_is_not_skipped_or_reset_and_preflight_creates_nothing(): void
     {
-        $this->artisan('migrate:rollback', ['--step' => 3, '--force' => true])->assertSuccessful();
+        $this->artisan('migrate:rollback', ['--step' => DB::table('migrations')->where('migration', '>=', '2026_11_24_000001_create_budgeting_pid_master')->count(), '--force' => true])->assertSuccessful();
         Schema::create('budget_pid_controls', function (Blueprint $t) {
             $t->unsignedTinyInteger('id_budget_control')->primary();
             $t->string('version'); // A different schema must not be adopted by hasTable alone.

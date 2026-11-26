@@ -1,5 +1,21 @@
 # Catatan perubahan it's Area 3
 
+## 26 November 2026 — Pesan impor Mandor saat migration belum lengkap
+
+Log lokal SimpanImpor500 berasal dari tabelmandor_imports yang belum dibuat. Ditambahkan pesan pembaruan database yang jelas, tanpa petunjuk koneksi terputus untuk kondisi ini. UUID/file tetap untuk percobaan ulang setelah operator menjalankan migration000003; tidak ada migration/data aktif yang dijalankan agen.39focusedPHP/935assertions,505frontend/build/aset/browsermock lulus. [Detail](MASTER_MANDOR.md#koreksi-server-error-saat-simpan-impor--26-november-2026).
+
+## 26 November 2026 — Import Mandor dan aksi kelengkapan foto
+
+Tambah Template XLSX/Bulk Import1000baris, wajib nama/alamat/NIK; rekening/bank/pemilik opsional saat simpan awal. NIK existing memperbarui, kolom opsional kosong mempertahankan nilai; preview/konfirmasi/atomicreceipt/audit terenkripsi. Aksi Edit selalu, Upload bila foto belum lengkap dan Preview bila lengkap. DraftSPK boleh memakai data awal, rekening/kedua foto tetap wajib sebelum AjukanPaket; linkedSPK diperbarui lewat master dan pilihan ulang eksplisit. Kasbon tetap memakai snapshot penerima tersimpan, historis tidak ditulis ulang. Migration000003 diperlukan, build/checkaset/restart hanya worker uploadArea3 oleh operator. [Panduan dan QA](MASTER_MANDOR.md).
+
+## 26 November 2026 — Master Mandor berlaku lintas Branch dan unit
+
+Koreksi permintaan pengguna: master kini satu daftar bersama seluruh Branch/Konstruksi/Operation; form, filter dan kolom Branch/unit dihapus. Lima peran tetap mengelola, data yang sama dapat dipilih pada SPK berbeda unit/Branch sesuai akses dokumen. NIK unik pada daftar bersama, master lama/profil/file/snapshot tetap; migration000002 menyesuaikan nullability/index tanpa merge/delete. Build/checkaset/restartworkerArea3+migrate oleh operator, bukan agen. [Aturan dan batas](MASTER_MANDOR.md).
+
+## 26 November 2026 — Master Mandor dan pencarian di SPK
+
+Tambah Master Mandor untuk lima peran pengelola sesuai Branch/unit, nama/alamat/NIK/rekening/pemilik/bank, foto KTP+buku tabungan lewat queue existing, edit versi dan SQLpagination10/20/50/100. SPK Draft mencari nama; belum ada→konfirmasi→form master langsung; pilih eksplisit mengisi nama BA KH Draft, alamat SPK dan snapshot penerima/fileSPK. Identitas privat terenkripsi/scoped, rekening kasbon lama tidak berubah. Tiga tabel baru/guardedmigration, tanpa backfill/workerbaru/ENV. Operator migrate+build/checkassets+restart hanya worker upload Area3. [Panduan, pengujian dan batas](MASTER_MANDOR.md).
+
 ## 25 November 2026 — Dasar plafon PID menjadi BOQ Mandor
 
 Validasi Material/Jasa/TOTAL kini dari gross BOQ TA - Mandor; BOP terpisah. Sebelum diisi tampil referensi+sisa tanpa membandingkan Owner; sesudah input perbandingan langsung berubah, halaman SPK sama. Server policy2 untuk baru/editabletracked, alokasi lama pending/Sah/paid tetap; revisi menahan saldo sampai pengajuan ulang, PP pra-budget tetap exempt. Pelepasan memakai Mandor dengan cap unused/accepted. Tanpa migration/query/API/poller baru, tanpa backfill atau perubahan PPh/nominal dokumen. [Kontrak, tes dan deployment](BUDGETING_PID.md).

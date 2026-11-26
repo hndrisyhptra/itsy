@@ -1,0 +1,157 @@
+{
+  "date": "2026-11-26",
+  "feature": "Shared Master Mandor across all Branches and work units",
+  "supersedes": "Branch/unit isolation of the initial Master Mandor feature only",
+  "policy": {
+    "directory": "all Branches and Konstruksi/Operation within authenticated workspace",
+    "roles": "same five active management roles",
+    "master_form_filter_columns": "no Branch/unit inputs, filters or columns",
+    "old_client_origin_parameters": "optional/inert, never access/scope/new-record origin",
+    "new_records": "branch_id/unit NULL",
+    "old_origins": "retained as historical provenance, never an access filter",
+    "nik": "unique workspace+keyed NIK hash",
+    "document_access": "exact PP/BAKH/SPK role/Branch/unit/state/Head/Cancel/pending/approval/paid guards unchanged",
+    "history": "existing master/file/audit/receipt/SPK/payee/kasbon snapshots preserved"
+  },
+  "migration": {
+    "new": "2026_11_26_000002_share_mandor_master_across_units",
+    "original": "000001 unchanged",
+    "changes": [
+      "nullable origin columns",
+      "unique workspace/NIK index",
+      "workspace/name search index"
+    ],
+    "data_rewrite": false,
+    "duplicates": "preflight refuses before DDL without deleting/merging/repointing identities",
+    "repeat": "up twice tested; row snapshots unchanged",
+    "rollback": "refuses saved global NULL-origin records",
+    "sqlite": "foreign_keys stays enabled; temporary defer only during parent rebuild, full FK check then immediacy restored",
+    "physical_mysql_mariadb": "not tested this correction",
+    "applied_live": false
+  },
+  "backend": {
+    "runtime": "XAMPP PHP 8.2.4",
+    "database": "strict SQLite :memory:",
+    "full": {
+      "tests": 548,
+      "assertions": 17098,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 129.6,
+      "memory_mb": 144.5,
+      "process_memory_limit_mb": 512
+    },
+    "master_focused": {
+      "tests": 10,
+      "assertions": 283,
+      "seconds": 1.973,
+      "memory_mb": 60.5
+    },
+    "migration_plus_master_earlier_focused": {
+      "tests": 24,
+      "assertions": 590,
+      "seconds": 7.274,
+      "note": "Full and final master runs include four later rollback/FK assertions."
+    }
+  },
+  "coverage": [
+    "same master used by restricted actors on two Branches/two units",
+    "old inert filter parameters cannot restrict or rebind master",
+    "master remains readable when Branch/unit differs while unauthorized SPK selection is 404",
+    "master private photos accessible to the five global managers, forbidden roles remain 403",
+    "global NIK duplication and stale/replay/encryption/queue-byte/revoked-actor/cleanup guards",
+    "matching pre-update actor+payload receipt replay without altering saved receipt",
+    "populated legacy schema down/up/up preserves master/file/audit row hashes",
+    "duplicate legacy NIK preflight refuses without schema/index/data mutation",
+    "FKs enforced and restored after memory schema rebuild",
+    "old paid/private snapshots remain unchanged",
+    "global-record rollback refusal"
+  ],
+  "queries": {
+    "master_list_http": 9,
+    "previous_master_list_http": 10,
+    "sizes": [
+      10,
+      20,
+      50,
+      100
+    ],
+    "constant_query_count": true,
+    "no_private_data_select_in_list": true,
+    "selection_http_construction": 54,
+    "selection_http_operation": 54
+  },
+  "frontend": {
+    "tests": 502,
+    "failures": 0,
+    "skipped": 0,
+    "milliseconds": 4843.302083,
+    "typescript_vite": "passed",
+    "assets": {
+      "manifest_references": 52,
+      "preload_dependencies": 43,
+      "profiles": 3
+    },
+    "pint": "passed",
+    "diff_check": "passed"
+  },
+  "browser": {
+    "actual_app": true,
+    "api": "mocked synthetic, external network blocked",
+    "roles": 6,
+    "master_rows": 105,
+    "viewports": [
+      375,
+      768,
+      1440
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "js_errors": 0,
+    "root_overflow": false,
+    "checks": [
+      "no Branch/unit filter, form inputs or directory request query",
+      "new-master POST omits origin fields",
+      "20/100/last5/search1",
+      "Construction and Operation missing-name add/YA-TIDAK/two photo queue uploads/one selection",
+      "private photo preview",
+      "canonical autofill and unsaved other SPK fields retained",
+      "no NIK/account localStorage",
+      "Finance master menu hidden and direct management UI denied"
+    ],
+    "screenshots_inspected": [
+      "master form desktop dark",
+      "SPK mobile dark"
+    ]
+  },
+  "qa_corrections": [
+    "First focused cross-unit test reused the same scenario source SPK ID, so its old-ID404 assertion actually selected the current authorized document. Fixture now explicitly switches actor to an unauthorized unit; server document guard unchanged.",
+    "SQLite populated parent CHANGE requires transient FK deferral during rebuild; migration now validates all FKs and restores immediate enforcement without disabling FK checks. No test memory guard relaxed."
+  ],
+  "limits": [
+    "No physical MySQL/MariaDB DDL/concurrency/load, aaPanel sessions or real long-running worker test.",
+    "Browser API mock; backend service/queue tests use isolated fake disk/SQLite.",
+    "No Word/PDF generator changes or new physical export render.",
+    "Fixture counts are not production latency or bottleneck-free evidence."
+  ],
+  "deployment": [
+    "deploy code",
+    "php artisan migrate --force",
+    "npm run build",
+    "npm run check:assets",
+    "restart only existing Area3 upload worker",
+    "reload and smoke test same Mandor across permitted SPKs"
+  ],
+  "not_performed": [
+    "live its reads/writes",
+    "live migration",
+    "PII import/backfill",
+    "ENV/key changes",
+    "worker/server/Dompis changes",
+    "commit",
+    "push",
+    "deployment"
+  ]
+}

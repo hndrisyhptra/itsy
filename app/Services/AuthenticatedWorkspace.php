@@ -162,7 +162,7 @@ class AuthenticatedWorkspace
             'adoptApprovalOrder' => ($input === 'projects' ? $project($args[1] ?? '') : ($input === 'terms' ? $term($args[1] ?? '') : null)),
             'cancelProject', 'resetProjectApproval', 'decideProject', 'assignProjectApprovers', 'assignPaymentApprovers', 'reviewBoq', 'finalizeBoq' => $project($input),
             'saveDeal' => $project($input['projectId'] ?? ''),
-            '_recordPayeeFile', '_setPayeeVersion' => $spk($input),
+            '_recordPayeeFile', '_setPayeeVersion', '_selectMasterMandor' => $spk($input),
             'saveSpkFinance', 'saveSpk' => $deal($input['dealId'] ?? ''),
             'createTerm', 'createSettlementTerm' => $spk($input),
             'submitFinanceTerm', 'saveTerm' => $spk($input['spkId'] ?? ''),
