@@ -6,3 +6,13 @@
 @media(prefers-reduced-motion:no-preference){.access-button,.password-toggle{transition:background .15s ease}}
 
 .setup-placement{font-size:12px;color:#667085}.setup-placement summary{cursor:pointer;font-weight:600}.setup-placement .account-grid{grid-template-columns:1fr;margin-top:16px;gap:16px}
+
+/* Account directory: SQL paging and an explicit GET search; no extra client requests. */
+.accounts-filters{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;padding:18px;background:#fff;border:1px solid var(--border);border-radius:6px}
+.accounts-search{flex:1;min-width:240px}
+.accounts-filters .access-field input,.accounts-filters .access-field select{height:42px}
+.accounts-pagination{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin:20px 0;font-size:12px;color:var(--muted)}
+.accounts-page-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.accounts-pagination [aria-disabled=true]{opacity:.5;cursor:default}
+.accounts-empty{text-align:center;color:var(--muted)}
+@media(max-width:767px){.accounts-search{min-width:0;flex-basis:100%}.accounts-filters .access-field:not(.accounts-search){flex:1}.accounts-pagination{align-items:flex-start}.accounts-page-actions{width:100%;justify-content:space-between;gap:8px}.accounts-page-actions .access-button{font-size:11px;padding:8px}}

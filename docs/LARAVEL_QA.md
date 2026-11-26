@@ -1,5 +1,15 @@
 # Laravel rebuild QA — 2 November 2026
 
+## 26 November 2026 — Pagination Pengaturan dan pencarian akun
+
+PHP terfokus AccountPaginationTest/AuthenticationTest/UserJabatanTest **17 tes /296 assertions**, lulus 2,843s58,50MB, SQLite`:memory:`. Fixture105akun **4HTTPqueries** konstan pada10/20/50/100baris, aman tanpa password SELECT dan contexts hanya currentpage; uji pencarian nama/uppercaseusername/NIK/email/jabatan/role/wildcardliteral, invalidparameters/escaping/guest/403/total105/last5. Tidak mengulang fullPHP.
+
+Frontend penuh **512 tes**,0failed/skipped4050ms; TypeScript/Vite/assets **53refs44preloads×3** lulus. ActualApp/API mock105events/default20/size100last5/size10reset1,375/768/1440lightdark; akun memakai actualBlade dari HTTP testmemory dengan navigasiGETmock/default20/size100last5/search1/empty/reset/newsearchresetsPage,3width.0JSerrors/0writes/rootnooverflow; batas tombol pagination pada375px diperiksa dan screenshot setelah animasi viewport selesai. Footer Aktivitas memakai grid responsif khusus tanpa mengubah tabel lain. Snapshotgenerator terpisah1test/5assertions. Bukan realserver/MySQL/load/export/realdata evidence. Tidak ada migration/env/worker/liveits/server/Dompis perubahan. [Kontrak](SETTINGS_PAGINATION.md), [audit](qa/settings-pagination-20261126.json).
+
+## 26 November 2026 — Label notifikasi penyimpanan ke server
+
+Perubahan teks App.tsx: overlay/aria-label “Menyimpan data ke server”, footer pending sama dan confirmed “Tersimpan di server”. TypeScript/Vite/build dan checkaset53manifestrefs44preloads×3 serta diffcheck lulus. Tidak menambah tes baru atau mengulang fullPHP/frontend/browser untuk perubahan redaksi ini; tidak mengubah logika/backend/query/schema/data, tanpa serverdeploy/migration/workerwrites.
+
 ## 26 November 2026 — PP/BOQ referenced component FK failure
 
 UserprovidedaaPanellog MySQL23000/1451,a3_fk_037 contract_components→boq_components, projectChildren564 proves deleteblocked. LocalactualreuploadsameworkbookfreshUUID reproducesmatchingpath, originalproductionpayloadunknown. FixexactPP/KHSstableIDs/editablebudgetrefmap, loadedrootdeal/childallocations+existingledgerguard and SQLcandidatehistoryEXISTS422/rollback, neverdisableFK/cascade/backfill.

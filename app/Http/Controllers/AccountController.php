@@ -23,9 +23,25 @@ class AccountController extends Controller
     {
         $this->authorizeAdmin($request);
 
-        $users = User::orderBy('name')->get();
+        $input = $request->validate(['q' => 'sometimes|nullable|string|max:150', 'per_page' => 'sometimes|integer|in:10,20,50,100', 'page' => 'sometimes|integer|min:1|max:1000000']);
+        $search = trim($input['q'] ?? '');
+        $perPage = (int) ($input['per_page'] ?? 20);
+        $query = User::query();
+        if ($search !== '') {
+            $pattern = '%'.str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $search).'%';
+            $roles = array_keys(array_filter(AccountAccess::ROLES, fn ($label) => str_contains(Str::lower($label), Str::lower($search))));
+            $query->where(function ($q) use ($pattern, $roles) {
+                foreach (['name', 'username', 'nik', 'email', 'jabatan', 'role'] as $column) {
+                    $q->orWhereRaw($column." LIKE ? ESCAPE '!'", [$pattern]);
+                }
+                if ($roles) {
+                    $q->orWhereIn('role', $roles);
+                }
+            });
+        }
+        $users = $query->orderBy('name')->orderBy('id_user')->paginate($perPage, ['id_user', 'name', 'username', 'nik', 'email', 'jabatan', 'role', 'active', 'work_unit_id', 'access_scope', 'id_regions'])->appends(['q' => $search, 'per_page' => $perPage]);
 
-        return view('auth.accounts', ['users' => $users, 'contexts' => app(AccountAccess::class)->contexts($users)]);
+        return view('auth.accounts', ['users' => $users, 'search' => $search, 'perPage' => $perPage, 'contexts' => app(AccountAccess::class)->contexts($users->getCollection())]);
     }
 
     public function edit(Request $request, ?User $user = null)

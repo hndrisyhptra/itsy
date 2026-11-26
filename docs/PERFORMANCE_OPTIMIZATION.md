@@ -1,5 +1,9 @@
 # Optimasi query dan respons aplikasi
 
+## 26 November 2026 — Account SQL pages and bounded Activity DOM
+
+AccountController mengganti seluruh users get dengan scoped-authorized Superadmin COUNT+LIMIT/OFFSET dan safe selectedcolumns. AccountAccess contexts hanya currentpage melalui satu batch UNION, bukan query per akun. Fixture105users: **4HTTPqueries** konstan untuk10/20/50/100baris termasuk konteks aktor. Search contains memakai parameter/literalwildcard, masih dapat memindai data; bukan bukti latensi/beban produksi. ActivityLog hanya slice existing authorizedevents, max100DOM,0newSQL/API/poller; full workspace event fetch belum dipaginasi. Semua read-only, tidak mengubah login/CRUD/approval/private/history/schema. [QA dan batas](SETTINGS_PAGINATION.md).
+
 ## 26 November 2026 — BOQ reimport identity and reference checks
 
 Exact savedPP/KHS indexes normalize UUIDs and editableplanrefs in PHP/TS0SQL. Loadedroot/child/dealsets validate referencedcomponents, existingledger availability reused; no perrowcatalog/sourcequery. Conditionalprune only when actualremovedcomponents, ≤3EXISTS onindexedcontract/movement/releaseFKs,0newnormalquery. Real26rowreuploadbothunitswithBAKH/SPK61HTTP/newroot26BOQ64; full500BOQ59/500BARP50/detail13/full20PP353vs8 unchanged. Keep serializedtransaction/revision/receipts/PID and financial/privatehistory; not productionlatency/concurrencyloadproof. No migration/API/poller/dependency. [QA/limits](PP_DRAFTS_PREVIEW.md#26-november-2026--server-error-pp-komponen-boq-sudah-dirujuk-ba-kh).

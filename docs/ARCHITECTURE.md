@@ -1,5 +1,13 @@
 # Arsitektur aplikasi it's Area 3
 
+## 26 November 2026 — Settings pagination and account search
+
+ActivityLog membatasi DOM dari s.events yang sudah diotorisasi, tanpa endpoint/query baru. AccountController memakai COUNT+LIMIT/OFFSET, urutan name/id_user, kolom aman terpilih dan batch konteks hanya halaman aktif. Pencarian GET terikat parameter dengan wildcard literal dan label peran; akses /akun tetap Superadmin. Blade menyimpan q/per_page pada navigasi dan kembali halaman1 saat pencarian baru. Tidak ada mutasi data/approval/schema. [Kontrak, QA dan batas](SETTINGS_PAGINATION.md).
+
+## 26 November 2026 — Istilah penyimpanan pada antarmuka
+
+App.tsx mengganti kataLaravel pada statuspending/confirmedfooter dan aria-labeloverlay menjadi server. Tetap memakai persistencePending/lastSaved existing, tanpa perubahanstate/request/receipt/query/API/schema. TypeScript/Vite/checkaset lulus; perubahan teks tidak memerlukan migration atau restartworker.
+
 ## 26 November 2026 — Stable root BOQ identities and safe prune
 
 Serverlog1451/a3_fk_037 proves referencedBOQdelete inprojectChildren. New purePHP/TS ProjectBoqIdentity stabilizes sameexactcatalog row withinexact editable savedroot, maps draftplanreferenceIDs only, checksusedrootdeal/continuationcomponents+existingledgeravailability. Editor stabilizes beforebudgetapply/validation; server canonical afterrawrowvalidation beforebudget/apply/write, currentKHS/manifest/wholevolume/receipt/PIDstillguarded. SQLprune conditionallyEXISTScontract/movement/release≤3 onlynonemptycandidate,422beforedelete/atomicrollback even hiddenhistory; no FKdisable/cascade/schema/API/poller/dependency orlivewrites. Childsnapshots/contractIDs/paid/sourcefiles unchanged, no sibling/name/orderfallback. Realqueued26rowbothunitreimportafterBAKHSPK61HTTP/newDraft64 unchanged. [Contract/QA/deploy](PP_DRAFTS_PREVIEW.md#26-november-2026--server-error-pp-komponen-boq-sudah-dirujuk-ba-kh).

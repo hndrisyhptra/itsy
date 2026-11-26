@@ -1,5 +1,7 @@
 # it's Area 3 — Construction Workspace
 
+**26 November 2026 — Pagination Pengaturan:** Aktivitas dan Kelola akun pengguna memiliki pilihan 10/20/50/100 baris, jumlah total dan navigasi halaman. Akun dapat dicari berdasarkan nama, username, NIK, email, jabatan atau peran; akses pengelolaan tetap Superadmin. Daftar akun memakai SQL pagination dan penugasan batch. Tanpa migration/restart worker khusus; deploy source, Blade dan build terbaru. [Panduan dan pengujian](docs/SETTINGS_PAGINATION.md).
+
 **26 November 2026 — Perbaikan simpan PP setelah BA KH/SPK:** IDBOQ untuk itemKHSsama padaPPyangsama tetap saatunggahulang; relasiBAKH/SPK dan hargadrafMandor terjaga. Itemterpakai tidakbisadihapus; validasijelas menggantikan FKServerError. **Tanpa migrationbaru**, deploysource+build/checkaset dan bersihkancacheLaravel. [Rincian/penerapan](docs/PP_DRAFTS_PREVIEW.md#26-november-2026--server-error-pp-komponen-boq-sudah-dirujuk-ba-kh).
 
 **26 November 2026 — Pilih Mandor sejak BA KH:** dropdown pencarian MasterMandor pada Negosiasi/BAKHBaru, nama belumada→konfirmasi→TambahMandor. Pilihan tersimpan sejakBAKH dan otomatis mengisi identitas/rekening/foto pada DraftSPK pertama. Kelengkapan tetap wajib sebelumAjukanPaket; dokumen terbit/kasbon/paid tetap. Tanpa migrationbaru untuk perubahan ini, source+build/checkaset diperlukan. [Panduan](docs/MASTER_MANDOR.md#terbaru--pilih-mandor-sejak-negosiasi--ba-kh-baru).

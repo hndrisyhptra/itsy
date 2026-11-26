@@ -1,0 +1,79 @@
+{
+  "date": "2026-11-26",
+  "feature": "Settings activity pagination and account SQL pagination/search",
+  "php": {
+    "suite": "focused AccountPaginationTest AuthenticationTest UserJabatanTest",
+    "tests": 17,
+    "assertions": 296,
+    "passed": true,
+    "storage": "sqlite :memory:",
+    "seconds": 2.843,
+    "memory_mb": 58.5,
+    "full_suite_rerun": false
+  },
+  "frontend": {
+    "tests": 512,
+    "passed": true
+  },
+  "build": {
+    "passed": true,
+    "manifest_refs": 53,
+    "preload_dependencies": 44,
+    "profiles": 3
+  },
+  "query_fixture": {
+    "accounts": 105,
+    "page_sizes": [
+      10,
+      20,
+      50,
+      100
+    ],
+    "http_queries_each": 4,
+    "activity_new_sql": 0
+  },
+  "browser": [
+    {
+      "page": "activity",
+      "default20": true,
+      "change100_last5": true,
+      "change10_reset1": true,
+      "viewports": [
+        375,
+        768,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "writes": 0,
+      "js_errors": 0,
+      "api": "mocked"
+    },
+    {
+      "page": "accounts",
+      "source": "actual Blade rendered by isolated PHPUnit memory fixture; browser GET routes mocked",
+      "default20": true,
+      "last5": true,
+      "search1": true,
+      "empty": true,
+      "reset": true,
+      "search_resets_page": true,
+      "viewports": [
+        375,
+        768,
+        1440
+      ],
+      "writes": 0,
+      "js_errors": 0
+    }
+  ],
+  "limits": [
+    "Activity pagination bounds DOM only; existing full authorized workspace event fetch unchanged",
+    "Account contains search may scan rows",
+    "No physical MariaDB/aaPanel/production load/export testing",
+    "No live its DB, migration, .env, worker, server or Dompis changes"
+  ],
+  "deployment": "Deploy PHP+Blade+build/checkassets; no new migration or special worker restart"
+}

@@ -452,3 +452,7 @@ body{color:var(--text);background:var(--bg)}[data-theme=dark] .metric-label,[dat
 .mandor-combobox-menu b{overflow-wrap:anywhere}
 
 .card.deal-editor-card{overflow:visible}
+
+/* Settings activity navigation must wrap inside the card on small screens. */
+.activity-pagination{flex-wrap:wrap;white-space:normal}.activity-pagination>.actions{flex-wrap:wrap;gap:8px;min-width:0}.activity-pagination label{display:inline-flex;align-items:center;gap:6px}.activity-pagination select{padding:6px 25px 6px 8px}
+@media(max-width:767px){.activity-pagination{display:block}.activity-pagination>.actions{display:grid;grid-template-columns:auto minmax(0,1fr) auto;width:100%;margin-top:10px;justify-content:stretch}.activity-pagination .actions>label{grid-column:1/-1;justify-content:flex-end}.activity-pagination .actions>span{text-align:center}.activity-pagination .actions>.btn{min-height:32px}}

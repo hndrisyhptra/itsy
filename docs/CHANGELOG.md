@@ -1,5 +1,13 @@
 # Catatan perubahan it's Area 3
 
+## 26 November 2026 — Pagination Aktivitas dan pencarian akun
+
+Pengaturan → Aktivitas serta Kelola akun pengguna kini mendukung pagination 10/20/50/100 baris (default20), total/rentang dan navigasi. Kelola akun ditambah pencarian nama/username/NIK/email/jabatan/peran dan Reset. Akun dibaca per halaman dengan konteks batch, tetap hanya Superadmin; aktivitas tetap mengikuti akses existing. 17focusedPHP/296assertions,512frontend/build/aset/browsermock lulus. Tanpa migration/restartworker khusus. [Panduan](SETTINGS_PAGINATION.md).
+
+## 26 November 2026 — Teks status penyimpanan
+
+Notifikasi dan label aksesibilitas menjadi **Menyimpan data ke server…**; footer memakai **Menyimpan data ke server / Tersimpan di server**. Perubahan teks saja di App.tsx, tanpa perubahan alur simpan, query, database atau API. TypeScript/Vite dan checkaset53refs44preloads×3 lulus. Deploy hasil build terbaru, tanpa migration/workerrestart.
+
 ## 26 November 2026 — Perbaikan Server Error PP saat lanjut BA KH
 
 LogaaPanel menunjukkan komponenBOQ akan dihapus padahal sudah dirujukBAKH. IDitemKHSsama kini dipertahankan saat reuploadpadaPPyangsama; harga/rincianMandor tidakreset, BA KH/SPK tidakdiganti. Penghapusanitem/komponenterpakai dan volumelebihkecildaripemakaian ditahanvalidasi; SQLhistoryguard menolakprune sebelumFKerror.567PHP/510frontend/build/aset/browsermock lulus. Source+build/checkaset, tidakadamigrationbaru. [Penjelasan/penerapan](PP_DRAFTS_PREVIEW.md#26-november-2026--server-error-pp-komponen-boq-sudah-dirujuk-ba-kh).
