@@ -1,5 +1,9 @@
 # Arsitektur aplikasi it's Area 3
 
+## 26 November 2026 — BA KH Master Mandor selection and first-SPK inheritance
+
+DealMandorSelect bounded20/debounce350/abort/querykey/keyboard reuses globalmasterGET; choice names/id/version only, missingname explicitconfirm+MandorForm. Authenticatednewform waitschosenmaster; DealForm saves awaitconfirmed persistence. saveDeal preprocessor underworkspace lock canonicalizes name/servermarker fromauthorizedcurrentversion, dropsclienttrustedfields, retainslegacywithoutchoice; childSPK preventsBAKHreassignment. FirstnewSPK reads exactsaveddealsource andcurrentmaster only, lazyidentityform; samecommand preparesfilecopies/inheritedencryptedpayee then relationalwrite+FKfiles/profile/audit inonetransaction. LaterSPKsaves noinherit, issued/private/kasbon/history untouched. SharedcopySnapshot reusedexplicitSPKselection, finallycleanup checkslinkedfileIDs once even retries/failures; conservativeretentionondbuncertainty. Existingcommandreceipt+mandor_changes rawpayloadUUIDbinding forselect/inherit, noAPI/schema/migration/dependency/poller. Normalunlinkedcommands0extraSQL, fixture61BAKH48SPKbothunits. [Rules/QA/deploy](MASTER_MANDOR.md#terbaru--pilih-mandor-sejak-negosiasi--ba-kh-baru).
+
 ## 26 November 2026 — Missing Mandor receipt table
 
 Local observed500 is missing mandor_imports42S02/1146 before receipt read. MandorMasterController import catches narrow missing-table SQL exception only, safe503+code/no runtime schema probe/newquery, preserves transactions and rethrows unrelatederrors. UI differentiates knownmigration/4xx/preview from uncertaincommit and retains sameUUID/file/preview for explicitretry after operator000003. No fallback/write/schemaautocreate/liveDDL. [Contract/QA](MASTER_MANDOR.md#koreksi-server-error-saat-simpan-impor--26-november-2026).

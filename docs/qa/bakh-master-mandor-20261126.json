@@ -1,0 +1,149 @@
+{
+  "date": "2026-11-26",
+  "feature": "Searchable Master Mandor at Negosiasi/BAKH and automatic first-SPK recipient",
+  "user_request": [
+    "BAKH dropdown with name search from Master Mandor",
+    "missing name requires explicit add confirmation first",
+    "selected Mandor automatically fills subsequent identity form"
+  ],
+  "policy": {
+    "directory": "same active five management roles/global Branch+unit within authenticated workspace",
+    "selection": "name/id/version only in BAKH browserdraft; no private detail loaded until SPK",
+    "source": "server validated current workspace UUID/version/canonical name, forged markers dropped",
+    "new_spk": "lazy private autofill, first Draft save copies encrypted payee v1/private files in existing transaction",
+    "existing_spk": "normal saves never recopy, issued/private/kasbon/paid stay frozen; explicit allowed SPK choice updates source BAKH marker too",
+    "required": "basic3 at Master save; account/bank/owner/NIK/both photos before formal package unchanged",
+    "legacy": "commands with no new selection remain compatible, no implicit GET adoption/backfill"
+  },
+  "implementation": {
+    "frontend": "combobox20options/350msdebounce/AbortController/querykey/keyboard+click/Escape, missingnameYA-TIDAK then existing MandorForm",
+    "backend": "saveDeal under existing workspace lock current master lookup; JSON source + encrypted audit; firstSPK source current-version guard before snapshot",
+    "transaction": "metadata SPK/profile/files/source audit same relational command transaction, raw payload actor+UUID replay, no duplicate copies on exact replay",
+    "cleanup": "only IDs proven unlinked after rollback/retry; committed copies retained, no delete when DB status uncertain",
+    "normal_path": "loadedgraph reuse,0additional SQL for normal/unlinked commands; no perBOQ-row source query",
+    "schema": "no new table/column/migration/API/dependency/poller/worker"
+  },
+  "queries": {
+    "bakh_choice_save_http_both_units": 61,
+    "first_spk_two_photos_inherit_http_both_units": 48,
+    "list_105_http": 9,
+    "existing_explicit_spk_selection_http": 54
+  },
+  "php": {
+    "runtime": "XAMPP8.2.4",
+    "database": "strict SQLite :memory:",
+    "final_full": {
+      "tests": 562,
+      "assertions": 17468,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 131.163,
+      "memory_mb": 146.5,
+      "process_limit_mb": 512
+    },
+    "master_focused": {
+      "tests": 15,
+      "assertions": 463,
+      "seconds": 3.332,
+      "memory_mb": 62.5
+    },
+    "broad_focused_final": {
+      "tests": 109,
+      "assertions": 4150,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 40.907,
+      "memory_mb": 72.5,
+      "execution": "sequential after full suite completed"
+    }
+  },
+  "coverage": [
+    "Construction+Operation BAKH canonical master selection and transient stripping",
+    "sameUUID replay and changed body conflict for choice and inheritedSPK",
+    "forged name/marker ignored, unknown/stale master and unauthorized Branch rejected",
+    "source changed after BAKH prevents newSPK until explicit reselect",
+    "after-SPK BAKH reassignment blocked; existing SPK snapshots frozen under futureMaster changes",
+    "basicmaster Draftinherit permitted, actual package HTTP rejects all missing bank/photo fields",
+    "late inherited audit failure rolls back SPK/profile/filemetadata/revision and cleans copiedbytes, retains originals",
+    "existing paid financial workflows/PID/volume/approval/wholemoney/oldmanual regressions"
+  ],
+  "frontend": {
+    "tests": 507,
+    "failures": 0,
+    "skipped": 0,
+    "milliseconds": 5916.085083,
+    "typescript_vite": "passed",
+    "assets": {
+      "manifest_refs": 53,
+      "preloads": 44,
+      "profiles": 3
+    },
+    "pint": "passed",
+    "diff_check": "passed"
+  },
+  "browser": {
+    "actual_app": true,
+    "api": "synthetic mocked API; external network blocked",
+    "units": [
+      "Konstruksi",
+      "Operation"
+    ],
+    "viewports": [
+      375,
+      768,
+      1440
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "dropdown": {
+      "rows": 35,
+      "max_DOM_options": 20,
+      "filtered_result": 1,
+      "keyboard": "ArrowDown/Enter +Escape supported",
+      "lazy_private": "0identitydetail at BAKH selection"
+    },
+    "checks": [
+      "unselected newBAKH save disabled",
+      "name choice saves UUID/version and no privatePII",
+      "BAKH doc form readonly selectedMandor, save confirmed before navigation",
+      "continueSPK autoaddress/NIK/account/bank/read-only identity+lazy photo links",
+      "SPK saves inherited snapshot/readonly account, no PII localStorage",
+      "missingname TIDAK0write, YA basic3save+Selesai selects exactsavedID",
+      "stale master v3→v4 newSPK save disabled/exactBAKHlink/noPOST"
+    ],
+    "js_errors": 0,
+    "root_overflow": false,
+    "screenshots_inspected": [
+      "dropdown1440light",
+      "dropdown375dark"
+    ]
+  },
+  "qa_corrections": [
+    "Relational store deliberately does not delete omitted documents: new synthetic BAKH fixture explicitly deletes only its memory-only contract data; original test reused reservedfullvolume. Authorization assertion corrected403 for actual out-of-Branchcommand. No runtime guards weakened.",
+    "Browser API mock secondBAKHsave must preserve canonical storedmaster when transientchoice absent; fixture corrected, runtime source preserved.",
+    "Broad focused Finance run overlapped another PHP fake-disk suite and observed three422Finance failures. Full suite then passed562/17468; focused rerun sequentially passed109/4150 without changing financial gates. Shared fake-disk interference is the likely test-environment cause, not production evidence.",
+    "Two initial focused commands named a nonexistent Finance test file, so no tests ran; corrected to actual FinanceKasbonTest."
+  ],
+  "limits": [
+    "All PHP memory/fake disk and browser API mocks use synthetic data.",
+    "No physical MySQL/MariaDB DDL/concurrency/load or aaPanel/realworker test.",
+    "No new Word/PDF template change/render; existing export regression unchanged.",
+    "Fixture query counts do not establish production latency or bottleneck-free operation."
+  ],
+  "deployment": [
+    "deploy source",
+    "npm run build",
+    "npm run check:assets",
+    "no new migration for this correction; previous Master Mandor000001–000003 required",
+    "no special worker restart for BA KH selection/firstSPK path"
+  ],
+  "not_performed": [
+    "live its reads/writes/migration/import/backfill",
+    "ENV/APP_KEY/worker/server/Dompis changes",
+    "commit",
+    "push",
+    "deployment"
+  ]
+}

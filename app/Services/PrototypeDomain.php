@@ -634,6 +634,15 @@ class PrototypeDomain
         $this->enum($action, ['save', 'generate', 'attest']);
         $old = $this->existing('deals', $d['id'] ?? '');
         $this->assertBundleDocumentEditable($this->record('projects', $d['projectId'] ?? ''), $action);
+        $choice = $d['_selectedMandor'] ?? null;
+        unset($d['masterMandor'], $d['mandorSelection'], $d['_selectedMandor']);
+        if ($choice) {
+            $d['masterMandor'] = ['id' => $choice['id'], 'version' => (int) $choice['version']];
+            $d['mandor'] = $choice['name'];
+        } elseif (isset($old['masterMandor'])) {
+            $d['masterMandor'] = $old['masterMandor'];
+            $d['mandor'] = $old['mandor'];
+        }
         // Removed text reference is archive-only: never accept a new client claim.
         $d['evidence'] = $old['evidence'] ?? '';
         unset($d['approvedWithProject']);

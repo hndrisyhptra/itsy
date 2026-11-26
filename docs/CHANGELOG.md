@@ -1,5 +1,9 @@
 # Catatan perubahan it's Area 3
 
+## 26 November 2026 — Dropdown Mandor di Negosiasi & BA KH
+
+NamaMandor kini dropdown pencarian dari master bersama. Belumada→konfirmasiYA/TIDAK→formTambah→pilihUUIDbaru; basicrequired3tetap, rekening/foto wajib sebelumformalpaket. PilihanBAKH tersimpanid/versi/nama dari server; firstDraftSPK mengisi otomatis alamat/NIK/rekening/foto dan menyimpansnapshot atomik. ExistingSah/kasbon/paid tidak disinkronkan ulang; sourceberubah perlu pilihulang eksplisit. Tanpa migration/API/workerbaru, build/checkaset diperlukan. [Panduan/QA](MASTER_MANDOR.md#terbaru--pilih-mandor-sejak-negosiasi--ba-kh-baru).
+
 ## 26 November 2026 — Pesan impor Mandor saat migration belum lengkap
 
 Log lokal SimpanImpor500 berasal dari tabelmandor_imports yang belum dibuat. Ditambahkan pesan pembaruan database yang jelas, tanpa petunjuk koneksi terputus untuk kondisi ini. UUID/file tetap untuk percobaan ulang setelah operator menjalankan migration000003; tidak ada migration/data aktif yang dijalankan agen.39focusedPHP/935assertions,505frontend/build/aset/browsermock lulus. [Detail](MASTER_MANDOR.md#koreksi-server-error-saat-simpan-impor--26-november-2026).

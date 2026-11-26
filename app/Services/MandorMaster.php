@@ -159,6 +159,122 @@ class MandorMaster
         return $r;
     }
 
+    /** Validate a transient choice; no private identity is stored in the workflow graph. */
+    public function selectForDeal(PrototypeWorkspace $w, array $state, array &$input): ?array
+    {
+        $d = &$input['args'][0];
+        unset($d['_selectedMandor']);
+        if (! array_key_exists('mandorSelection', $d)) {
+            return null;
+        }
+        $choice = Validator::make(['choice' => $d['mandorSelection']], ['choice' => 'required|array:id,version', 'choice.id' => 'required|uuid', 'choice.version' => 'required|integer|min:1'])->validate()['choice'];
+        $master = $this->authorize($w, $choice['id'], true);
+        abort_unless((int) $master->version === (int) $choice['version'], 409, 'Data Master Mandor berubah. Cari dan pilih kembali Mandor sebelum menyimpan BA KH.');
+        $old = collect($state['deals'])->firstWhere('id', $d['id']);
+        abort_if($old && $old['status'] !== 'Draft', 422, 'Pilihan Mandor pada BA KH terbit/Sah terkunci.');
+        $hasSpk = collect($state['spks'])->contains('dealId', $d['id']);
+        abort_if($hasSpk && ($old['masterMandor'] ?? null) !== ['id' => $master->id_mandor, 'version' => (int) $master->version], 422, 'BA KH sudah memiliki SPK. Ubah pilihan Mandor melalui draf SPK terkait.');
+        $d['_selectedMandor'] = ['id' => $master->id_mandor, 'version' => (int) $master->version, 'name' => $master->name];
+
+        return $d['_selectedMandor'];
+    }
+
+    public function assertCommandReplay(array $input, string $hash): void
+    {
+        $r = DB::table('mandor_changes')->where('id_mandor_change', $input['request_id'])->first(['actor_user_id', 'payload_hash']);
+        abort_if($r && ((int) $r->actor_user_id !== (int) auth()->id() || ! hash_equals($r->payload_hash, $hash)), 409, 'UUID pilihan Mandor sudah digunakan untuk isi atau akun lain.');
+    }
+
+    /** New SPK only: prepare immutable copies under the command transaction's workspace lock. */
+    public function prepareInheritedSpk(PrototypeWorkspace $w, array &$state, array $before, array $input, array &$copied): ?array
+    {
+        $id = $input['args'][0]['id'];
+        if (collect($before['spks'])->contains('id', $id)) {
+            return null;
+        }
+        foreach ($state['spks'] as &$v) {
+            if ($v['id'] !== $id) {
+                continue;
+            }
+            $deal = collect($state['deals'])->firstWhere('id', $v['dealId']);
+            $choice = $deal['masterMandor'] ?? null;
+            if (! $choice) {
+                return null;
+            }
+            $master = $this->authorize($w, $choice['id'], true);
+            abort_unless((int) $master->version === (int) $choice['version'], 409, 'Data Master Mandor berubah sejak BA KH disimpan. Pilih ulang Mandor pada BA KH sebelum membuat SPK.');
+            abort_if($v['status'] !== 'Draft', 422, 'Simpan draf SPK terlebih dahulu agar identitas Master Mandor tersimpan sebelum penerbitan.');
+            abort_if(DB::table('upload_tasks')->where('workspace_id', $w->id)->whereIn('document_id', [$id, $master->id_mandor])->whereIn('status', ['queued', 'processing'])->exists(), 422, 'Tunggu upload Mandor selesai sebelum menyimpan SPK.');
+            [$profile, $files] = $this->copySnapshot($w, $master, $id, app(RelationalWorkflowStore::class)->id($w->id, 'spks', $id), $copied);
+            $v['address'] = $profile['address'];
+            $v['payeeVersion'] = 1;
+            $v['masterMandor'] = $choice;
+
+            return ['masterId' => $master->id_mandor, 'spkId' => $id, 'profile' => $profile, 'files' => $files];
+        }
+        unset($v);
+
+        return null;
+    }
+
+    public function persistInheritedSpk(PrototypeWorkspace $w, array $snapshot, string $uuid, string $hash): void
+    {
+        foreach ($snapshot['files'] as $file) {
+            DB::table('finance_private_files')->insert($file);
+        }
+        DB::table('mandor_payee_profiles')->insert(['id_payee' => (string) Str::uuid(), 'spk_id' => app(RelationalWorkflowStore::class)->id($w->id, 'spks', $snapshot['spkId']), 'version' => 1, 'private_data' => $this->pack($snapshot['profile']), 'created_by' => auth()->id(), 'created_at' => now(), 'request_uuid' => $uuid, 'input_sha256' => $hash]);
+        $this->audit($snapshot['masterId'], $uuid, 'inherit-spk', $hash, null, ['spk' => $snapshot['spkId'], 'version' => $snapshot['profile']['masterMandorVersion'], 'payeeVersion' => 1]);
+    }
+
+    public function auditDealChoice(array $choice, array $input, string $hash): void
+    {
+        $this->audit($choice['id'], $input['request_id'], 'select-deal', $hash, null, ['deal' => $input['args'][0]['id'], 'version' => $choice['version']]);
+    }
+
+    /** Delete only copies that are proven unlinked after success, rollback or a transaction retry. */
+    public function cleanupCopies(array $copied): void
+    {
+        if (! $copied) {
+            return;
+        }
+        try {
+            $linked = DB::table('finance_private_files')->whereIn('id_finance_file', array_keys($copied))->pluck('id_finance_file')->all();
+            foreach ($copied as $id => $path) {
+                if (! in_array($id, $linked, true)) {
+                    Storage::disk('local')->delete($path);
+                }
+            }
+        } catch (Throwable) {
+            // If persistence cannot be checked, retain private copies rather than risk deleting committed files.
+        }
+    }
+
+    private function copySnapshot(PrototypeWorkspace $w, object $master, string $spk, string $sqlSpk, array &$copied): array
+    {
+        $sources = DB::table('mandor_files')->where('mandor_id', $master->id_mandor)->whereIn('id_mandor_file', [$master->ktp_file_id, $master->bank_file_id])->get()->keyBy('kind');
+        $profile = $this->unpack($master);
+        $profile['masterMandorId'] = $master->id_mandor;
+        $profile['masterMandorVersion'] = (int) $master->version;
+        $profile['ktpFileId'] = $profile['bankFileId'] = '';
+        $files = [];
+        foreach (['master-ktp' => ['ktpFileId', 'mandor-ktp'], 'master-bank' => ['bankFileId', 'mandor-bank']] as $kind => [$field, $targetKind]) {
+            $sourceId = $kind === 'master-ktp' ? $master->ktp_file_id : $master->bank_file_id;
+            if (! $sourceId) {
+                continue;
+            }
+            $f = $sources->get($kind);
+            abort_unless($f && Storage::disk('local')->exists($f->storage_key) && hash_file('sha256', Storage::disk('local')->path($f->storage_key)) === $f->sha256, 422, 'Foto Mandor tidak tersedia atau berubah. Unggah ulang pada Master Mandor.');
+            $id = (string) Str::uuid();
+            $path = 'finance-private/'.$w->id.'/'.$spk.'/'.$id.'.'.$f->extension;
+            abort_unless(Storage::disk('local')->copy($f->storage_key, $path), 500, 'Berkas Mandor belum dapat disalin.');
+            $copied[$id] = $path;
+            $files[] = ['id_finance_file' => $id, 'workspace_id' => $w->id, 'spk_id' => $sqlSpk, 'term_id' => null, 'kind' => $targetKind, 'storage_key' => $path, 'mime' => $f->mime, 'extension' => $f->extension, 'size' => $f->size, 'sha256' => $f->sha256, 'uploaded_by' => auth()->id(), 'created_at' => now()];
+            $profile[$field] = $id;
+        }
+
+        return [$profile, $files];
+    }
+
     /** Explicit copy: future master changes never modify a selected SPK or issued kasbon. */
     public function apply(PrototypeWorkspace $w, string $spk, array $input): array
     {
@@ -180,24 +296,9 @@ class MandorMaster
                 abort_unless(in_array($p['status'], ['Draft', 'Dikembalikan', 'Ditolak'], true) && $d['status'] === 'Draft' && $v['status'] === 'Draft', 422, 'Pilih Mandor pada draf paket sebelum approval. Dokumen terbit/Sah tetap memakai identitas tersimpan.');
                 abort_if(DB::table('payment_terms')->where('work_order_id', $r->id_spk)->exists(), 422, 'SPK sudah memiliki BA RP/pembayaran; penerima tersimpan tidak diganti dari master.');
                 abort_if(DB::table('upload_tasks')->where('workspace_id', $w->id)->whereIn('document_id', [$spk, $master->id_mandor])->whereIn('status', ['queued', 'processing'])->exists(), 422, 'Tunggu upload SPK selesai sebelum memilih Mandor.');
-                $files = DB::table('mandor_files')->where('mandor_id', $master->id_mandor)->whereIn('id_mandor_file', [$master->ktp_file_id, $master->bank_file_id])->get()->keyBy('kind');
-                $profile = $this->unpack($master);
-                $profile['masterMandorId'] = $master->id_mandor;
-                $profile['masterMandorVersion'] = (int) $master->version;
-                $profile['ktpFileId'] = $profile['bankFileId'] = '';
-                foreach (['master-ktp' => ['ktpFileId', 'mandor-ktp'], 'master-bank' => ['bankFileId', 'mandor-bank']] as $kind => [$field, $targetKind]) {
-                    $sourceId = $kind === 'master-ktp' ? $master->ktp_file_id : $master->bank_file_id;
-                    if (! $sourceId) {
-                        continue;
-                    }
-                    $f = $files->get($kind);
-                    abort_unless($f && Storage::disk('local')->exists($f->storage_key) && hash_file('sha256', Storage::disk('local')->path($f->storage_key)) === $f->sha256, 422, 'Lengkapi foto KTP dan buku tabungan Mandor sebelum digunakan pada SPK.');
-                    $id = (string) Str::uuid();
-                    $target = 'finance-private/'.$w->id.'/'.$spk.'/'.$id.'.'.$f->extension;
-                    abort_unless(Storage::disk('local')->copy($f->storage_key, $target), 500, 'Berkas Mandor belum dapat disalin.');
-                    $copied[$id] = $target;
-                    DB::table('finance_private_files')->insert(['id_finance_file' => $id, 'workspace_id' => $w->id, 'spk_id' => $r->id_spk, 'term_id' => null, 'kind' => $targetKind, 'storage_key' => $target, 'mime' => $f->mime, 'extension' => $f->extension, 'size' => $f->size, 'sha256' => $f->sha256, 'uploaded_by' => auth()->id(), 'created_at' => now()]);
-                    $profile[$field] = $id;
+                [$profile, $files] = $this->copySnapshot($w, $master, $spk, $r->id_spk, $copied);
+                foreach ($files as $file) {
+                    DB::table('finance_private_files')->insert($file);
                 }
                 $version = (int) DB::table('mandor_payee_profiles')->where('spk_id', $r->id_spk)->max('version') + 1;
                 DB::table('mandor_payee_profiles')->insert(['id_payee' => (string) Str::uuid(), 'spk_id' => $r->id_spk, 'version' => $version, 'private_data' => $this->pack($profile), 'created_by' => auth()->id(), 'created_at' => now(), 'request_uuid' => $input['request_id'], 'input_sha256' => $hash]);

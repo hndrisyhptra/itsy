@@ -1,5 +1,9 @@
 # Optimasi query dan respons aplikasi
 
+## 26 November 2026 — BA KH Mandor choice and bounded SPK source
+
+Reuseslazy globalmaster SQLcount+20option limit,350msdebounce/abort/querykey/keyboard, no private detailuntilnewSPK. BAKHonlysourceid/version/name; newSPK1privatedetail, noPIIboot/localStorage. Underexistingworkspacelock onecurrentmaster and filebatch,loadedgraphspk/deal scans;0masterSQL on normalunlinkedcommand, no perBOQrow lookup. Measured61BAKHchoice/48firstSPK2photosHTTPbothunits, list9 unchanged. SPK firstonlyinherit, unchangedhistoric snapshots/ledger/PID; atomicwritebufferssame, cleanup1IDlookup foractualcopies and guardedretry. No schema/API/migration/poller/dependency/newworker. Fixturequerynotproductionloadproof. [Contract](MASTER_MANDOR.md#terbaru--pilih-mandor-sejak-negosiasi--ba-kh-baru).
+
 ## 26 November 2026 — Mandor bulk import bounded to 1000 rows
 
 Reuse mastercodec bounded1000rows5MB/ZIP32MB/20k cells, textNIK/account+noformulas. Lookup250NIK/chunk, masterupsert50/auditinsert50, metadataworkspacelock and encryptedPII, no perrowSQL/fullgraph/revision mutation. Actual1000rowHTTP preview12/commit55; unchangedrows no version/audit rewrite, actorpayloadUUID receipt skips currentplan onreplay. Preview20DOM, stalepreview409, boundedexistinguploadprogress/no newpoller/worker/dependency. LinkedSPK marker added to original authSELECT0extraSQL, formalpayee completeness retained; source version explicit/frozenkasbon. Fixturequerycounts not serverlatency/loadproof. [Rules/QA/limits](MASTER_MANDOR.md).

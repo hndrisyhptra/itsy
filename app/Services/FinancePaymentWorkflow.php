@@ -294,6 +294,7 @@ trait FinancePaymentWorkflow
             $this->fail('Pilih Mandor hanya pada draf paket sebelum BA RP/pembayaran.');
         }
         $d['mandor'] = $data['name'];
+        $d['masterMandor'] = ['id' => $data['id'], 'version' => (int) $data['version']];
         $v['address'] = $data['address'];
         $v['payeeVersion'] = (int) $data['payeeVersion'];
         $v['masterMandor'] = ['id' => $data['id'], 'version' => (int) $data['version']];

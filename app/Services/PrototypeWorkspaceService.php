@@ -93,7 +93,8 @@ class PrototypeWorkspaceService
     {
         $budgetPayloadHash = BudgetPidAllocation::hash($input);
 
-        return DB::transaction(function () use ($workspace, $input, $includePayload, $budgetPayloadHash) {
+        $copied = [];
+        $transaction = function () use ($workspace, $input, $includePayload, $budgetPayloadHash, &$copied) {
             $row = PrototypeWorkspace::runtimeQuery()->whereKey($workspace->id)->lockForUpdate()->firstOrFail();
             $access = app(AuthenticatedWorkspace::class);
             $before = $access->bind(app(RelationalWorkflowStore::class)->read($row));
@@ -106,6 +107,12 @@ class PrototypeWorkspaceService
             if ($replay) {
                 abort_unless($replay->actor_user_id === auth()->id() && $replay->command === $input['command'], 409, 'ID permintaan sudah digunakan.');
                 app(BudgetPidAllocation::class)->replay($input, (int) auth()->id());
+                if (in_array($input['command'], ['saveDeal', 'saveSpk', 'saveSpkFinance'], true)) {
+                    $target = collect($before[$input['command'] === 'saveDeal' ? 'deals' : 'spks'])->firstWhere('id', $input['args'][0]['id'] ?? '');
+                    if (! empty($target['masterMandor'])) {
+                        app(MandorMaster::class)->assertCommandReplay($input, $budgetPayloadHash);
+                    }
+                }
                 if (in_array($input['command'], ['saveProject', 'saveProjectBundle'], true) && ($input['args'][1] ?? false) === false) {
                     $project = collect($before['projects'])->firstWhere('id', $input['args'][0]['id'] ?? '');
                     $proof = $project['draftSaveReceipt'] ?? null;
@@ -234,7 +241,10 @@ class PrototypeWorkspaceService
             if ($input['command'] === 'createTerm') {
                 $domainCommand = 'createSettlementTerm';
             }
+            $dealChoice = $input['command'] === 'saveDeal' ? app(MandorMaster::class)->selectForDeal($row, $before, $input) : null;
             $state = app(PrototypeDomain::class)->execute($before, $domainCommand, $input['args'], $input['result_id'] ?? null)['state'];
+            $inheritedMandor = in_array($input['command'], ['saveSpk', 'saveSpkFinance'], true) ? app(MandorMaster::class)->prepareInheritedSpk($row, $state, $before, $input, $copied) : null;
+
             if (in_array($input['command'], ['saveProject', 'saveProjectBundle'], true) && ($input['args'][1] ?? false) === false) {
                 foreach ($state['projects'] as &$project) {
                     if ($project['id'] === $input['args'][0]['id']) {
@@ -255,6 +265,13 @@ class PrototypeWorkspaceService
             $balances = $newRootDraft ? collect() : $balanceQuery()->get()->keyBy('boq_component_id');
             $row->revision++;
             app(RelationalWorkflowStore::class)->write($row, $state, $before);
+            if ($inheritedMandor) {
+                app(MandorMaster::class)->persistInheritedSpk($row, $inheritedMandor, $input['request_id'], $budgetPayloadHash);
+            }
+            if ($dealChoice) {
+                app(MandorMaster::class)->auditDealChoice($dealChoice, $input, $budgetPayloadHash);
+            }
+
             app(BudgetPidAllocation::class)->persist($budgetPlan, $row->revision);
             $row->save();
             $beforeHash = hash('sha256', json_encode($before, JSON_THROW_ON_ERROR));
@@ -295,6 +312,11 @@ class PrototypeWorkspaceService
             }
 
             return $includePayload ? $this->payload($row, $state) : ['revision' => $row->revision];
-        }, 3);
+        };
+        try {
+            return DB::transaction($transaction, 3);
+        } finally {
+            app(MandorMaster::class)->cleanupCopies($copied);
+        }
     }
 }

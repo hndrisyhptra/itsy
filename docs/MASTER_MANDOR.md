@@ -1,5 +1,29 @@
 # Master Mandor — 26 November 2026
 
+## Terbaru — pilih Mandor sejak Negosiasi & BA KH Baru
+
+Pada **Penugasan Mandor & Lingkup → Nama Mandor**, klik dropdown lalu ketik nama Mandor terdaftar. Daftar memakai master bersama seluruh Branch dan unit, maksimal20opsi; nama lebih spesifik mempersempit hasil. Tombol panah/Enter memilih, Escape menutup. Pencarian berjeda350ms, permintaan lama dibatalkan dan hasil lama tidak dipakai. Pilihan kosong tidak mengambil Mandor pertama otomatis. Label foto lengkap hanya menunjukkan kedua foto sudah tersedia, bukan seluruh rekening lengkap.
+
+Jika nama tidak ditemukan, muncul **Tambah Mandor Baru**. Klik→konfirmasi **YA/TIDAK**; YA membuka form nama/alamat/NIK wajib, rekening/foto dapat dilengkapi. **Simpan Identitas → YA → Selesai** memilih UUID Mandor yang benar-benar tersimpan. TIDAK tidak menambah data. Form BA KH baru memerlukan pilihan master sebelum SimpanDraft; isian Mandor pada InformasiDokumen menjadi hanya-baca agar konsisten. Identitas privat tidak dimuat saat memilih BA KH; draftbrowser hanya menyimpan nama/id/versi, bukan NIK/rekening/foto.
+
+Saat BA KH disimpan, server memeriksa ulang akun/peran/aksesBranch+unitPP, UUID+versi master di bawah workspace lock. Nama dan `Deal.masterMandor{id,version}` berasal dari recordmaster; `mandorSelection`transien dan marker palsu dibuang. Tidak ada pencocokan otomatis berdasarkan nama. BA KH yang sudah mempunyai SPK mengunci pilihan; perubahan Mandor dilakukan melalui drafSPK yang memang diizinkan. Pengisian bebas historis/klienlama tanpa pilihan tetap kompatibel dan tidak dipaksa diadopsi pada GET.
+
+### Identitas SPK otomatis
+
+**Lanjut buat SPK** dari BA KH bertanda master menampilkan Alamat/NIK/rekening/bank/pemilik dan tombolpreviewfoto secara otomatis melalui satu detail privat yang diizinkan. NIK/rekening hanya di memori komponen; foto baru dibaca bila previewdiklik. SimpanSPK menunggu sumber identitas berhasil dimuat.
+
+**SimpanDraftSPK pertama** menyalin profil dan file yang tersedia dari sumber UUID+versi BA KH menjadi encryptedpayeev1 dan immutableprivatefiles exactSPK. Penyimpanan SPK/relasi/filemetadata/profile/audit berada dalam transaksi workspace/revision existing; tidak memerlukan klikpilihulang diSPK. Rekening/foto basic masih boleh kosong pada Draft, tetapi **semua wajib sebelum pengajuan paket** melalui requirePayee existing. Isian Waspang/HP/tanggal dan lingkup/harga tidak diubah oleh sumbermaster.
+
+Jika master berubah setelah BA KH disimpan, firstSPKsave ditolak409: bukaBAKH, cari/pilih ulang Mandor lalu simpanBAKH. Sistem tidak mengambil versi rekening lain secara diam-diam. SPK yang sudah tersimpan tidak menyalin ulang pada simpan biasa; Masterberikutnya/kasbonissued/pending/approved/paid tetap memakai snapshot tersimpan. Pilihan eksplisit di drafSPK memperbarui source BA KH+SPK secara bersamaan sesuai guardexisting.
+
+### Penyimpanan, optimasi dan batas
+
+Tidak ada tabel, migration, endpoint, dependency atau poller baru untuk perubahan ini. Master/schema000001–000003 dari fitur sebelumnya tetap dibutuhkan. SourceBAKH hanya JSONid/versi; audit `select-deal`/`inherit-spk` menggunakan mandor_changes existing. Sameactor+rawpayloadUUID replay diverifikasi terhadap audit sumber; percobaanulang tidak membuat profil/foto kedua. Jika gagal setelah penyalinan, hanya salinan yang terbukti tidak berelasi dibersihkan; saat statusDB tidak bisa dipastikan, file dipertahankan agar filecommitted aman. Sumbermaster dan foto lama tidak dihapus.
+
+Pada fixture duaunit: saveBAKH dengan pilihanmaster61HTTPquery, firstSPK+2fotoinherit48HTTPquery; list105record9query. Existingnormal/unlinkedcommands tidak mendapat lookupmaster/source tambahan; pemeriksaan loadedgraph reuse, satu lookup sumber/filebatch saja, bukan perbarisBOQ. Tidak ada PII dalam workspace/boot/localStorage atau auditplaintext. Semuagates Branch/unit/role/revision/source/payee/Cancel/Head/pendingupload/wholevolume/money/PID/approval tetap.
+
+**QA:** full562PHP/17468assertions, focusedmaster15/463/broadfocusedsequential109/4150 dan507frontend/build/assets53refs44preloads×3/Pint/diffcheck lulus. ActualAppmock35master/20dropdown/search1/bothunits/3width2theme/keyboard/missingYA-TIDAK/basicadd/BAKH→SPKautofill/stalesourcelink,0JSerror/root overflow, screenshot diperiksa. [Audit fitur ini](qa/bakh-master-mandor-20261126.json) memisahkan bukti SQLite memory/browsermock dari MySQL/server nyata. Operator deploysource+build/checkassets; **tidak ada migration baru atau restartworker khusus untuk perubahan BA KH ini**. Tidak ada perubahandataaktif/server/env/worker/Dompis/backfill oleh agen. Aturan historis “pilih hanya sesudahDraftSPK” di bawah tetap tersedia sebagai jalur eksplisit padaSPK, namun pilihanawal kini dapat dilakukan sejakBAKH.
+
 ## Koreksi Server Error saat Simpan Impor — 26 November 2026
 
 User mengonfirmasi terjadi di lokal pada **Simpan Impor**. Log lokal menunjukkan MySQL `42S02/1146`: tabel **mandor_imports belum ada**. Kegagalan terjadi pada pembacaan receipt sebelum import menulis master/audit; bukan bukti koneksi putus dan bukan kesalahan isi Excel. Operator perlu menjalankan `php artisan migrate` dari folder proyek sampai `2026_11_26_000003_create_mandor_import_receipts` selesai, lalu coba Simpan Impor kembali. Agen tidak menjalankan migration pada its aktif.

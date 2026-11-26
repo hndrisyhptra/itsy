@@ -99,6 +99,176 @@ class MandorMasterTest extends TestCase
         return $this->postJson('/api/finance/spk/'.$spk.'/mandor', $override ?? ['request_id' => (string) Str::uuid(), 'revision' => PrototypeWorkspace::first()->revision, 'data' => ['id' => $m['id'], 'version' => $m['version']]]);
     }
 
+    private function draftNegotiation(bool $operation = false): array
+    {
+        [$spk, $deal, $project] = $this->draftSpk($operation);
+        $w = PrototypeWorkspace::first();
+        $store = app(RelationalWorkflowStore::class);
+        $before = $store->read($w);
+        $next = $before;
+        $next['deals'] = $next['spks'] = [];
+        // The relational store intentionally never deletes documents omitted by ordinary saves.
+        // Remove only this trusted synthetic :memory: fixture's unused contract before exercising a new one.
+        if (DB::getDriverName() !== 'sqlite' || DB::connection()->getDatabaseName() !== ':memory:') {
+            throw new \RuntimeException('Memory only');
+        }
+        DB::transaction(function () use ($store, $w, $next, $before) {
+            DB::table('work_orders')->delete();
+            DB::table('contract_components')->delete();
+            DB::table('contracts')->delete();
+            $store->write($w, $next, $before);
+        });
+        $deal['id'] = 'bakh-master-'.Str::uuid();
+        $spk['id'] = 'spk-master-'.Str::uuid();
+        $spk['dealId'] = $deal['id'];
+
+        return [$deal, $spk, $project];
+    }
+
+    private function command(string $command, array $args, ?string $uuid = null, ?int $revision = null)
+    {
+        return $this->postJson('/api/prototype/commands', ['command' => $command, 'args' => $args, 'request_id' => $uuid ?? (string) Str::uuid(), 'revision' => $revision ?? PrototypeWorkspace::first()->revision]);
+    }
+
+    public function test_bakh_master_choice_inherits_identity_into_new_spk_atomically_for_both_units_without_historical_sync(): void
+    {
+        foreach ([false, true] as $operation) {
+            [$deal, $spk] = $this->draftNegotiation($operation);
+            $in = $this->input();
+            $in['data']['nik'] = $operation ? '0000000000000002' : '0000000000000001';
+            $master = $this->complete($this->create($in));
+            $deal['mandorSelection'] = ['id' => $master['id'], 'version' => $master['version']];
+            $deal['mandor'] = 'Nama Klien Tidak Dipercaya';
+            $deal['masterMandor'] = ['id' => (string) Str::uuid(), 'version' => 999];
+            $uuid = (string) Str::uuid();
+            DB::enableQueryLog();
+            DB::flushQueryLog();
+            $saved = $this->command('saveDeal', [$deal, 'save'], $uuid)->assertOk();
+            $dealQueries = count(DB::getQueryLog());
+            DB::disableQueryLog();
+            $canonical = collect($saved->json('state.deals'))->firstWhere('id', $deal['id']);
+            $this->assertSame($master['name'], $canonical['mandor']);
+            $this->assertSame($deal['mandorSelection'], $canonical['masterMandor']);
+            $this->assertArrayNotHasKey('mandorSelection', $canonical);
+            $this->assertStringNotContainsString($in['data']['nik'], $saved->getContent());
+            $this->assertStringNotContainsString($in['data']['accountNumber'], $saved->getContent());
+            $this->command('saveDeal', [$deal, 'save'], $uuid)->assertOk()->assertJsonPath('replayed', true);
+            $changed = $deal;
+            $changed['mandor'] = 'Isi Replay Berbeda';
+            $this->command('saveDeal', [$changed, 'save'], $uuid)->assertConflict();
+            $spk['address'] = 'Alamat Klien Tidak Dipercaya';
+            $uuid = (string) Str::uuid();
+            DB::enableQueryLog();
+            DB::flushQueryLog();
+            $result = $this->command('saveSpkFinance', [$spk, 'save'], $uuid)->assertOk();
+            $spkQueries = count(DB::getQueryLog());
+            DB::disableQueryLog();
+            fwrite(STDERR, "\nBAKH Master ".($operation ? 'Operation' : 'Construction').": {$dealQueries} HTTP queries; inherited SPK {$spkQueries}.\n");
+            $this->assertLessThanOrEqual(65, $dealQueries);
+            $this->assertLessThanOrEqual(70, $spkQueries);
+            $v = collect($result->json('state.spks'))->firstWhere('id', $spk['id']);
+            $this->assertSame($master['profile']['address'], $v['address']);
+            $this->assertSame($canonical['masterMandor'], $v['masterMandor']);
+            $this->assertSame(1, $v['payeeVersion']);
+            $payee = app(FinanceDocuments::class)->requirePayee(PrototypeWorkspace::first(), $v['id']);
+            $this->assertSame($master['profile']['nik'], $payee['nik']);
+            $this->assertSame($master['profile']['accountNumber'], $payee['accountNumber']);
+            $this->assertNotSame($master['ktpFileId'], $payee['ktpFileId']);
+            $this->command('saveSpkFinance', [$spk, 'save'], $uuid)->assertOk()->assertJsonPath('replayed', true);
+            $spk['address'] = 'Replay berbeda';
+            $this->command('saveSpkFinance', [$spk, 'save'], $uuid)->assertConflict();
+            $this->assertDatabaseCount('mandor_payee_profiles', 1);
+            $this->assertDatabaseCount('finance_private_files', 2);
+            $in['version'] = $master['version'];
+            $in['request_id'] = (string) Str::uuid();
+            $in['data']['accountNumber'] = '000000999';
+            $this->create($in);
+            $v['phone'] = '08000000001';
+            $this->command('saveSpkFinance', [$v, 'save'])->assertOk();
+            $this->assertSame($payee, app(FinanceDocuments::class)->requirePayee(PrototypeWorkspace::first(), $v['id']));
+            $this->assertDatabaseCount('mandor_payee_profiles', 1);
+            $this->assertDatabaseCount('finance_private_files', 2);
+        }
+    }
+
+    public function test_bakh_choice_rejects_stale_unknown_scope_and_cannot_forge_source_or_reassign_after_spk(): void
+    {
+        [$deal, $spk] = $this->draftNegotiation();
+        $master = $this->create();
+        $deal['mandorSelection'] = ['id' => $master['id'], 'version' => $master['version'] + 1];
+        $revision = PrototypeWorkspace::first()->revision;
+        $this->command('saveDeal', [$deal, 'save'])->assertConflict();
+        $this->assertSame($revision, PrototypeWorkspace::first()->revision);
+        $deal['mandorSelection']['id'] = (string) Str::uuid();
+        $this->command('saveDeal', [$deal, 'save'])->assertNotFound();
+        $deal['mandorSelection'] = ['id' => $master['id'], 'version' => $master['version']];
+        $actor = auth()->user();
+        app(AccountAccess::class)->assign($actor, 'ADMIN_KONSTRUKSI', [(int) DB::table('branches')->where('name', '<>', $this->getJson('/api/prototype/state')->json('state.projects.0.branch'))->value('id_branch')]);
+        $this->command('saveDeal', [$deal, 'save'])->assertForbidden();
+        app(AccountAccess::class)->assign($actor, 'ADMIN_KONSTRUKSI', DB::table('branches')->pluck('id_branch')->all());
+        $this->command('saveDeal', [$deal, 'save'])->assertOk();
+        $this->command('saveSpkFinance', [$spk, 'save'])->assertOk();
+        $in = $this->input();
+        $in['data']['nik'] = '0000000000000002';
+        $other = $this->create($in);
+        $deal['mandorSelection'] = ['id' => $other['id'], 'version' => $other['version']];
+        $this->command('saveDeal', [$deal, 'save'])->assertUnprocessable();
+        unset($deal['mandorSelection']);
+        $deal['masterMandor'] = ['id' => $other['id'], 'version' => $other['version']];
+        $deal['_selectedMandor'] = ['id' => $other['id'], 'version' => $other['version'], 'name' => 'Forged'];
+        $deal['mandor'] = 'Forged';
+        $r = $this->command('saveDeal', [$deal, 'save'])->assertOk();
+        $d = collect($r->json('state.deals'))->firstWhere('id', $deal['id']);
+        $this->assertSame($master['name'], $d['mandor']);
+        $this->assertSame($master['id'], $d['masterMandor']['id']);
+    }
+
+    public function test_inherited_spk_basic_master_still_blocks_package_until_bank_and_photos_complete(): void
+    {
+        [$deal, $spk, $project] = $this->draftNegotiation();
+        $in = $this->input();
+        $in['data'] = ['name' => 'Mandor Basic', 'address' => 'Alamat QA', 'nik' => '0000000000000001'];
+        $m = $this->create($in);
+        $deal['mandorSelection'] = ['id' => $m['id'], 'version' => $m['version']];
+        $this->command('saveDeal', [$deal, 'save'])->assertOk();
+        $this->command('saveSpkFinance', [$spk, 'save'])->assertOk();
+        $this->command('submitProjectBundle', [$project['id']])->assertUnprocessable()->assertJsonValidationErrors(['accountNumber', 'accountName', 'bank', 'ktpFileId', 'bankFileId']);
+        $this->assertDatabaseCount('mandor_payee_profiles', 1);
+        $this->assertDatabaseCount('finance_private_files', 0);
+    }
+
+    public function test_changed_master_requires_explicit_reselection_before_first_spk_and_late_audit_failure_cleans_copies(): void
+    {
+        [$deal, $spk] = $this->draftNegotiation();
+        $in = $this->input();
+        $m = $this->complete($this->create($in));
+        $deal['mandorSelection'] = ['id' => $m['id'], 'version' => $m['version']];
+        $this->command('saveDeal', [$deal, 'save'])->assertOk();
+        $in['version'] = $m['version'];
+        $in['request_id'] = (string) Str::uuid();
+        $in['data']['accountNumber'] = '000009999';
+        $m = $this->create($in);
+        $revision = PrototypeWorkspace::first()->revision;
+        $this->command('saveSpkFinance', [$spk, 'save'])->assertConflict();
+        $this->assertSame($revision, PrototypeWorkspace::first()->revision);
+        $this->assertDatabaseCount('work_orders', 0);
+        $deal['mandorSelection']['version'] = $m['version'];
+        $this->command('saveDeal', [$deal, 'save'])->assertOk();
+        $revision = PrototypeWorkspace::first()->revision;
+        $before = DB::table('contracts')->get()->toJson();
+        DB::unprepared("CREATE TRIGGER fail_inherited_mandor BEFORE INSERT ON mandor_changes WHEN NEW.action='inherit-spk' BEGIN SELECT RAISE(ABORT,'synthetic late audit'); END");
+        $this->command('saveSpkFinance', [$spk, 'save'])->assertServerError();
+        $this->assertSame($revision, PrototypeWorkspace::first()->revision);
+        $this->assertSame($before, DB::table('contracts')->get()->toJson());
+        $this->assertDatabaseCount('work_orders', 0);
+        $this->assertDatabaseCount('mandor_payee_profiles', 0);
+        $this->assertDatabaseCount('finance_private_files', 0);
+        $this->assertCount(0, Storage::disk('local')->allFiles('finance-private'));
+        $this->assertCount(2, Storage::disk('local')->allFiles('mandor-private'));
+        DB::unprepared('DROP TRIGGER fail_inherited_mandor');
+        $this->command('saveSpkFinance', [$spk, 'save'])->assertOk();
+    }
+
     public function test_five_roles_can_save_shared_encrypted_master_with_actor_payload_replay_and_no_workflow_mutation(): void
     {
         $state = DB::table('project_plans')->get()->toJson();

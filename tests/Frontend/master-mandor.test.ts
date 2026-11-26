@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createElement} from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
-import {canManageMandor,MANDOR_ROLES,MandorRowActions,MandorForm,MandorIdentity,type MandorDetail} from '../../resources/js/area3/master-mandor';
+import {canManageMandor,MANDOR_ROLES,DealMandorSelect,InheritedMandorPanel,MandorRowActions,MandorForm,MandorIdentity,type MandorDetail} from '../../resources/js/area3/master-mandor';
 import type {State} from '../../resources/js/area3/domain';
 
 test('Master Mandor management is limited to the five requested roles',()=>{
@@ -40,4 +40,13 @@ test('import error recovery distinguishes missing migration or validation from u
  assert.equal(mandorImportFailure('preview',new Error('Server Error'),true),'Server Error');
  assert.match(mandorImportFailure('commit',new Error('Server Error'),true),/Status penyimpanan belum dapat dipastikan.*UUID yang sama/);
  assert.equal(mandorImportFailure('commit',new Error('Baris tidak valid'),false),'Baris tidak valid');
+});
+
+test('BAKH Mandor search is a bounded accessible dropdown without eager private data',()=>{
+ const html=renderToStaticMarkup(createElement(DealMandorSelect,{name:'Mandor QA',value:{id:'qa',version:2},disabled:false,onChange(){}}));
+ assert.match(html,/role="combobox"/);assert.match(html,/aria-autocomplete="list"/);assert.match(html,/aria-expanded="false"/);assert.match(html,/value="Mandor QA"/);assert.doesNotMatch(html,/NIK KTP|Nomor Rekening|<iframe|<img|localStorage/);
+ const locked=renderToStaticMarkup(createElement(DealMandorSelect,{name:'Mandor QA',disabled:true,onChange(){}}));assert.match(locked,/disabled/);
+});
+test('inherited SPK source loads privately on demand without embedding NIK or account in initial markup',()=>{
+ const html=renderToStaticMarkup(createElement(InheritedMandorPanel,{choice:{id:'qa',version:2},onReady(){}}));assert.match(html,/Terisi otomatis dari Mandor yang dipilih pada BA KH/);assert.match(html,/Memuat identitas Mandor terpilih/);assert.doesNotMatch(html,/<iframe|<img|accountNumber|nik/);
 });
